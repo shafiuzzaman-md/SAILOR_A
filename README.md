@@ -94,36 +94,41 @@ SAILOR/
 ### Running SAILOR
 
 ```bash
-# 1. Set up environment
-cp .env.example .env
-# Edit .env with your LLM API key
+# 1. Set up environment — replace the placeholder API key in .env
+#    Set LLM_API_KEY to your OpenAI key (starts with sk-)
 
 # 2. Prepare a project (CodeQL scan + spec generation)
 docker run --rm \
     -v $(pwd)/dataset:/app/dataset \
     -v $(pwd)/sa_outputs:/app/sa_outputs \
     -v $(pwd)/specs:/app/specs \
+    -v $(pwd)/rules:/app/rules \
+    -v $(pwd)/configs:/app/configs \
     sailor bash -c "./sailor_prepare.sh <commit>/<project>"
 
-# 3. Run SAILOR
+# 3. Run SAILOR (Phase 2 + 3)
+source .env
 docker run --rm \
     -e LLM_API_KEY="$LLM_API_KEY" \
-    -e LLM_MODEL="gpt-5" \
+    -e LLM_API_BASE="$LLM_API_BASE" \
+    -e LLM_MODEL="$LLM_MODEL" \
     -e JOBS=128 \
     -v $(pwd)/dataset:/app/dataset \
+    -v $(pwd)/sa_outputs:/app/sa_outputs \
     -v $(pwd)/specs:/app/specs \
     -v $(pwd)/se_runs:/app/se_runs \
+    -v $(pwd)/rules:/app/rules \
+    -v $(pwd)/configs:/app/configs \
     sailor bash -c "./sailor.sh <commit>/<project>"
 ```
 
 ### Running Baselines
 
-```bash
-# B1: Human harness + KLEE (runs inside Docker)
-# See EXPERIMENTS.md for full Docker command
+B1 and B2 run inside Docker (need KLEE). See EXPERIMENTS.md for
+full commands. B3--B5 run outside Docker:
 
-# B2: One-shot LLM + KLEE (runs inside Docker)
-# See EXPERIMENTS.md for full Docker command
+```bash
+source .env
 
 # B3: Pure LLM detect
 python3 baselines/b3_llm_detect/run_b3.py \
@@ -138,13 +143,13 @@ python3 baselines/b4_sa_llm_detect/run_b4.py \
     --sa-outputs-dir sa_outputs/libtiff_f324415_vul \
     --output-dir se_runs/b4/libtiff_f324415_vul
 
-# B5: Agentic (Claude Code)
+# B5: Agentic (Claude Code — requires claude login)
 python3 baselines/b5_agentic_llm/run_b5.py \
     --project libtiff_f324415_vul \
     --dataset-root dataset/f324415/libtiff_f324415_vul \
     --output-dir se_runs/b5/libtiff_f324415_vul \
-    --upstream-libs libtiff.a \
-    --max-targets 9999 --timeout 600 --jobs 16
+    --upstream-libs dataset/f324415/libtiff_f324415_vul/build/libtiff.a \
+    --timeout 600 --jobs 16
 ```
 
 ### Concrete Validation
@@ -154,14 +159,12 @@ of `sailor.sh`.  For baselines (B3--B5), a separate validation
 step compiles crashing inputs against the `.a`:
 
 ```bash
-
-# B3/B4: strip-and-relink against .a
 python3 scripts/revalidate_baselines.py \
     --baseline b3 \
-    --findings-dir se_runs/b3/<project>/findings \
-    --upstream-libs <project>.a \
-    --src-root dataset/<commit>/<project> \
-    --output-dir /tmp/b3_validated/<project> \
+    --findings-dir se_runs/b3/libtiff_f324415_vul/findings \
+    --upstream-libs dataset/f324415/libtiff_f324415_vul/build/libtiff.a \
+    --src-root dataset/f324415/libtiff_f324415_vul \
+    --output-dir /tmp/b3_validated/libtiff \
     --jobs 16
 ```
 
