@@ -11,7 +11,7 @@
    - GPT-5: `export LLM_API_KEY=<your-openai-key>`
    - DeepSeek-V3: `export DEEPSEEK_API_KEY=<your-deepseek-key>`
    - Claude Code: `claude login` (Max plan required for B5)
-4. **Hardware**: 128-core server, 251GB RAM recommended (see `export/baseline_confirmed/server_config.md`)
+4. **Hardware**: 128-core server, 251GB RAM recommended
 
 ## Environment Setup
 
@@ -88,9 +88,9 @@ done
 Results appear in `se_runs/sailor_engine/<project>/summary.tsv`.
 Concrete validation is in-pipeline (ktest replay against `.a`).
 
-**Expected**: ~410 verified bugs across 10 projects.
+**Expected**: 421 confirmed crashes (379 unique) across 10 projects.
 **Time**: ~2-3 hours per project with 128 parallel jobs.
-**Cost**: ~2,300M total LLM tokens across all projects.
+**Cost**: ~2,288M total LLM tokens across all projects.
 
 ## Experiment 2: SAILOR-DeepSeek
 
@@ -165,14 +165,14 @@ python3 baselines/b3_llm_detect/run_b3.py \
 python3 scripts/revalidate_baselines.py \
     --baseline b3 \
     --findings-dir se_runs/b3/libtiff_f324415_vul/findings \
-    --upstream-libs dataset/f324415/libtiff_f324415_vul/build_simple/libtiff.a \
+    --unmodified project-libs dataset/f324415/libtiff_f324415_vul/build_simple/libtiff.a \
     --include-dirs dataset/f324415/libtiff_f324415_vul/libtiff \
     --src-root dataset/f324415/libtiff_f324415_vul \
     --output-dir /tmp/b3_validated/libtiff \
     --jobs 16
 ```
 
-**Expected**: 6 verified (all in libtiff).
+**Expected**: 5 unique / 6 confirmed (all in libtiff).
 **Time**: ~8-14 hours per project (API-bound).
 
 ## Experiment 6: B4 — SA + LLM Detect
@@ -191,7 +191,7 @@ python3 baselines/b4_sa_llm_detect/run_b4.py \
 python3 scripts/revalidate_baselines.py \
     --baseline b4 \
     --findings-dir se_runs/b4/libtiff_f324415_vul/findings \
-    --upstream-libs dataset/f324415/libtiff_f324415_vul/build_simple/libtiff.a \
+    --unmodified project-libs dataset/f324415/libtiff_f324415_vul/build_simple/libtiff.a \
     --include-dirs dataset/f324415/libtiff_f324415_vul/libtiff \
     --src-root dataset/f324415/libtiff_f324415_vul \
     --output-dir /tmp/b4_validated/libtiff \
@@ -210,7 +210,7 @@ python3 baselines/b5_agentic_llm/run_b5.py \
     --project openssl_67b5686b_vul \
     --dataset-root dataset/67b5686b/openssl_67b5686b_vul \
     --output-dir se_runs/b5/openssl_67b5686b_vul \
-    --upstream-libs dataset/67b5686b/openssl_67b5686b_vul/libcrypto.a,dataset/67b5686b/openssl_67b5686b_vul/libssl.a \
+    --unmodified project-libs dataset/67b5686b/openssl_67b5686b_vul/libcrypto.a,dataset/67b5686b/openssl_67b5686b_vul/libssl.a \
     --extra-include-dirs dataset/67b5686b/openssl_67b5686b_vul/include \
     --max-targets 9999 --timeout 600 --jobs 16
 ```
@@ -236,13 +236,13 @@ python3 baselines/a1_sailor_no_sa/run_a1.py \
 
 Then run Phase 2 in Docker (same as SAILOR but with LLM-discovered specs).
 
-**Expected**: 46 verified (libtiff=24, libxml2=22).
+**Expected**: 31 unique (libtiff=11, libxml2=20). FPE and non-.a bugs excluded.
 
 ## Concrete Validation Standard
 
 All baselines use the same strict validation:
 
-> **A bug is confirmed only if ASan crashes inside the real upstream `.a`
+> **A bug is confirmed only if ASan crashes inside the real unmodified project `.a`
 > library code — not in reproducer, copied functions, or stub code.**
 
 | Approach | Validation Method | Script |
@@ -264,7 +264,7 @@ python3 scripts/collect_token_usage.py --se-runs se_runs/
 # Fuzz reproduction for verified bugs
 python3 scripts/fuzz_from_replay.py \
     --findings-dir export/verified_artifacts/<project> \
-    --upstream-libs <project>.a \
+    --unmodified project-libs <project>.a \
     --output-dir artifacts/<project>/ossfuzz_artifacts \
     --fuzz-seconds 30 --jobs 8
 ```
@@ -275,12 +275,11 @@ python3 scripts/fuzz_from_replay.py \
 |----------|--------|-----------|----------|
 | B1 | 0 | 0 | 19 |
 | B2 | 0 | 0 | 86 |
-| B3 | 5 | 6 | 1,781 |
+| B3 | 5 | 5 | 1,781 |
 | B4 | 2 | 2 | 1,363 |
 | B5 | 12 | 12 | 430 |
-| A1 | 46 | 46 | — |
-| **SAILOR** | **410** | **410** | — |
+| A1 | 31 | 31 | 276 |
+| **SAILOR** | **379** | **421** | **1,345** |
 
 Detailed results: `export/baseline_confirmed/baseline_confirmed.csv`
-Analysis: `export/baseline_confirmed/baseline_deep_review.md`
 Case studies: `export/case_studies/`
