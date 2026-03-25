@@ -93,20 +93,39 @@ SAILOR/
 
 ### Running SAILOR
 
+All commands should be run from the repository root directory.
+The pipeline creates the following directories automatically:
+
+```
+SAILOR/                 ← run all commands from here
+├── dataset/            ← project source (created by setup_dataset.sh)
+├── sa_outputs/         ← CodeQL scan results (created by Phase 1)
+├── specs/              ← vulnerability specifications (created by Phase 1)
+├── se_runs/            ← symbolic execution results (created by Phase 2+3)
+├── rules/              ← CodeQL queries (included in repo)
+└── configs/            ← project build configs (included in repo)
+```
+
 ```bash
 # 1. Set up environment — replace the placeholder API key in .env
 #    Set LLM_API_KEY to your OpenAI key (starts with sk-)
 
-# 2. Prepare a project (CodeQL scan + spec generation)
+# 2. Clone target projects at exact commits
+bash setup_dataset.sh
+
+# 3. Build Docker image
+docker build -t sailor .
+
+# 4. Phase 1: CodeQL scan + spec generation (example: libtiff)
 docker run --rm \
     -v $(pwd)/dataset:/app/dataset \
     -v $(pwd)/sa_outputs:/app/sa_outputs \
     -v $(pwd)/specs:/app/specs \
     -v $(pwd)/rules:/app/rules \
     -v $(pwd)/configs:/app/configs \
-    sailor bash -c "./sailor_prepare.sh <commit>/<project>"
+    sailor bash -c "./sailor_prepare.sh f324415/libtiff_f324415_vul"
 
-# 3. Run SAILOR (Phase 2 + 3)
+# 5. Phase 2+3: LLM harness synthesis + KLEE + concrete validation
 source .env
 docker run --rm \
     -e LLM_API_KEY="$LLM_API_KEY" \
@@ -119,7 +138,10 @@ docker run --rm \
     -v $(pwd)/se_runs:/app/se_runs \
     -v $(pwd)/rules:/app/rules \
     -v $(pwd)/configs:/app/configs \
-    sailor bash -c "./sailor.sh <commit>/<project>"
+    sailor bash -c "./sailor.sh f324415/libtiff_f324415_vul"
+
+# 6. Results
+cat se_runs/sailor_engine/libtiff_f324415_vul/summary.tsv
 ```
 
 ### Running Baselines
