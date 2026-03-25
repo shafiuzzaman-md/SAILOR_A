@@ -1,0 +1,75 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 12353441
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x5cf764130f80, 0x5cf764130f86), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x5cf764130f88,0x5cf764130fe8), 
+INFO:        0 files found in /tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/corpus
+INFO:        2 files found in /tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: seed corpus: files: 2 min: 99b max: 99b total: 198b rss: 30Mb
+=================================================================
+==3118576==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000037 at pc 0x5cf7640ed6ee bp 0x7ffefbcb6d90 sp 0x7ffefbcb6d88
+READ of size 1 at 0x602000000037 thread T0
+    #0 0x5cf7640ed6ed in TIFFSwabLong8 /tmp/libtiff_upstream/libtiff/tif_swab.c:65:7
+    #1 0x5cf7640ed3b0 in entry_func /tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/shim.c:14:5
+    #2 0x5cf7640ed311 in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:34:5
+    #3 0x5cf76401380a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #4 0x5cf764012ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #5 0x5cf764014ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #6 0x5cf764014f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #7 0x5cf764002542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #8 0x5cf76402d9e6 in main (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #9 0x7f4c1e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x7f4c1e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5cf763ff6974 in _start (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+
+0x602000000037 is located 1 bytes to the right of 6-byte region [0x602000000030,0x602000000036)
+allocated by thread T0 here:
+    #0 0x5cf7640b1332 in malloc (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe1332) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #1 0x5cf7640ed2ea in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:24:42
+    #2 0x5cf76401380a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #3 0x5cf764012ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #4 0x5cf764014ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #5 0x5cf764014f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #6 0x5cf764002542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #7 0x5cf76402d9e6 in main (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+    #8 0x7f4c1e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7f4c1e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5cf763ff6974 in _start (/tmp/libtiff_fuzz_verify/825_tif_swab.c_69_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: 3f031b3177cceff31aa326af04c78ebfbe7773c0)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libtiff_upstream/libtiff/tif_swab.c:65:7 in TIFFSwabLong8
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa[06]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3118576==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x62,0x75,0x66,0x5f,0x62,0x79,0x74,0x65,0x73,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x36,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"buf_bytes\",\012    \"offset\": 0,\012    \"size\": 6,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-205da109f4c7129baca063b82be220eb230f8ae0
+Base64: WwogIHsKICAgICJuYW1lIjogImJ1Zl9ieXRlcyIsCiAgICAib2Zmc2V0IjogMCwKICAgICJzaXplIjogNiwKICAgICJzb3VyY2UiOiAiY29uY3JldGVfYmxvY2siCiAgfQpd

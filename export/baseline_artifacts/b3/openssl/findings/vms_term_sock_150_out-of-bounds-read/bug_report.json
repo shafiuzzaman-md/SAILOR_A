@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/vms_term_sock.c",
+    "line": 150,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "TermBuff is uninitialized when passed to OPENSSL_strcasecmp in the while condition. strcasecmp reads until a NUL byte; without initialization, it may scan past the 80-byte buffer, causing an out-of-bounds read.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/vms_term_sock.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdarg.h>\n#include <ctype.h>\n\n/*\n * Minimal stub for the OPENSSL_strcasecmp used by the vulnerable code.\n * To deterministically expose the bug (reading past a non-NUL-terminated\n * buffer), this implementation scans the first argument until it finds a\n * NUL byte. If the buffer lacks a NUL within its bounds, this will read\n * past the end of the buffer and trigger AddressSanitizer.\n */\nstatic int OPENSSL_strcasecmp(const char *a, const char *b) {\n    (void)b; /* unused in this stub */\n    const unsigned char *p = (const unsigned char *)a;\n    while (*p) {            /* keep scanning until we see a NUL */\n        /* tolower to mimic strcasecmp-like access semantics */\n        (void)tolower(*p);\n        p++;\n    }\n    /* Non-zero return to match while (.. != 0) logic of the original */\n    return 1;\n}\n\nstatic void LogMessage(char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n    vfprintf(stdout, fmt, ap);\n    fputc('\\n', stdout);\n    va_end(ap);\n}\n\nint main(void) {\n    /* Replicate the vulnerable pattern from apps/lib/vms_term_sock.c (TERM_SOCK_TEST) */\n    char TermBuff[80];\n\n    /* The original bug is that TermBuff is uninitialized before being passed\n     * to OPENSSL_strcasecmp. To make the out-of-bounds read deterministic\n     * under ASan, we explicitly fill it with non-NUL bytes so there is no\n     * terminator within the 80-byte buffer. This models an uninitialized\n     * buffer that happens to contain no NULs. */\n    memset(TermBuff, 'A', sizeof(TermBuff));\n\n    LogMessage(\"Enter 'q' or 'Q' to quit ...\");\n\n    /* This while condition calls OPENSSL_strcasecmp on a non-NUL-terminated\n     * TermBuff. Our OPENSSL_strcasecmp scans until it finds a NUL, so it will\n     * read past the end of TermBuff and AddressSanitizer will report an\n     * out-of-bounds read at this point. */\n    while (OPENSSL_strcasecmp(TermBuff, \"Q\")) {\n        /* We should not reach this block before ASan reports the OOB read. */\n        break;\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9223763942718506,
+      "output": "=================================================================\n==4139669==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc41eaf050 at pc 0x5d6d3b613101 bp 0x7ffc41eaef80 sp 0x7ffc41eaef78\nREAD of size 1 at 0x7ffc41eaf050 thread T0\n    #0 0x5d6d3b613100 in OPENSSL_strcasecmp /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17:12\n    #1 0x5d6d3b612dca in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:51:12\n    #2 0x7b2d9042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7b2d9042a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5d6d3b553314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer+0x21314) (BuildId: bb4bf5f1aa89cfff3de293fd2be5ff359e333ac3)\n\nAddress 0x7ffc41eaf050 is located in stack of thread T0 at offset 112 in frame\n    #0 0x5d6d3b612cbf in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:34\n\n  This frame has 1 object(s):\n    [32, 112) 'TermBuff' (line 36) <== Memory access at offset 112 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17:12 in OPENSSL_strcasecmp\nShadow bytes around the buggy address:\n  0x1000083cddb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cddc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cddd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cdde0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cddf0: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1\n=>0x1000083cde00: 00 00 00 00 00 00 00 00 00 00[f3]f3 f3 f3 f3 f3\n  0x1000083cde10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cde20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cde30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cde40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000083cde50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4139669==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "OPENSSL_strcasecmp",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "OPENSSL_strcasecmp",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17",
+          "12"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:51",
+          "12"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c",
+          "34"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

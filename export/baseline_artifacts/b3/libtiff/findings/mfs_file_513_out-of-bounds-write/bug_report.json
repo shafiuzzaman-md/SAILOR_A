@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 513,
+    "function": "mfs_close",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Assigns fds[fd] = -1 without checking fd bounds. An invalid fd (negative or >= MAX_BUFFS) causes a write outside the fds array, corrupting adjacent memory.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\n\n/*\n   Minimal stand-in for the contrib/mfs/mfs_file.c globals.\n   The bug is that mfs_close() indexes fds[fd] without validating fd.\n*/\n\n#define MAX_BUFFS 4\n\nstatic int fds[MAX_BUFFS];\nstatic char *buf[MAX_BUFFS];\n\nint mfs_unmap(int fd) { return 0; }\n\n/* Vulnerable function as in the source context */\nint mfs_close(int fd)\n{\n    int ret;\n\n    if (fds[fd] == -1) /* Not open */\n    {\n        ret = -1;\n        errno = EBADF;\n    }\n    else\n    {\n        fds[fd] = -1;  /* Out-of-bounds write when fd is invalid */\n        ret = 0;\n    }\n\n    return ret;\n}\n\nint main(void)\n{\n    /* Initialize fds to something other than -1 to take the else-branch if reachable */\n    for (int i = 0; i < MAX_BUFFS; i++)\n        fds[i] = 0;\n\n    /* Craft an invalid fd that is out of bounds. */\n    int badfd = MAX_BUFFS + 10;  /* >= MAX_BUFFS => out-of-bounds */\n\n    /* This call will access fds[badfd] without any bounds check. With ASan, the\n       first invalid access (the read in the 'if' condition) will already be reported.\n       The core issue is the missing bounds check which also leads to the write below. */\n    int r = mfs_close(badfd);\n\n    /* Prevent optimizing away the call result */\n    printf(\"mfs_close(%d) returned %d\\n\", badfd, r);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0033457279205322266,
+      "output": "mfs_close(14) returned 0\n"
+    }
+  }
+}

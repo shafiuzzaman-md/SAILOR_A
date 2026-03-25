@@ -1,0 +1,84 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/ca.c",
+    "line": 1661,
+    "function": "certify",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "BIO_printf is invoked with the %s formatter using ASN1_STRING->data from str/str2, which are not guaranteed to be NUL-terminated. This can cause a read past the end of the allocated buffer until a NUL byte is encountered: BIO_printf(bio_err, ..., ((str2 == NULL) ? \"NULL\" : (char *)str2->data), ((str == NULL) ? \"NULL\" : (char *)str->data));. If a policy 'match' fails, attacker-controlled ASN1 string data from the request/issuer can trigger this OOB read, leading to a crash or information leak.",
+    "abs_path": "/tmp/openssl_upstream/apps/ca.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for OpenSSL types used in the vulnerable call */\ntypedef struct bio_st BIO;\nstruct bio_st { int dummy; };\n\ntypedef struct asn1_string_st {\n    int length;\n    int type;\n    unsigned char *data;\n    long flags;\n} ASN1_STRING;\n\n/* Global like apps/bio_err */\nstatic BIO *bio_err = NULL;\n\n/*\n * Stub BIO_printf that intentionally reads char* arguments until a NUL byte\n * (like printf with %s would). Because this function is compiled with\n * -fsanitize=address, the character-by-character loads are instrumented and\n * an out-of-bounds read will be reliably detected as soon as it crosses the\n * allocation boundary.\n */\nint BIO_printf(BIO *bp, const char *fmt, ...)\n{\n    (void)bp; /* unused in stub */\n\n    va_list ap;\n    va_start(ap, fmt);\n\n    /* Expected order for the specific format used in apps/ca.c:1661 */\n    const char *cv_name = va_arg(ap, const char *);   /* %s (policy field name) */\n    const char *ca_str  = va_arg(ap, const char *);   /* %s (issuer/CA ASN1_STRING->data) */\n    const char *req_str = va_arg(ap, const char *);   /* %s (request ASN1_STRING->data) */\n\n    /* Print some context (not necessary for the bug) */\n    fputs(\"[BIO_printf stub] The \", stderr);\n    fputs(cv_name ? cv_name : \"(null)\", stderr);\n    fputs(\" field is different between\\nCA certificate (\", stderr);\n\n    /* Intentionally read char-by-char until NUL terminator (like %s).\n     * If ca_str is not NUL-terminated within its allocated object,\n     * this will read into redzone and ASan will report a heap-buffer-overflow. */\n    if (ca_str == NULL) {\n        fputs(\"NULL\", stderr);\n    } else {\n        const char *p = ca_str;\n        while (*p) { /* OOB read happens here when *p crosses the buffer end */\n            fputc(*p, stderr);\n            p++;\n        }\n    }\n\n    fputs(\") and the request (\", stderr);\n\n    if (req_str == NULL) {\n        fputs(\"NULL\", stderr);\n    } else {\n        const char *p = req_str;\n        while (*p) { /* OOB read happens here as well */\n            fputc(*p, stderr);\n            p++;\n        }\n    }\n\n    fputs(\")\\n\", stderr);\n\n    va_end(ap);\n    return 0;\n}\n\n/*\n * Minimal reproducer for the apps/ca.c:certify() vulnerable line.\n * We mimic a policy 'match' failure path and directly hit the BIO_printf\n * that prints ASN1_STRING->data with %s while not ensuring NUL termination.\n */\nstatic void certify(void)\n{\n    /* Craft two ASN1_STRINGs whose ->data buffers are not NUL-terminated */\n    ASN1_STRING *str  = (ASN1_STRING *)calloc(1, sizeof(*str));   /* request value */\n    ASN1_STRING *str2 = (ASN1_STRING *)calloc(1, sizeof(*str2));  /* CA value */\n\n    /* Allocate small buffers with no trailing NUL to force OOB read */\n    size_t n1 = 7;  /* request len */\n    size_t n2 = 5;  /* CA len */\n\n    unsigned char *d1 = (unsigned char *)malloc(n1);\n    unsigned char *d2 = (unsigned char *)malloc(n2);\n\n    if (!str || !str2 || !d1 || !d2) {\n        fprintf(stderr, \"alloc failed\\n\");\n        exit(1);\n    }\n\n    /* Fill with non-zero bytes so no NUL is present in-buffer */\n    for (size_t i = 0; i < n1; i++) d1[i] = (unsigned char)('A' + (int)(i % 26));\n    for (size_t i = 0; i < n2; i++) d2[i] = (unsigned char)('a' + (int)(i % 26));\n\n    str->data  = d1; str->length  = (int)n1;\n    str2->data = d2; str2->length = (int)n2;\n\n    const char *cv_name = \"CN\"; /* policy field name */\n\n    /* This call mirrors the vulnerable use in apps/ca.c:1661 */\n    BIO_printf(bio_err,\n               \"The %s field is different between\\nCA certificate (%s) and the request (%s)\\n\",\n               cv_name,\n               (str2 == NULL) ? \"NULL\" : (char *)str2->data,\n               (str  == NULL) ? \"NULL\" : (char *)str->data);\n\n    /* Clean up (won't affect the already-triggered read) */\n    free(d1);\n    free(d2);\n    free(str);\n    free(str2);\n}\n\nint main(void)\n{\n    /* Initialize dummy BIO sink */\n    bio_err = (BIO *)malloc(sizeof(*bio_err));\n    if (!bio_err) {\n        fprintf(stderr, \"bio_err alloc failed\\n\");\n        return 1;\n    }\n\n    certify();\n\n    free(bio_err);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.851414680480957,
+      "output": "[BIO_printf stub] The CN field is different between\nCA certificate (abcde=================================================================\n==4122388==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000055 at pc 0x560602f59483 bp 0x7fffe77e5630 sp 0x7fffe77e5628\nREAD of size 1 at 0x602000000055 thread T0\n    #0 0x560602f59482 in BIO_printf /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:52:16\n    #1 0x560602f59c3e in certify /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:109:5\n    #2 0x560602f597da in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:131:5\n    #3 0x75615662a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x75615662a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x560602e99324 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer+0x21324) (BuildId: 1c25a3bdadcb2ddf731d147e1bbc23775f5aec88)\n\n0x602000000055 is located 0 bytes to the right of 5-byte region [0x602000000050,0x602000000055)\nallocated by thread T0 here:\n    #0 0x560602f1cd32 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer+0xa4d32) (BuildId: 1c25a3bdadcb2ddf731d147e1bbc23775f5aec88)\n    #1 0x560602f59856 in certify /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:92:42\n    #2 0x560602f597da in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:131:5\n    #3 0x75615662a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x75615662a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x560602e99324 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer+0x21324) (BuildId: 1c25a3bdadcb2ddf731d147e1bbc23775f5aec88)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:52:16 in BIO_printf\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 04 fa fa fa 07 fa fa fa[05]fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4122388==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "BIO_printf",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:52",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "BIO_printf",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:52",
+          "16"
+        ],
+        [
+          "1",
+          "certify",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:109",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:131",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "certify",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:92",
+          "42"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ca_1661_out-of-bounds-read/reproducer.c:131",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

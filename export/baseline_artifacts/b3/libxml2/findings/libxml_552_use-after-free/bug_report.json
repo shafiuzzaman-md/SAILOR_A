@@ -1,0 +1,114 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 552,
+    "function": "libxml_xmlOutputBufferClose",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "xmlOutputBufferClose(out) frees the underlying xmlOutputBufferPtr, but the Python wrapper object is not updated to clear its internal pointer. Subsequent API calls using the same Python object (e.g., xmlOutputBufferFlush) will retrieve and use a freed pointer, leading to a use-after-free.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/*\n * This reproducer simulates the Python wrapper bug in python/libxml.c where\n * libxml_xmlOutputBufferClose frees the underlying xmlOutputBufferPtr but the\n * wrapper object isn't updated to clear its internal pointer. A subsequent call\n * to xmlOutputBufferFlush then uses the freed pointer, causing a UAF.\n *\n * We provide minimal stub implementations of the involved libxml2 types and\n * functions to make the UAF visible under ASan without relying on libxml2.\n */\n\ntypedef struct _xmlOutputBuffer {\n    uint32_t magic;\n    size_t size;\n    unsigned char *data;\n} xmlOutputBuffer, *xmlOutputBufferPtr;\n\n/* Minimal fake constructor for an output buffer */\nstatic xmlOutputBufferPtr create_fake_xmlOutputBuffer(void) {\n    xmlOutputBufferPtr out = (xmlOutputBufferPtr)malloc(sizeof(*out));\n    if (!out) {\n        perror(\"malloc\");\n        exit(1);\n    }\n    out->magic = 0xC0FFEEu;\n    out->size = 64;\n    out->data = (unsigned char *)malloc(out->size);\n    if (!out->data) {\n        perror(\"malloc\");\n        exit(1);\n    }\n    memset(out->data, 'X', out->size);\n    return out;\n}\n\n/* Stub of libxml2 API: close frees the xmlOutputBuffer struct */\nint xmlOutputBufferClose(xmlOutputBufferPtr out) {\n    if (out == NULL)\n        return -1;\n    /* Intentionally free only the outer struct (as libxml2 would at least free the struct).\n       Keeping out->data allocated ensures we don't double-free in this stub. */\n    free(out);\n    return 0;\n}\n\n/* Stub of libxml2 API: flush touches the buffer fields, which will UAF if 'out' was freed */\nint xmlOutputBufferFlush(xmlOutputBufferPtr out) {\n    if (out == NULL)\n        return -1;\n    /* Access members of 'out' to trigger use-after-free when 'out' was freed. */\n    volatile uint32_t m = out->magic;            /* read from freed memory */\n    if (out->data && out->size > 0) {\n        /* Also write via the freed object to make the UAF obvious. */\n        size_t idx = (size_t)(m % out->size);\n        out->data[idx] ^= 0xAA;                  /* write guided by freed metadata */\n    }\n    return (int)m;\n}\n\n/* Minimal stand-in for the Python wrapper object around xmlOutputBufferPtr */\ntypedef struct {\n    xmlOutputBufferPtr obj;   /* The wrapped C pointer */\n    void *context;            /* Unused here */\n    void *closecallback;      /* Unused here */\n} PyoutputBuffer_Object;\n\n/* Getter used by the wrapper to fetch the underlying C pointer */\nstatic void *PyoutputBuffer_Get(void *pyobj) {\n    return ((PyoutputBuffer_Object *)pyobj)->obj;\n}\n\n/* \"Python\" binding that mirrors the vulnerable logic from python/libxml.c */\nstatic int py_libxml_xmlOutputBufferClose(PyoutputBuffer_Object *pyobj_out) {\n    xmlOutputBufferPtr out = (xmlOutputBufferPtr)PyoutputBuffer_Get(pyobj_out);\n    if (out == NULL)\n        return 0; /* harmless if already cleared */\n    /* Vulnerability: close frees 'out' but the wrapper object is NOT updated. */\n    int rc = xmlOutputBufferClose(out);\n    /* BUG: missing pyobj_out->obj = NULL; */\n    return rc;\n}\n\n/* Another binding that uses the wrapper to get the pointer again and flush */\nstatic int py_libxml_xmlOutputBufferFlush(PyoutputBuffer_Object *pyobj_out) {\n    xmlOutputBufferPtr out = (xmlOutputBufferPtr)PyoutputBuffer_Get(pyobj_out);\n    return xmlOutputBufferFlush(out);\n}\n\nint main(void) {\n    /* Set up a fake Python wrapper around an xmlOutputBufferPtr */\n    PyoutputBuffer_Object pybuf;\n    memset(&pybuf, 0, sizeof(pybuf));\n    pybuf.obj = create_fake_xmlOutputBuffer();\n\n    /* Close frees the underlying C object but the wrapper still holds the pointer. */\n    (void)py_libxml_xmlOutputBufferClose(&pybuf);\n\n    /* This call retrieves and uses the freed pointer -> heap-use-after-free. */\n    int r = py_libxml_xmlOutputBufferFlush(&pybuf);\n\n    /* Prevent compiler from optimizing away 'r'. */\n    printf(\"flush rc: %d\\n\", r);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.761772632598877,
+      "output": "=================================================================\n==4004102==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000040 at pc 0x5880d73bce40 bp 0x7fff6bc4c9d0 sp 0x7fff6bc4c9c8\nREAD of size 4 at 0x603000000040 thread T0\n    #0 0x5880d73bce3f in xmlOutputBufferFlush /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:55:32\n    #1 0x5880d73bd4c1 in py_libxml_xmlOutputBufferFlush /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:90:12\n    #2 0x5880d73bd1d5 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:103:13\n    #3 0x74a71b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x74a71b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5880d72fd324 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer+0x21324) (BuildId: 3ca846a3b6cf7111eee78c1d2fac949441455c02)\n\n0x603000000040 is located 0 bytes inside of 24-byte region [0x603000000040,0x603000000058)\nfreed by thread T0 here:\n    #0 0x5880d7380a86 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer+0xa4a86) (BuildId: 3ca846a3b6cf7111eee78c1d2fac949441455c02)\n    #1 0x5880d73bcceb in xmlOutputBufferClose /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:46:5\n    #2 0x5880d73bd47f in py_libxml_xmlOutputBufferClose /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:82:14\n    #3 0x5880d73bd1cc in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:100:11\n    #4 0x74a71b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x74a71b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5880d72fd324 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer+0x21324) (BuildId: 3ca846a3b6cf7111eee78c1d2fac949441455c02)\n\npreviously allocated by thread T0 here:\n    #0 0x5880d7380d32 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer+0xa4d32) (BuildId: 3ca846a3b6cf7111eee78c1d2fac949441455c02)\n    #1 0x5880d73bd271 in create_fake_xmlOutputBuffer /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:24:50\n    #2 0x5880d73bd197 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:97:17\n    #3 0x74a71b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x74a71b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5880d72fd324 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer+0x21324) (BuildId: 3ca846a3b6cf7111eee78c1d2fac949441455c02)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:55:32 in xmlOutputBufferFlush\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa[fd]fd fd fa fa fa fa fa\n  0x0c067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4004102==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "crash_function": "xmlOutputBufferFlush",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:55",
+      "crash_line": 32,
+      "frames": [
+        [
+          "0",
+          "xmlOutputBufferFlush",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:55",
+          "32"
+        ],
+        [
+          "1",
+          "py_libxml_xmlOutputBufferFlush",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:90",
+          "12"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:103",
+          "13"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlOutputBufferClose",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:46",
+          "5"
+        ],
+        [
+          "2",
+          "py_libxml_xmlOutputBufferClose",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:82",
+          "14"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:100",
+          "11"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "create_fake_xmlOutputBuffer",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:24",
+          "50"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_552_use-after-free/reproducer.c:97",
+          "17"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,50 @@
+=================================================================
+==2645367==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000144 at pc 0x58b8e05db6dc bp 0x7fff09d57930 sp 0x7fff09d57920
+READ of size 4 at 0x502000000144 thread T0
+    #0 0x58b8e05db6db in png_read_transform_info /tmp/libpng_upstream/pngrtran.c:2050
+    #1 0x58b8e05d0aba in main /app/artifacts/libpng_747dd02_vul/concrete_artifacts/findings/555_pngrtran.c_2196_sailor_wmi-2-type-confusion-leak//reproducer.c:35
+    #2 0x7507f062a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x7507f062a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x58b8e05d07f4 in _start (/tmp/libpng_reverify/555_pngrtran.c_2196_sailor_wmi-2-type-confusion-leak_bin+0xa7f4) (BuildId: c12b41fe8098fc5b59c71678e7246d2094a2ed9f)
+
+0x502000000144 is located 260 bytes after 16-byte region [0x502000000030,0x502000000040)
+allocated by thread T0 here:
+    #0 0x7507f0afd340 in calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:77
+    #1 0x58b8e05d0964 in main /app/artifacts/libpng_747dd02_vul/concrete_artifacts/findings/555_pngrtran.c_2196_sailor_wmi-2-type-confusion-leak//reproducer.c:12
+    #2 0x7507f062a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x7507f062a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x58b8e05d07f4 in _start (/tmp/libpng_reverify/555_pngrtran.c_2196_sailor_wmi-2-type-confusion-leak_bin+0xa7f4) (BuildId: c12b41fe8098fc5b59c71678e7246d2094a2ed9f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libpng_upstream/pngrtran.c:2050 in png_read_transform_info
+Shadow bytes around the buggy address:
+  0x501ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x502000000000: fa fa 00 00 fa fa 00 00 fa fa fa fa fa fa fa fa
+  0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x502000000100: fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa
+  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000380: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2645367==ABORTING

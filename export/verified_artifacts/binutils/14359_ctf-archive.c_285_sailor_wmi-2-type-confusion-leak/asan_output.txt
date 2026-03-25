@@ -1,0 +1,57 @@
+
+=================================================================
+==3357212==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000338 at pc 0x558e08796617 bp 0x7ffdf987d300 sp 0x7ffdf987d2f0
+READ of size 8 at 0x502000000338 thread T0
+    #0 0x558e08796616 in ctf_list_append /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:33
+    #1 0x558e0878b35b in ctf_err_warn /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-subr.c:279
+    #2 0x558e08762925 in ctf_arc_write_fd /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-archive.c:214
+    #3 0x558e08761d2a in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/14359_ctf-archive.c_285_sailor_wmi-2-type-confusion-leak/reproducer.c:47
+    #4 0x7fef2aa36d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #5 0x7fef2aa36e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #6 0x558e08761a84 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/14359_ctf-archive.c_285_sailor_wmi-2-type-confusion-leak/reproducer_bin+0xba84)
+
+0x502000000338 is located 804 bytes to the right of 4-byte region [0x502000000010,0x502000000014)
+freed by thread T0 here:
+    #0 0x7fef2aded537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127
+    #1 0x558e08761d03 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/14359_ctf-archive.c_285_sailor_wmi-2-type-confusion-leak/reproducer.c:43
+    #2 0x7fef2aa36d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+previously allocated by thread T0 here:
+    #0 0x7fef2aded887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x558e08761bee in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/14359_ctf-archive.c_285_sailor_wmi-2-type-confusion-leak/reproducer.c:22
+    #2 0x7fef2aa36d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:33 in ctf_list_append
+Shadow bytes around the buggy address:
+  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0a047fff8060: fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa
+  0x0a047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==3357212==ABORTING

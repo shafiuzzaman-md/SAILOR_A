@@ -1,0 +1,81 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-arm.c",
+    "line": 1037,
+    "function": "find_thumb_glue",
+    "bug_type": "integer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "tmp_name is allocated using size_t amt = strlen(name) + strlen(THUMB2ARM_GLUE_ENTRY_NAME) + 1 (line 1031) without overflow checks. A very long symbol name can cause amt to wrap, leading to an undersized allocation via bfd_malloc (line 1033). The subsequent sprintf(tmp_name, THUMB2ARM_GLUE_ENTRY_NAME, name) writes the full formatted string into this too-small buffer, causing a heap-based buffer overflow.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-arm.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdarg.h>\n\n/* ----------------- Minimal stubs and definitions ----------------- */\n\ntypedef struct bfd_link_info {\n  int dummy;\n} bfd_link_info;\n\ntypedef struct bfd {\n  int dummy;\n} bfd;\n\ntypedef struct coff_link_hash_entry {\n  int dummy;\n} coff_link_hash_entry;\n\n#define BFD_ASSERT(x) do { \\\n  if (!(x)) { \\\n    fprintf(stderr, \"BFD_ASSERT failed at %s:%d\\n\", __FILE__, __LINE__); \\\n    abort(); \\\n  } \\\n} while (0)\n\n/* In real BFD this would be something like \"__%s_from_thumb\". */\n#define THUMB2ARM_GLUE_ENTRY_NAME \"GLUE_%s\"\n\nstatic void *bfd_malloc(size_t amt) {\n  return malloc(amt);\n}\n\nstatic void *_coff_hash_table_placeholder = NULL;\nstatic void *coff_hash_table(struct bfd_link_info *info) {\n  (void)info;\n  return _coff_hash_table_placeholder;\n}\n\nstatic struct coff_link_hash_entry *\ncoff_link_hash_lookup(void *table, const char *key, int create, int copy, int follow) {\n  (void)table; (void)key; (void)create; (void)copy; (void)follow;\n  return NULL; /* Not reached for the purposes of this reproducer. */\n}\n\nstatic void _bfd_error_handler(const char *fmt, ...) {\n  va_list ap; va_start(ap, fmt);\n  vfprintf(stderr, fmt, ap);\n  fputc('\\n', stderr);\n  va_end(ap);\n}\n\n/* ----------------- Vulnerable function (as in bfd/coff-arm.c) ----------------- */\n\n/* We override strlen used inside find_thumb_glue to simulate the integer overflow\n   in the allocation size computation, without requiring an impossibly long input. */\n\nstatic const char *g_malicious_name = NULL;\n\nstatic size_t real_strlen(const char *s) {\n  const char *p = s;\n  while (*p) p++;\n  return (size_t)(p - s);\n}\n\nstatic size_t my_fake_strlen(const char *s) {\n  /* Return a huge value for the attacker's name to force size_t wraparound\n     in: strlen(name) + strlen(THUMB2ARM_GLUE_ENTRY_NAME) + 1\n     We choose (size_t)-4 (i.e., SIZE_MAX - 3). With format length 7 and +1,\n     the sum becomes 4, causing a tiny allocation. */\n  if (s == g_malicious_name) {\n    return (size_t)-4; /* SIZE_MAX - 3 */\n  }\n  return real_strlen(s);\n}\n\n/* Redirect calls to strlen within this translation unit to our fake one. */\n#define strlen my_fake_strlen\n\nstatic struct coff_link_hash_entry *\nfind_thumb_glue(struct bfd_link_info *info,\n                const char *name,\n                bfd *input_bfd)\n{\n  char *tmp_name;\n  struct coff_link_hash_entry *myh;\n  size_t amt = strlen(name) + strlen(THUMB2ARM_GLUE_ENTRY_NAME) + 1;\n\n  tmp_name = bfd_malloc(amt);\n\n  BFD_ASSERT(tmp_name);\n\n  /* Heap overflow here due to undersized allocation when amt wrapped. */\n  sprintf(tmp_name, THUMB2ARM_GLUE_ENTRY_NAME, name);\n\n  myh = coff_link_hash_lookup\n    (coff_hash_table(info), tmp_name, 0, 0, 1);\n\n  if (myh == NULL)\n    _bfd_error_handler(\"%p: unable to find THUMB glue '%s' for `%s'\",\n                       (void *)input_bfd, tmp_name, name);\n\n  free(tmp_name);\n  return myh;\n}\n\n/* ----------------- Driver ----------------- */\n\nint main(void) {\n  /* Craft a reasonably sized name. The overflow will already occur when\n     writing the literal \"GLUE_\" (5 bytes) into a 4-byte buffer. */\n  size_t name_len = 64;\n  char *name = (char *)malloc(name_len + 1);\n  if (!name) {\n    perror(\"malloc\");\n    return 1;\n  }\n  for (size_t i = 0; i < name_len; i++) name[i] = 'A';\n  name[name_len] = '\\0';\n\n  g_malicious_name = name; /* Mark this pointer as the one to fake-length. */\n\n  bfd_link_info info = {0};\n  bfd input = {0};\n\n  /* This call will trigger the heap overflow in sprintf due to the\n     wrapped allocation size. With AddressSanitizer enabled, this should\n     be reported immediately. */\n  (void)find_thumb_glue(&info, name, &input);\n\n  free(name);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7142863273620605,
+      "output": "=================================================================\n==3584884==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000014 at pc 0x5b85074ffca4 bp 0x7ffd10811ab0 sp 0x7ffd10811250\nWRITE of size 70 at 0x602000000014 thread T0\n    #0 0x5b85074ffca3 in __interceptor_vsprintf (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0x43ca3) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8)\n    #1 0x5b8507500c97 in sprintf (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0x44c97) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8)\n    #2 0x5b850759d058 in find_thumb_glue /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:94:3\n    #3 0x5b850759cf0a in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:129:9\n    #4 0x74fb2e22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x74fb2e22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5b85074dd324 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0x21324) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8)\n\n0x602000000014 is located 0 bytes to the right of 4-byte region [0x602000000010,0x602000000014)\nallocated by thread T0 here:\n    #0 0x5b8507560d32 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0xa4d32) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8)\n    #1 0x5b850759d124 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:31:10\n    #2 0x5b850759cfd7 in find_thumb_glue /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:89:14\n    #3 0x5b850759cf0a in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:129:9\n    #4 0x74fb2e22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x74fb2e22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5b85074dd324 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0x21324) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer+0x43ca3) (BuildId: 6dc7a60a89e20c4893c1119c0548a2d3fdad7db8) in __interceptor_vsprintf\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3584884==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "2",
+          "find_thumb_glue",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:94",
+          "3"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:129",
+          "9"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "bfd_malloc",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:31",
+          "10"
+        ],
+        [
+          "2",
+          "find_thumb_glue",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:89",
+          "14"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1037_integer-overflow/reproducer.c:129",
+          "9"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

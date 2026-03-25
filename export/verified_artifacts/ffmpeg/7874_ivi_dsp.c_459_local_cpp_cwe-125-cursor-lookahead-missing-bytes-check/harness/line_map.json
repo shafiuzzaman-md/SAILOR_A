@@ -1,0 +1,109 @@
+{
+  "ivi_dsp.c": {
+    "16": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 449,
+      "code": "void ff_ivi_col_haar4(const int32_t *in, int16_t *out, ptrdiff_t pitch,"
+    },
+    "17": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 450,
+      "code": "const uint8_t *flags)"
+    },
+    "18": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 451,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 452,
+      "code": "int     i;"
+    },
+    "20": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 453,
+      "code": "int     t0, t1, t2, t3, t4;"
+    },
+    "23": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 456,
+      "code": "#define COMPENSATE(x) (x)"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 457,
+      "code": "for (i = 0; i < 4; i++) {"
+    },
+    "25": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 458,
+      "code": "if (flags[i]) {"
+    },
+    "26": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 459,
+      "code": "INV_HAAR4(in[0], in[4], in[8], in[12],"
+    },
+    "27": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 460,
+      "code": "out[0 * pitch], out[1 * pitch],"
+    },
+    "28": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 461,
+      "code": "out[2 * pitch], out[3 * pitch],"
+    },
+    "29": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 462,
+      "code": "t0, t1, t2, t3, t4);"
+    },
+    "31": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 463,
+      "code": "} else"
+    },
+    "32": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 464,
+      "code": "out[0 * pitch] = out[1 * pitch] ="
+    },
+    "33": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 465,
+      "code": "out[2 * pitch] = out[3 * pitch] = 0;"
+    },
+    "35": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 467,
+      "code": "in++;"
+    },
+    "36": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 468,
+      "code": "out++;"
+    },
+    "37": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 469,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 470,
+      "code": "#undef  COMPENSATE"
+    },
+    "39": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 471,
+      "code": "}"
+    },
+    "46": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 471,
+      "code": "}"
+    }
+  }
+}

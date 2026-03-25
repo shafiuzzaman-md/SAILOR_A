@@ -1,0 +1,68 @@
+// Combined reproducer for 105_atrac3plusdsp.c_607_local_cpp_cwe-120-overflow
+// Original harness: driver.c + smart_stubs.c + sliced source
+
+// === smart_stubs.c ===
+/* Smart stubs — auto-generated from path + vulnerability analysis */
+/* Symbolic stubs model the environment: KLEE explores return values */
+/* that both REACH the sink AND TRIGGER the vulnerability */
+#include <stdlib.h>
+#include <string.h>
+/* PROACTIVE: definitions (auto-detected external) */
+int definitions() { return 0; }
+
+/* PROACTIVE: fallbacks (auto-detected external) */
+int fallbacks() { return 0; }
+
+// === driver.c ===
+// NO_HARNESS_TYPES
+#include <stdint.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <string.h>
+
+#ifndef ATRAC3P_SUBBANDS
+#define ATRAC3P_SUBBANDS 16
+#endif
+#ifndef ATRAC3P_SUBBAND_SAMPLES
+#define ATRAC3P_SUBBAND_SAMPLES 16
+#endif
+#ifndef ATRAC3P_FRAME_SAMPLES
+#define ATRAC3P_FRAME_SAMPLES 300
+#endif
+
+typedef struct AVTXContext { int dummy; } AVTXContext;
+typedef void (*av_tx_fn)(AVTXContext *ctx, float *dst, const float *src, size_t stride);
+
+typedef struct Atrac3pIPQFChannelCtx {
+    int pos;
+    float buf1[16][8];
+    float buf2[16][8];
+} Atrac3pIPQFChannelCtx;
+
+int atrac3_entry(AVTXContext *dct_ctx, av_tx_fn dct_fn,
+                 Atrac3pIPQFChannelCtx *hist, const float *in, float *out);
+
+static void dummy_dct(AVTXContext *ctx, float *dst, const float *src, size_t stride) {
+    (void)ctx; (void)dst; (void)src; (void)stride;
+}
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 64) return 0;
+    AVTXContext *dct_ctx = (AVTXContext *)calloc(1, sizeof(AVTXContext));
+    Atrac3pIPQFChannelCtx *hist = (Atrac3pIPQFChannelCtx *)calloc(1, sizeof(Atrac3pIPQFChannelCtx));
+
+    size_t in_elems = (size_t)ATRAC3P_SUBBANDS * (size_t)ATRAC3P_SUBBAND_SAMPLES;
+    float *inbuf = (float *)malloc(in_elems * sizeof(float));
+    memcpy(inbuf, fuzz_data + (0), in_elems * sizeof(float));
+
+    // Intentionally undersized output buffer to expose the overflow in memset
+    size_t out_elems = 16; // smaller than ATRAC3P_FRAME_SAMPLES
+    float *outbuf = (float *)malloc(out_elems * sizeof(float));
+    memcpy(outbuf, fuzz_data + (in_elems * sizeof(float)), out_elems * sizeof(float));
+
+    // Make hist symbolic
+    memcpy(hist, fuzz_data + (in_elems * sizeof(float) + out_elems * sizeof(float)), sizeof(*hist));
+
+    atrac3_entry(dct_ctx, dummy_dct, hist, inbuf, outbuf);
+    return 0;
+}

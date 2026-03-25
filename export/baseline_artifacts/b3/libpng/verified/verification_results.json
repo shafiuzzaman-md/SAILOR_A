@@ -1,0 +1,143 @@
+[
+  {
+    "spec": "makepng_1578_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "strcpy-avx2.S",
+    "crash_line": 127,
+    "crash_func": "__strcpy_avx2",
+    "original_bug_file": "strcpy-avx2.S",
+    "original_bug_func": "__strcpy_avx2"
+  },
+  {
+    "spec": "makepng_1600_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 323,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "pngunknown_327_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "pngunknown.c",
+    "original_bug_func": "find"
+  },
+  {
+    "spec": "VisualPng_109_out-of-bounds-write",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "VisualPng.c",
+    "original_bug_func": "WinMain"
+  },
+  {
+    "spec": "VisualPng_111_out-of-bounds-write",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "VisualPng.c",
+    "original_bug_func": "WinMain"
+  },
+  {
+    "spec": "filter_mmi_inline_assembly_33_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_mmi_inline_assembly_122_heap-buffer-overflow",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_mmi_inline_assembly_120_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "filter_mmi_inline_assembly.c",
+    "original_bug_func": "png_read_filter_row_sub4_mmi"
+  },
+  {
+    "spec": "filter_mmi_inline_assembly_169_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_msa_intrinsics_394_out-of-bounds-write",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_msa_intrinsics_430_out-of-bounds-write",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_msa_intrinsics_441_out-of-bounds-write",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "filter_msa_intrinsics.c",
+    "original_bug_func": "png_read_filter_row_up_msa"
+  },
+  {
+    "spec": "filter_msa_intrinsics_388_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "filter_msa_intrinsics.c",
+    "original_bug_func": "png_read_filter_row_up_msa"
+  },
+  {
+    "spec": "filter_msa_intrinsics_435_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "filter_msa_intrinsics_482_out-of-bounds-write",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "filter_msa_intrinsics.c",
+    "original_bug_func": "png_read_filter_row_sub4_msa"
+  },
+  {
+    "spec": "png_609_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "png.c",
+    "original_bug_func": "png_free_data"
+  },
+  {
+    "spec": "png_4007_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 271,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "pngrutil_4911_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "pngrutil.c",
+    "original_bug_func": "png_read_reinit"
+  },
+  {
+    "spec": "pngset_794_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "pngset.c",
+    "original_bug_func": "png_set_PLTE"
+  }
+]

@@ -1,0 +1,94 @@
+{
+  "imgutils.c": {
+    "22": {
+      "orig_file": "imgutils.c",
+      "orig_line": 35,
+      "code": "void av_image_fill_max_pixsteps(int max_pixsteps[4], int max_pixstep_comps[4],"
+    },
+    "23": {
+      "orig_file": "imgutils.c",
+      "orig_line": 36,
+      "code": "const AVPixFmtDescriptor *pixdesc)"
+    },
+    "24": {
+      "orig_file": "imgutils.c",
+      "orig_line": 37,
+      "code": "{"
+    },
+    "25": {
+      "orig_file": "imgutils.c",
+      "orig_line": 38,
+      "code": "int i;"
+    },
+    "26": {
+      "orig_file": "imgutils.c",
+      "orig_line": 39,
+      "code": "memset(max_pixsteps, 0, 4*sizeof(max_pixsteps[0]));"
+    },
+    "27": {
+      "orig_file": "imgutils.c",
+      "orig_line": 40,
+      "code": "if (max_pixstep_comps)"
+    },
+    "28": {
+      "orig_file": "imgutils.c",
+      "orig_line": 41,
+      "code": "memset(max_pixstep_comps, 0, 4*sizeof(max_pixstep_comps[0]));"
+    },
+    "30": {
+      "orig_file": "imgutils.c",
+      "orig_line": 43,
+      "code": "for (i = 0; i < 4; i++) {"
+    },
+    "31": {
+      "orig_file": "imgutils.c",
+      "orig_line": 44,
+      "code": "const AVComponentDescriptor *comp = &(pixdesc->comp[i]);"
+    },
+    "32": {
+      "orig_file": "imgutils.c",
+      "orig_line": 45,
+      "code": "if (comp->step > max_pixsteps[comp->plane]) {"
+    },
+    "33": {
+      "orig_file": "imgutils.c",
+      "orig_line": 46,
+      "code": "max_pixsteps[comp->plane] = comp->step;"
+    },
+    "34": {
+      "orig_file": "imgutils.c",
+      "orig_line": 47,
+      "code": "if (max_pixstep_comps)"
+    },
+    "35": {
+      "orig_file": "imgutils.c",
+      "orig_line": 48,
+      "code": "max_pixstep_comps[comp->plane] = i;"
+    },
+    "38": {
+      "orig_file": "imgutils.c",
+      "orig_line": 49,
+      "code": "}"
+    },
+    "39": {
+      "orig_file": "imgutils.c",
+      "orig_line": 50,
+      "code": "}"
+    },
+    "40": {
+      "orig_file": "imgutils.c",
+      "orig_line": 51,
+      "code": "}"
+    },
+    "45": {
+      "orig_file": "imgutils.c",
+      "orig_line": 108,
+      "code": "return 0;"
+    },
+    "46": {
+      "orig_file": "imgutils.c",
+      "orig_line": 109,
+      "code": "}"
+    }
+  }
+}

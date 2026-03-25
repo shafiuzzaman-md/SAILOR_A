@@ -1,0 +1,10 @@
+{
+  "reproducer_code": "#include <stdio.h>\n#include <libxml/parser.h>\n#include <libxml/tree.h>\n\nint main(void) {\n    xmlDocPtr doc = NULL;\n    xmlNodePtr root = NULL;\n\n    /* Initialize libxml2 and check for ABI mismatches */\n    LIBXML_TEST_VERSION\n\n    /* Intentionally parse a non-existent file to force xmlReadFile to fail */\n    const char *path = \"/no/such/file.xml\";\n    doc = xmlReadFile(path, NULL, 0);\n    if (doc == NULL) {\n        fprintf(stderr, \"error: could not parse file %s\\n\", path);\n    }\n\n    /* Vulnerable call: pass NULL doc to xmlDocGetRootElement, which will\n       dereference the NULL pointer in vulnerable versions of libxml2 */\n    root = xmlDocGetRootElement(doc);\n\n    /* If the library didn't crash (e.g., if it defensively returns NULL),\n       clean up and exit. */\n    if (doc)\n        xmlFreeDoc(doc);\n    xmlCleanupParser();\n\n    if (root)\n        printf(\"Root element: %s\\n\", (const char*)root->name);\n\n    return 0;\n}\n",
+  "compile_flags": [
+    "-I/tmp/libxml2_upstream/include",
+    "-lxml2",
+    "-lz",
+    "-llzma"
+  ],
+  "explanation": "The program uses libxml2's public API. It calls xmlReadFile on a guaranteed non-existent path, so xmlReadFile returns NULL. It then calls xmlDocGetRootElement(doc) unconditionally with doc == NULL. In the vulnerable version, xmlDocGetRootElement dereferences the NULL pointer internally, triggering a null-pointer dereference crash (CWE-476)."
+}

@@ -1,0 +1,24 @@
+=================================================================
+==314457==ERROR: AddressSanitizer: memcpy-param-overlap: memory ranges [0x507000000100,0x507000000200) and [0x507000000140, 0x507000000240) overlap
+    #0 0x7fb5372401ed in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827
+    #1 0x56436547d5ca in vp78_decode_frame /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow//harness/vp8.c:38
+    #2 0x56436547d615 in ff_vp8_decode_frame /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow//harness/vp8.c:48
+    #3 0x56436547d48f in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow//harness/driver.c:34
+    #4 0x7fb536ed8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #5 0x7fb536ed8e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #6 0x56436547d204 in _start (/home/user/user/ffmpeg_verify_v2/1710_vp8.c_2836_local_cpp_cwe-120-overflow_bin+0x1204)
+
+0x507000000150 is located 0 bytes to the right of 80-byte region [0x507000000100,0x507000000150)
+allocated by thread T0 here:
+    #0 0x7fb5372baa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x56436547d3b3 in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow//harness/driver.c:26
+    #2 0x7fb536ed8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+0x507000000150 is located 0 bytes to the right of 80-byte region [0x507000000100,0x507000000150)
+allocated by thread T0 here:
+    #0 0x7fb5372baa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x56436547d3b3 in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow//harness/driver.c:26
+    #2 0x7fb536ed8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: memcpy-param-overlap ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy
+==314457==ABORTING

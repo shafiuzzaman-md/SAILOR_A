@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3634372==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64fb449c8d01 bp 0x7ffcd7b15370 sp 0x7ffcd7b15330 T0)
+==3634372==The signal is caused by a READ memory access.
+==3634372==Hint: address points to the zero page.
+    #0 0x64fb449c8d01 in core_file_matches_executable_p /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32:24
+    #1 0x64fb449c8dab in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:46:14
+    #2 0x700f55c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x700f55c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64fb44909304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer+0x20304) (BuildId: 3ace66b933f36b5e99daa8ad8524e765f3aaf432)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32:24 in core_file_matches_executable_p
+==3634372==ABORTING

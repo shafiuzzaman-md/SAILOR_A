@@ -1,0 +1,15 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3354980==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000368 (pc 0x55fac0736943 bp 0x7ffe2ad79380 sp 0x7ffe2ad79280 T0)
+==3354980==The signal is caused by a READ memory access.
+==3354980==Hint: address points to the zero page.
+    #0 0x55fac0736943 in _bfd_elf_compute_section_file_positions /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699
+    #1 0x55fac071633f in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/reproducer.c:31
+    #2 0x7fbad5cafd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #3 0x7fbad5cafe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #4 0x55fac0716094 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/reproducer_bin+0x9b094)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699 in _bfd_elf_compute_section_file_positions
+==3354980==ABORTING

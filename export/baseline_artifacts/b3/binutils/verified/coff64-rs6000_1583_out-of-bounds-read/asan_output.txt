@@ -1,0 +1,48 @@
+About to trigger out-of-bounds read via r_type = 4 (table size = 4)
+=================================================================
+==4080008==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5961954f8580 at pc 0x5961954a7feb bp 0x7ffe1055c510 sp 0x7ffe1055bce0
+READ of size 32 at 0x5961954f8580 thread T0
+    #0 0x5961954a7fea in __asan_memcpy (/app/export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 1d37612acd1d03df0de2e226556451679e60b9f2)
+    #1 0x5961954e4ee1 in xcoff64_ppc_relocate_section /app/export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer.c:76:5
+    #2 0x5961954e5403 in main /app/export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer.c:112:9
+    #3 0x724bec42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x724bec42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x596195425304 in _start (/app/export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer+0x21304) (BuildId: 1d37612acd1d03df0de2e226556451679e60b9f2)
+
+0x5961954f8580 is located 32 bytes to the left of global variable '<string literal>' defined in 'export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer.c:108:19' (0x5961954f85a0) of size 72
+  '<string literal>' is ascii string 'About to trigger out-of-bounds read via r_type = %u (table size = %zu)
+'
+0x5961954f8580 is located 0 bytes to the right of global variable 'xcoff64_howto_table' defined in 'export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer.c:39:40' (0x5961954f8500) of size 128
+SUMMARY: AddressSanitizer: global-buffer-overflow (/app/export/baseline_artifacts/b3/binutils/verified/coff64-rs6000_1583_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 1d37612acd1d03df0de2e226556451679e60b9f2) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0b2cb2a97060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a97070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a97080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a97090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a970a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0b2cb2a970b0:[f9]f9 f9 f9 00 00 00 00 00 00 00 00 00 f9 f9 f9
+  0x0b2cb2a970c0: f9 f9 f9 f9 00 00 00 00 00 00 00 00 04 f9 f9 f9
+  0x0b2cb2a970d0: f9 f9 f9 f9 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a970e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a970f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b2cb2a97100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4080008==ABORTING

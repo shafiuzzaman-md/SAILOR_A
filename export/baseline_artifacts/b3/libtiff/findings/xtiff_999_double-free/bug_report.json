@@ -1,0 +1,99 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/dbs/xtiff/xtiff.c",
+    "line": 999,
+    "function": "CreateXImage",
+    "bug_type": "double-free",
+    "cwe": "CWE-415",
+    "confidence": "high",
+    "explanation": "XDestroyImage(xImage) frees both the XImage structure and its data buffer (xImage->data), which was set to imageMemory in XCreateImage. The subsequent free(imageMemory) frees the same pointer again, causing a double free when appData.usePixmap is True.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/dbs/xtiff/xtiff.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/*\n * Self-contained stubs to mimic the relevant parts of Xlib behavior\n * needed to trigger the double-free in CreateXImage.\n */\ntypedef int Bool;\n#define True 1\n#define False 0\n\ntypedef struct XImage {\n    int width;\n    int height;\n    char *data;\n} XImage;\n\n/* Stubs for other Xlib types used in the original code path (not actually used here) */\ntypedef void* Display;\ntypedef unsigned long Pixmap;\ntypedef void* GC;\n\ntypedef struct {\n    Bool usePixmap;\n} AppData;\n\nstatic AppData appData;\n\n/*\n * XCreateImage stub: create an XImage and set its data pointer to the caller-supplied buffer.\n * This mirrors the real XCreateImage semantics that store the data pointer in the structure.\n */\nXImage* XCreateImage(Display *dpy, void *visual, unsigned int depth, int format,\n                     int offset, char *data, unsigned int width, unsigned int height,\n                     int bitmap_pad, int bytes_per_line)\n{\n    (void)dpy; (void)visual; (void)depth; (void)format; (void)offset; (void)bitmap_pad; (void)bytes_per_line;\n    XImage *img = (XImage*)malloc(sizeof(XImage));\n    if (!img) return NULL;\n    img->width = (int)width;\n    img->height = (int)height;\n    img->data = data; /* crucial: store the provided buffer pointer */\n    return img;\n}\n\n/*\n * XDestroyImage stub: frees both the image->data buffer and the XImage structure itself.\n * This matches Xlib's documented behavior that leads to the double-free in the original code.\n */\nvoid XDestroyImage(XImage *img)\n{\n    if (!img) return;\n    if (img->data) {\n        free(img->data);\n        img->data = NULL;\n    }\n    free(img);\n}\n\n/*\n * Minimal CreateXImage replica that exercises the buggy path:\n * when appData.usePixmap is True, it destroys the XImage and then frees imageMemory again.\n */\nstatic void CreateXImage_bug(XImage *xImage, char *imageMemory, int xImageDepth)\n{\n    /* The surrounding X operations are irrelevant to the bug, so we omit them. */\n    (void)xImageDepth; /* unused in this minimal reproducer */\n\n    if (appData.usePixmap == True) {\n        /* In the original code, XDestroyImage frees both xImage and xImage->data. */\n        XDestroyImage(xImage);\n        /* Double free bug: imageMemory == xImage->data, so this frees the same pointer again. */\n        free(imageMemory);\n    }\n}\n\nint main(void)\n{\n    /* Prepare a buffer that will be owned by the XImage. */\n    size_t buf_size = 1024;\n    char *imageMemory = (char*)malloc(buf_size);\n    if (!imageMemory) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memset(imageMemory, 0xAA, buf_size);\n\n    /* Create an XImage whose data pointer is imageMemory, mirroring XCreateImage behavior. */\n    int depth = 24; /* arbitrary */\n    XImage *xImage = XCreateImage(NULL, NULL, (unsigned)depth, /*format*/2, /*offset*/0,\n                                  imageMemory, /*width*/16, /*height*/16, /*bitmap_pad*/32, /*bytes_per_line*/0);\n    if (!xImage) {\n        fprintf(stderr, \"XCreateImage failed\\n\");\n        free(imageMemory);\n        return 1;\n    }\n\n    /* Set the flag to take the buggy branch. */\n    appData.usePixmap = True;\n\n    /* Trigger the double free: XDestroyImage frees imageMemory, then we free it again. */\n    CreateXImage_bug(xImage, imageMemory, depth);\n\n    /* If the bug didn't crash already, return normally. ASan should report double free. */\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9635839462280273,
+      "output": "=================================================================\n==3817496==ERROR: AddressSanitizer: attempting double-free on 0x619000000080 in thread T0:\n    #0 0x64e9a6bb0a76 in free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n    #1 0x64e9a6bed041 in CreateXImage_bug /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:75:9\n    #2 0x64e9a6becff1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104:5\n    #3 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n\n0x619000000080 is located 0 bytes inside of 1024-byte region [0x619000000080,0x619000000480)\nfreed by thread T0 here:\n    #0 0x64e9a6bb0a76 in free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n    #1 0x64e9a6bece81 in XDestroyImage /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:56:9\n    #2 0x64e9a6bed038 in CreateXImage_bug /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:73:9\n    #3 0x64e9a6becff1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104:5\n    #4 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n\npreviously allocated by thread T0 here:\n    #0 0x64e9a6bb0d22 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4d22) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n    #1 0x64e9a6beceef in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:83:32\n    #2 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)\n\nSUMMARY: AddressSanitizer: double-free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad) in free\n==3817496==ABORTING\n",
+      "error_type": "attempting",
+      "frames": [
+        [
+          "1",
+          "CreateXImage_bug",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:75",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "XDestroyImage",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:56",
+          "9"
+        ],
+        [
+          "2",
+          "CreateXImage_bug",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:73",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:83",
+          "32"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

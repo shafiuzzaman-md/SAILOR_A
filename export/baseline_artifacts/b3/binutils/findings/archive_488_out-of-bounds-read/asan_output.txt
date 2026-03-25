@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3576273==ERROR: AddressSanitizer: SEGV on unknown address 0x72493e2aa000 (pc 0x72493e05452b bp 0x7fffed541190 sp 0x7fffed541140 T0)
+==3576273==The signal is caused by a READ memory access.
+    #0 0x72493e05452b in __GI_____strtol_l_internal stdlib/../stdlib/strtol_l.c:449:28
+    #1 0x64a26ace2e79 in strtol (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer+0x8fe79) (BuildId: e7de75ec2547e7001229af00ffe40a27118206e8)
+    #2 0x64a26ad34433 in get_extended_arelt_filename /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:40:17
+    #3 0x64a26ad3405b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:99:15
+    #4 0x72493e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x72493e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x64a26ac74304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer+0x21304) (BuildId: e7de75ec2547e7001229af00ffe40a27118206e8)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV stdlib/../stdlib/strtol_l.c:449:28 in __GI_____strtol_l_internal
+==3576273==ABORTING

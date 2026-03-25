@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/opt.c",
+    "line": 110,
+    "function": "opt_progname",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "On VMS builds, opt_path_end() has the same pre-decrement pattern. With an empty filename, it returns filename-1. opt_progname() then calls strrchr(p, '.') at line 110 on this invalid pointer, resulting in an out-of-bounds read. This can be triggered by passing an empty string to opt_progname().",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/opt.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Self-contained reproduction of the VMS-specific bug in apps/lib/opt.c */\n\n/* Global buffer as used by opt_progname */\nstatic char prog[256];\n\n/* Vulnerable VMS-specific helper: on empty filename, returns filename-1 */\nconst char *opt_path_end(const char *filename)\n{\n    const char *p;\n\n    /* Find last special character sys:[foo.bar]openssl */\n    for (p = filename + strlen(filename); --p > filename;) {\n        if (*p == ':' || *p == ']' || *p == '>') {\n            p++;\n            break;\n        }\n    }\n    return p; /* With empty filename, p == filename-1 (OOB) */\n}\n\n/* Vulnerable function: calls strrchr() on possibly invalid pointer p */\nchar *opt_progname(const char *argv0)\n{\n    const char *p, *q;\n\n    /* Find last special character sys:[foo.bar]openssl */\n    p = opt_path_end(argv0);\n    /* Out-of-bounds read when argv0 is empty string: p == argv0 - 1 */\n    q = strrchr(p, '.');\n\n    if (prog != p)\n        strncpy(prog, p, sizeof(prog) - 1);\n    prog[sizeof(prog) - 1] = '\\0';\n    if (q != NULL && q - p < (ptrdiff_t)sizeof(prog))\n        prog[q - p] = '\\0';\n    return prog;\n}\n\nint main(void)\n{\n    /* Allocate an empty string on the heap so ASan reports heap-buffer-overflow */\n    char *empty = (char *)malloc(1);\n    if (!empty) {\n        perror(\"malloc\");\n        return 1;\n    }\n    empty[0] = '\\0';\n\n    /* This triggers the bug: opt_path_end returns empty-1, then strrchr reads OOB */\n    char *name = opt_progname(empty);\n\n    /* Use the result to prevent over-optimization */\n    printf(\"progname: %s\\n\", name);\n\n    free(empty);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_110_out-of-bounds-read/reproducer.c:38:31: error: use of undeclared identifier 'ptrdiff_t'\n    if (q != NULL && q - p < (ptrdiff_t)sizeof(prog))\n                              ^\n1 error generated.\n"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "baseline": "B2",
+  "description": "Project-Level LLM Harness + KLEE (No SA, No Iteration)",
+  "project": "libtiff",
+  "commit": "f324415",
+  "llm_model": "GPT-5",
+  "num_rounds": 3,
+  "total_harnesses": 19,
+  "build_errors": 1,
+  "se_detected": 6,
+  "no_bug": 2,
+  "harness_artifacts": 10,
+  "unique_bugs": 0,
+  "real_bugs_in_library": 0,
+  "klee_timeout": 300,
+  "run_date": "2026-03-12",
+  "key_findings": [
+    "19 LLM-generated harnesses across 3 rounds",
+    "1 BUILD_ERROR (1/19 failed to compile)",
+    "6 SE_DETECTED (all in harness.c/stubs, not library code)",
+    "0 real bugs found vs SAILOR's 14"
+  ]
+}

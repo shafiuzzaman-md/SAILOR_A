@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "ftutil.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "ft_mem_qrealloc",
+            "crash_file": "thirdparty/freetype/src/base/ftutil.c",
+            "crash_line": 156
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "ft_mem_qrealloc",
+        "crash_file": "thirdparty/freetype/src/base/ftutil.c",
+        "crash_line": 156,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==36843==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fffb43c84b8 at pc 0x562c8fe7c8d2 bp 0x7fffb43c8360 sp 0x7fffb43c8350\nREAD of size 8 at 0x7fffb43c84b8 thread T0\n    #0 0x562c8fe7c8d1 in ft_mem_qrealloc thirdparty/freetype/src/base/ftutil.c:156\n    #1 0x562c8fe7d369 in ft_mem_realloc thirdparty/freetype/src/base/ftutil.c:101\n    #2 0x562c8fe5da32 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/728_ftutil.c_104_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:44\n    #3 0x7f3ab1248d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f3ab1248e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x562c8fe5d674 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/728_ftutil.c_104_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x2674)\n\nAddress 0x7fffb43c84b8 is located in stack of thread T0 at offset 56 in frame\n    #0 0x562c8fe5d7df in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/728_ftutil.c_104_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:25\n\n  This frame has 1 object(s):\n    [32, 56) 'memory' (line 27) <== Memory access at offset 56 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow thirdparty/freetype/src/base/ftutil.c:156 in ft_mem_qrealloc\nShadow bytes around the buggy address:\n  0x100076871040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100076871050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100076871060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100076871070: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 04 f3 f3 f3\n  0x100076871080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x100076871090: f1 f1 f1 f1 00 00 00[f3]f3 f3 f3 f3 00 00 00 00\n  0x1000768710a0: 00 00 00 00 00 00 00 "
+    }
+}

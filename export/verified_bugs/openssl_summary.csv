@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,31,0,0,0,0,0,0,All BUILD_ERROR: fuzzer.h not found
+B2: LLM+KLEE no SA,27,0,0,0,0,0,0,All BUILD_ERROR
+B3: Pure LLM detect,TBD,—,TBD,TBD,TBD,TBD,TBD,Running
+B4: SA+LLM detect,—,—,—,—,—,—,0,—
+SAILOR-GPT5,—,—,0,—,—,—,0,0 unique verified bugs (all in sliced source)

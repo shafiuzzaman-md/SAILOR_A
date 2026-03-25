@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngvalid.c",
+    "line": 184,
+    "function": "safecat",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "medium",
+    "explanation": "If bufsize is 0, the code sets pos = bufsize-1, which underflows size_t to SIZE_MAX and then writes buffer[pos] = 0, causing an out-of-bounds write. This can corrupt memory when called with an empty buffer.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngvalid.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stddef.h>\n\n/* Copied from contrib/libtests/pngvalid.c */\nstatic size_t\nsafecat(char *buffer, size_t bufsize, size_t pos, const char *cat)\n{\n    while (pos < bufsize && cat != NULL && *cat != 0)\n        buffer[pos++] = *cat++;\n\n    if (pos >= bufsize)\n        pos = bufsize-1;  /* Underflows to SIZE_MAX when bufsize == 0 */\n\n    buffer[pos] = 0;      /* Out-of-bounds write when bufsize == 0 */\n    return pos;\n}\n\nint main(void)\n{\n    /* Allocate a 1-byte heap buffer so the write to buffer[-1] triggers\n     * a heap-buffer-underflow detectable by ASan.\n     */\n    char *buf = (char*)malloc(1);\n    if (buf == NULL) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Trigger the bug: pass bufsize == 0 so safecat sets pos = bufsize-1,\n     * which underflows to SIZE_MAX, then writes buffer[pos] = 0.\n     * On two's complement architectures this is effectively buffer[-1].\n     */\n    size_t ret = safecat(buf, 0 /* bufsize */, 0 /* pos */, \"A\");\n\n    /* Prevent dead-code elimination and ensure side effects are observable. */\n    printf(\"safecat returned: %zu\\n\", ret);\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7873504161834717,
+      "output": "=================================================================\n==3721033==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000000f at pc 0x5c7e587feee1 bp 0x7fff04427430 sp 0x7fff04427428\nWRITE of size 1 at 0x60200000000f thread T0\n    #0 0x5c7e587feee0 in safecat /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:15:17\n    #1 0x5c7e587fed0d in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:34:18\n    #2 0x75784782a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x75784782a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c7e5873f314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer+0x21314) (BuildId: b2aa077193880a9c3c17d988f0df66e6cb9ba1dc)\n\n0x60200000000f is located 1 bytes to the left of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5c7e587c2d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer+0xa4d22) (BuildId: b2aa077193880a9c3c17d988f0df66e6cb9ba1dc)\n    #1 0x5c7e587fecc8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:24:24\n    #2 0x75784782a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x75784782a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c7e5873f314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer+0x21314) (BuildId: b2aa077193880a9c3c17d988f0df66e6cb9ba1dc)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:15:17 in safecat\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa[fa]01 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3721033==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "safecat",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:15",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "safecat",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:15",
+          "17"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:34",
+          "18"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_184_out-of-bounds-write/reproducer.c:24",
+          "24"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "path.c",
+        "original_line": 1505,
+        "function": "clone_block",
+        "entry_point": "fz_clone_path",
+        "spine": [
+            "fz_clone_path",
+            "clone_block"
+        ],
+        "original_context": "1500: \n1501: \tif (len == 0 || block == NULL)\n1502: \t\treturn NULL;\n1503: \n1504: \ttarget = fz_malloc(ctx, len);\n1505: \tmemcpy(target, block, len);\n1506: \treturn target;\n1507: }\n1508: \n1509: fz_path *\n1510: fz_clone_path(fz_context *ctx, fz_path *path)"
+    },
+    "klee_crash": {
+        "harness_file": "path.c",
+        "harness_line": 45,
+        "original_file": "path.c",
+        "original_line": 1505,
+        "original_code": "memcpy(target, block, len);",
+        "original_context": "    1502: \t\treturn NULL;\n    1503: \n    1504: \ttarget = fz_malloc(ctx, len);\n>>> 1505: \tmemcpy(target, block, len);\n    1506: \treturn target;\n    1507: }\n    1508: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 197\nState: 1\nStack: \n\t#000000197 in memcpy(139112786391040, 138752009138176, 1024) at runtime/Freestanding/memcpy.c:17\n\t#100000163 in clone_block(138769189007360, 138752009138176, 1024) at path.c:45\n\t#200000121 in fz_clone_path(138769189007360, 138975347437568) at path.c:57\n\t#300000070 in main() at driver.c:27\nInfo: \n\taddress: 138752009138184\n\tnext: object at 138472836263936 of size 4\n\t\tMO25["
+    },
+    "concrete_inputs": [
+        {
+            "name": "cmds_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_lock",
+        "crash_file": "include/mupdf/fitz/context.h",
+        "crash_line": 847,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3572==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x55e43f96e65e bp 0x7ffd4d154660 sp 0x7ffd4d154650\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x55e43f96e65d in fz_lock include/mupdf/fitz/context.h:847\n    #1 0x55e43f96e65d in do_scavenging_malloc source/fitz/memory.c:50\n    #2 0x55e43f96ead4 in fz_calloc source/fitz/memory.c:115\n    #3 0x55e43f9642a4 in fz_clone_path source/fitz/path.c:1519\n    #4 0x55e43f95baf9 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/065_path.c_1505_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:27\n    #5 0x7f0c4edaad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #6 0x7f0c4edaae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #7 0x55e43f95b924 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/065_path.c_1505_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10924)\n\n0x502000000040 is located 8 bytes to the right of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7f0c4f161887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55e43f95ba2e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/065_path.c_1505_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:16\n    #2 0x7f0c4edaad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow include/mupdf/fitz/context.h:847 in fz_lock\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 fa[fa]fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/065_path.c_1505_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "path.c",
+            "harness_line": 45,
+            "original_file": "path.c",
+            "original_line": 1505,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/065_path.c_1505_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_lock",
+            "crash_file": "include/mupdf/fitz/context.h",
+            "crash_line": 847
+        }
+    ]
+}

@@ -1,0 +1,49 @@
+=================================================================
+==3711852==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc920e3720 at pc 0x5ba1ea18339b bp 0x7ffc920e16f0 sp 0x7ffc920e16e8
+WRITE of size 8 at 0x7ffc920e3720 thread T0
+    #0 0x5ba1ea18339a in vulnerable_winmain_like /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43:16
+    #1 0x5ba1ea182e41 in main /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:72:5
+    #2 0x73d32202a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x73d32202a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5ba1ea0c3314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer+0x21314) (BuildId: f10d721f63c47095c8ddde5c1f46bea93b657c76)
+
+Address 0x7ffc920e3720 is located in stack of thread T0 at offset 8224 in frame
+    #0 0x5ba1ea182e7f in vulnerable_winmain_like /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:14
+
+  This frame has 1 object(s):
+    [32, 8224) 'argv' (line 23) <== Memory access at offset 8224 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43:16 in vulnerable_winmain_like
+Shadow bytes around the buggy address:
+  0x100012414690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000124146a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000124146b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000124146c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000124146d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x1000124146e0: 00 00 00 00[f3]f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3
+  0x1000124146f0: f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3
+  0x100012414700: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100012414710: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100012414720: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100012414730: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3711852==ABORTING

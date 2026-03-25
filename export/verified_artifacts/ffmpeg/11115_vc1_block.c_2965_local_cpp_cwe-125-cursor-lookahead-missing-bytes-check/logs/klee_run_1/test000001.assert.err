@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: vc1_block.c
+Line: 28
+assembly.ll line: 129
+State: 1
+Stack: 
+	#000000129 in vc1_decode_skip_blocks(139835231760384) at vc1_block.c:28
+	#100000102 in ff_vc1_decode_blocks(139835231760384) at vc1_block.c:34
+	#200000081 in main() at driver.c:26

@@ -1,0 +1,16 @@
+KLEE: output directory is "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23790_timestamp.c_32_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1"
+KLEE: Using Z3 solver backend
+KLEE: Deterministic allocator: Using quarantine queue size 8
+KLEE: Deterministic allocator: globals (start-address=0x7f8815f49000 size=10 GiB)
+KLEE: Deterministic allocator: constants (start-address=0x7f8595f49000 size=10 GiB)
+KLEE: Deterministic allocator: heap (start-address=0x7e8595f49000 size=1024 GiB)
+KLEE: Deterministic allocator: stack (start-address=0x7e6595f49000 size=128 GiB)
+KLEE: WARNING ONCE: silently concretizing (reason: floating point) expression (ReadLSB w32 0 tb) to value 0 (timestamp.c:27)
+KLEE: ERROR: timestamp.c:41: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location
+
+KLEE: done: total instructions = 216
+KLEE: done: completed paths = 0
+KLEE: done: partially completed paths = 2
+KLEE: done: generated tests = 1
+

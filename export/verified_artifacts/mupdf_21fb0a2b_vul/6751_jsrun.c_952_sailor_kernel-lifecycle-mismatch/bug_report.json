@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jsrun.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "js_delregistry",
+            "crash_file": "thirdparty/mujs/jsrun.c",
+            "crash_line": 952
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "js_delregistry",
+        "crash_file": "thirdparty/mujs/jsrun.c",
+        "crash_line": 952,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==36457==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000130 at pc 0x55fd81f51df3 bp 0x7ffca85f4cd0 sp 0x7ffca85f4cc0\nREAD of size 8 at 0x502000000130 thread T0\n    #0 0x55fd81f51df2 in js_delregistry thirdparty/mujs/jsrun.c:952\n    #1 0x55fd81f51df2 in js_unref thirdparty/mujs/jsrun.c:936\n    #2 0x55fd81efac9e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6751_jsrun.c_952_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:32\n    #3 0x7f2308910d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f2308910e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55fd81efaa94 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6751_jsrun.c_952_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x10a94)\n\n0x502000000130 is located 252 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7f2308cc7a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55fd81efab97 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6751_jsrun.c_952_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:13\n    #2 0x7f2308910d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/mujs/jsrun.c:952 in js_delregistry\nShadow bytes around the buggy address:\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 00 00 fa fa 04 fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff8020: fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n "
+    }
+}

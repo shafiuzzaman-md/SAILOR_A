@@ -1,0 +1,79 @@
+{
+  "codec_par.c": {
+    "3": {
+      "orig_file": "codec_par.c",
+      "orig_line": 26,
+      "code": "#include <string.h>"
+    },
+    "25": {
+      "orig_file": "codec_par.c",
+      "orig_line": 54,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "codec_par.c",
+      "orig_line": 54,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "codec_par.c",
+      "orig_line": 252,
+      "code": "av_freep(&codec->extradata);"
+    },
+    "36": {
+      "orig_file": "codec_par.c",
+      "orig_line": 253,
+      "code": "codec->extradata_size = 0;"
+    },
+    "37": {
+      "orig_file": "codec_par.c",
+      "orig_line": 254,
+      "code": "if (par->extradata) {"
+    },
+    "38": {
+      "orig_file": "codec_par.c",
+      "orig_line": 255,
+      "code": "codec->extradata = av_mallocz(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);"
+    },
+    "39": {
+      "orig_file": "codec_par.c",
+      "orig_line": 256,
+      "code": "if (!codec->extradata)"
+    },
+    "42": {
+      "orig_file": "codec_par.c",
+      "orig_line": 258,
+      "code": "memcpy(codec->extradata, par->extradata, par->extradata_size);"
+    },
+    "44": {
+      "orig_file": "codec_par.c",
+      "orig_line": 259,
+      "code": "codec->extradata_size = par->extradata_size;"
+    },
+    "45": {
+      "orig_file": "codec_par.c",
+      "orig_line": 260,
+      "code": "}"
+    },
+    "46": {
+      "orig_file": "codec_par.c",
+      "orig_line": 268,
+      "code": "return 0;"
+    },
+    "47": {
+      "orig_file": "codec_par.c",
+      "orig_line": 269,
+      "code": "}"
+    },
+    "52": {
+      "orig_file": "codec_par.c",
+      "orig_line": 268,
+      "code": "return 0;"
+    },
+    "53": {
+      "orig_file": "codec_par.c",
+      "orig_line": 269,
+      "code": "}"
+    }
+  }
+}

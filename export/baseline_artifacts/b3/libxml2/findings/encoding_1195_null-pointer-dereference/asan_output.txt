@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3988111==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x58377d19bec0 bp 0x7ffdfdfdb3d0 sp 0x7ffdfdfdb340 T0)
+==3988111==The signal is caused by a READ memory access.
+==3988111==Hint: address points to the zero page.
+    #0 0x58377d19bec0 in xmlStrcasecmp /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40:12
+    #1 0x58377d19bd80 in xmlFindCharEncodingHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:73:10
+    #2 0x58377d19c13f in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:91:33
+    #3 0x7e9194a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7e9194a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x58377d0dc314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer+0x21314) (BuildId: 9e0d0edae5c8236ab13809f708fb549f622adab1)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40:12 in xmlStrcasecmp
+==3988111==ABORTING

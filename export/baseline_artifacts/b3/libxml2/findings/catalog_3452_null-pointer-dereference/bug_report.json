@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "catalog.c",
+    "line": 3452,
+    "function": "xmlCatalogDumpDoc",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlCatalogDumpDoc unconditionally dereferences xmlDefaultCatalog->xml. However, xmlDefaultCatalog can be NULL after initialization failures: in xmlInitializeCatalog, if xmlCreateNewCatalog returns NULL, xmlDefaultCatalog remains NULL but xmlCatalogInitialized is set to 1. Subsequent calls to xmlCatalogDumpDoc will skip initialization and dereference xmlDefaultCatalog->xml, causing a NULL pointer dereference.",
+    "abs_path": "/tmp/libxml2_upstream/catalog.c"
+  },
+  "reproducer_code": "// Self-contained reproducer for NULL dereference in xmlCatalogDumpDoc\n// It mimics the relevant parts of libxml2's catalog.c logic shown in the snippet.\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n\n// Minimal stand-ins for libxml2 types\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlDoc {\n    int dummy;\n} xmlDoc;\n\ntypedef xmlDoc* xmlDocPtr;\n\ntypedef struct _xmlCatalog {\n    void *xml; // in real libxml2 this would be a catalog entry tree\n} xmlCatalog, *xmlCatalogPtr;\n\n// Global state mirroring libxml2's catalog globals\nstatic int xmlCatalogInitialized = 0;\nstatic xmlCatalogPtr xmlDefaultCatalog = NULL;\n\n// Stub for xmlDumpXMLCatalogToDoc; we will not reach it due to the NULL deref\nstatic xmlDocPtr xmlDumpXMLCatalogToDoc(void *unused) {\n    (void)unused;\n    // Return a non-NULL dummy to show that if we got here things would be fine\n    xmlDocPtr doc = (xmlDocPtr)malloc(sizeof(xmlDoc));\n    if (doc) doc->dummy = 42;\n    return doc;\n}\n\n// Simulated xmlInitializeCatalog that fails to create the default catalog but\n// still marks the catalog as initialized (as per the bug description)\nstatic void xmlInitializeCatalog(void) {\n    // Simulate: xmlCreateNewCatalog() failed -> xmlDefaultCatalog remains NULL\n    // But the implementation incorrectly sets xmlCatalogInitialized = 1\n    xmlDefaultCatalog = NULL; // explicitly show failure\n    xmlCatalogInitialized = 1; // incorrect behavior that triggers the bug later\n}\n\n// Vulnerable function copied conceptually from libxml2 (unconditional deref)\nstatic xmlDocPtr xmlCatalogDumpDoc(void) {\n    if (!xmlCatalogInitialized)\n        xmlInitializeCatalog();\n\n    // NULL dereference here: xmlDefaultCatalog is NULL after failed init\n    return xmlDumpXMLCatalogToDoc(xmlDefaultCatalog->xml);\n}\n\nint main(void) {\n    // Directly call the vulnerable function to trigger the bug path.\n    // First call will run xmlInitializeCatalog(), which leaves xmlDefaultCatalog == NULL\n    // but sets xmlCatalogInitialized == 1. Then the unconditional dereference crashes.\n    (void)xmlCatalogDumpDoc();\n\n    // We should never get here; if we do, free any allocated doc\n    // (but in this reproducer, the crash occurs before allocation)\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09273481369018555,
+      "output": ""
+    }
+  }
+}

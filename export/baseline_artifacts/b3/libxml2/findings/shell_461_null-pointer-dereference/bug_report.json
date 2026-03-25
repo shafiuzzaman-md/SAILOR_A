@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "shell.c",
+    "line": 461,
+    "function": "xmllintShellGrep",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "Calls xmlStrstr(node->content, ...) for XML_COMMENT_NODE without verifying node->content is non-NULL. In libxml2, node->content can be NULL; other code in this file guards against this, indicating it is expected. Passing NULL to xmlStrstr leads to a crash.",
+    "abs_path": "/tmp/libxml2_upstream/shell.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal libxml2-like typedefs and enums to reproduce the bug path */\ntypedef unsigned char xmlChar;\n\ntypedef enum {\n    XML_ELEMENT_NODE = 1,\n    XML_ATTRIBUTE_NODE = 2,\n    XML_TEXT_NODE = 3,\n    XML_CDATA_SECTION_NODE = 4,\n    XML_ENTITY_REF_NODE = 5,\n    XML_ENTITY_NODE = 6,\n    XML_PI_NODE = 7,\n    XML_COMMENT_NODE = 8,\n    XML_DOCUMENT_NODE = 9,\n    XML_HTML_DOCUMENT_NODE = 13\n} xmlElementType;\n\ntypedef struct _xmlNode xmlNode;\nstruct _xmlNode {\n    xmlElementType type;\n    xmlChar *content;\n    xmlNode *children;\n    xmlNode *next;\n    xmlNode *parent;\n};\n\ntypedef xmlNode *xmlNodePtr;\n\ntypedef struct _xmlDoc {\n    xmlNode *children;\n} *xmlDocPtr;\n\n#ifndef ATTRIBUTE_UNUSED\n#define ATTRIBUTE_UNUSED __attribute__((unused))\n#endif\n\ntypedef struct _xmllintShellCtxt {\n    FILE *output;\n    /* other fields are irrelevant for this reproducer */\n} *xmllintShellCtxtPtr;\n\n/* Stubs matching libxml2-ish API used by the shell code */\nstatic xmlChar *xmlGetNodePath(xmlNodePtr node ATTRIBUTE_UNUSED) {\n    static xmlChar dummy[] = \"/dummy/path\";\n    return dummy;\n}\n\nstatic void xmllintShellList(xmllintShellCtxtPtr ctxt, void *a ATTRIBUTE_UNUSED,\n                             xmlNodePtr node ATTRIBUTE_UNUSED, void *b ATTRIBUTE_UNUSED) {\n    fprintf(ctxt->output, \"[xmllintShellList stub]\\n\");\n}\n\n/* Naive xmlStrstr implementation that dereferences the first argument without NULL checks. */\nstatic xmlChar *xmlStrstr(const xmlChar *str, const xmlChar *val) {\n    /* Intentionally no NULL checks to mirror the crash behavior */\n    if (*val == 0) /* deref val (non-NULL in our call) */\n        return (xmlChar *)str;\n    for (const xmlChar *p = str; *p != 0; p++) { /* deref str here -> NULL deref when str == NULL */\n        const xmlChar *q = p;\n        const xmlChar *r = val;\n        while (*q && *r && *q == *r) {\n            q++;\n            r++;\n        }\n        if (*r == 0)\n            return (xmlChar *)p;\n    }\n    return NULL;\n}\n\n/* Reimplementation of the vulnerable function from shell.c focusing on the buggy path */\nstatic int xmllintShellGrep(xmllintShellCtxtPtr ctxt ATTRIBUTE_UNUSED,\n                            char *arg, xmlNodePtr node, xmlNodePtr node2 ATTRIBUTE_UNUSED) {\n    if (!ctxt)\n        return 0;\n    if (node == NULL)\n        return 0;\n    if (arg == NULL)\n        return 0;\n\n    while (node != NULL) {\n        if (node->type == XML_COMMENT_NODE) {\n            /* BUG: node->content may be NULL for comment nodes; xmlStrstr dereferences it */\n            if (xmlStrstr(node->content, (xmlChar *)arg)) {\n                fprintf(ctxt->output, \"%s : \", (char *)xmlGetNodePath(node));\n                xmllintShellList(ctxt, NULL, node, NULL);\n            }\n        } else if (node->type == XML_TEXT_NODE) {\n            if (xmlStrstr(node->content, (xmlChar *)arg)) {\n                fprintf(ctxt->output, \"%s : \", (char *)xmlGetNodePath(node->parent));\n                xmllintShellList(ctxt, NULL, node->parent, NULL);\n            }\n        }\n\n        /* Minimal traversal logic from the original */\n        if ((node->type == XML_DOCUMENT_NODE) ||\n            (node->type == XML_HTML_DOCUMENT_NODE)) {\n            node = ((xmlDocPtr) node)->children;\n        } else if ((node->children != NULL) && (node->type != XML_ENTITY_REF_NODE)) {\n            node = node->children;\n        } else if (node->next != NULL) {\n            node = node->next;\n        } else {\n            while (node != NULL) {\n                if (node->parent != NULL) {\n                    node = node->parent;\n                }\n                if (node->next != NULL) {\n                    node = node->next;\n                    break;\n                }\n                if (node->parent == NULL) {\n                    node = NULL;\n                    break;\n                }\n            }\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    /* Set up a context with a valid output stream */\n    struct _xmllintShellCtxt ctxt_s = {0};\n    ctxt_s.output = stdout;\n    xmllintShellCtxtPtr ctxt = &ctxt_s;\n\n    /* Craft a single comment node with NULL content to trigger the bug */\n    xmlNodePtr comment = (xmlNodePtr)calloc(1, sizeof(*comment));\n    if (!comment) {\n        perror(\"calloc\");\n        return 1;\n    }\n    comment->type = XML_COMMENT_NODE;\n    comment->content = NULL; /* This is the crucial condition */\n    comment->children = NULL;\n    comment->next = NULL;\n    comment->parent = NULL;\n\n    char *needle = \"match\"; /* Non-NULL arg so the function proceeds */\n\n    /* This call will attempt xmlStrstr(comment->content, needle) and crash */\n    (void)xmllintShellGrep(ctxt, needle, comment, NULL);\n\n    /* Cleanup (unreached due to crash) */\n    free(comment);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8527190685272217,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4063715==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5cc65577672e bp 0x7ffe6ffbb5b0 sp 0x7ffe6ffbb500 T0)\n==4063715==The signal is caused by a READ memory access.\n==4063715==Hint: address points to the zero page.\n    #0 0x5cc65577672e in xmlStrstr /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:61:34\n    #1 0x5cc6557760ef in xmllintShellGrep /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:87:17\n    #2 0x5cc655775f76 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:146:11\n    #3 0x7720cf02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7720cf02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5cc6556b6314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer+0x21314) (BuildId: 6a79d06dd8e887c527ce3953c2e91f30ee161abe)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:61:34 in xmlStrstr\n==4063715==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlStrstr",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:61",
+      "crash_line": 34,
+      "frames": [
+        [
+          "0",
+          "xmlStrstr",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:61",
+          "34"
+        ],
+        [
+          "1",
+          "xmllintShellGrep",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:87",
+          "17"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_461_null-pointer-dereference/reproducer.c:146",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

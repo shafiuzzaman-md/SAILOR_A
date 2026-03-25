@@ -1,0 +1,19 @@
+{
+  "lsp.c": {
+    "8": {
+      "orig_file": "lsp.c",
+      "orig_line": 163,
+      "code": "lp[0] = 4096;"
+    },
+    "11": {
+      "orig_file": "lsp.c",
+      "orig_line": 172,
+      "code": "}"
+    },
+    "17": {
+      "orig_file": "lsp.c",
+      "orig_line": 173,
+      "code": "}"
+    }
+  }
+}

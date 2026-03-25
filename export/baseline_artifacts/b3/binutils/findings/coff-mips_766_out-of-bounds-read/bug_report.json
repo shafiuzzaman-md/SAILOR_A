@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-mips.c",
+    "line": 766,
+    "function": "mips_relocate_hi",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Reads 4 bytes from contents + (refhi->r_vaddr - input_section->vma) via bfd_get_32 without validating that the computed offset lies within the section buffer. A crafted object can set r_vaddr outside the section, causing an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-mips.c"
+  },
+  "reproducer_code": "#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdio.h>\n\n/* Minimal stub types to mirror the required BFD interfaces. */\ntypedef struct bfd { int dummy; } bfd;\ntypedef unsigned char bfd_byte;\ntypedef size_t bfd_vma;\n\ntypedef struct asection {\n  bfd_vma vma;\n} asection;\n\nstruct internal_reloc {\n  bfd_vma r_vaddr;\n};\n\n/* Stub implementations that perform raw 4-byte memory accesses. */\nstatic unsigned long bfd_get_32(bfd *abfd, const void *p) {\n  (void)abfd;\n  uint32_t v;\n  /* This memcpy will read 4 bytes from p; if p is out of bounds, ASan will flag it. */\n  memcpy(&v, p, sizeof(v));\n  return (unsigned long)v;\n}\n\nstatic void bfd_put_32(bfd *abfd, bfd_vma val, void *p) {\n  (void)abfd;\n  uint32_t v = (uint32_t)val;\n  /* This memcpy will write 4 bytes to p; if p is out of bounds, ASan will flag it. */\n  memcpy(p, &v, sizeof(v));\n}\n\n/* Direct copy of the vulnerable logic from bfd/coff-mips.c (simplified context). */\nstatic void mips_relocate_hi(struct internal_reloc *refhi,\n                             struct internal_reloc *reflo,\n                             bfd *input_bfd,\n                             asection *input_section,\n                             bfd_byte *contents,\n                             bfd_vma relocation)\n{\n  unsigned long insn;\n  unsigned long val;\n  unsigned long vallo;\n\n  if (refhi == NULL)\n    return;\n\n  /* Vulnerable OOB read when refhi->r_vaddr is outside the section buffer. */\n  insn = bfd_get_32(input_bfd,\n                    contents + refhi->r_vaddr - input_section->vma);\n\n  if (reflo == NULL)\n    vallo = 0;\n  else\n    vallo = (bfd_get_32(input_bfd,\n                        contents + reflo->r_vaddr - input_section->vma)\n             & 0xffff);\n\n  val = ((insn & 0xffff) << 16) + vallo;\n  val += relocation;\n\n  if ((vallo & 0x8000) != 0)\n    val -= 0x10000;\n\n  if ((val & 0x8000) != 0)\n    val += 0x10000;\n\n  insn = (insn & ~(unsigned)0xffff) | ((val >> 16) & 0xffff);\n  /* This will also perform an OOB write back to the same invalid location. */\n  bfd_put_32(input_bfd, (bfd_vma)insn,\n             contents + refhi->r_vaddr - input_section->vma);\n}\n\nint main(void) {\n  /* Create a tiny fake section buffer. */\n  size_t sec_size = 16;\n  bfd_byte *contents = (bfd_byte *)malloc(sec_size);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  for (size_t i = 0; i < sec_size; i++) contents[i] = (bfd_byte)(i & 0xFF);\n\n  /* Set up a fake section and relocations. */\n  asection input_section;\n  input_section.vma = 0x1000;  /* Arbitrary base VMA. */\n\n  struct internal_reloc refhi;\n  /* Point r_vaddr one byte past the end of the section buffer to trigger OOB. */\n  refhi.r_vaddr = input_section.vma + sec_size + 1;\n\n  /* reflo is not needed to trigger the first OOB read. */\n  struct internal_reloc *reflo = NULL;\n\n  bfd *input_bfd = NULL;  /* Not used by our stubs. */\n  bfd_vma relocation = 0;\n\n  /* This call should trigger an out-of-bounds read in bfd_get_32 via mips_relocate_hi. */\n  mips_relocate_hi(&refhi, reflo, input_bfd, &input_section, contents, relocation);\n\n  /* If ASan didn't abort yet, clean up. */\n  free(contents);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8163750171661377,
+      "output": "=================================================================\n==3596189==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000021 at pc 0x5e2cb602bffb bp 0x7ffe15c90b10 sp 0x7ffe15c902e0\nREAD of size 4 at 0x602000000021 thread T0\n    #0 0x5e2cb602bffa in __asan_memcpy (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: e4cf452690dae81c2e7d4f7c626be2071b82c64e)\n    #1 0x5e2cb6069372 in bfd_get_32 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:24:3\n    #2 0x5e2cb6069095 in mips_relocate_hi /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:51:10\n    #3 0x5e2cb6068f3c in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:101:3\n    #4 0x71a25302a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x71a25302a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5e2cb5fa9314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer+0x21314) (BuildId: e4cf452690dae81c2e7d4f7c626be2071b82c64e)\n\n0x602000000021 is located 1 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x5e2cb602cd22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer+0xa4d22) (BuildId: e4cf452690dae81c2e7d4f7c626be2071b82c64e)\n    #1 0x5e2cb6068d9b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:79:36\n    #2 0x71a25302a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x71a25302a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5e2cb5fa9314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer+0x21314) (BuildId: e4cf452690dae81c2e7d4f7c626be2071b82c64e)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: e4cf452690dae81c2e7d4f7c626be2071b82c64e) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00[fa]fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3596189==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "bfd_get_32",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:24",
+          "3"
+        ],
+        [
+          "2",
+          "mips_relocate_hi",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:51",
+          "10"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:101",
+          "3"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-mips_766_out-of-bounds-read/reproducer.c:79",
+          "36"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

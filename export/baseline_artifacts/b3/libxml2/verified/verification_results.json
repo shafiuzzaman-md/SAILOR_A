@@ -1,0 +1,118 @@
+[
+  {
+    "spec": "HTMLparser_2486_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "HTMLparser.c",
+    "original_bug_func": "htmlFindEntityPrefix"
+  },
+  {
+    "spec": "HTMLparser_4419_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "HTMLparser.c",
+    "original_bug_func": "htmlParseDocument"
+  },
+  {
+    "spec": "SAX2_639_null-pointer-dereference",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "buf_1125_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "strchr-avx2.S",
+    "crash_line": 67,
+    "crash_func": "__strchr_avx2",
+    "original_bug_file": "strchr-avx2.S",
+    "original_bug_func": "__strchr_avx2"
+  },
+  {
+    "spec": "libxml_1285_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "strlen-avx2.S",
+    "crash_line": 76,
+    "crash_func": "__strlen_avx2",
+    "original_bug_file": "strlen-avx2.S",
+    "original_bug_func": "__strlen_avx2"
+  },
+  {
+    "spec": "relaxng_2456_double-free",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "relaxng.c",
+    "original_bug_func": "xmlRelaxNGSchemaFacetCheck"
+  },
+  {
+    "spec": "runtest_519_integer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "runtest.c",
+    "original_bug_func": "loadMem"
+  },
+  {
+    "spec": "runtest_1753_null-pointer-dereference",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "runtest_2699_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "iofclose.c:48",
+    "crash_line": 9,
+    "crash_func": "fclose",
+    "original_bug_file": "iofclose.c:48",
+    "original_bug_func": "fclose"
+  },
+  {
+    "spec": "testchar_840_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 321,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "testdict_404_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memset-vec-unaligned-erms.S",
+    "crash_line": 328,
+    "crash_func": "__memset_avx2_unaligned_erms",
+    "original_bug_file": "memset-vec-unaligned-erms.S",
+    "original_bug_func": "__memset_avx2_unaligned_erms"
+  },
+  {
+    "spec": "testdict_406_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memset-vec-unaligned-erms.S",
+    "crash_line": 244,
+    "crash_func": "__memset_avx2_unaligned_erms",
+    "original_bug_file": "memset-vec-unaligned-erms.S",
+    "original_bug_func": "__memset_avx2_unaligned_erms"
+  },
+  {
+    "spec": "testdict_410_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memset-vec-unaligned-erms.S",
+    "crash_line": 244,
+    "crash_func": "__memset_avx2_unaligned_erms",
+    "original_bug_file": "memset-vec-unaligned-erms.S",
+    "original_bug_func": "__memset_avx2_unaligned_erms"
+  },
+  {
+    "spec": "testdict_506_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memset-vec-unaligned-erms.S",
+    "crash_line": 244,
+    "crash_func": "__memset_avx2_unaligned_erms",
+    "original_bug_file": "memset-vec-unaligned-erms.S",
+    "original_bug_func": "__memset_avx2_unaligned_erms"
+  }
+]

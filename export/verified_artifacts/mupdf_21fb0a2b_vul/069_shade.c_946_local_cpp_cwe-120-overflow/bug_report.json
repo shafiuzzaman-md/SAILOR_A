@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "shade.c",
+        "original_line": 946,
+        "function": "fz_process_shade_type7",
+        "entry_point": "fz_process_shade",
+        "spine": [
+            "fz_process_shade",
+            "fz_process_shade_type7"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "shade.c",
+        "harness_line": 49,
+        "original_file": "shade.c",
+        "original_line": 946,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=1)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 270\nState: 33\nStack: \n\t#000000270 in memcpy(139082450305024, 139080302821632, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000228 in fz_process_shade_type7(139602141347840, 139584961478656, 139327263440896) at shade.c:49\n\t#200000165 in fz_process_shade(139602141347840, 139584961478656, 0, 0, 139327263440896) at shade.c:29\n\t#300000111 in main() at driver.c:45\nInfo: \n\taddress: 13908030282"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ncomp",
+            "size": 4,
+            "data": "b'\\x00\\x01\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_process_shade",
+        "crash_file": "source/fitz/shade.c",
+        "crash_line": 994,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3686==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x511000008650 at pc 0x55dab6fb3bea bp 0x7fff688c6d70 sp 0x7fff688c6d60\nREAD of size 4 at 0x511000008650 thread T0\n    #0 0x55dab6fb3be9 in fz_process_shade source/fitz/shade.c:994\n    #1 0x55dab6fa6b43 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/069_shade.c_946_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:45\n    #2 0x7f8ad24d0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f8ad24d0e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55dab6fa6814 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/069_shade.c_946_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x21814)\n\nAddress 0x511000008650 is a wild pointer.\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/shade.c:994 in fz_process_shade\nShadow bytes around the buggy address:\n  0x0a227fff9070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff9080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff9090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff90a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff90b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a227fff90c0: fa fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa\n  0x0a227fff90d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff90e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff90f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff9100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff9110: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after re"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/069_shade.c_946_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "shade.c",
+            "harness_line": 49,
+            "original_file": "shade.c",
+            "original_line": 946,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/069_shade.c_946_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_process_shade",
+            "crash_file": "source/fitz/shade.c",
+            "crash_line": 994
+        }
+    ]
+}

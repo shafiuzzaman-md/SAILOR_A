@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-i386.c",
+    "line": 626,
+    "function": "coff_i386_rtype_to_howto",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "When handling R_SECREL32 with no defined hash entry, the code walks the section list using sym->n_scnum to select asection *s, but does not verify that sym->n_scnum is within the number of sections. If sym->n_scnum exceeds the section count (malformed input), s becomes NULL and s->output_section is dereferenced, causing a NULL pointer dereference.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-i386.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for BFD/COFF structures and constants needed to\n   reproduce the NULL pointer dereference in coff_i386_rtype_to_howto. */\n\ntypedef uint64_t bfd_vma;\n\ntypedef struct asection asection;\n\ntypedef struct bfd {\n    asection *sections; /* Head of section list */\n} bfd;\n\nstruct asection {\n    asection *next;\n    asection *output_section;\n    bfd_vma vma;\n    bfd *owner;\n};\n\n/* Relocation types (only what we need). */\nenum {\n    R_SECREL32 = 0x000F, /* Arbitrary value; only equality check matters */\n    R_IMAGEBASE = 0x0010 /* Unused here */\n};\n\n/* Simplified relocation entry. */\nstruct arelent {\n    int r_type;\n    bfd_vma r_vaddr;\n};\n\n/* Simplified COFF internal symbol. */\nstruct internal_syment {\n    int n_scnum;   /* Section number (1-based) */\n    bfd_vma n_value;\n};\n\n/* Minimal hash entry stand-in. We keep it so the code matches the flow. */\nstruct coff_link_hash_entry {\n    struct {\n        int type;\n        union {\n            struct {\n                asection *section;\n            } def;\n        } u;\n    } root;\n};\n\nenum {\n    bfd_link_hash_defined = 1,\n    bfd_link_hash_defweak = 2\n};\n\n/* Vulnerable function reimplemented with only the relevant logic path. */\nstatic void coff_i386_rtype_to_howto(\n    bfd *abfd,\n    struct arelent *rel,\n    struct internal_syment *sym,\n    asection *sec,                 /* Unused in our path */\n    bfd_vma *addendp,\n    struct coff_link_hash_entry *h /* We'll pass NULL to force the else path */\n) {\n    (void)sec; /* Suppress unused warning */\n\n    if (rel->r_type == R_SECREL32 && sym != NULL) {\n        bfd_vma osect_vma;\n\n        if (h && (h->root.type == bfd_link_hash_defined ||\n                  h->root.type == bfd_link_hash_defweak)) {\n            osect_vma = h->root.u.def.section->output_section->vma;\n        } else {\n            /* Vulnerable path: walk section list using sym->n_scnum without bounds check. */\n            asection *s;\n            int i;\n\n            for (s = abfd->sections, i = 1; i < sym->n_scnum; i++)\n                s = s->next;  /* If n_scnum exceeds number of sections, s becomes NULL. */\n\n            /* NULL dereference here when s == NULL. */\n            osect_vma = s->output_section->vma; /* Crash: s is NULL */\n        }\n\n        *addendp -= osect_vma;\n    }\n}\n\nint main(void) {\n    /* Build a fake bfd with a single section in the list. */\n    bfd fake_bfd = {0};\n    asection sec1 = {0};\n\n    sec1.next = NULL;               /* Only one section in the list */\n    sec1.output_section = &sec1;    /* Typical self-reference in simple cases */\n    sec1.vma = 0x1000;\n    sec1.owner = &fake_bfd;\n\n    fake_bfd.sections = &sec1;      /* Head points to the single section */\n\n    /* Prepare a relocation of type R_SECREL32. */\n    struct arelent rel = {0};\n    rel.r_type = R_SECREL32;\n    rel.r_vaddr = 0;\n\n    /* sym->n_scnum is 1-based. Setting it to 2 with only 1 section ensures\n       the loop walks past the end, leaving s == NULL after the loop. */\n    struct internal_syment sym = {0};\n    sym.n_scnum = 2; /* Malformed input: exceeds actual section count */\n    sym.n_value = 0;\n\n    bfd_vma addend = 0;\n\n    /* h == NULL so the code will take the else branch that walks sections. */\n    coff_i386_rtype_to_howto(&fake_bfd, &rel, &sym, &sec1, &addend, NULL);\n\n    /* We should never reach here; if we do, print something. */\n    printf(\"Unexpectedly survived. addend=%llu\\n\", (unsigned long long)addend);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7571518421173096,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3595125==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x5d5c94cae416 bp 0x7ffd93847510 sp 0x7ffd93847440 T0)\n==3595125==The signal is caused by a READ memory access.\n==3595125==Hint: address points to the zero page.\n    #0 0x5d5c94cae416 in coff_i386_rtype_to_howto /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84:28\n    #1 0x5d5c94cae062 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:117:5\n    #2 0x7175da62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7175da62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5d5c94bee304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer+0x20304) (BuildId: 451d91d78680d13dc9d71eddf801a582b2d592bf)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84:28 in coff_i386_rtype_to_howto\n==3595125==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "coff_i386_rtype_to_howto",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84",
+      "crash_line": 28,
+      "frames": [
+        [
+          "0",
+          "coff_i386_rtype_to_howto",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84",
+          "28"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:117",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

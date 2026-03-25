@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4136878==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000001 (pc 0x7f4a4138b7dd bp 0x7ffdfc35a900 sp 0x7ffdfc35a0b8 T0)
+==4136878==The signal is caused by a READ memory access.
+==4136878==Hint: address points to the zero page.
+    #0 0x7f4a4138b7dd in __strlen_avx2 string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76
+    #1 0x58719c91a76c in strlen (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer+0x3776c) (BuildId: 25224dbf95fb472e9e3bd821ec70f9149a6497fe)
+    #2 0x58719c9c3d91 in opt_help /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:61:22
+    #3 0x58719c9c419a in main /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:99:5
+    #4 0x7f4a4122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7f4a4122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x58719c904304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer+0x21304) (BuildId: 25224dbf95fb472e9e3bd821ec70f9149a6497fe)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76 in __strlen_avx2
+==4136878==ABORTING

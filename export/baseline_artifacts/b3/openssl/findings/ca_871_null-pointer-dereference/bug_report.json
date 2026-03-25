@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/ca.c",
+    "line": 871,
+    "function": "ca_main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "When EVP_PKEY_get_default_digest_name() returns 2 with \"UNDEF\" (e.g., for Ed25519/Ed448 keys), dgst is set to NULL (lines 846\u2013848). Later, if req is set and -verbose is used, BIO_printf is called with \"%s\" and dgst (line 871), passing a NULL pointer to a %s formatter and causing a NULL dereference.",
+    "abs_path": "/tmp/openssl_upstream/apps/ca.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for OpenSSL types */\ntypedef struct evp_pkey_st EVP_PKEY;\ntypedef struct bio_st BIO;\n\n/* Global error BIO like OpenSSL apps */\nBIO *bio_err;\n\n/* Stub: mimics OpenSSL's EVP_PKEY_get_default_digest_name behavior for Ed25519/Ed448\n * Returns 2 and sets md to \"UNDEF\", which means the digest must be left unspecified. */\nint EVP_PKEY_get_default_digest_name(EVP_PKEY *pkey, char *md, size_t md_len) {\n    (void)pkey; /* unused in stub */\n    if (md_len > 0) {\n        /* Set to \"UNDEF\" as for Ed25519/Ed448 */\n        snprintf(md, md_len, \"%s\", \"UNDEF\");\n    }\n    return 2; /* mandatory digest handling */\n}\n\n/* Stub for BIO_puts (not used in this path, provided for completeness) */\nint BIO_puts(BIO *b, const char *s) {\n    (void)b;\n    fputs(s, stderr);\n    return (int)strlen(s);\n}\n\n/* Stub: BIO_printf that will dereference the %s argument, reproducing the NULL deref\n * that occurs when passing a NULL string to a %s formatter. */\nint BIO_printf(BIO *b, const char *fmt, ...) {\n    (void)b;\n    va_list ap;\n    va_start(ap, fmt);\n    /* We know the vulnerable call is BIO_printf(bio_err, \"message digest is %s\\n\", dgst); */\n    const char *s = va_arg(ap, const char *);\n    /* Force a dereference to trigger ASan null-pointer-dereference when s == NULL */\n    volatile char ch = s[0];\n    (void)ch;\n    va_end(ap);\n    /* If not crashed, print to show flow (not expected to reach here in reproducer) */\n    fprintf(stderr, fmt, s);\n    return 0;\n}\n\n/* This function mimics the vulnerable portion of apps/ca.c:ca_main */\nstatic void trigger_vulnerable_path(void) {\n    EVP_PKEY *pkey = (EVP_PKEY*)0x1; /* dummy non-NULL key */\n    char def_dgst[80];\n    char *dgst = NULL; /* as if user didn't specify -md */\n    int def_ret;\n\n    /* apps/ca.c lines 836-848 equivalent */\n    def_ret = EVP_PKEY_get_default_digest_name(pkey, def_dgst, sizeof(def_dgst));\n    if (def_ret == 2 && strcmp(def_dgst, \"UNDEF\") == 0) {\n        /* For Ed25519/Ed448, this path sets dgst to NULL */\n        dgst = NULL;\n    } else if (dgst == NULL /* && lookup_conf(...) == NULL && strcmp(def_dgst, \"UNDEF\") != 0 */) {\n        /* Not taken in this reproducer */\n        ;\n    } else {\n        /* Not taken in this reproducer */\n        ;\n    }\n\n    /* apps/ca.c lines 862-871 equivalent: req set and verbose set */\n    int req = 1;\n    int verbose = 1;\n    if (req) {\n        if (verbose)\n            /* This call passes a NULL string to %s, triggering the crash */\n            BIO_printf(bio_err, \"message digest is %s\\n\", dgst);\n    }\n}\n\nint main(void) {\n    /* Set bio_err to a non-NULL dummy; our BIO_printf ignores it */\n    bio_err = (BIO*)0x1;\n\n    /* Trigger the vulnerable code path */\n    trigger_vulnerable_path();\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.0876622200012207,
+      "output": ""
+    }
+  }
+}

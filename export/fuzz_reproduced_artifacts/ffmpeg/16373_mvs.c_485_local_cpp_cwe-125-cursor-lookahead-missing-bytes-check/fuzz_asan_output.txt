@@ -1,0 +1,40 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1068492393
+INFO: Loaded 1 modules   (14 inline 8-bit counters): 14 [0x55625e598ec0, 0x55625e598ece), 
+INFO: Loaded 1 PC tables (14 PCs): 14 [0x55625e598ed0,0x55625e598fb0), 
+INFO:        1 files found in artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+#3	INITED cov: 8 ft: 9 corp: 1/64b exec/s: 0 rss: 30Mb
+#4	NEW    cov: 9 ft: 10 corp: 2/96b lim: 64 exec/s: 0 rss: 30Mb L: 32/64 MS: 1 EraseBytes-
+#10	REDUCE cov: 9 ft: 10 corp: 2/86b lim: 64 exec/s: 0 rss: 30Mb L: 22/64 MS: 1 EraseBytes-
+#28	NEW    cov: 10 ft: 11 corp: 3/150b lim: 64 exec/s: 0 rss: 30Mb L: 64/64 MS: 4 ChangeByte-ShuffleBytes-CopyPart-ChangeBit-
+#30	REDUCE cov: 10 ft: 11 corp: 3/143b lim: 64 exec/s: 0 rss: 30Mb L: 15/64 MS: 2 ChangeBit-EraseBytes-
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==117270==ERROR: AddressSanitizer: SEGV on unknown address 0x7ffed2216a44 (pc 0x7ec82f988b00 bp 0x7ffec6216a10 sp 0x7ffec62161d8 T0)
+==117270==The signal is caused by a READ memory access.
+    #0 0x7ec82f988b00 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:364
+    #1 0x55625e5196f5 in __asan_memcpy (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe06f5) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #2 0x55625e5576a4 in ff_hevc_luma_mv_merge_mode /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/mvs.c:122:19
+    #3 0x55625e557917 in entry_func /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/mvs.c:136:5
+    #4 0x55625e556fd1 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:114:5
+    #5 0x55625e47c80a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #6 0x55625e47bed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #7 0x55625e47d6a9 in fuzzer::Fuzzer::MutateAndTestOne() (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x446a9) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #8 0x55625e47e165 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x45165) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #9 0x55625e46b542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #10 0x55625e4969e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+    #11 0x7ec82f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #12 0x7ec82f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #13 0x55625e45f974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: c2287a62d07b08ac8f45be191d3298cfeac148f1)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:364 in __memcpy_avx_unaligned_erms
+==117270==ABORTING
+MS: 2 ChangeByte-ChangeBinInt-; base unit: cf47f40a43f63c2b7ea28fe23c0adbff9c3f2b16
+0x27,0x0,0x0,0x0,0x0,0x0,0x0,0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+'\000\000\000\000\000\000 \000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\001\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-ea24fead3dbe34aab9bbb20b9a866f0cd6993150
+Base64: JwAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAA==

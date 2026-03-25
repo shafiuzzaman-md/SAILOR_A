@@ -1,0 +1,48 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-tic54x.c",
+    "line": 257,
+    "function": "tic54x_lookup_howto",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "When dst->r_symndx == -1, the code adds HOWTO_BANK to the matched index i and sets internal->howto = tic54x_howto_table + i + bank without bounds checking. For relocation type R_RELLONG (\"STAB\"), the only entry is at index 12 and has no banked counterpart; adding HOWTO_BANK (e.g., 6) yields an index past the end of tic54x_howto_table, leading to an invalid howto pointer that will be dereferenced later. A crafted COFF file with r_symndx == -1 and r_type == R_RELLONG can trigger this.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-tic54x.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for BFD types used in the vulnerable code. */\ntypedef struct bfd bfd;\n\ntypedef struct reloc_howto_type {\n  unsigned int type;\n  const char *name;\n  /* Real BFD has many more fields; we only need one to dereference. */\n} reloc_howto_type;\n\ntypedef struct arelent {\n  reloc_howto_type *howto;\n} arelent;\n\nstruct internal_reloc {\n  int r_symndx;        /* -1 indicates a TI \"internal relocation\" (banked). */\n  unsigned int r_type; /* relocation type to match in howto table */\n};\n\n/* HOWTO_BANK value used when r_symndx == -1. In TIC54X this is 6. */\n#define HOWTO_BANK 6\n\n/* Create a minimal tic54x_howto_table with 13 entries (0..12). The only\n   entry of interest is at index 12. There is NO banked counterpart, so\n   adding HOWTO_BANK goes past the end of the table. */\nstatic reloc_howto_type tic54x_howto_table[13] = {\n  { 0,  \"HOWTO0\" },\n  { 1,  \"HOWTO1\" },\n  { 2,  \"HOWTO2\" },\n  { 3,  \"HOWTO3\" },\n  { 4,  \"HOWTO4\" },\n  { 5,  \"HOWTO5\" },\n  { 6,  \"HOWTO6\" },\n  { 7,  \"HOWTO7\" },\n  { 8,  \"HOWTO8\" },\n  { 9,  \"HOWTO9\" },\n  { 10, \"HOWTO10\" },\n  { 11, \"HOWTO11\" },\n  /* The problematic relocation lives here (e.g., R_RELLONG / STAB). */\n  { 12, \"HOWTO12_ONLY_UNBANKED\" }\n};\n\n/* Vulnerable function from bfd/coff-tic54x.c simplified to essentials. */\nstatic void tic54x_lookup_howto(bfd *abfd, arelent *internal, struct internal_reloc *dst) {\n  (void)abfd; /* unused */\n  unsigned i;\n  int bank = (dst->r_symndx == -1) ? HOWTO_BANK : 0;\n\n  for (i = 0; i < sizeof tic54x_howto_table / sizeof tic54x_howto_table[0]; i++) {\n    if (tic54x_howto_table[i].type == dst->r_type) {\n      /* BUG: no bounds check when adding bank, can point past end */\n      internal->howto = tic54x_howto_table + i + bank;\n      return;\n    }\n  }\n  internal->howto = NULL;\n}\n\nint main(void) {\n  /* Craft relocation that matches index 12 and forces banked selection. */\n  struct internal_reloc rel;\n  rel.r_symndx = -1; /* triggers banked selection (HOWTO_BANK added) */\n  rel.r_type   = 12; /* matches tic54x_howto_table[12] */\n\n  arelent genrel;\n  genrel.howto = NULL;\n\n  /* Call the vulnerable function: it will compute &table[12 + 6] = &table[18],\n     which is past the end of the 13-element array. */\n  tic54x_lookup_howto(NULL, &genrel, &rel);\n\n  if (!genrel.howto) {\n    fprintf(stderr, \"howto lookup failed unexpectedly\\n\");\n    return 1;\n  }\n\n  /* Dereference the invalid howto pointer to trigger ASan out-of-bounds read\n     on the global array redzone. */\n  volatile unsigned int t = genrel.howto->type; /* OOB read here */\n  printf(\"Read howto->type = %u (this line may not print if ASan aborts)\\n\", t);\n\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6032238006591797,
+      "output": "=================================================================\n==3609209==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5f2304847c80 at pc 0x5f2304810f3c bp 0x7fff14024d50 sp 0x7fff14024d48\nREAD of size 4 at 0x5f2304847c80 thread T0\n    #0 0x5f2304810f3b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83:43\n    #1 0x739a3ce2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #2 0x739a3ce2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #3 0x5f2304751304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer+0x21304) (BuildId: 01dbdb05f10e1ea1eedf24020113948d7ba1bcc0)\n\nAddress 0x5f2304847c80 is a wild pointer inside of access range of size 0x000000000004.\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83:43 in main\nShadow bytes around the buggy address:\n  0x0be4e0900f40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4e0900f50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4e0900f60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4e0900f70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4e0900f80: 00 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n=>0x0be4e0900f90:[f9]f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0be4e0900fa0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0be4e0900fb0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0be4e0900fc0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0be4e0900fd0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0be4e0900fe0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3609209==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83",
+      "crash_line": 43,
+      "frames": [
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83",
+          "43"
+        ],
+        [
+          "1",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "2",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

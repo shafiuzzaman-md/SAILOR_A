@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsgamma.c",
+        "original_line": 949,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "944: {\n945: \n946:     _cmsAssert(Curve != NULL);\n947: \n948:     if (Curve[0] != NULL) cmsFreeToneCurve(ContextID, Curve[0]);\n949:     if (Curve[1] != NULL) cmsFreeToneCurve(ContextID, Curve[1]);\n950:     if (Curve[2] != NULL) cmsFreeToneCurve(ContextID, Curve[2]);\n951: \n952:     Curve[0] = Curve[1] = Curve[2] = NULL;\n953: }\n954: "
+    },
+    "klee_crash": {
+        "harness_file": "cmsgamma.c",
+        "harness_line": 82,
+        "original_file": "cmsgamma.c",
+        "original_line": 949,
+        "original_code": "if (Curve[1] != NULL) cmsFreeToneCurve(ContextID, Curve[1]);",
+        "original_context": "    946:     _cmsAssert(Curve != NULL);\n    947: \n    948:     if (Curve[0] != NULL) cmsFreeToneCurve(ContextID, Curve[0]);\n>>> 949:     if (Curve[1] != NULL) cmsFreeToneCurve(ContextID, Curve[1]);\n    950:     if (Curve[2] != NULL) cmsFreeToneCurve(ContextID, Curve[2]);\n    951: \n    952:     Curve[0] = Curve[1] = Curve[2] = NULL;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cmsgamma.c\nLine: 82\nassembly.ll line: 244\nState: 1\nStack: \n\t#000000244 in cmsFreeToneCurveTriple(0, 139633349611520) at cmsgamma.c:82\n\t#100000274 in entry_wrapper(0, 139633349611520) at cmsgamma.c:91\n\t#200000307 in main() at driver.c:25\nInfo: \n\taddress: 139633349611528\n\tnext: object at 139336996868096 of size 4\n\t\tMO23[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "curve_arr0",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cmsFreeToneCurveTriple",
+        "crash_file": "thirdparty/lcms2/src/cmsgamma.c",
+        "crash_line": 949,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==12336==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x562c8691c9c1 bp 0x7ffe82df1810 sp 0x7ffe82df1800\nREAD of size 8 at 0x502000000018 thread T0\n    #0 0x562c8691c9c0 in cmsFreeToneCurveTriple thirdparty/lcms2/src/cmsgamma.c:949\n    #1 0x562c8691900c in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2367_cmsgamma.c_949_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:26\n    #2 0x7f935563cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f935563ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x562c86918ed4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2367_cmsgamma.c_949_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xaed4)\n\n0x502000000018 is located 0 bytes to the right of 8-byte region [0x502000000010,0x502000000018)\nallocated by thread T0 here:\n    #0 0x7f93559f3a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x562c86918fb3 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2367_cmsgamma.c_949_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:12\n    #2 0x7f935563cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmsgamma.c:949 in cmsFreeToneCurveTriple\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2367_cmsgamma.c_949_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsgamma.c",
+            "harness_line": 82,
+            "original_file": "cmsgamma.c",
+            "original_line": 949,
+            "error_type": "ptr",
+            "crash_function": "cmsFreeToneCurveTriple",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2367_cmsgamma.c_949_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cmsFreeToneCurveTriple",
+            "crash_file": "thirdparty/lcms2/src/cmsgamma.c",
+            "crash_line": 949
+        }
+    ]
+}

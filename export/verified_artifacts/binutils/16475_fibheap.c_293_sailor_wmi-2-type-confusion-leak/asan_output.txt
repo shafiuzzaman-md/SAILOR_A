@@ -1,0 +1,16 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3356840==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000009 (pc 0x55b9d351a40b bp 0x7fff4f8a2260 sp 0x7fff4f8a2230 T0)
+==3356840==The signal is caused by a READ memory access.
+==3356840==Hint: address points to the zero page.
+    #0 0x55b9d351a40b in fibheap_extr_min_node fibheap.c:298
+    #1 0x55b9d3519efa in fibheap_extract_min fibheap.c:188
+    #2 0x55b9d35195a8 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16475_fibheap.c_293_sailor_wmi-2-type-confusion-leak/reproducer.c:33
+    #3 0x7fa3df3efd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7fa3df3efe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x55b9d3519364 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16475_fibheap.c_293_sailor_wmi-2-type-confusion-leak/reproducer_bin+0x2364)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV fibheap.c:298 in fibheap_extr_min_node
+==3356840==ABORTING

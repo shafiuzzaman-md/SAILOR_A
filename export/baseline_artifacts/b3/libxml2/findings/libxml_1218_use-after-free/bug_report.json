@@ -1,0 +1,126 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 1218,
+    "function": "pythonAttributeDecl",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "PyList_SetItem steals a reference to newName, but the code then calls Py_DECREF(newName). This decrements the refcount twice, freeing the object while the list still holds it, leading to use-after-free when the list is used.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for use-after-free in pythonAttributeDecl\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdarg.h>\n\n// Minimal stand-ins for libxml2 types used by the vulnerable function\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlEnumeration {\n    const xmlChar *name;\n    struct _xmlEnumeration *next;\n} xmlEnumeration, *xmlEnumerationPtr;\n\n// Minimal stand-ins for CPython objects and API to model refcounting semantics\n\ntypedef enum {\n    OBJ_STRING = 1,\n    OBJ_LIST   = 2,\n    OBJ_HANDLER= 3\n} ObjType;\n\ntypedef struct _PyObject PyObject;\n\nstruct _PyObject {\n    int refcnt;\n    ObjType type;\n    union {\n        struct { char *s; } str;\n        struct { PyObject **items; int size; } list;\n        struct { int dummy; } handler;\n    } as;\n};\n\n// Forward declarations\nstatic void Py_DECREF(PyObject *o);\n\n// Helpers to simulate CPython API\nstatic PyObject *py_string_new(const char *s) {\n    PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n    if (!o) abort();\n    o->refcnt = 1;\n    o->type = OBJ_STRING;\n    o->as.str.s = strdup(s ? s : \"\");\n    return o;\n}\n\nstatic PyObject *PyList_New(int n) {\n    PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n    if (!o) abort();\n    o->refcnt = 1;\n    o->type = OBJ_LIST;\n    o->as.list.size = n;\n    o->as.list.items = (PyObject **)calloc((size_t)n, sizeof(PyObject *));\n    return o;\n}\n\n// PyList_SetItem steals a reference to 'item' (no INCREF)\nstatic void PyList_SetItem(PyObject *list, int index, PyObject *item) {\n    if (!list || list->type != OBJ_LIST) return;\n    if (index < 0 || index >= list->as.list.size) return;\n    list->as.list.items[index] = item; // Steals reference\n}\n\n// Minimal handler object\nstatic PyObject *new_handler(void) {\n    PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n    if (!o) abort();\n    o->refcnt = 1;\n    o->type = OBJ_HANDLER;\n    o->as.handler.dummy = 0;\n    return o;\n}\n\nstatic int PyObject_HasAttrString(PyObject *obj, const char *attr) {\n    if (!obj) return 0;\n    if (obj->type != OBJ_HANDLER) return 0;\n    return (strcmp(attr, \"attributeDecl\") == 0) ? 1 : 0;\n}\n\nstatic int PyErr_Occurred(void) { return 0; }\nstatic void PyErr_Print(void) { }\n\n// Very small stub that pretends to call a Python method; does not touch list items\nstatic PyObject *PyObject_CallMethod(PyObject *o, const char *name, const char *fmt, ...) {\n    (void)o; (void)name; (void)fmt;\n    // Just return a new dummy object to mirror a typical non-NULL return\n    PyObject *ret = (PyObject *)malloc(sizeof(PyObject));\n    if (!ret) abort();\n    ret->refcnt = 1;\n    ret->type = OBJ_HANDLER; // arbitrary\n    ret->as.handler.dummy = 42;\n    return ret;\n}\n\n#define PY_IMPORT_STRING(x) py_string_new((const char *)(x))\n#define Py_XDECREF(o) do { if ((o) != NULL) Py_DECREF((o)); } while (0)\n#define XML_IGNORE_DEPRECATION_WARNINGS\n#define XML_POP_WARNINGS\n\nstatic void Py_DECREF(PyObject *o) {\n    if (!o) return;\n    // This access will trigger UAF if 'o' points to freed memory\n    o->refcnt--;\n    if (o->refcnt == 0) {\n        switch (o->type) {\n            case OBJ_STRING:\n                free(o->as.str.s);\n                break;\n            case OBJ_LIST: {\n                // DECREF all items held by the list (will touch freed memory if items are dangling)\n                for (int i = 0; i < o->as.list.size; i++) {\n                    PyObject *it = o->as.list.items[i];\n                    if (it) {\n                        Py_DECREF(it); // Potential UAF here\n                    }\n                }\n                free(o->as.list.items);\n                break;\n            }\n            case OBJ_HANDLER:\n                // nothing\n                break;\n            default:\n                break;\n        }\n        free(o);\n    }\n}\n\n// Vulnerable function ported from python/libxml.c\nstatic void\npythonAttributeDecl(void *user_data,\n                    const xmlChar * elem,\n                    const xmlChar * name,\n                    int type,\n                    int def,\n                    const xmlChar * defaultValue, xmlEnumerationPtr tree)\n{\n    PyObject *handler;\n    PyObject *nameList;\n    PyObject *newName;\n    xmlEnumerationPtr node;\n    PyObject *result;\n    int count;\n\nXML_IGNORE_DEPRECATION_WARNINGS\n    handler = (PyObject *) user_data;\n    if (PyObject_HasAttrString(handler, \"attributeDecl\")) {\n        count = 0;\n        for (node = tree; node != NULL; node = node->next) {\n            count++;\n        }\n        nameList = PyList_New(count);\n        count = 0;\n        for (node = tree; node != NULL; node = node->next) {\n            newName = PY_IMPORT_STRING((char *) node->name);\n            PyList_SetItem(nameList, count, newName);\n            // BUG: PyList_SetItem steals reference; this extra DECREF frees newName prematurely\n            Py_DECREF(newName);\n            count++;\n        }\n        result = PyObject_CallMethod(handler, \"attributeDecl\",\n                                     \"ssiisO\", elem, name, type,\n                                     def, defaultValue, nameList);\n        if (PyErr_Occurred())\n            PyErr_Print();\n        Py_XDECREF(nameList);   // Will traverse list and DECREF freed items -> UAF\n        Py_XDECREF(result);\n    }\nXML_POP_WARNINGS\n}\n\nint main(void) {\n    // Build a small xmlEnumeration list with two names\n    xmlEnumeration *n1 = (xmlEnumeration *)malloc(sizeof(xmlEnumeration));\n    xmlEnumeration *n2 = (xmlEnumeration *)malloc(sizeof(xmlEnumeration));\n    if (!n1 || !n2) abort();\n    n1->name = (const xmlChar *)\"ONE\";\n    n1->next = n2;\n    n2->name = (const xmlChar *)\"TWO\";\n    n2->next = NULL;\n\n    // Create a handler object that advertises the attributeDecl method\n    PyObject *handler = new_handler();\n\n    // Call the vulnerable function. The UAF will occur when nameList is DECREF'd.\n    pythonAttributeDecl((void *)handler,\n                        (const xmlChar *)\"elem\",\n                        (const xmlChar *)\"attr\",\n                        0, 0,\n                        (const xmlChar *)NULL,\n                        n1);\n\n    // Cleanup remaining references\n    Py_XDECREF(handler);\n\n    // Free enumeration nodes (unrelated to the UAF)\n    free(n2);\n    free(n1);\n\n    // Prevent compiler from optimizing too aggressively\n    puts(\"Done. If running under ASan, a use-after-free should have been reported above.\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.757073163986206,
+      "output": "=================================================================\n==4004859==ERROR: AddressSanitizer: heap-use-after-free on address 0x6030000000a0 at pc 0x562a622191ac bp 0x7ffeedbe3cd0 sp 0x7ffeedbe3cc8\nREAD of size 4 at 0x6030000000a0 thread T0\n    #0 0x562a622191ab in Py_DECREF /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:107:14\n    #1 0x562a6221938c in Py_DECREF /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:118:25\n    #2 0x562a6221910e in pythonAttributeDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:171:9\n    #3 0x562a62218de7 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191:5\n    #4 0x73da0b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73da0b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x562a62159304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer+0x21304) (BuildId: c1d08031b73bcfadfc3a21f49b89d8f7ced097d6)\n\n0x6030000000a0 is located 0 bytes inside of 24-byte region [0x6030000000a0,0x6030000000b8)\nfreed by thread T0 here:\n    #0 0x562a621dca66 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer+0xa4a66) (BuildId: c1d08031b73bcfadfc3a21f49b89d8f7ced097d6)\n    #1 0x562a622193ed in Py_DECREF /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:130:9\n    #2 0x562a62219060 in pythonAttributeDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:163:13\n    #3 0x562a62218de7 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191:5\n    #4 0x73da0b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73da0b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x562a62159304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer+0x21304) (BuildId: c1d08031b73bcfadfc3a21f49b89d8f7ced097d6)\n\npreviously allocated by thread T0 here:\n    #0 0x562a621dcd12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer+0xa4d12) (BuildId: c1d08031b73bcfadfc3a21f49b89d8f7ced097d6)\n    #1 0x562a62219635 in py_string_new /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:43:31\n    #2 0x562a62219043 in pythonAttributeDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:160:23\n    #3 0x562a62218de7 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191:5\n    #4 0x73da0b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73da0b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x562a62159304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer+0x21304) (BuildId: c1d08031b73bcfadfc3a21f49b89d8f7ced097d6)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:107:14 in Py_DECREF\nShadow bytes around the buggy address:\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00\n=>0x0c067fff8010: 00 fa fa fa[fd]fd fd fa fa fa fd fd fd fa fa fa\n  0x0c067fff8020: 00 00 00 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right ",
+      "error_type": "heap-use-after-free",
+      "crash_function": "Py_DECREF",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:107",
+      "crash_line": 14,
+      "frames": [
+        [
+          "0",
+          "Py_DECREF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:107",
+          "14"
+        ],
+        [
+          "1",
+          "Py_DECREF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:118",
+          "25"
+        ],
+        [
+          "2",
+          "pythonAttributeDecl",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:171",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "Py_DECREF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:130",
+          "9"
+        ],
+        [
+          "2",
+          "pythonAttributeDecl",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:163",
+          "13"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "py_string_new",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:43",
+          "31"
+        ],
+        [
+          "2",
+          "pythonAttributeDecl",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:160",
+          "23"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1218_use-after-free/reproducer.c:191",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

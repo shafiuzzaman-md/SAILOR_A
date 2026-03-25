@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080415==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x70afcc58ac03 bp 0x7ffe1c47ce90 sp 0x7ffe1c47c648 T0)
+==4080415==The signal is caused by a READ memory access.
+==4080415==Hint: address points to the zero page.
+    #0 0x70afcc58ac03 in __strchr_avx2 string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67
+    #1 0x5856d8c292dc in strchr (/app/export/baseline_artifacts/b3/libxml2/verified/buf_1125_null-pointer-dereference/reproducer+0x3a2dc) (BuildId: 9865cf7d2c93110634b14bc318915eb61844a20c)
+    #2 0x5856d8cd002e in xmlStrchr /app/export/baseline_artifacts/b3/libxml2/verified/buf_1125_null-pointer-dereference/reproducer.c:21:23
+    #3 0x5856d8ccfe24 in xmlBufferWriteQuotedString /app/export/baseline_artifacts/b3/libxml2/verified/buf_1125_null-pointer-dereference/reproducer.c:43:9
+    #4 0x5856d8ccfd88 in main /app/export/baseline_artifacts/b3/libxml2/verified/buf_1125_null-pointer-dereference/reproducer.c:81:5
+    #5 0x70afcc42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x70afcc42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5856d8c10304 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/buf_1125_null-pointer-dereference/reproducer+0x21304) (BuildId: 9865cf7d2c93110634b14bc318915eb61844a20c)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67 in __strchr_avx2
+==4080415==ABORTING

@@ -1,0 +1,54 @@
+=================================================================
+==1315453==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x625000007100 at pc 0x55a2375936e4 bp 0x7ffe0e696c20 sp 0x7ffe0e6963e8
+READ of size 4096 at 0x625000007100 thread T0
+    #0 0x55a2375936e3 in __interceptor_memcpy (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0016/validate_reproducer_001/reproducer+0x426e3) (BuildId: 4b004386403a9e36edfc714c27f00e5ed4e457e4)
+    #1 0x55a23763e91e in memcpy /usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10
+    #2 0x55a23763e91e in memdbRead /app/dataset/0f08d958/sqlite_0f08d958_vul/src/memdb.c:266:3
+    #3 0x55a23764410d in readDbPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:3041:10
+    #4 0x55a237648a0e in getPageNormal.part.0 /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:5620:12
+    #5 0x55a2376a108e in getAndInitPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:2390:8
+    #6 0x55a2376a108e in getAndInitPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:2375:12
+    #7 0x55a2376a11ea in moveToChild /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:5457:8
+    #8 0x55a2376a129d in moveToLeftmost /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:5638:10
+    #9 0x55a2376e0ac9 in sqlite3VdbeExec /app/dataset/0f08d958/sqlite_0f08d958_vul/src/vdbe.c:6394:10
+    #10 0x55a23766d99e in sqlite3Step /app/dataset/0f08d958/sqlite_0f08d958_vul/src/vdbeapi.c:863:10
+    #11 0x55a23766d99e in sqlite3_step /app/dataset/0f08d958/sqlite_0f08d958_vul/src/vdbeapi.c:924:16
+    #12 0x55a23763783c in main /app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0016/validate_reproducer_001/reproducer.c:103:16
+    #13 0x7f8fb2f26d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #14 0x7f8fb2f26e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #15 0x55a237579494 in _start (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0016/validate_reproducer_001/reproducer+0x28494) (BuildId: 4b004386403a9e36edfc714c27f00e5ed4e457e4)
+
+Address 0x625000007100 is a wild pointer inside of access range of size 0x000000001000.
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0016/validate_reproducer_001/reproducer+0x426e3) (BuildId: 4b004386403a9e36edfc714c27f00e5ed4e457e4) in __interceptor_memcpy
+Shadow bytes around the buggy address:
+  0x0c4a7fff8dd0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8de0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8df0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e10: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c4a7fff8e20:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e60: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c4a7fff8e70: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==1315453==ABORTING

@@ -1,0 +1,100 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 8 (sink assert at 10)\nCrash: CRASH: ptr at lsp.c:8\nOriginal: lsp.c:163 \u2192 lp[0] = 4096;\nASan: not confirmed\n\nAll crashes (1):\n  ptr at lsp.c:8 \u2192 lsp.c:163\n"
+    ]
+  ],
+  "line_map": {
+    "lsp.c": {
+      "8": {
+        "orig_file": "lsp.c",
+        "orig_line": 163,
+        "code": "lp[0] = 4096;"
+      },
+      "11": {
+        "orig_file": "lsp.c",
+        "orig_line": 172,
+        "code": "}"
+      },
+      "17": {
+        "orig_file": "lsp.c",
+        "orig_line": 173,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "lsp.c",
+      "original_line": 163,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "158: \n159:     lsp2poly(f1, lsp  , lp_half_order);\n160:     lsp2poly(f2, lsp+1, lp_half_order);\n161: \n162:     /* 3.2.6 of G.729, Equations 25 and  26*/\n163:     lp[0] = 4096;\n164:     for(i=1; i<lp_half_order+1; i++)\n165:     {\n166:         int ff1 = f1[i] + f1[i-1]; // (3.22)\n167:         int ff2 = f2[i] - f2[i-1]; // (3.22)\n168: "
+    },
+    "klee_crash": {
+      "harness_file": "lsp.c",
+      "harness_line": 8,
+      "original_file": "lsp.c",
+      "original_line": 163,
+      "original_code": "lp[0] = 4096;",
+      "original_context": "    160:     lsp2poly(f2, lsp+1, lp_half_order);\n    161: \n    162:     /* 3.2.6 of G.729, Equations 25 and  26*/\n>>> 163:     lp[0] = 4096;\n    164:     for(i=1; i<lp_half_order+1; i++)\n    165:     {\n    166:         int ff1 = f1[i] + f1[i-1]; // (3.22)",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: lsp.c\nLine: 8\nassembly.ll line: 97\nState: 1\nStack: \n\t#000000097 in ff_acelp_lsp2lpc(139539734401024, 139522554531840, 1) at lsp.c:8\n\t#100000116 in entry_func(139539734401024, 139522554531840, 1) at lsp.c:15\n\t#200000069 in main() at driver.c:25\nInfo: \n\taddress: 139539734401024\n\tnext: object at 139240160432128 of size 4\n\t\tMO58[4] allocated at ff_acelp_lsp2lpc():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "lp_byte",
+        "size": 1,
+        "data": "b'\\x00'"
+      },
+      {
+        "name": "lsp_buf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7505_lsp.c_163_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "lsp.c",
+        "harness_line": 8,
+        "original_file": "lsp.c",
+        "original_line": 163,
+        "error_type": "ptr",
+        "crash_function": "ff_acelp_lsp2lpc",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7505_lsp.c_163_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/archive.c",
+    "line": 2130,
+    "function": "bfd_generic_stat_arch_elt",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Fixed-width, space-padded archive header fields (e.g., ar_date, ar_uid, ar_gid, ar_mode) are passed directly to strtol without a terminating NUL or a bounded length. The macro call buf->stelt = strtol(hdr->arelt, &aloser, size) can read past the end of the specific field into subsequent struct members until a non-digit is found. A crafted archive header filled with digits across adjacent fields can cause strtol to read beyond the field\u2019s bounds, resulting in an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/archive.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <sys/stat.h>\n#include <stdint.h>\n\n/* Minimal re-declarations to exercise the vulnerable code path. */\n\ntypedef size_t bfd_size_type;\n\n/* Classic Unix ar header layout. */\nstruct ar_hdr {\n  char ar_name[16];\n  char ar_date[12];\n  char ar_uid[6];\n  char ar_gid[6];\n  char ar_mode[8];\n  char ar_size[10];\n  char ar_fmag[2];\n};\n\nstruct areltdata {\n  char *arch_header;      /* Points to an ar_hdr blob. */\n  bfd_size_type parsed_size;\n};\n\ntypedef struct bfd {\n  struct areltdata *arelt_data;\n} bfd;\n\n/* Stub bfd error API used by the function (won't be hit in this reproducer). */\nenum bfd_error {\n  bfd_error_invalid_operation = 1\n};\nstatic void bfd_set_error(enum bfd_error e) { (void)e; }\n\n/* Helpers mirroring what libbfd uses. */\nstatic inline struct ar_hdr *arch_hdr(bfd *abfd) {\n  if (!abfd || !abfd->arelt_data) return NULL;\n  return (struct ar_hdr *) abfd->arelt_data->arch_header;\n}\n#define arch_eltdata(abfd) ((abfd)->arelt_data)\n\n/* Vulnerable function copied/trimmed to the essentials for the reproducer. */\nint bfd_generic_stat_arch_elt(bfd *abfd, struct stat *buf) {\n  struct ar_hdr *hdr;\n  char *aloser;\n\n  if (abfd->arelt_data == NULL) {\n    bfd_set_error(bfd_error_invalid_operation);\n    return -1;\n  }\n\n  hdr = arch_hdr(abfd);\n  if (hdr == NULL)\n    return -1;\n\n#define foo(arelt, stelt, size)                 \\\n  buf->stelt = strtol(hdr->arelt, &aloser, size); \\\n  if (aloser == hdr->arelt)                    \\\n    return -1;\n\n#define foo2(arelt, stelt, size) foo(arelt, stelt, size)\n\n  /* These calls parse fixed-width, space-padded fields without a NUL or length bound. */\n  foo (ar_date, st_mtime, 10);\n  foo2(ar_uid,  st_uid,   10);\n  foo2(ar_gid,  st_gid,   10);\n  foo (ar_mode, st_mode,   8);\n\n  buf->st_size = arch_eltdata(abfd)->parsed_size;\n  return 0;\n}\n\nint main(void) {\n  /* Allocate an ar_hdr object in its own heap chunk so ASan places a redzone\n     immediately after it. Fill the entire header with digit characters so\n     strtol keeps scanning across field boundaries and into the redzone. */\n  struct ar_hdr *hdr = (struct ar_hdr *)malloc(sizeof(struct ar_hdr));\n  if (!hdr) {\n    perror(\"malloc\");\n    return 1;\n  }\n  memset(hdr, '7', sizeof(*hdr)); /* All digits, no terminating NULs or spaces */\n\n  /* Build minimal bfd/areltdata to point to our crafted header. */\n  struct areltdata *ared = (struct areltdata *)malloc(sizeof(struct areltdata));\n  if (!ared) {\n    perror(\"malloc\");\n    return 1;\n  }\n  ared->arch_header = (char *)hdr;\n  ared->parsed_size = 123; /* arbitrary */\n\n  bfd abfd; memset(&abfd, 0, sizeof(abfd));\n  abfd.arelt_data = ared;\n\n  struct stat st; memset(&st, 0, sizeof(st));\n\n  /* This call should trigger an out-of-bounds read inside strtol during the\n     first foo(ar_date, ...) expansion because it will continue scanning past\n     the end of ar_date, through subsequent fields, and beyond the struct end\n     into the ASan redzone. */\n  (void)bfd_generic_stat_arch_elt(&abfd, &st);\n\n  /* If the bug does not trigger (unexpected), clean up. */\n  free(ared);\n  free(hdr);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.11815857887268066,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 223
+State: 1
+Stack: 
+	#000000223 in memcpy(139315844669440, 139178405715968, 320) at runtime/Freestanding/memcpy.c:17
+	#100000064 in avcodec_parameters_to_context(139040966762496, 139023786893312) at codec_par.c:42
+	#200000156 in entry_func(139040966762496, 139023786893312) at codec_par.c:51
+	#300000192 in main() at driver.c:22
+Info: 
+	address: 139178405716032
+	next: object at 138673747058688 of size 4
+		MO54[4] allocated at avcodec_parameters_to_context():  %3 = alloca i32, align 4

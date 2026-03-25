@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "node_record.c",
+        "original_line": 287,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "282: \ttmp_key->mask = malloc(node->mask_sz);\n283: \n284: \tif (!tmp_key->addr || !tmp_key->mask)\n285: \t\tgoto omem;\n286: \n287: \tmemcpy(tmp_key->addr, node->addr, node->addr_sz);\n288: \tmemcpy(tmp_key->mask, node->mask, node->mask_sz);\n289: \ttmp_key->addr_sz = node->addr_sz;\n290: \ttmp_key->mask_sz = node->mask_sz;\n291: \ttmp_key->proto = node->proto;\n292: "
+    },
+    "klee_crash": {
+        "harness_file": "node_record.c",
+        "harness_line": 59,
+        "original_file": "node_record.c",
+        "original_line": 287,
+        "original_code": "memcpy(tmp_key->addr, node->addr, node->addr_sz);",
+        "original_context": "    284: \tif (!tmp_key->addr || !tmp_key->mask)\n    285: \t\tgoto omem;\n    286: \n>>> 287: \tmemcpy(tmp_key->addr, node->addr, node->addr_sz);\n    288: \tmemcpy(tmp_key->mask, node->mask, node->mask_sz);\n    289: \ttmp_key->addr_sz = node->addr_sz;\n    290: \ttmp_key->mask_sz = node->mask_sz;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 254\nState: 1\nStack: \n\t#000000254 in memcpy(138976848138240, 138736329969664, 64) at runtime/Freestanding/memcpy.c:17\n\t#100000176 in sepol_node_key_extract(138753509838848, 138959668269056, 138461988933632) at node_record.c:59\n\t#200000228 in harness_entry(138753509838848, 138959668269056) at node_record.c:79\n\t#300000063 in main() at driver.c:56\nInfo: \n\taddress: 138736329969672\n\tnext: object at"
+    },
+    "concrete_inputs": [
+        {
+            "name": "addr_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "__interceptor_memcpy",
+        "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+        "crash_line": 827,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1646==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000038 at pc 0x7f90a3709397 bp 0x7ffe74b1a750 sp 0x7ffe74b19ef8\nREAD of size 64 at 0x502000000038 thread T0\n    #0 0x7f90a3709396 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827\n    #1 0x5634491f367d in sepol_node_key_extract /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:287\n    #2 0x5634491f16fe in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/049_node_record.c_287_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:56\n    #3 0x7f90a33ccd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f90a33cce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5634491f1484 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/049_node_record.c_287_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x3484)\n\n0x502000000038 is located 0 bytes to the right of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7f90a3783887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5634491f158e in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/049_node_record.c_287_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:37\n    #2 0x7f90a33ccd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 0"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/049_node_record.c_287_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "node_record.c",
+            "harness_line": 59,
+            "original_file": "node_record.c",
+            "original_line": 287,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/049_node_record.c_287_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "__interceptor_memcpy",
+            "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+            "crash_line": 827
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: avfft.c
+Line: 38
+assembly.ll line: 98
+State: 1
+Stack: 
+	#000000098 in av_rdft_calc(138976784486400, 138753446187008) at avfft.c:38
+	#100000164 in entry_func(138976784486400, 138753446187008) at avfft.c:52
+	#200000236 in main() at driver.c:41

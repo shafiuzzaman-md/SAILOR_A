@@ -1,0 +1,103 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 98022,
+    "tokens_prompt": 86143,
+    "tokens_completion": 11879,
+    "turns": 10,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "ivi_dsp.c",
+    "line": 361,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/8205_ivi_dsp.c_361_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "ivi_dsp.c",
+  "vul_line": "361",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ivi_dsp.c",
+      "original_line": 361,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "356: \n357:     /* apply the InvHaar8 to all columns */\n358: #define COMPENSATE(x) (x)\n359:     for (i = 0; i < 8; i++) {\n360:         if (flags[i]) {\n361:             INV_HAAR8(in[ 0], in[ 8], in[16], in[24],\n362:                       in[32], in[40], in[48], in[56],\n363:                       out[0 * pitch], out[1 * pitch],\n364:                       out[2 * pitch], out[3 * pitch],\n365:                       out[4 * pitch], out[5 * pitch],\n366:                       out[6 * pitch], out[7 * pitch],"
+    },
+    "klee_crash": {
+      "harness_file": "ivi_dsp.c",
+      "harness_line": 33,
+      "original_file": "ivi_dsp.c",
+      "original_line": 361,
+      "original_code": "INV_HAAR8(in[ 0], in[ 8], in[16], in[24],",
+      "original_context": "    358: #define COMPENSATE(x) (x)\n    359:     for (i = 0; i < 8; i++) {\n    360:         if (flags[i]) {\n>>> 361:             INV_HAAR8(in[ 0], in[ 8], in[16], in[24],\n    362:                       in[32], in[40], in[48], in[56],\n    363:                       out[0 * pitch], out[1 * pitch],\n    364:                       out[2 * pitch], out[3 * pitch],",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: ivi_dsp.c\nLine: 33\nassembly.ll line: 145\nState: 1\nStack: \n\t#000000145 in ff_ivi_inverse_haar_8x8(139732228927488, 139800948404224, 1, 139241528913920) at ivi_dsp.c:33\n\t#100000294 in ivi_entry(139732228927488, 139800948404224, 1, 139241528913920) at ivi_dsp.c:55\n\t#200000057 in main() at driver.c:28\nInfo: \n\taddress: 139732228927552\n\tnext: object at 139225959657472 of size 4\n\t\tMO70[4] allocated at ff_ivi_inverse_haar_8x8():  %15 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "inbuf",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "outbuf",
+        "size": 128,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "flags",
+        "size": 8,
+        "data": "b'\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8205_ivi_dsp.c_361_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ivi_dsp.c",
+        "harness_line": 33,
+        "original_file": "ivi_dsp.c",
+        "original_line": 361,
+        "error_type": "ptr",
+        "crash_function": "ff_ivi_inverse_haar_8x8",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8205_ivi_dsp.c_361_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

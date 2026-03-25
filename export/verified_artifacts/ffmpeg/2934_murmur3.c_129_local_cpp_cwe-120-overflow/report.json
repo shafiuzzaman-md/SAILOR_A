@@ -1,0 +1,152 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 24 (sink assert at 27)\nCrash: CRASH: ptr at murmur3.c:24\nOriginal: murmur3.c:129 \u2192 memcpy(c->state, src, len);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at murmur3.c:24 \u2192 murmur3.c:129\n"
+    ]
+  ],
+  "line_map": {
+    "murmur3.c": {
+      "1": {
+        "orig_file": "murmur3.c",
+        "orig_line": 22,
+        "code": "#include <stdint.h>"
+      },
+      "2": {
+        "orig_file": "murmur3.c",
+        "orig_line": 21,
+        "code": "#include <stddef.h>"
+      },
+      "3": {
+        "orig_file": "murmur3.c",
+        "orig_line": 23,
+        "code": "#include <string.h>"
+      },
+      "10": {
+        "orig_file": "murmur3.c",
+        "orig_line": 28,
+        "code": "typedef struct AVMurMur3 {"
+      },
+      "14": {
+        "orig_file": "murmur3.c",
+        "orig_line": 31,
+        "code": "int      state_pos;",
+        "match_type": "fuzzy"
+      },
+      "16": {
+        "orig_file": "murmur3.c",
+        "orig_line": 33,
+        "code": "} AVMurMur3;"
+      },
+      "21": {
+        "orig_file": "murmur3.c",
+        "orig_line": 127,
+        "code": "len &= 15;"
+      },
+      "22": {
+        "orig_file": "murmur3.c",
+        "orig_line": 128,
+        "code": "if (len > 0) {"
+      },
+      "24": {
+        "orig_file": "murmur3.c",
+        "orig_line": 129,
+        "code": "memcpy(c->state, src, len);"
+      },
+      "25": {
+        "orig_file": "murmur3.c",
+        "orig_line": 130,
+        "code": "c->state_pos = (int)len;",
+        "match_type": "fuzzy"
+      },
+      "28": {
+        "orig_file": "murmur3.c",
+        "orig_line": 131,
+        "code": "}"
+      },
+      "29": {
+        "orig_file": "murmur3.c",
+        "orig_line": 132,
+        "code": "}"
+      },
+      "35": {
+        "orig_file": "murmur3.c",
+        "orig_line": 132,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "murmur3.c",
+      "original_line": 129,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "124:     c->h1 = h1;\n125:     c->h2 = h2;\n126: \n127:     len &= 15;\n128:     if (len > 0) {\n129:         memcpy(c->state, src, len);\n130:         c->state_pos = len;\n131:     }\n132: }\n133: \n134: static inline uint64_t fmix(uint64_t k)"
+    },
+    "klee_crash": {
+      "harness_file": "murmur3.c",
+      "harness_line": 24,
+      "original_file": "murmur3.c",
+      "original_line": 129,
+      "original_code": "memcpy(c->state, src, len);",
+      "original_context": "    126: \n    127:     len &= 15;\n    128:     if (len > 0) {\n>>> 129:         memcpy(c->state, src, len);\n    130:         c->state_pos = len;\n    131:     }\n    132: }",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 151\nState: 1\nStack: \n\t#000000151 in memcpy(139009717383184, 138803558952960, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000095 in av_murmur3_update(139009717383168, 138803558952960, symbolic) at murmur3.c:24\n\t#200000125 in entry_func(139009717383168, 138803558952960, symbolic) at murmur3.c:33\n\t#300000054 in main() at driver.c:26\nInfo: \n\taddress: 138803558952964\n\tnext: object at 138507"
+    },
+    "concrete_inputs": [
+      {
+        "name": "src_bytes",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "len",
+        "size": 8,
+        "data": "b'\\x08\\x08\\x08\\x08\\x08\\x08\\x08\\x08'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2934_murmur3.c_129_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "murmur3.c",
+        "harness_line": 24,
+        "original_file": "murmur3.c",
+        "original_line": 129,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2934_murmur3.c_129_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

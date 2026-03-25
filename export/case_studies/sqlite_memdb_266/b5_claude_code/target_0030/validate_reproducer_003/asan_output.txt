@@ -1,0 +1,45 @@
+=================================================================
+==1315542==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x616000000e88 at pc 0x5639f4f496e4 bp 0x7ffc95c1d970 sp 0x7ffc95c1d138
+READ of size 4096 at 0x616000000e88 thread T0
+    #0 0x5639f4f496e3 in __interceptor_memcpy (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_003/reproducer+0x426e3) (BuildId: 86d3fd5d3022b12187c41ba10ea6c72291441b54)
+    #1 0x5639f4ff4aae in memcpy /usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10
+    #2 0x5639f4ff4aae in memdbRead /app/dataset/0f08d958/sqlite_0f08d958_vul/src/memdb.c:266:3
+    #3 0x5639f4ffa29d in readDbPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:3041:10
+    #4 0x5639f4ffeb9e in getPageNormal.part.0 /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:5620:12
+    #5 0x5639f5056750 in btreeGetPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:2339:8
+    #6 0x5639f5056a32 in lockBtree /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:3288:8
+    #7 0x5639f5056a32 in btreeBeginTrans /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:3707:47
+    #8 0x5639f500744c in sqlite3InitOne /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:262:10
+    #9 0x5639f500766b in sqlite3Init /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:449:10
+    #10 0x5639f50076ae in sqlite3ReadSchema /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:475:10
+    #11 0x5639f5063bec in sqlite3LocateTable /app/dataset/0f08d958/sqlite_0f08d958_vul/src/build.c:420:18
+    #12 0x5639f506c131 in sqlite3SrcListLookup /app/dataset/0f08d958/sqlite_0f08d958_vul/src/delete.c:35:10
+    #13 0x5639f501c72f in sqlite3Update /app/dataset/0f08d958/sqlite_0f08d958_vul/src/update.c:362:10
+    #14 0x5639f508eb98 in yy_reduce /app/dataset/0f08d958/sqlite_0f08d958_vul/parse.y:1056:3
+    #15 0x5639f508eb98 in sqlite3Parser /app/dataset/0f08d958/sqlite_0f08d958_vul/parse.c:6187:15
+    #16 0x5639f50198c3 in sqlite3RunParser /app/dataset/0f08d958/sqlite_0f08d958_vul/src/tokenize.c:713:5
+    #17 0x5639f5006a88 in sqlite3Prepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:786:5
+    #18 0x5639f500776d in sqlite3LockAndPrepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:861:10
+    #19 0x5639f500776d in sqlite3LockAndPrepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:836:12
+    #20 0x5639f5007bd9 in sqlite3_prepare_v2 /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:950:8
+    #21 0x5639f4fedc42 in sqlite3_exec /app/dataset/0f08d958/sqlite_0f08d958_vul/src/legacy.c:53:10
+    #22 0x5639f4fed873 in main /app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_003/reproducer.c:121:10
+    #23 0x7f8131eb5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #24 0x7f8131eb5e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #25 0x5639f4f2f494 in _start (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_003/reproducer+0x28494) (BuildId: 86d3fd5d3022b12187c41ba10ea6c72291441b54)
+
+0x616000000e88 is located 0 bytes to the right of 520-byte region [0x616000000c80,0x616000000e88)
+allocated by thread T0 here:
+    #0 0x5639f4fb22de in __interceptor_malloc (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_003/reproducer+0xab2de) (BuildId: 86d3fd5d3022b12187c41ba10ea6c72291441b54)
+    #1 0x5639f4ff4377 in sqlite3MemMalloc /app/dataset/0f08d958/sqlite_0f08d958_vul/src/mem1.c:142:7
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_003/reproducer+0x426e3) (BuildId: 86d3fd5d3022b12187c41ba10ea6c72291441b54) in __interceptor_memcpy
+Shadow bytes around the buggy address:
+  0x0c2c7fff8180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2c7fff8190: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2c7fff81a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2c7fff81b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2c7fff81c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c2c7fff81d0: 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2c7fff81e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2c7fff81f0: fa fa fa fa f

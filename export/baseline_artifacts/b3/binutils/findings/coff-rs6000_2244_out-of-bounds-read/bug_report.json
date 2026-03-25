@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-rs6000.c",
+    "line": 2244,
+    "function": "xcoff_write_armap_big",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the 64-bit offsets loop, the inner while (map[i].abfd == iterator.current.member) does not check i < orl_count. If i reaches orl_count, the condition evaluates map[orl_count], resulting in an out-of-bounds array read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-rs6000.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdbool.h>\n\n/* Minimal stand-ins for BFD types and utilities used by xcoff_write_armap_big */\n\ntypedef unsigned long long bfd_vma;\n\ntypedef struct bfd {\n  struct bfd *archive_head;\n  struct bfd *archive_next;\n} bfd;\n\ntypedef struct {\n  int bits_per_address;\n} bfd_arch_info_type;\n\nstruct xcoff_ar_hdr_big {\n  char size[20];\n  char nextoff[20];\n  char prevoff[20];\n  char date[12];\n  char uid[12];\n  char gid[12];\n  char mode[12];\n  char namlen[4];\n};\n\n#define SIZEOF_AR_HDR_BIG (sizeof(struct xcoff_ar_hdr_big))\n#define SXCOFFARFMAG 20\nstatic const char XCOFFARFMAG[SXCOFFARFMAG] = {\n  'A','R','M','A','P','_','B','I','G',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' '\n};\n\n/* PRINT macros: zero-out corresponding header fields (content not relevant for bug) */\n#define PRINT20(field, val) do { (void)(val); memset((field), 0, sizeof(field)); } while (0)\n#define PRINT12(field, val) do { (void)(val); memset((field), 0, sizeof(field)); } while (0)\n#define PRINT4(field, val)  do { (void)(val); memset((field), 0, sizeof(field)); } while (0)\n\nstatic void *bfd_zmalloc(size_t n) { return calloc(1, n); }\nstatic void bfd_h_put_64(bfd *abfd, uint64_t val, void *dst) { (void)abfd; memcpy(dst, &val, 8); }\nstatic bfd_vma bfd_write(const void *buf, bfd_vma size, bfd *abfd) { (void)buf; (void)abfd; return size; }\n\n/* Map entry as used in the source snippet */\nstruct orl_entry {\n  bfd *abfd;\n  const char **name; /* not used in the first loop */\n};\n\n/* Archive iterator stubs */\nstruct archive_iterator {\n  struct { bfd *member; uint64_t offset; } current;\n  size_t idx;\n};\n\nstatic bfd *g_iter_member = NULL; /* The single iterator member we return */\n\nstatic void archive_iterator_begin(struct archive_iterator *it, bfd *abfd) {\n  (void)abfd;\n  it->idx = 0;\n}\n\nstatic bool archive_iterator_next(struct archive_iterator *it) {\n  if (it->idx == 0) {\n    it->current.member = g_iter_member;\n    it->current.offset = 0xDEADBEEFCAFEBABEULL;\n    it->idx = 1;\n    return true;\n  }\n  return false;\n}\n\n/* Architecture info stub: choose 32-bit to avoid unrelated buffer writes */\nstatic bfd_arch_info_type g_arch32 = { 32 };\nstatic bfd_arch_info_type *bfd_get_arch_info(bfd *member) { (void)member; return &g_arch32; }\n\n/* Reimplementation of the vulnerable portion of xcoff_write_armap_big */\nstatic bool xcoff_write_armap_big(bfd *abfd,\n                                  struct orl_entry *map,\n                                  size_t orl_count,\n                                  uint64_t prevoff,\n                                  uint64_t sym_64,\n                                  size_t str_64)\n{\n  struct xcoff_ar_hdr_big *hdr;\n  char *symbol_table;\n  char *st;\n  size_t i;\n  struct archive_iterator iterator;\n  bfd_arch_info_type *arch_info;\n\n  bfd_vma symbol_table_size =\n      SIZEOF_AR_HDR_BIG + SXCOFFARFMAG + 8 + 8 * sym_64 + str_64 + (str_64 & 1);\n\n  symbol_table = (char *) bfd_zmalloc(symbol_table_size);\n  if (symbol_table == NULL)\n    return false;\n\n  hdr = (struct xcoff_ar_hdr_big *) symbol_table;\n\n  PRINT20(hdr->size, 8 + 8 * sym_64 + str_64 + (str_64 & 1));\n  PRINT20(hdr->nextoff, 0);\n  PRINT20(hdr->prevoff, prevoff);\n  PRINT12(hdr->date, 0);\n  PRINT12(hdr->uid, 0);\n  PRINT12(hdr->gid, 0);\n  PRINT12(hdr->mode, 0);\n  PRINT4(hdr->namlen, 0);\n\n  st = symbol_table + SIZEOF_AR_HDR_BIG;\n  memcpy(st, XCOFFARFMAG, SXCOFFARFMAG);\n  st += SXCOFFARFMAG;\n\n  /* Number of 64-bit entries */\n  bfd_h_put_64(abfd, sym_64, st);\n  st += 8;\n\n  /* Vulnerable loop over the 64-bit offsets */\n  i = 0;\n  archive_iterator_begin(&iterator, abfd);\n  while (i < orl_count && archive_iterator_next(&iterator)) {\n    arch_info = bfd_get_arch_info(iterator.current.member);\n    /* BUG: Missing i < orl_count check in this inner while condition */\n    while (map[i].abfd == iterator.current.member) {\n      if (arch_info->bits_per_address == 64) {\n        bfd_h_put_64(abfd, iterator.current.offset, st);\n        st += 8;\n      }\n      i++;\n    }\n  }\n\n  if (bfd_write(symbol_table, symbol_table_size, abfd) != symbol_table_size) {\n    free(symbol_table);\n    return false;\n  }\n  free(symbol_table);\n  return true;\n}\n\nint main(void) {\n  /* Prepare minimal inputs to force the OOB read in the inner while. */\n  bfd archive = {0};\n\n  /* orl_count = 1 so that after i++ the check reads map[1] (out of bounds). */\n  size_t orl_count = 1;\n  struct orl_entry *map = (struct orl_entry *) malloc(orl_count * sizeof(*map));\n  if (!map) return 1;\n\n  /* Single member used both in map[0] and by the iterator to match and increment i to orl_count. */\n  bfd *member0 = (bfd *) malloc(sizeof(bfd));\n  if (!member0) return 1;\n  memset(member0, 0, sizeof(bfd));\n\n  const char *name0 = \"sym0\";\n  map[0].abfd = member0;\n  map[0].name = &name0;\n\n  /* Iterator returns exactly this same member, causing i to reach orl_count. */\n  g_iter_member = member0;\n\n  /* Parameters not affecting the bug path. */\n  uint64_t prevoff = 0;\n  uint64_t sym_64 = 0; /* keep 0 to avoid unrelated writes */\n  size_t str_64 = 0;\n\n  /* Trigger: the second evaluation of while(map[i].abfd == ...) reads past map[orl_count-1]. */\n  (void)xcoff_write_armap_big(&archive, map, orl_count, prevoff, sym_64, str_64);\n\n  free(member0);\n  free(map);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6696465015411377,
+      "output": "=================================================================\n==3599832==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000020 at pc 0x5dd4d53ab34a bp 0x7ffe688e11d0 sp 0x7ffe688e11c8\nREAD of size 8 at 0x602000000020 thread T0\n    #0 0x5dd4d53ab349 in xcoff_write_armap_big /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:126:19\n    #1 0x5dd4d53aaf09 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:170:9\n    #2 0x797a5c22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x797a5c22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5dd4d52eb304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer+0x21304) (BuildId: 7e3d3c403dcd536345acbfcfa28cd03d9ea0ab53)\n\n0x602000000020 is located 0 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x5dd4d536ed12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 7e3d3c403dcd536345acbfcfa28cd03d9ea0ab53)\n    #1 0x5dd4d53aada4 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:149:48\n    #2 0x797a5c22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x797a5c22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5dd4d52eb304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer+0x21304) (BuildId: 7e3d3c403dcd536345acbfcfa28cd03d9ea0ab53)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:126:19 in xcoff_write_armap_big\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00[fa]fa 00 00 fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3599832==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "xcoff_write_armap_big",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:126",
+      "crash_line": 19,
+      "frames": [
+        [
+          "0",
+          "xcoff_write_armap_big",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:126",
+          "19"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:170",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2244_out-of-bounds-read/reproducer.c:149",
+          "48"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

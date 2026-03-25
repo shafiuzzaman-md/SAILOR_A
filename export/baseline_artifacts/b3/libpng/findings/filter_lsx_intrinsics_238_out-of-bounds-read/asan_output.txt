@@ -1,0 +1,51 @@
+=================================================================
+==3731584==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000030 at pc 0x5cf98b297fcb bp 0x7fffb3039e10 sp 0x7fffb3039e08
+READ of size 4 at 0x602000000030 thread T0
+    #0 0x5cf98b297fca in __lsx_vldrepl_w /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20:18
+    #1 0x5cf98b29514a in png_read_filter_row_avg3_lsx /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:92:13
+    #2 0x5cf98b299de7 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:153:5
+    #3 0x7c6ad942a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7c6ad942a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5cf98b1d5304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0x20304) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)
+
+0x602000000033 is located 0 bytes to the right of 3-byte region [0x602000000030,0x602000000033)
+allocated by thread T0 here:
+    #0 0x5cf98b258d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0xa3d12) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)
+    #1 0x5cf98b299da1 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:148:34
+    #2 0x7c6ad942a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7c6ad942a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5cf98b1d5304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0x20304) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20:18 in __lsx_vldrepl_w
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 04 fa fa fa[03]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3731584==ABORTING

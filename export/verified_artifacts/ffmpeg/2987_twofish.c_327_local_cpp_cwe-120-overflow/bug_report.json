@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "twofish.c",
+    "original_line": 327,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "322:         } else {\n323:             if (iv) {\n324:                 for (i = 0; i < 16; i++)\n325:                     dst[i] = src[i] ^ iv[i];\n326:                 twofish_encrypt(cs, dst, dst);\n327:                 memcpy(iv, dst, 16);\n328:             } else {\n329:                 twofish_encrypt(cs, dst, src);\n330:             }\n331:         }\n332:         src = src + 16;"
+  },
+  "klee_crash": {
+    "harness_file": "twofish.c",
+    "harness_line": 27,
+    "original_file": "twofish.c",
+    "original_line": 322,
+    "original_code": "} else {",
+    "original_context": "    319:     while (count--) {\n    320:         if (decrypt) {\n    321:             twofish_decrypt(cs, dst, src, iv);\n>>> 322:         } else {\n    323:             if (iv) {\n    324:                 for (i = 0; i < 16; i++)\n    325:                     dst[i] = src[i] ^ iv[i];",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 180\nState: 1\nStack: \n\t#000000180 in memcpy(138699419996160, 138768139472896, 16) at runtime/Freestanding/memcpy.c:17\n\t#100000108 in av_twofish_crypt(139352255021056, 138768139472896, 138750959603712, 1, 138699419996160, 0) at twofish.c:27\n\t#200000151 in entry_func(139352255021056, 138768139472896, 138750959603712, 1, 138699419996160, 0) at twofish.c:39\n\t#300000056 in main() at driver.c:33\nInf"
+  },
+  "concrete_inputs": [
+    {
+      "name": "dst_bytes",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "src_bytes",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "iv_bytes",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2987_twofish.c_327_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "twofish.c",
+      "harness_line": 27,
+      "original_file": "twofish.c",
+      "original_line": 322,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2987_twofish.c_327_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

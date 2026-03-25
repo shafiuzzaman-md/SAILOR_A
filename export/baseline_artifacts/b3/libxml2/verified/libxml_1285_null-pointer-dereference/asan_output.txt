@@ -1,0 +1,18 @@
+About to trigger pythonInternalSubset with NULL ExternalID...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080437==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7aa5a6d8b7dd bp 0x7ffe08bb96f0 sp 0x7ffe08bb8ea8 T0)
+==4080437==The signal is caused by a READ memory access.
+==4080437==Hint: address points to the zero page.
+    #0 0x7aa5a6d8b7dd in __strlen_avx2 string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76
+    #1 0x5ec6fc1fd76c in strlen (/app/export/baseline_artifacts/b3/libxml2/verified/libxml_1285_null-pointer-dereference/reproducer+0x3776c) (BuildId: 46b96f5fb99cf29c0639c5af29015c4b18cacdcc)
+    #2 0x5ec6fc2a719b in PyObject_CallMethod /app/export/baseline_artifacts/b3/libxml2/verified/libxml_1285_null-pointer-dereference/reproducer.c:49:30
+    #3 0x5ec6fc2a785d in pythonInternalSubset /app/export/baseline_artifacts/b3/libxml2/verified/libxml_1285_null-pointer-dereference/reproducer.c:87:18
+    #4 0x5ec6fc2a775e in main /app/export/baseline_artifacts/b3/libxml2/verified/libxml_1285_null-pointer-dereference/reproducer.c:109:5
+    #5 0x7aa5a6c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7aa5a6c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5ec6fc1e7304 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/libxml_1285_null-pointer-dereference/reproducer+0x21304) (BuildId: 46b96f5fb99cf29c0639c5af29015c4b18cacdcc)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76 in __strlen_avx2
+==4080437==ABORTING

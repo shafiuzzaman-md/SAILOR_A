@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: ivi_dsp.c
+Line: 17
+assembly.ll line: 137
+State: 1
+Stack: 
+	#000000137 in ff_ivi_row_haar4(139645538267136, 139576818790400, 4, 139559638921216) at ivi_dsp.c:17
+	#100000162 in ivi_entry(139645538267136, 139576818790400, 4, 139559638921216) at ivi_dsp.c:22
+	#200000073 in main() at driver.c:31

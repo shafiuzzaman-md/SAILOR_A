@@ -1,0 +1,55 @@
+Processing test line 1234 =================================================================
+==4019761==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000048 at pc 0x5f118ea52c11 bp 0x7ffe47622c20 sp 0x7ffe47622c18
+READ of size 1 at 0x603000000048 thread T0
+    #0 0x5f118ea52c10 in my_strlen_asan /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58:12
+    #1 0x5f118ea52968 in test_log /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:80:30
+    #2 0x5f118ea51dc9 in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:127:9
+    #3 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12
+    #4 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)
+
+0x603000000048 is located 8 bytes inside of 18-byte region [0x603000000040,0x603000000052)
+freed by thread T0 here:
+    #0 0x5f118ea15a76 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0xa4a76) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)
+    #1 0x5f118ea51efa in xmlFree /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:29:5
+    #2 0x5f118ea51d66 in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:114:23
+    #3 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12
+    #4 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)
+
+previously allocated by thread T0 here:
+    #0 0x5f118ea15d22 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0xa4d22) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)
+    #1 0x5f118ea51f30 in xmlMalloc /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:18:29
+    #2 0x5f118ea51e3d in xmlStrdup /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:39:28
+    #3 0x5f118ea51ceb in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:101:21
+    #4 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12
+    #5 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58:12 in my_strlen_asan
+Shadow bytes around the buggy address:
+  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c067fff8000: fa fa 00 00 00 fa fa fa fd[fd]fd fa fa fa 00 00
+  0x0c067fff8010: 00 fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:    

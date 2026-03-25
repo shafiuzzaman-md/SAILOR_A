@@ -1,0 +1,200 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 14 (sink assert at 15)\nCrash: CRASH: ptr at acelp_filters.c:14\nOriginal: acelp_filters.c:130 \u2192 tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];\nASan: not confirmed\n\nAll crashes (1):\n  ptr at acelp_filters.c:14 \u2192 acelp_filters.c:130\n"
+    ]
+  ],
+  "line_map": {
+    "acelp_filters.c": {
+      "2": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 23,
+        "code": "#include <stddef.h>"
+      },
+      "5": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 121,
+        "code": "void ff_acelp_apply_order_2_transfer_function(float *out, const float *in,"
+      },
+      "6": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 122,
+        "code": "const float zero_coeffs[2],"
+      },
+      "7": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 123,
+        "code": "const float pole_coeffs[2],"
+      },
+      "8": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 124,
+        "code": "float gain, float mem[2], int n)"
+      },
+      "9": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 125,
+        "code": "{"
+      },
+      "10": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 126,
+        "code": "int i;"
+      },
+      "11": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 127,
+        "code": "float tmp;"
+      },
+      "13": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 129,
+        "code": "for (i = 0; i < n; i++) {"
+      },
+      "14": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 130,
+        "code": "tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];"
+      },
+      "16": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 131,
+        "code": "out[i] =       tmp + zero_coeffs[0] * mem[0] + zero_coeffs[1] * mem[1];"
+      },
+      "18": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 133,
+        "code": "mem[1] = mem[0];"
+      },
+      "19": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 134,
+        "code": "mem[0] = tmp;"
+      },
+      "20": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 135,
+        "code": "}"
+      },
+      "21": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 136,
+        "code": "}"
+      },
+      "25": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 122,
+        "code": "const float zero_coeffs[2],"
+      },
+      "26": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 123,
+        "code": "const float pole_coeffs[2],"
+      },
+      "30": {
+        "orig_file": "acelp_filters.c",
+        "orig_line": 119,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "acelp_filters.c",
+      "original_line": 130,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "125: {\n126:     int i;\n127:     float tmp;\n128: \n129:     for (i = 0; i < n; i++) {\n130:         tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];\n131:         out[i] =       tmp + zero_coeffs[0] * mem[0] + zero_coeffs[1] * mem[1];\n132: \n133:         mem[1] = mem[0];\n134:         mem[0] = tmp;\n135:     }"
+    },
+    "klee_crash": {
+      "harness_file": "acelp_filters.c",
+      "harness_line": 14,
+      "original_file": "acelp_filters.c",
+      "original_line": 130,
+      "original_code": "tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];",
+      "original_context": "    127:     float tmp;\n    128: \n    129:     for (i = 0; i < n; i++) {\n>>> 130:         tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];\n    131:         out[i] =       tmp + zero_coeffs[0] * mem[0] + zero_coeffs[1] * mem[1];\n    132: \n    133:         mem[1] = mem[0];",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: acelp_filters.c\nLine: 14\nassembly.ll line: 71\nState: 1\nStack: \n\t#000000071 in ff_acelp_apply_order_2_transfer_function(139226697715712, 139209517846528, 139089258762240, 139106438631424, symbolic, 139072078893056, symbolic) at acelp_filters.c:14\n\t#100000124 in entry_func(139226697715712, 139209517846528, 139089258762240, 139106438631424, symbolic, 139072078893056, symbolic) at acelp_filters.c:28\n\t#200000197 in main() at driver.c:39\nInfo: \n\taddress:"
+    },
+    "concrete_inputs": [
+      {
+        "name": "n",
+        "size": 4,
+        "data": "b'\\x01\\x00\\x00\\x00'"
+      },
+      {
+        "name": "out_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "in_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "zero_coeffs",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "mem",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pole_coeffs",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "gain",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3758_acelp_filters.c_130_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "acelp_filters.c",
+        "harness_line": 14,
+        "original_file": "acelp_filters.c",
+        "original_line": 130,
+        "error_type": "ptr",
+        "crash_function": "ff_acelp_apply_order_2_transfer_function",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3758_acelp_filters.c_130_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

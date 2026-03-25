@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3986111==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c05a32af100 bp 0x7ffef5bc0050 sp 0x7ffef5bbff90 T0)
+==3986111==The signal is caused by a WRITE memory access.
+==3986111==Hint: address points to the zero page.
+    #0 0x5c05a32af100 in xmlCatalogNormalizePublic /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61:8
+    #1 0x5c05a32aecc2 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:70:20
+    #2 0x7fd7ef22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7fd7ef22a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5c05a31ef304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer+0x20304) (BuildId: 289a175ae24a791d77183475abdf28660e72e755)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61:8 in xmlCatalogNormalizePublic
+==3986111==ABORTING

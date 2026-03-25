@@ -1,0 +1,51 @@
+=================================================================
+==314789==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x507000000144 at pc 0x7f006a371c23 bp 0x7ffce24c0570 sp 0x7ffce24bfd18
+WRITE of size 128 at 0x507000000144 thread T0
+    #0 0x7f006a371c22 in __interceptor_memset ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:799
+    #1 0x55e705e19614 in ctu_get_pred /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow//harness/ctu.c:63
+    #2 0x55e705e1965f in ff_vvc_coding_tree_unit /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow//harness/ctu.c:74
+    #3 0x55e705e19874 in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow//harness/driver.c:27
+    #4 0x7f006a00ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #5 0x7f006a00ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #6 0x55e705e191e4 in _start (/home/user/user/ffmpeg_verify_v2/1725_ctu.c_2443_local_cpp_cwe-120-overflow_bin+0x11e4)
+
+0x507000000144 is located 0 bytes to the right of 68-byte region [0x507000000100,0x507000000144)
+allocated by thread T0 here:
+    #0 0x7f006a3eca57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x55e705e19823 in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow//harness/driver.c:24
+    #2 0x7f006a00ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:799 in __interceptor_memset
+Shadow bytes around the buggy address:
+  0x0a0e7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a0e7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a0e7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a0e7fff8000: fa fa fa fa fd fd fd fd fd fd fd fd fd fa fa fa
+  0x0a0e7fff8010: fa fa 00 00 00 00 00 00 00 00 05 fa fa fa fa fa
+=>0x0a0e7fff8020: 00 00 00 00 00 00 00 00[04]fa fa fa fa fa fa fa
+  0x0a0e7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a0e7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a0e7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a0e7fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a0e7fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==314789==ABORTING

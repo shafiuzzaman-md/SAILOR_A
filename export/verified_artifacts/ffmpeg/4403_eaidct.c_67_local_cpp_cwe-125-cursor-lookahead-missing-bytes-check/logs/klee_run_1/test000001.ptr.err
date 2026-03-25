@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: eaidct.c
+Line: 9
+assembly.ll line: 77
+State: 1
+Stack: 
+	#000000077 in ea_idct_col(139606437785600, 139606437785600) at eaidct.c:9
+	#100000063 in ff_ea_idct_put_c(139623617654784, 8, 139606437785600) at eaidct.c:23
+	#200000036 in main() at driver.c:21
+Info: 
+	address: 139606437785616
+	next: object at 139258545434624 of size 4
+		MO19[4] allocated at main():  %1 = alloca i32, align 4

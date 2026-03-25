@@ -1,0 +1,49 @@
+{
+  "h264_direct.c": {
+    "26": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 120,
+      "code": "void ff_h264_direct_ref_list_init(const H264Context *const h, H264SliceContext *sl)"
+    },
+    "27": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 121,
+      "code": "{"
+    },
+    "28": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 123,
+      "code": "H264Picture *const cur = h->cur_pic_ptr;"
+    },
+    "30": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 135,
+      "code": "if (h->picture_structure == PICT_FRAME) {"
+    },
+    "31": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 136,
+      "code": "memcpy(cur->ref_count[1], cur->ref_count[0], sizeof(cur->ref_count[0]));"
+    },
+    "32": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 137,
+      "code": "memcpy(cur->ref_poc[1],   cur->ref_poc[0],   sizeof(cur->ref_poc[0]));"
+    },
+    "35": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 138,
+      "code": "}"
+    },
+    "36": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 138,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "h264_direct.c",
+      "orig_line": 138,
+      "code": "}"
+    }
+  }
+}

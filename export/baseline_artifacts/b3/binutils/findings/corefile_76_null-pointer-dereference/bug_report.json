@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/corefile.c",
+    "line": 76,
+    "function": "bfd_core_file_failing_signal",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "Dereferences abfd->format without validating that abfd is non-NULL; a NULL argument leads to a NULL pointer dereference.",
+    "abs_path": "/tmp/binutils_upstream/bfd/corefile.c"
+  },
+  "reproducer_code": "// Standalone reproducer for NULL pointer dereference in bfd_core_file_failing_signal\n// Compile with: clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n\n// Minimal re-declarations to mirror the vulnerable BFD API surface\n\ntypedef struct bfd {\n    int format;  // Only the field accessed by the vulnerable function is needed\n} bfd;\n\n// Mimic the bfd error enum/tag used by bfd_set_error\nenum { bfd_error_invalid_operation = 1 };\n\n// Stub: real implementation would set a global error; here it's a no-op\nstatic void bfd_set_error(int err) {\n    (void)err;\n}\n\n// Stub: in real BFD, this dispatches to target vector methods; not needed here\n#define BFD_SEND(abfd, method, args) (0)\n\n// Mimic the bfd_format enum containing bfd_core\nenum {\n    bfd_core = 1\n};\n\n// Vulnerable function copied in spirit from the source context\n// It dereferences abfd->format without checking abfd for NULL first\nint bfd_core_file_failing_signal(bfd *abfd) {\n    if (abfd->format != bfd_core) {  // NULL dereference when abfd == NULL\n        bfd_set_error(bfd_error_invalid_operation);\n        return 0;\n    }\n    return BFD_SEND(abfd, _core_file_failing_signal, (abfd));\n}\n\nint main(void) {\n    // Directly pass NULL to trigger the NULL pointer dereference at abfd->format\n    // AddressSanitizer will report the invalid access\n    fprintf(stderr, \"Triggering bfd_core_file_failing_signal(NULL) to cause NULL deref...\\n\");\n    int sig = bfd_core_file_failing_signal(NULL);\n    // The following line should be unreachable due to the crash\n    printf(\"Returned signal: %d\\n\", sig);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6754610538482666,
+      "output": "Triggering bfd_core_file_failing_signal(NULL) to cause NULL deref...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3633893==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x59144c045ced bp 0x7ffefee23210 sp 0x7ffefee231f0 T0)\n==3633893==The signal is caused by a READ memory access.\n==3633893==Hint: address points to the zero page.\n    #0 0x59144c045ced in bfd_core_file_failing_signal /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:32:22\n    #1 0x59144c045d83 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:43:15\n    #2 0x77f58be2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x77f58be2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x59144bf86304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer+0x21304) (BuildId: 7bfb0270612dbce51524394855f017e86695a0b9)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:32:22 in bfd_core_file_failing_signal\n==3633893==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "bfd_core_file_failing_signal",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:32",
+      "crash_line": 22,
+      "frames": [
+        [
+          "0",
+          "bfd_core_file_failing_signal",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:32",
+          "22"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_76_null-pointer-dereference/reproducer.c:43",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

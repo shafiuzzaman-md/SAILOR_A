@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: timestamp.c
+Line: 41
+assembly.ll line: 205
+State: 2
+Stack: 
+	#000000205 in av_ts_make_time_string2(138979067596800, symbolic, symbolic) at timestamp.c:41
+	#100000353 in entry_func(138979067596800, symbolic, symbolic) at timestamp.c:51
+	#200000042 in main() at driver.c:29
+Info: 
+	address: 138979067596799
+	next: object at 138979067596800 of size 1
+		MO28[1] allocated at main():  %2 = alloca [1 x i8], align 1

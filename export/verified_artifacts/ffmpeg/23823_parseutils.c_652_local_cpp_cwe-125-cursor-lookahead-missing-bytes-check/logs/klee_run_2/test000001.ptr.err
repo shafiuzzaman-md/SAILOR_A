@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: parseutils.c
+Line: 20
+assembly.ll line: 89
+State: 1
+Stack: 
+	#000000089 in av_parse_time(138719327907840, 139075810193424, symbolic) at parseutils.c:20
+	#100000065 in entry_func(138719327907840, 139075810193424, symbolic) at parseutils.c:10
+	#200000039 in main() at driver.c:25
+Info: 
+	address: 139075810193424
+	next: object at 138707516747776 of size 4
+		MO50[4] allocated at av_parse_time():  %6 = alloca i32, align 4

@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3812347==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5728f095f053 bp 0x7ffd6014af90 sp 0x7ffd6014aee0 T0)
+==3812347==The signal is caused by a READ memory access.
+==3812347==Hint: address points to the zero page.
+    #0 0x5728f095f053 in TIFF_DownSample_Subsampled_repro /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_520_null-pointer-dereference/reproducer.c:67:44
+    #1 0x5728f095ee42 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_520_null-pointer-dereference/reproducer.c:122:5
+    #2 0x7f462942a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7f462942a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5728f089f304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_520_null-pointer-dereference/reproducer+0x21304) (BuildId: 0d5979a9a66ae00ec9d66f611cb9f7b57e30b007)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_520_null-pointer-dereference/reproducer.c:67:44 in TIFF_DownSample_Subsampled_repro
+==3812347==ABORTING

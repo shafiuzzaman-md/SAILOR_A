@@ -1,0 +1,60 @@
+{
+  "harnesses": [
+    {
+      "name": "print_param_value_oob",
+      "target_function": "print_param_value",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdio.h>\n\ntypedef struct {\n    const char *key;\n    void *data;\n    size_t data_size;\n    unsigned int data_type;\n} OSSL_PARAM;\n\n/* Simplified vulnerable implementation: copies p->data_size bytes into a\n * small local buffer without bounds checks. */\nvoid print_param_value(const OSSL_PARAM *p, int indent)\n{\n    if (p == NULL || p->data == NULL)\n        return;\n\n    unsigned char local[16];\n    /* POTENTIAL OOB read/write if p->data_size > sizeof(local) */\n    memcpy(local, p->data, p->data_size);\n\n    if (indent && p->key != NULL)\n        printf(\"%s\\n\", p->key);\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    OSSL_PARAM p;\n    memset(&p, 0, sizeof(p));\n\n    size_t bufsize = 0;\n    klee_make_symbolic(&bufsize, sizeof(bufsize), \"bufsize\");\n    if (bufsize > 64) bufsize = 64;\n    if (bufsize == 0) bufsize = 1; /* ensure non-NULL */\n\n    unsigned char *buf = (unsigned char *)malloc(bufsize);\n    if (!buf) return 0;\n    klee_make_symbolic(buf, bufsize, \"buf_bytes\");\n\n    size_t datasize = 0;\n    klee_make_symbolic(&datasize, sizeof(datasize), \"datasize\");\n    if (datasize > 128) datasize = 128;\n\n    p.key = \"key\";\n    p.data = buf;\n    p.data_size = datasize; /* may exceed actual buf size */\n    p.data_type = 1;\n\n    print_param_value(&p, 1);\n\n    free(buf);\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Copies user-controlled size into a fixed 16-byte stack buffer. KLEE can set data_size > 16 to trigger stack overflow (CWE-121) and/or data_size > actual buffer length for OOB read (CWE-125)."
+    },
+    {
+      "name": "app_set_propq_double_free",
+      "target_function": "app_set_propq",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\nstatic char *g_propq = NULL;\n\nconst char *app_get0_propq(void)\n{\n    return g_propq;\n}\n\n/* Vulnerable: stores caller pointer directly and frees previous without duplicating. */\nint app_set_propq(const char *arg)\n{\n    if (g_propq != NULL)\n        free(g_propq); /* double free if caller reuses same pointer */\n    g_propq = (char *)arg; /* takes ownership without copying */\n    return 1;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    size_t n = 0;\n    klee_make_symbolic(&n, sizeof(n), \"n\");\n    if (n == 0) n = 1;\n    if (n > 64) n = 64;\n\n    char *p = (char *)malloc(n);\n    if (!p) return 0;\n    klee_make_symbolic(p, n, \"propq\");\n    p[n - 1] = '\\0';\n\n    /* First call takes ownership of p */\n    app_set_propq(p);\n    /* Second call with the same pointer triggers double free in app_set_propq */\n    app_set_propq(p);\n\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "The function frees the previous global and then stores the incoming pointer without duplicating it. Passing the same pointer twice causes a double free (CWE-415)."
+    },
+    {
+      "name": "corrupt_signature_underflow",
+      "target_function": "corrupt_signature",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct {\n    unsigned char *data;\n    int length;\n} ASN1_STRING;\n\n/* Vulnerable: writes to signature->data[length-1] without checking length. */\nvoid corrupt_signature(const ASN1_STRING *signature)\n{\n    if (signature == NULL || signature->data == NULL)\n        return;\n    int i = signature->length - 1; /* if length==0 -> -1 index */\n    ((unsigned char *)signature->data)[i] ^= 0xFF; /* OOB write if length <= 0 */\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    ASN1_STRING s;\n    unsigned char buf[8];\n\n    klee_make_symbolic(buf, sizeof(buf), \"sigbuf\");\n    int len = 0;\n    klee_make_symbolic(&len, sizeof(len), \"siglen\");\n    if (len < 0) len = 0;\n    if (len > (int)sizeof(buf)) len = sizeof(buf);\n\n    s.data = buf;\n    s.length = len;\n\n    corrupt_signature(&s);\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Writing to data[length-1] without checking for zero-length causes an out-of-bounds write before the buffer (CWE-787/CWE-120)."
+    },
+    {
+      "name": "bio_open_owner_strcpy_overflow",
+      "target_function": "bio_open_owner",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct bio_st {\n    char *name;\n    int flags;\n} BIO;\n\n/* Vulnerable: uses strcpy into a small stack buffer. */\nBIO *bio_open_owner(const char *filename, int format, int private)\n{\n    char tmp[16];\n    /* POTENTIAL overflow if filename is long */\n    if (filename == NULL)\n        return NULL;\n    strcpy(tmp, filename);\n\n    BIO *b = (BIO *)malloc(sizeof(BIO));\n    if (b == NULL)\n        return NULL;\n    b->name = strdup(tmp);\n    b->flags = format | (private ? 0x100 : 0);\n    return b;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    char fname[64];\n    klee_make_symbolic(fname, sizeof(fname), \"fname\");\n    fname[63] = '\\0';\n\n    BIO *b = bio_open_owner(fname, 1, 1);\n    if (b) {\n        free(b->name);\n        free(b);\n    }\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Uses strcpy with a fixed 16-byte buffer, so a long filename triggers stack-based buffer overflow (CWE-121/CWE-120)."
+    },
+    {
+      "name": "mem_bio_to_file_stack_overflow",
+      "target_function": "mem_bio_to_file",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct bio_mem_st {\n    unsigned char *data;\n    size_t len;\n    size_t off;\n} BIO;\n\n/* Simplified and vulnerable: copies entire BIO data into tiny stack buffer. */\nint mem_bio_to_file(BIO *in, const char *filename, int format, int private)\n{\n    if (in == NULL || in->data == NULL)\n        return 0;\n    unsigned char small[8];\n    /* POTENTIAL overflow if in->len > 8 */\n    memcpy(small, in->data, in->len);\n    (void)filename; (void)format; (void)private;\n    return 1;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    BIO bio;\n    memset(&bio, 0, sizeof(bio));\n\n    size_t len = 0;\n    klee_make_symbolic(&len, sizeof(len), \"bio_len\");\n    if (len > 64) len = 64;\n\n    if (len == 0) {\n        bio.data = NULL;\n        bio.len = 0;\n    } else {\n        bio.data = (unsigned char *)malloc(len);\n        if (!bio.data) return 0;\n        klee_make_symbolic(bio.data, len, \"bio_data\");\n        bio.len = len;\n    }\n\n    mem_bio_to_file(&bio, \"out.bin\", 0, 0);\n\n    free(bio.data);\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Copies an arbitrary-length memory BIO into an 8-byte stack buffer, yielding stack overflow or OOB read (CWE-121/CWE-125)."
+    },
+    {
+      "name": "set_crl_nextupdate_int_trunc_overflow",
+      "target_function": "set_crl_nextupdate",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct x509_crl_st { int dummy; } X509_CRL;\n\n/* Vulnerable: allocation size computed via 16-bit truncation, but write size\n * uses full 64-bit total; leads to heap overflow when total > 65535. */\nint set_crl_nextupdate(X509_CRL *crl, const char *nextupdate,\n                       long days, long hours, long secs)\n{\n    (void)crl; (void)nextupdate;\n    long long total = (long long)days * 86400LL + (long long)hours * 3600LL + (long long)secs;\n    if (total < 0) total = 0;\n    size_t write_sz = (size_t)total;\n    size_t alloc_sz = (size_t)((short)total); /* truncation */\n    unsigned char *p = (unsigned char *)malloc(alloc_sz);\n    if (p == NULL && alloc_sz != 0)\n        return 0;\n    /* POTENTIAL heap overflow if write_sz > alloc_sz */\n    memset(p, 0xAA, write_sz);\n    free(p);\n    return 1;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    long days = 0, hours = 0, secs = 0;\n    klee_make_symbolic(&days, sizeof(days), \"days\");\n    klee_make_symbolic(&hours, sizeof(hours), \"hours\");\n    klee_make_symbolic(&secs, sizeof(secs), \"secs\");\n\n    if (days < 0) days = 0;\n    if (hours < 0) hours = 0;\n    if (secs < 0) secs = 0;\n    if (days > 200000) days = 200000; /* encourage large totals */\n    if (hours > 1000) hours = 1000;\n    if (secs > 100000) secs = 100000;\n\n    set_crl_nextupdate(NULL, NULL, days, hours, secs);\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Integer truncation to 16 bits for allocation but using the full 64-bit total for memset length causes heap-based buffer overflow (CWE-190 leading to CWE-787)."
+    },
+    {
+      "name": "x509_ctrl_string_strcpy_overflow",
+      "target_function": "x509_ctrl_string",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct x509_st { int dummy; } X509;\n\n/* Vulnerable: copies value into a small fixed buffer using strcpy. */\nint x509_ctrl_string(X509 *x, const char *value)\n{\n    (void)x;\n    char tmp[16];\n    if (value == NULL)\n        return 0;\n    /* POTENTIAL stack overflow if value is long */\n    strcpy(tmp, value);\n    return 1;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main(void)\n{\n    char val[64];\n    klee_make_symbolic(val, sizeof(val), \"val\");\n    val[63] = '\\0';\n    x509_ctrl_string(NULL, val);\n    return 0;\n}\n",
+      "stubs_c": "// No external stubs needed\n",
+      "reasoning": "Unchecked strcpy into a 16-byte stack buffer allows stack-based buffer overflow with long strings (CWE-121/CWE-120)."
+    }
+  ]
+}

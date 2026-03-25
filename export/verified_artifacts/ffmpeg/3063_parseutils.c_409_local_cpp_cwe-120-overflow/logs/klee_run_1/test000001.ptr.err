@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 176
+State: 1
+Stack: 
+	#000000176 in memcpy(139754127970304, 139771307839488, 3) at runtime/Freestanding/memcpy.c:17
+	#100000117 in av_parse_color(139754127970304, 139736948101120, symbolic, 0) at parseutils.c:16
+	#200000147 in entry_func(139754127970304, 139736948101120, symbolic, 0) at parseutils.c:25
+	#300000064 in main() at driver.c:28
+Info: 
+	address: 139754127970306
+	next: object at 139454554001408 of size 4
+		MO62[4] allocated at av_parse_color():  %5 = alloca i32, align 4

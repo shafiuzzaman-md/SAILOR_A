@@ -1,0 +1,54 @@
+{
+  "aacenc_pred.c": {
+    "26": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 38,
+      "code": "}"
+    },
+    "30": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 41,
+      "code": "{"
+    },
+    "32": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 246,
+      "code": "if (!sce->ics.predictor_initialized) {"
+    },
+    "33": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 247,
+      "code": "reset_all_predictors(sce->predictor_state);"
+    },
+    "34": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 248,
+      "code": "sce->ics.predictor_initialized = 1;"
+    },
+    "36": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 249,
+      "code": "memcpy(sce->prcoeffs, sce->coeffs, 1024*sizeof(float));"
+    },
+    "39": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 252,
+      "code": "}"
+    },
+    "40": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 252,
+      "code": "}"
+    },
+    "45": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 148,
+      "code": "return 0;"
+    },
+    "46": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 149,
+      "code": "}"
+    }
+  }
+}

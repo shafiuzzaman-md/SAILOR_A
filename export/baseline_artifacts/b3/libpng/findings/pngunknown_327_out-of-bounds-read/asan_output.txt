@@ -1,0 +1,52 @@
+=================================================================
+==3720532==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x591504cdbe80 bp 0x7fff6fb5b160 sp 0x7fff6fb5a910
+READ of size 4 at 0x602000000011 thread T0
+    #0 0x591504cdbe7f in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long) (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3be7f) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)
+    #1 0x591504cdc230 in memcmp (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3c230) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)
+    #2 0x591504d80de9 in find /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:28:13
+    #3 0x591504d80d3f in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:46:15
+    #4 0x78cd7d02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x78cd7d02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x591504cc1314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x21314) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)
+
+0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)
+allocated by thread T0 here:
+    #0 0x591504d44d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)
+    #1 0x591504d80cc8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:37:32
+    #2 0x78cd7d02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x78cd7d02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x591504cc1314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x21314) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3be7f) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2) in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long)
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3720532==ABORTING

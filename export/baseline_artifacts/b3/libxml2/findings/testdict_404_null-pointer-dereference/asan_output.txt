@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4070728==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x726d1458954a bp 0x7ffdf99bd000 sp 0x7ffdf99bc7c8 T0)
+==4070728==The signal is caused by a WRITE memory access.
+==4070728==Hint: address points to the zero page.
+    #0 0x726d1458954a in __memset_avx2_unaligned_erms string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:328
+    #1 0x5ebf05775347 in __asan_memset (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer+0xa4347) (BuildId: a5753ba688e7ac509dfca08b3239ecbf4f2eae56)
+    #2 0x5ebf057b1d02 in testall_dict /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:49:5
+    #3 0x5ebf057b1cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:85:12
+    #4 0x726d1442a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x726d1442a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5ebf056f2314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer+0x21314) (BuildId: a5753ba688e7ac509dfca08b3239ecbf4f2eae56)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:328 in __memset_avx2_unaligned_erms
+==4070728==ABORTING

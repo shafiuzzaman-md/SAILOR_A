@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/ciphers.c",
+    "line": 246,
+    "function": "ciphers_main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "Same issue as at line 230 in the verbose path: sk is not checked for NULL. If SSL_get1_supported_ciphers(ssl) or SSL_get_ciphers(ssl) returns NULL, sk_SSL_CIPHER_num(sk) dereferences a NULL pointer.",
+    "abs_path": "/tmp/openssl_upstream/apps/ciphers.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stub types to mirror OpenSSL structures */\ntypedef struct ssl_ctx_st { int dummy; } SSL_CTX;\ntypedef struct ssl_st { int dummy; } SSL;\ntypedef struct ssl_cipher_st { int dummy; } SSL_CIPHER;\n\ntypedef struct stack_st_SSL_CIPHER {\n    int num; /* deliberately accessed without NULL check to emulate bug */\n} STACK_OF_SSL_CIPHER;\n\n/* Global BIO-like placeholders */\nstatic void *bio_out = NULL;\nstatic void *bio_err = NULL;\n\n/* Stubbed BIO I/O */\nstatic int BIO_printf(void *bio, const char *fmt, ...) {\n    (void)bio; /* ignore */\n    va_list ap;\n    va_start(ap, fmt);\n    int r = vfprintf(stdout, fmt, ap);\n    va_end(ap);\n    return r;\n}\n\nstatic int BIO_puts(void *bio, const char *s) {\n    (void)bio; /* ignore */\n    return fputs(s, stdout);\n}\n\n/* Stubbed OpenSSL API */\nstatic SSL_CTX *SSL_CTX_new(void) {\n    return (SSL_CTX *)calloc(1, sizeof(SSL_CTX));\n}\n\nstatic void SSL_CTX_free(SSL_CTX *ctx) {\n    free(ctx);\n}\n\nstatic SSL *SSL_new(SSL_CTX *ctx) {\n    (void)ctx;\n    return (SSL *)calloc(1, sizeof(SSL));\n}\n\nstatic void SSL_free(SSL *ssl) {\n    free(ssl);\n}\n\nstatic int SSL_CTX_set_ciphersuites(SSL_CTX *ctx, const char *suites) {\n    (void)ctx; (void)suites; return 1; /* success */\n}\n\nstatic int SSL_CTX_set_cipher_list(SSL_CTX *ctx, const char *list) {\n    (void)ctx; (void)list; return 1; /* success */\n}\n\nstatic STACK_OF_SSL_CIPHER *SSL_get1_supported_ciphers(SSL *ssl) {\n    (void)ssl;\n    /* Return NULL to model failure/no ciphers available */\n    return NULL;\n}\n\nstatic STACK_OF_SSL_CIPHER *SSL_get_ciphers(SSL *ssl) {\n    (void)ssl;\n    /* Return NULL to trigger the NULL pointer dereference in ciphers_main */\n    return NULL;\n}\n\n/* OpenSSL stack accessors (intentionally dereference without NULL check) */\nstatic int sk_SSL_CIPHER_num(const STACK_OF_SSL_CIPHER *sk) {\n    /* Vulnerable behavior: this will crash if sk == NULL */\n    return sk->num;\n}\n\nstatic const SSL_CIPHER *sk_SSL_CIPHER_value(const STACK_OF_SSL_CIPHER *sk, int i) {\n    (void)sk; (void)i; return NULL;\n}\n\n/* Remaining stubs referenced in the verbose path */\nstatic const char *SSL_CIPHER_get_name(const SSL_CIPHER *c) { (void)c; return \"DUMMY\"; }\nstatic const char *SSL_CIPHER_standard_name(const SSL_CIPHER *c) { (void)c; return \"STD\"; }\nstatic unsigned long SSL_CIPHER_get_id(const SSL_CIPHER *c) { (void)c; return 0x03000001UL; }\nstatic const char *SSL_CIPHER_description(const SSL_CIPHER *c, char *buf, size_t len) {\n    (void)c; (void)buf; (void)len; return \"desc\";\n}\nstatic int ossl_assert(int cond) { return cond; }\nstatic void sk_SSL_CIPHER_free(STACK_OF_SSL_CIPHER *sk) { free(sk); }\nstatic void ERR_print_errors(void *bio) { (void)bio; }\n\n/* Reimplementation of the vulnerable function logic focusing on the buggy part */\nstatic int ciphers_main(void) {\n    int ret = 1;\n    SSL_CTX *ctx = NULL;\n    SSL *ssl = NULL;\n    int verbose = 1;      /* Force verbose path to hit line 246 analog */\n    int use_supported = 0;/* Choose SSL_get_ciphers() path */\n    int stdname = 0;\n    int Verbose = 0;\n\n    const char *ciphersuites = NULL;\n    const char *ciphers = NULL;\n\n    STACK_OF_SSL_CIPHER *sk = NULL;\n    int i;\n    char buf[256];\n\n    ctx = SSL_CTX_new();\n    if (ctx == NULL)\n        goto err;\n\n    if (ciphersuites != NULL && !SSL_CTX_set_ciphersuites(ctx, ciphersuites)) {\n        BIO_printf(bio_err, \"Error setting TLSv1.3 ciphersuites\\n\");\n        goto err;\n    }\n\n    if (ciphers != NULL) {\n        if (!SSL_CTX_set_cipher_list(ctx, ciphers)) {\n            BIO_printf(bio_err, \"Error in cipher list\\n\");\n            goto err;\n        }\n    }\n\n    ssl = SSL_new(ctx);\n    if (ssl == NULL)\n        goto err;\n\n    if (use_supported)\n        sk = SSL_get1_supported_ciphers(ssl);\n    else\n        sk = SSL_get_ciphers(ssl);\n\n    if (!verbose) {\n        for (i = 0; i < sk_SSL_CIPHER_num(sk); i++) { /* not taken */\n            const SSL_CIPHER *c = sk_SSL_CIPHER_value(sk, i);\n            if (!ossl_assert(c != NULL))\n                continue;\n            const char *p = SSL_CIPHER_get_name(c);\n            if (p == NULL)\n                break;\n            if (i != 0)\n                BIO_printf(bio_out, \":\");\n            BIO_printf(bio_out, \"%s\", p);\n        }\n        BIO_printf(bio_out, \"\\n\");\n    } else {\n        /* This call will dereference NULL inside sk_SSL_CIPHER_num() and crash */\n        for (i = 0; i < sk_SSL_CIPHER_num(sk); i++) {\n            const SSL_CIPHER *c;\n            c = sk_SSL_CIPHER_value(sk, i);\n            if (!ossl_assert(c != NULL))\n                continue;\n            if (Verbose) {\n                unsigned long id = SSL_CIPHER_get_id(c);\n                int id0 = (int)(id >> 24);\n                int id1 = (int)((id >> 16) & 0xffL);\n                int id2 = (int)((id >> 8) & 0xffL);\n                int id3 = (int)(id & 0xffL);\n                if ((id & 0xff000000L) == 0x03000000L)\n                    BIO_printf(bio_out, \"          0x%02X,0x%02X - \", id2, id3);\n                else\n                    BIO_printf(bio_out, \"0x%02X,0x%02X,0x%02X,0x%02X - \", id0, id1, id2, id3);\n            }\n            if (stdname) {\n                const char *nm = SSL_CIPHER_standard_name(c);\n                if (nm == NULL)\n                    nm = \"UNKNOWN\";\n                BIO_printf(bio_out, \"%-45s - \", nm);\n            }\n            BIO_puts(bio_out, SSL_CIPHER_description(c, buf, sizeof(buf)));\n        }\n    }\n\n    ret = 0;\n    goto end;\nerr:\n    ERR_print_errors(bio_err);\nend:\n    if (use_supported)\n        sk_SSL_CIPHER_free(sk);\n    SSL_CTX_free(ctx);\n    SSL_free(ssl);\n    return ret;\n}\n\nint main(void) {\n    /* Running this will reliably trigger the NULL-pointer dereference\n       when evaluating sk_SSL_CIPHER_num(sk) with sk == NULL. */\n    return ciphers_main();\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 2.0382351875305176,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4123450==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c90c0be270d bp 0x7fffacb959d0 sp 0x7fffacb959b0 T0)\n==4123450==The signal is caused by a READ memory access.\n==4123450==Hint: address points to the zero page.\n    #0 0x5c90c0be270d in sk_SSL_CIPHER_num /app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:76:16\n    #1 0x5c90c0be20dd in ciphers_main /app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:151:25\n    #2 0x5c90c0be1cb3 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:192:12\n    #3 0x77344882a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x77344882a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5c90c0b22304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer+0x21304) (BuildId: 89c7a580bfe057b3bc3a91b5e29cfebfcc26ca62)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:76:16 in sk_SSL_CIPHER_num\n==4123450==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "sk_SSL_CIPHER_num",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:76",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "sk_SSL_CIPHER_num",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:76",
+          "16"
+        ],
+        [
+          "1",
+          "ciphers_main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:151",
+          "25"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ciphers_246_null-pointer-dereference/reproducer.c:192",
+          "12"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

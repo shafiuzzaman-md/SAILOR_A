@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3576727==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5987e92bedbb bp 0x7fff4b55de80 sp 0x7fff4b55dde0 T0)
+==3576727==The signal is caused by a WRITE memory access.
+==3576727==Hint: address points to the zero page.
+    #0 0x5987e92bedbb in _bfd_add_bfd_to_archive_cache /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104:16
+    #1 0x5987e92bf384 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:136:11
+    #2 0x722ffb82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x722ffb82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5987e91ff304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer+0x21304) (BuildId: e257377ad5d2f90f61e79e3086b13092c56bbc69)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104:16 in _bfd_add_bfd_to_archive_cache
+==3576727==ABORTING

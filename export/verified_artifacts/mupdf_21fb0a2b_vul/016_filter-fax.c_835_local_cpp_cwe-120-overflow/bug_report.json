@@ -1,0 +1,195 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 3,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "filter-fax.c",
+        "original_line": 835,
+        "function": "fz_open_faxd",
+        "entry_point": "fz_open_faxd",
+        "spine": [
+            "fz_open_faxd"
+        ],
+        "original_context": "830: \t\tfax->dst = Memento_label(fz_malloc(ctx, fax->stride), \"fax_dst\");\n831: \t\tfax->rp = fax->dst;\n832: \t\tfax->wp = fax->dst + fax->stride;\n833: \n834: \t\tmemset(fax->ref, 0, fax->stride);\n835: \t\tmemset(fax->dst, 0, fax->stride);\n836: \n837: \t\tfax->chain = fz_keep_stream(ctx, chain);\n838: \t}\n839: \tfz_catch(ctx)\n840: \t{"
+    },
+    "klee_crash": {
+        "harness_file": "filter-fax.c",
+        "harness_line": 72,
+        "original_file": "filter-fax.c",
+        "original_line": 831,
+        "original_code": "fax->rp = fax->dst;",
+        "original_context": "    828: \n    829: \t\tfax->ref = Memento_label(fz_malloc(ctx, fax->stride), \"fax_ref\");\n    830: \t\tfax->dst = Memento_label(fz_malloc(ctx, fax->stride), \"fax_dst\");\n>>> 831: \t\tfax->rp = fax->dst;\n    832: \t\tfax->wp = fax->dst + fax->stride;\n    833: \n    834: \t\tmemset(fax->ref, 0, fax->stride);",
+        "error_type": "model",
+        "error_details": "Error: concretized symbolic size\nFile: filter-fax.c\nLine: 72\nassembly.ll line: 216\nState: 3\nStack: \n\t#000000216 in fz_open_faxd(139381774974976, 139364595105792, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic) at filter-fax.c:72\n\t#100000072 in main() at driver.c:28\nInfo: \n  size expr: (SExt w64 (Add w32 1\n                                 (AShr w32 (Add w32 4294967295\n                                                    (ReadLSB w32 0 columns))\n                               "
+    },
+    "concrete_inputs": [
+        {
+            "name": "k",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_line",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "encoded_byte_align",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "columns",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        },
+        {
+            "name": "rows",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_block",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "black_is_1",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "k",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_line",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "encoded_byte_align",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "columns",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "rows",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_block",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "black_is_1",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "k",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_line",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "encoded_byte_align",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "columns",
+            "size": 4,
+            "data": "b'\\xd9\\xc8\\xc0\\x86'"
+        },
+        {
+            "name": "rows",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "end_of_block",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "black_is_1",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_vthrow",
+        "crash_file": "source/fitz/error.c",
+        "crash_line": 335,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3560==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000e948 at pc 0x56431899ec07 bp 0x7fff1d0f1010 sp 0x7fff1d0f1000\nREAD of size 4 at 0x50200000e948 thread T0\n    #0 0x56431899ec06 in fz_vthrow source/fitz/error.c:335\n    #1 0x56431899ed1e in fz_throw source/fitz/error.c:361\n    #2 0x56431898fc44 in fz_open_faxd source/fitz/filter-fax.c:802\n    #3 0x56431898ac86 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/016_filter-fax.c_835_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:29\n    #4 0x7f5864516d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #5 0x7f5864516e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #6 0x56431898a904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/016_filter-fax.c_835_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10904)\n\nAddress 0x50200000e948 is a wild pointer.\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/error.c:335 in fz_vthrow\nShadow bytes around the buggy address:\n  0x0a047fff9cd0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9ce0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9cf0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d00: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d10: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff9d20: fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa\n  0x0a047fff9d30: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d60: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff9d70: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap re"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/016_filter-fax.c_835_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "filter-fax.c",
+            "harness_line": 72,
+            "original_file": "filter-fax.c",
+            "original_line": 831,
+            "error_type": "model",
+            "crash_function": "fz_open_faxd",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/016_filter-fax.c_835_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "filter-fax.c",
+            "harness_line": 81,
+            "original_file": "filter-fax.c",
+            "original_line": 835,
+            "error_type": "assert",
+            "crash_function": "fz_open_faxd",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/016_filter-fax.c_835_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+        },
+        {
+            "harness_file": "filter-fax.c",
+            "harness_line": 78,
+            "original_file": "filter-fax.c",
+            "original_line": 834,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/016_filter-fax.c_835_local_cpp_cwe-120-overflow/logs/klee_run_1/test000003.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_vthrow",
+            "crash_file": "source/fitz/error.c",
+            "crash_line": 335
+        }
+    ]
+}

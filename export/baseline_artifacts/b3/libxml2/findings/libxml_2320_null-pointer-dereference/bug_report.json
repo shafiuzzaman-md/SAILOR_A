@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 2320,
+    "function": "libxml_next",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "cur is obtained via PyxmlNode_Get(obj) and dereferenced (cur->type) without verifying it is non-NULL. An invalid argument that makes PyxmlNode_Get return NULL will crash.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n\n/* Minimal stubs and type re-definitions to reproduce the bug path */\n\n#define ATTRIBUTE_UNUSED\n\n/* Fake Python object */\ntypedef struct _PyObject {\n    void *data;\n} PyObject;\n\n/* Minimal XML node/type stubs */\ntypedef struct _xmlNode xmlNode;\ntypedef struct _xmlAttr xmlAttr;\ntypedef struct _xmlNs xmlNs;\n\ntypedef xmlNode *xmlNodePtr;\ntypedef xmlAttr *xmlAttrPtr;\ntypedef xmlNs *xmlNsPtr;\n\nenum {\n    XML_ELEMENT_NODE = 1,\n    XML_ATTRIBUTE_NODE = 2,\n    XML_TEXT_NODE = 3,\n    XML_DOCUMENT_NODE = 9,\n    XML_HTML_DOCUMENT_NODE = 13,\n    XML_NAMESPACE_DECL = 18\n};\n\nstruct _xmlAttr {\n    int dummy;\n    xmlAttrPtr next;\n};\n\nstruct _xmlNs {\n    int dummy;\n    xmlNsPtr next;\n};\n\nstruct _xmlNode {\n    int type;\n    xmlNodePtr next;\n    void *doc;\n    xmlAttrPtr properties;\n};\n\n/* Stub of Python's PyArg_ParseTuple: grab first PyObject* from a fake tuple */\nint PyArg_ParseTuple(PyObject *args, const char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n    PyObject **out = va_arg(ap, PyObject **);\n    va_end(ap);\n    if (!out) return 0;\n    /* Our fake tuple stores the single object in args->data */\n    *out = (PyObject *)args->data;\n    return 1; /* pretend parse success */\n}\n\n/* Stub: returns NULL to simulate invalid input to PyxmlNode_Get */\nxmlNodePtr PyxmlNode_Get(PyObject *obj) {\n    (void)obj;\n    return NULL; /* critical for triggering the NULL deref */\n}\n\n/* Stub wrappers returning dummy Python objects */\nPyObject *libxml_xmlNodePtrWrap(xmlNodePtr res) {\n    PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n    o->data = res;\n    return o;\n}\n\n/* Vulnerable function copied/adapted from python/libxml.c */\nPyObject *libxml_next(ATTRIBUTE_UNUSED PyObject *self, PyObject *args) {\n    PyObject *resultobj, *obj;\n    xmlNodePtr cur;\n    xmlNodePtr res;\n\n    if (!PyArg_ParseTuple(args, \"O:next\", &obj))\n        return NULL;\n    cur = PyxmlNode_Get(obj);\n\n    /* BUG: cur may be NULL; dereferencing cur->type triggers a null-deref */\n    switch (cur->type) {\n        case XML_DOCUMENT_NODE:\n        case XML_HTML_DOCUMENT_NODE:\n            res = NULL;\n            break;\n        case XML_ATTRIBUTE_NODE: {\n            xmlAttrPtr attr = (xmlAttrPtr)cur;\n            res = (xmlNodePtr)attr->next;\n            break;\n        }\n        case XML_NAMESPACE_DECL: {\n            xmlNsPtr ns = (xmlNsPtr)cur;\n            res = (xmlNodePtr)ns->next;\n            break;\n        }\n        default:\n            res = cur->next;\n            break;\n    }\n    resultobj = libxml_xmlNodePtrWrap(res);\n    return resultobj;\n}\n\nint main(void) {\n    /* Prepare a fake Python argument tuple holding a single object */\n    PyObject bad_obj = { .data = NULL };     /* any object; PyxmlNode_Get will return NULL */\n    PyObject args = { .data = &bad_obj };    /* our PyArg_ParseTuple will pull this out */\n\n    /* Call the vulnerable function. It will call PyxmlNode_Get(&bad_obj) -> NULL,\n       then immediately dereference cur->type, crashing with ASan diagnostics. */\n    PyObject *ret = libxml_next(NULL, &args);\n\n    /* If it somehow returns, free the dummy result to avoid leaks in non-crash runs */\n    free(ret);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09091019630432129,
+      "output": ""
+    }
+  }
+}

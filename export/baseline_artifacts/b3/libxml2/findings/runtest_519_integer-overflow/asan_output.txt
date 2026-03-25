@@ -1,0 +1,55 @@
+xmlMalloc called with size=4294967296 (0x100000000), truncated to 1 bytes, ptr=0x602000000010
+=================================================================
+==4020468==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x64b10e1b0300 bp 0x7ffe9678a390 sp 0x7ffe96789b60
+WRITE of size 1024 at 0x602000000011 thread T0
+    #0 0x64b10e1b02ff in __asan_memset (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa42ff) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)
+    #1 0x64b10e1ed60d in my_read /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:64:5
+    #2 0x64b10e1ed2c5 in loadMem /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:91:24
+    #3 0x64b10e1eceab in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117:15
+    #4 0x7c447f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7c447f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x64b10e12d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0x21304) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)
+
+0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)
+allocated by thread T0 here:
+    #0 0x64b10e1b0d12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa4d12) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)
+    #1 0x64b10e1ecccd in xmlMalloc /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:20:15
+    #2 0x64b10e1ed1eb in loadMem /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:83:20
+    #3 0x64b10e1eceab in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117:15
+    #4 0x7c447f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7c447f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x64b10e12d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0x21304) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa42ff) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46) in __asan_memset
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4020468==ABORTING

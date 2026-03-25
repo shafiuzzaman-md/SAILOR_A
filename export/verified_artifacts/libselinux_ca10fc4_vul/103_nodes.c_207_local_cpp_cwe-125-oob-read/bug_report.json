@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "nodes.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "sepol_node_key_unpack",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+            "crash_line": 265
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "sepol_node_key_unpack",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+        "crash_line": 265,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==1790==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000006 (pc 0x55c15afa7ade bp 0x7fff48517ab0 sp 0x7fff48517a90 T0)\n==1790==The signal is caused by a READ memory access.\n==1790==Hint: address points to the zero page.\n    #0 0x55c15afa7ade in sepol_node_key_unpack /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:265\n    #1 0x55c15af9281f in sepol_node_exists /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/nodes.c:179\n    #2 0x55c15af90d19 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/103_nodes.c_207_local_cpp_cwe-125-oob-read/asan_real/replay_driver.c:37\n    #3 0x7fa39ef55d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fa39ef55e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55c15af907c4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/103_nodes.c_207_local_cpp_cwe-125-oob-read/asan_real/replay_bin+0x137c4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:265 in sepol_node_key_unpack\n==1790==ABORTING\n"
+    }
+}

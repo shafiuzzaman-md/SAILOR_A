@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/cofflink.c",
+    "line": 3026,
+    "function": "coff_relocate_section",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "sec = sections[symndx] indexes the sections array with symndx from the input relocation/symbol without any bounds check. A crafted object with an out-of-range symbol index can cause an out-of-bounds read when accessing sections[symndx], potentially leading to a crash later when sec is used.",
+    "abs_path": "/tmp/binutils_upstream/bfd/cofflink.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for OOB read in coff_relocate_section (bfd/cofflink.c:3026)\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n// The harness mirrors the vulnerable indexing: sec = sections[symndx];\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <string.h>\n\n// Minimal stand-ins for BFD-related types used by coff_relocate_section.\ntypedef struct bfd_section\n{\n  struct bfd_section *output_section;\n  uintptr_t vma;\n  size_t output_offset;\n} asection;\n\n// Simulated COFF internal symbol entry (only fields we need)\ntypedef struct internal_syment\n{\n  int n_scnum;\n  long n_value;\n} internal_syment;\n\n// Simulated reloc howto type\nstruct reloc_howto_type\n{\n  int pc_relative;\n  int pcrel_offset;\n};\n\n// Simulated link info\nstruct bfd_link_info\n{\n  int dummy;\n};\n\n// Global absolute section pointer placeholder\nstatic asection abs_sec_storage;\nasection *bfd_abs_section_ptr = &abs_sec_storage;\n\n// Stubs for helper functions/macros used in the vulnerable routine\nstatic inline int bfd_link_relocatable(struct bfd_link_info *info) { (void)info; return 0; }\nstatic inline int bfd_is_abs_section(asection *sec) { return sec == bfd_abs_section_ptr; }\nstatic inline int obj_pe(void *bfd) { (void)bfd; return 0; }\n\nstatic struct reloc_howto_type *\nbfd_coff_rtype_to_howto(void *input_bfd,\n                        asection *input_section,\n                        void *rel,\n                        void *h,\n                        internal_syment *sym,\n                        long *addend)\n{\n  (void)input_bfd; (void)input_section; (void)rel; (void)h; (void)sym; (void)addend;\n  static struct reloc_howto_type howto = { 0, 0 }; // Ensure we go through the path we want\n  return &howto;\n}\n\n// A minimal reproduction of the vulnerable logic in coff_relocate_section.\n// Parameters are simplified for the purposes of triggering the OOB read.\nbool coff_relocate_section(void *input_bfd,\n                           asection *input_section,\n                           void *rel,\n                           void *h,                      // Force NULL to follow the vulnerable path\n                           internal_syment *syms,        // Symbol table base\n                           asection **sections,          // Array of section pointers\n                           long symndx,                  // Crafted index from relocation\n                           struct bfd_link_info *info)   // Link info\n{\n  (void)input_bfd;\n  (void)input_section;\n  (void)rel;\n\n  internal_syment *sym = syms + symndx; // Assume caller made this safe\n\n  long addend;\n  if (sym != NULL && sym->n_scnum != 0)\n    addend = - sym->n_value;\n  else\n    addend = 0;\n\n  struct reloc_howto_type *howto = bfd_coff_rtype_to_howto(input_bfd, input_section, rel, h, sym, &addend);\n  if (howto == NULL)\n    return false;\n\n  if (howto->pc_relative && howto->pcrel_offset)\n  {\n    if (bfd_link_relocatable(info))\n      return true;\n    if (sym != NULL && sym->n_scnum != 0)\n      addend += sym->n_value;\n  }\n\n  long val = 0;\n  asection *sec = NULL;\n\n  if (h == NULL)\n  {\n    if (symndx == -1)\n    {\n      sec = bfd_abs_section_ptr;\n      val = 0;\n    }\n    else\n    {\n      // Vulnerable access: no bounds check on symndx vs number of sections\n      // This read triggers ASAN when symndx is out of range of the 'sections' array.\n      sec = sections[symndx];\n\n      // The rest mimics the original flow (not necessary for the crash)\n      if (sec == NULL || bfd_is_abs_section(sec))\n        return true;\n\n      val = (long)(sec->output_section->vma + sec->output_offset + (uintptr_t)sym->n_value);\n      if (!obj_pe(input_bfd))\n        val -= (long)sec->vma;\n    }\n  }\n  else\n  {\n    // Not needed for this reproducer.\n  }\n\n  // Prevent optimizing the variables away\n  volatile long sink = val + addend + (long)(uintptr_t)sec;\n  (void)sink;\n  return true;\n}\n\nint main(void)\n{\n  // Prepare a small sections array\n  const size_t sections_count = 4; // Intentionally small\n  asection **sections = (asection **)calloc(sections_count, sizeof(*sections));\n  if (!sections) {\n    perror(\"calloc sections\");\n    return 1;\n  }\n\n  // Populate valid in-bounds entries to avoid NULL short-circuiting before the bug\n  for (size_t i = 0; i < sections_count; i++) {\n    sections[i] = (asection *)calloc(1, sizeof(asection));\n    if (!sections[i]) {\n      perror(\"calloc section elem\");\n      return 1;\n    }\n    sections[i]->output_section = sections[i];\n    sections[i]->vma = 0x1000 * (i + 1);\n    sections[i]->output_offset = 0x10 * i;\n  }\n\n  // Choose a symndx that is well beyond the bounds of 'sections'\n  const long symndx = 1000; // Out-of-range index\n\n  // Allocate a sufficiently large symbol table so that accesses via 'symndx' are in-bounds here\n  size_t syms_count = (size_t)symndx + 1;\n  internal_syment *syms = (internal_syment *)calloc(syms_count, sizeof(*syms));\n  if (!syms) {\n    perror(\"calloc syms\");\n    return 1;\n  }\n  // Make the selected symbol look defined and with a value, mimicking a normal symbol\n  syms[symndx].n_scnum = 1;\n  syms[symndx].n_value = 0x1234;\n\n  struct bfd_link_info info = {0};\n\n  // Trigger the vulnerable path: h == NULL, symndx != -1, and symndx out of range of 'sections'.\n  // This will perform: sec = sections[symndx]; causing an out-of-bounds read.\n  (void)coff_relocate_section(NULL, NULL, NULL, NULL, syms, sections, symndx, &info);\n\n  // Cleanup (won't be reached if ASAN aborts as expected)\n  for (size_t i = 0; i < sections_count; i++)\n    free(sections[i]);\n  free(sections);\n  free(syms);\n\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6969587802886963,
+      "output": "=================================================================\n==3632145==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000001f80 at pc 0x5b394498719c bp 0x7ffe538fd330 sp 0x7ffe538fd328\nREAD of size 8 at 0x603000001f80 thread T0\n    #0 0x5b394498719b in coff_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111:13\n    #1 0x5b39449879dd in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:173:9\n    #2 0x7445b342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7445b342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b39448c7314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer+0x21314) (BuildId: 95a1007e1a2055cb49263e02fd4793f0f0517537)\n\nAddress 0x603000001f80 is a wild pointer inside of access range of size 0x000000000008.\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111:13 in coff_relocate_section\nShadow bytes around the buggy address:\n  0x0c067fff83a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0c067fff83f0:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8410: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8420: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8430: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8440: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3632145==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "coff_relocate_section",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "coff_relocate_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111",
+          "13"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:173",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

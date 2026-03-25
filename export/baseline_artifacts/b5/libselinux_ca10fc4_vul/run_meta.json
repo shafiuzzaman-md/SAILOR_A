@@ -1,0 +1,12 @@
+{
+  "baseline": "B5",
+  "project": "libselinux_ca10fc4_vul",
+  "targets": 28,
+  "timeout_per_target": 600,
+  "jobs": 16,
+  "total_findings_reported": 0,
+  "total_validated": 82,
+  "confirmed": 45,
+  "unique": 17,
+  "elapsed": 16.459627628326416
+}

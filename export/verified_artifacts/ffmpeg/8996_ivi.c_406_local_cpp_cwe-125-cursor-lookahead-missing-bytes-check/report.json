@@ -1,0 +1,140 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 29 (sink assert at 32)\nCrash: CRASH: ptr at ivi.c:29\nOriginal: ivi.c:406 \u2192 if (!p && planes[0].num_bands == 4) {\nASan: not confirmed\n\nAll crashes (1):\n  ptr at ivi.c:29 \u2192 ivi.c:406\n"
+    ]
+  ],
+  "line_map": {
+    "ivi.c": {
+      "6": {
+        "orig_file": "ivi.c",
+        "orig_line": 889,
+        "code": "#endif"
+      },
+      "18": {
+        "orig_file": "ivi.c",
+        "orig_line": 396,
+        "code": "av_cold int ff_ivi_init_tiles(IVIPlaneDesc *planes,"
+      },
+      "19": {
+        "orig_file": "ivi.c",
+        "orig_line": 397,
+        "code": "int tile_width, int tile_height)"
+      },
+      "20": {
+        "orig_file": "ivi.c",
+        "orig_line": 398,
+        "code": "{"
+      },
+      "24": {
+        "orig_file": "ivi.c",
+        "orig_line": 402,
+        "code": "for (p = 0; p < 3; p++) {"
+      },
+      "25": {
+        "orig_file": "ivi.c",
+        "orig_line": 403,
+        "code": "t_width  = !p ? tile_width  : (tile_width  + 3) >> 2;"
+      },
+      "26": {
+        "orig_file": "ivi.c",
+        "orig_line": 404,
+        "code": "t_height = !p ? tile_height : (tile_height + 3) >> 2;"
+      },
+      "29": {
+        "orig_file": "ivi.c",
+        "orig_line": 406,
+        "code": "if (!p && planes[0].num_bands == 4) {"
+      },
+      "30": {
+        "orig_file": "ivi.c",
+        "orig_line": 410,
+        "code": "}"
+      },
+      "33": {
+        "orig_file": "ivi.c",
+        "orig_line": 410,
+        "code": "}"
+      },
+      "35": {
+        "orig_file": "ivi.c",
+        "orig_line": 393,
+        "code": "return 0;"
+      },
+      "36": {
+        "orig_file": "ivi.c",
+        "orig_line": 394,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ivi.c",
+      "original_line": 406,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "401: \n402:     for (p = 0; p < 3; p++) {\n403:         t_width  = !p ? tile_width  : (tile_width  + 3) >> 2;\n404:         t_height = !p ? tile_height : (tile_height + 3) >> 2;\n405: \n406:         if (!p && planes[0].num_bands == 4) {\n407:             if (t_width % 2 || t_height % 2) {\n408:                 avpriv_request_sample(NULL, \"Odd tiles\");\n409:                 return AVERROR_PATCHWELCOME;\n410:             }\n411:             t_width  >>= 1;"
+    },
+    "klee_crash": {
+      "harness_file": "ivi.c",
+      "harness_line": 29,
+      "original_file": "ivi.c",
+      "original_line": 406,
+      "original_code": "if (!p && planes[0].num_bands == 4) {",
+      "original_context": "    403:         t_width  = !p ? tile_width  : (tile_width  + 3) >> 2;\n    404:         t_height = !p ? tile_height : (tile_height + 3) >> 2;\n    405: \n>>> 406:         if (!p && planes[0].num_bands == 4) {\n    407:             if (t_width % 2 || t_height % 2) {\n    408:                 avpriv_request_sample(NULL, \"Odd tiles\");\n    409:                 return AVERROR_PATCHWELCOME;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: ivi.c\nLine: 29\nassembly.ll line: 132\nState: 1\nStack: \n\t#000000132 in ff_ivi_init_tiles(138967052386304, 2, 2) at ivi.c:29\n\t#100000047 in main() at driver.c:33\nInfo: \n\taddress: 138967052386308\n\tnext: object at 138666941546496 of size 4\n\t\tMO41[4] allocated at ff_ivi_init_tiles():  %9 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "planes_byte0",
+        "size": 1,
+        "data": "b'\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ivi.c",
+        "harness_line": 29,
+        "original_file": "ivi.c",
+        "original_line": 406,
+        "error_type": "ptr",
+        "crash_function": "ff_ivi_init_tiles",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

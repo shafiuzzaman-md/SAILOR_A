@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_image.c",
+        "original_line": 125,
+        "function": "jbig2_image_resize",
+        "entry_point": "jbig2_image_resize",
+        "spine": [
+            "jbig2_image_resize"
+        ],
+        "original_context": "120:             return NULL;\n121:         }\n122:         image->data = data;\n123:         if (height > image->height) {\n124:             const uint8_t fill = value ? 0xFF : 0x00;\n125:             memset(image->data + (size_t) image->height * image->stride, fill, ((size_t) height - image->height) * image->stride);\n126:         }\n127:         image->height = height;\n128: \n129:     } else {\n130:         Jbig2Image *newimage;"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_image.c",
+        "harness_line": 73,
+        "original_file": "jbig2_image.c",
+        "original_line": 125,
+        "original_code": "memset(image->data + (size_t) image->height * image->stride, fill, ((size_t) height - image->height) * image->stride);",
+        "original_context": "    122:         image->data = data;\n    123:         if (height > image->height) {\n    124:             const uint8_t fill = value ? 0xFF : 0x00;\n>>> 125:             memset(image->data + (size_t) image->height * image->stride, fill, ((size_t) height - image->height) * image->stride);\n    126:         }\n    127:         image->height = height;\n    128: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 346\nState: 1\nStack: \n\t#000000346 in memset(139012151046160, symbolic, 16) at runtime/Freestanding/memset.c:15\n\t#100000258 in jbig2_image_resize(139098050392064, 139166769868800, 16, 4, symbolic) at jbig2_image.c:73\n\t#200000119 in main() at driver.c:38\nInfo: \n\taddress: 139012151046160\n\tnext: object at 138724388237312 of size 1\n\t\tMO90[1] allocated at jbig2_image_resize():  %13 = alloca i8, alig"
+    },
+    "concrete_inputs": [
+        {
+            "name": "image_data_initial",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "fill_value",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_realloc",
+        "crash_file": "thirdparty/jbig2dec/jbig2.c",
+        "crash_line": 565,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==28379==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x55f4d11c4847 bp 0x7ffeb5027400 sp 0x7ffeb50273f0\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x55f4d11c4846 in jbig2_realloc thirdparty/jbig2dec/jbig2.c:565\n    #1 0x55f4d11c1357 in jbig2_image_resize thirdparty/jbig2dec/jbig2_image.c:117\n    #2 0x55f4d11bfdcf in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5089_jbig2_image.c_125_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:38\n    #3 0x7ff2d8922d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7ff2d8922e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55f4d11bf994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5089_jbig2_image.c_125_local_cpp_cwe-787-oob-write/asan_real/replay_bin+0xb994)\n\n0x502000000040 is located 12 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7ff2d8cd9a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55f4d11bfb18 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5089_jbig2_image.c_125_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:12\n    #2 0x7ff2d8922d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2.c:565 in jbig2_realloc\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa fa 04 fa[fa]fa 00 00 fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5089_jbig2_image.c_125_local_cpp_cwe-787-oob-write/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_image.c",
+            "harness_line": 73,
+            "original_file": "jbig2_image.c",
+            "original_line": 125,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5089_jbig2_image.c_125_local_cpp_cwe-787-oob-write/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_realloc",
+            "crash_file": "thirdparty/jbig2dec/jbig2.c",
+            "crash_line": 565
+        }
+    ]
+}

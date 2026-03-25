@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4129279==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x559b7ee34c23 bp 0x7fff89d03a30 sp 0x7fff89d037e0 T0)
+==4129279==The signal is caused by a READ memory access.
+==4129279==Hint: address points to the zero page.
+    #0 0x559b7ee34c23 in opt_printf_stderr /app/se_runs/b3/openssl_67b5686b_vul/findings/app_provider_128_null-pointer-dereference/reproducer.c:41:24
+    #1 0x559b7ee345db in opt_provider_param /app/se_runs/b3/openssl_67b5686b_vul/findings/app_provider_128_null-pointer-dereference/reproducer.c:101:9
+    #2 0x559b7ee33cd2 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/app_provider_128_null-pointer-dereference/reproducer.c:123:11
+    #3 0x71e54e22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x71e54e22a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x559b7ed74314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/app_provider_128_null-pointer-dereference/reproducer+0x21314) (BuildId: b6e62882e63bfeb30f5e60e7affb3ea9d4d3ff8b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/app_provider_128_null-pointer-dereference/reproducer.c:41:24 in opt_printf_stderr
+==4129279==ABORTING

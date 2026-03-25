@@ -1,0 +1,34 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 4005097669
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x55bd3ed70e00, 0x55bd3ed70e03), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x55bd3ed70e08,0x55bd3ed70e38), 
+INFO:        3 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 3 min: 24b max: 94b total: 142b rss: 32Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3358582==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x55bd3e931592 bp 0x7ffe5c6eab80 sp 0x7ffe5c6eab70 T0)
+==3358582==The signal is caused by a READ memory access.
+==3358582==Hint: address points to the zero page.
+    #0 0x55bd3e931592 in bfd_get_flavour /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:7881:20
+    #1 0x55bd3e96de8a in _bfd_elf_copy_private_header_data /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:8658:7
+    #2 0x55bd3e930ad7 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:40:5
+    #3 0x55bd3e859523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd5523) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #4 0x55bd3e858c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd4c79) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #5 0x55bd3e85a8e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd68e8) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #6 0x55bd3e85add2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #7 0x55bd3e849122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xc5122) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #8 0x55bd3e872e12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xeee12) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+    #9 0x7f0491641d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x7f0491641e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #11 0x55bd3e83db64 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/7938_elf.c_8257_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xb9b64) (BuildId: 56fbf6eaf0849751606a12b997129813d7739840)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:7881:20 in bfd_get_flavour
+==3358582==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-d3399b7262fb56cb9ed053d68db9291c410839c4
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

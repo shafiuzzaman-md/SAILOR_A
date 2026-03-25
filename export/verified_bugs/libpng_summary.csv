@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,0,0,0,0,0,0,0,No standalone OSS-Fuzz harness files
+B2: LLM+KLEE no SA,20,12,0,0,0,0,0,No crashes
+B3: Pure LLM detect,104,—,89,61,12,16,16,16 unique library locations (png.c/pngread/pngrtran/filter_*)
+B4: SA+LLM detect,—,—,—,—,—,—,3,TBD pending re-verification
+SAILOR-GPT5,—,—,45,—,—,—,21,21 unique verified bugs

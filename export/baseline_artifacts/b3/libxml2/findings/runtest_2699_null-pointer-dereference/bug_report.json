@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 2699,
+    "function": "streamProcessTest",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "When rng is non-NULL and xmlTextReaderRelaxNGValidate returns < 0, the code calls fclose(t) without ensuring t is non-NULL. If result is NULL, t remains NULL (it is only opened when result != NULL), leading to fclose(NULL) and a crash.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n\n/* Emulate libxml2 test harness macros/types */\n#ifndef ATTRIBUTE_UNUSED\n#define ATTRIBUTE_UNUSED\n#endif\n\ntypedef struct _xmlTextReader xmlTextReader;\ntypedef xmlTextReader* xmlTextReaderPtr;\n\n/* Globals expected by runtest.c */\nint nb_tests = 0;\nconst char *temp_directory = \".\";\nchar *testErrors = NULL;\nsize_t testErrorsSize = 0;\n\n/* Stubs for external functions used by streamProcessTest */\nstatic void fatalError(void) {\n    /* In the real test harness, this would abort the test suite */\n    fprintf(stderr, \"fatalError called\\n\");\n    exit(1);\n}\n\nstatic char *resultFilename(const char *filename, const char *dir, const char *ext) {\n    /* Compose a temporary result filename (not used in this reproducer path) */\n    size_t len = strlen(filename) + strlen(dir) + strlen(ext) + 2;\n    char *out = (char *)malloc(len);\n    if (!out) return NULL;\n    snprintf(out, len, \"%s/%s%s\", dir ? dir : \".\", filename, ext ? ext : \"\");\n    return out;\n}\n\nstatic void xmlFree(void *ptr) {\n    free(ptr);\n}\n\nstatic void testErrorHandler(void *ctx, const char *fmt, const char *arg) {\n    (void)ctx;\n    fprintf(stderr, fmt, arg);\n}\n\n/* Force the vulnerable RNG validation path to report failure (< 0) */\nstatic int xmlTextReaderRelaxNGValidate(xmlTextReaderPtr reader, const char *rng) {\n    (void)reader;\n    (void)rng;\n    return -1; /* simulate schema compile failure */\n}\n\n/* Remaining stubs to satisfy linker; not executed in this reproducer */\nstatic int xmlTextReaderRead(xmlTextReaderPtr reader) { (void)reader; return 0; }\nstatic void processNode(FILE *t, xmlTextReaderPtr reader) { (void)t; (void)reader; }\nstatic int xmlTextReaderIsValid(xmlTextReaderPtr reader) { (void)reader; return 1; }\nstatic int compareFiles(const char *a, const char *b) { (void)a; (void)b; return 0; }\nstatic int compareFileMem(const char *filename, const char *mem, size_t size) {\n    (void)filename; (void)mem; (void)size; return 0;\n}\n\n/* Define LIBXML_RELAXNG_ENABLED to enable the vulnerable block */\n#define LIBXML_RELAXNG_ENABLED 1\n\n/* Vulnerable function copied/replicated from runtest.c with minimal changes */\nstatic int streamProcessTest(const char *filename, const char *result, const char *err,\n                             xmlTextReaderPtr reader, const char *rng,\n                             int options ATTRIBUTE_UNUSED) {\n    int ret;\n    char *temp = NULL;\n    FILE *t = NULL;\n\n    if (reader == NULL)\n        return(-1);\n\n    nb_tests++;\n    if (result != NULL) {\n        temp = resultFilename(filename, temp_directory, \".res\");\n        if (temp == NULL) {\n            fprintf(stderr, \"Out of memory\\n\");\n            fatalError();\n        }\n        t = fopen(temp, \"wb\");\n        if (t == NULL) {\n            fprintf(stderr, \"Can't open temp file %s\\n\", temp);\n            xmlFree(temp);\n            return(-1);\n        }\n    }\n#ifdef LIBXML_RELAXNG_ENABLED\n    if (rng != NULL) {\n        ret = xmlTextReaderRelaxNGValidate(reader, rng);\n        if (ret < 0) {\n            testErrorHandler(NULL, \"Relax-NG schema %s failed to compile\\n\", rng);\n            /* BUG: t can be NULL here if result == NULL, leading to fclose(NULL) */\n            fclose(t);\n            if (temp != NULL) {\n                unlink(temp);\n                xmlFree(temp);\n            }\n            return(0);\n        }\n    }\n#endif\n    ret = xmlTextReaderRead(reader);\n    while (ret == 1) {\n        if ((t != NULL) && (rng == NULL))\n            processNode(t, reader);\n        ret = xmlTextReaderRead(reader);\n    }\n    if (ret != 0) {\n        testErrorHandler(NULL, \"%s : failed to parse\\n\", filename);\n    }\n    if (rng != NULL) {\n        if (xmlTextReaderIsValid(reader) != 1) {\n            testErrorHandler(NULL, \"%s fails to validate\\n\", filename);\n        } else {\n            testErrorHandler(NULL, \"%s validates\\n\", filename);\n        }\n    }\n    if (t != NULL) {\n        fclose(t);\n        ret = compareFiles(temp, result);\n        if (temp != NULL) {\n            unlink(temp);\n            xmlFree(temp);\n        }\n        if (ret) {\n            fprintf(stderr, \"Result for %s failed in %s\\n\", filename, result);\n            return(-1);\n        }\n    }\n    if (err != NULL) {\n        ret = compareFileMem(err, testErrors, testErrorsSize);\n        if (ret != 0) {\n            fprintf(stderr, \"Error for %s failed\\n\", filename);\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    /* Use any non-NULL reader pointer to satisfy the initial check */\n    xmlTextReaderPtr fakeReader = (xmlTextReaderPtr)0x1;\n\n    /* Pass result == NULL so 't' stays NULL; pass rng != NULL to take RNG path */\n    const char *filename = \"dummy.xml\";\n    const char *result = NULL;      /* ensures t is never opened */\n    const char *err = NULL;\n    const char *rng = \"invalid.rng\";/* any non-NULL string */\n\n    /* This call will reach the bug and attempt fclose(NULL) */\n    int r = streamProcessTest(filename, result, err, fakeReader, rng, 0);\n    fprintf(stderr, \"streamProcessTest returned %d (if no crash occurred)\\n\", r);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.0341598987579346,
+      "output": "Relax-NG schema invalid.rng failed to compile\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4025887==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x72c1a08852a4 bp 0x7fffb16bcc20 sp 0x7fffb16bcc00 T0)\n==4025887==The signal is caused by a READ memory access.\n==4025887==Hint: address points to the zero page.\n    #0 0x72c1a08852a4 in fclose libio/./libio/iofclose.c:48:9\n    #1 0x646bdf4a87f4 in fclose (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer+0x767f4) (BuildId: 77a2c2661515bb396ee9c3faa9b52cf12b0363be)\n    #2 0x646bdf512f00 in streamProcessTest /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:95:13\n    #3 0x646bdf512d19 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:152:13\n    #4 0x72c1a082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x72c1a082a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x646bdf453324 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer+0x21324) (BuildId: 77a2c2661515bb396ee9c3faa9b52cf12b0363be)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV libio/./libio/iofclose.c:48:9 in fclose\n==4025887==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "fclose",
+      "crash_file": "libio/./libio/iofclose.c:48",
+      "crash_line": 9,
+      "frames": [
+        [
+          "0",
+          "fclose",
+          "libio/./libio/iofclose.c:48",
+          "9"
+        ],
+        [
+          "2",
+          "streamProcessTest",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:95",
+          "13"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:152",
+          "13"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

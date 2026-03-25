@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-rs6000.c",
+    "line": 3887,
+    "function": "xcoff_ppc_relocate_section",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The code computes address = rel->r_vaddr - input_section->vma and only checks if (address > input_section->size) before reading from contents+address. It then reads 2 or 4 bytes via bfd_get_16/bfd_get_32 without ensuring address + reloc_size <= input_section->size. If address is exactly input_section->size or close to it, this results in an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-rs6000.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used by xcoff_ppc_relocate_section. */\ntypedef uint64_t bfd_vma;\ntypedef struct bfd { int dummy; } bfd;\n\ntypedef struct asection {\n  bfd_vma vma;\n  size_t size;\n} asection;\n\ntypedef struct internal_reloc {\n  bfd_vma r_vaddr;\n  unsigned int r_type;\n} internal_reloc;\n\n/* Stand-in for BFD howto. We only need the reloc size. */\ntypedef struct reloc_howto_struct {\n  int size; /* in bytes (2 or 4) */\n  int complain_on_overflow; /* unused here */\n} reloc_howto_type;\n\n/* Minimal helpers mirroring BFD accessors used at the crash site. */\nstatic inline int bfd_get_reloc_size(const reloc_howto_type *howto) {\n  return howto->size;\n}\n\nstatic inline uint32_t bfd_get_16(bfd *abfd, const unsigned char *p) {\n  /* Endianness doesn't matter for triggering the OOB read. */\n  return ((uint32_t)p[0] << 8) | (uint32_t)p[1];\n}\n\nstatic inline uint32_t bfd_get_32(bfd *abfd, const unsigned char *p) {\n  return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |\n         ((uint32_t)p[2] << 8)  |  (uint32_t)p[3];\n}\n\n/* A pared-down version of the vulnerable function containing the buggy logic\n   from bfd/coff-rs6000.c:xcoff_ppc_relocate_section. */\nbool xcoff_ppc_relocate_section(bfd *input_bfd,\n                                asection *input_section,\n                                bfd *output_bfd,\n                                internal_reloc *rel,\n                                unsigned char *contents) {\n  reloc_howto_type howto;\n  /* Force a 2-byte relocation to hit bfd_get_16 path. */\n  howto.size = 2;\n  howto.complain_on_overflow = 0;\n\n  /* address */\n  bfd_vma address = rel->r_vaddr - input_section->vma;\n  unsigned char *location = contents + address;\n\n  if (address > input_section->size)\n    abort();\n\n  /* Get the value we are going to relocate (BUG: may read past end). */\n  unsigned int value_to_relocate;\n  if (2 == bfd_get_reloc_size(&howto))\n    value_to_relocate = bfd_get_16(input_bfd, location);\n  else\n    value_to_relocate = bfd_get_32(input_bfd, location);\n\n  /* Prevent optimizing out. */\n  volatile unsigned int sink = value_to_relocate;\n  (void)sink;\n  return true;\n}\n\nint main(void) {\n  /* Set up a tiny input section with size N. */\n  const size_t N = 16; /* small buffer to clearly trigger OOB read */\n  asection sec;\n  sec.vma = 0x1000;\n  sec.size = N;\n\n  /* Allocate contents of exactly N bytes. ASan will place a redzone after it. */\n  unsigned char *contents = (unsigned char *)malloc(N);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  /* Initialize contents with a pattern. */\n  for (size_t i = 0; i < N; i++) contents[i] = (unsigned char)i;\n\n  /* Craft a relocation whose r_vaddr lands exactly at the end of the section. */\n  internal_reloc rel;\n  rel.r_type = 0; /* doesn't matter for this minimal reproducer */\n  rel.r_vaddr = sec.vma + sec.size; /* address == size, passes > check */\n\n  bfd in_bfd = {0};\n  bfd out_bfd = {0};\n\n  /* This call will perform bfd_get_16 at contents + size, reading 2 bytes\n     out of bounds (exactly the bug). */\n  (void)xcoff_ppc_relocate_section(&in_bfd, &sec, &out_bfd, &rel, contents);\n\n  /* If ASan didn't abort yet (it should), free and exit. */\n  free(contents);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6640145778656006,
+      "output": "=================================================================\n==3602400==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000020 at pc 0x6483d9e500b9 bp 0x7ffc3fe44620 sp 0x7ffc3fe44618\nREAD of size 1 at 0x602000000020 thread T0\n    #0 0x6483d9e500b8 in bfd_get_16 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:34:21\n    #1 0x6483d9e4ff23 in xcoff_ppc_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:64:25\n    #2 0x6483d9e505e8 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:100:9\n    #3 0x7a36e102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7a36e102a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x6483d9d90314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer+0x21314) (BuildId: 33d944385ba1c4ca83d579a749806cf590074a12)\n\n0x602000000020 is located 0 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x6483d9e13d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 33d944385ba1c4ca83d579a749806cf590074a12)\n    #1 0x6483d9e503ec in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:82:46\n    #2 0x7a36e102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7a36e102a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x6483d9d90314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer+0x21314) (BuildId: 33d944385ba1c4ca83d579a749806cf590074a12)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:34:21 in bfd_get_16\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00[fa]fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3602400==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "bfd_get_16",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:34",
+      "crash_line": 21,
+      "frames": [
+        [
+          "0",
+          "bfd_get_16",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:34",
+          "21"
+        ],
+        [
+          "1",
+          "xcoff_ppc_relocate_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:64",
+          "25"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:100",
+          "9"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_3887_out-of-bounds-read/reproducer.c:82",
+          "46"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

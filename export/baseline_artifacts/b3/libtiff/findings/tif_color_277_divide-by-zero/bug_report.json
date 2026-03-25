@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 277,
+    "function": "TIFFYCbCrToRGBInit",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "f2 is computed as LumaRed * f1 / LumaGreen. If LumaGreen is 0 (from caller-supplied luma coefficients), this divides by zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <fenv.h>\n\n/* Forward declaration of the internal struct type used by libtiff. */\ntypedef struct TIFFYCbCrToRGB TIFFYCbCrToRGB;\n\n/* External function from libtiff that we are targeting. */\nextern int TIFFYCbCrToRGBInit(TIFFYCbCrToRGB *ycbcr, float *luma, float *refBlackWhite);\n\nint main(void) {\n    /* Enable trapping of floating-point divide-by-zero to make the bug crash deterministically. */\n    feenableexcept(FE_DIVBYZERO);\n\n    /* Allocate a large buffer to serve as the TIFFYCbCrToRGB context plus its scratch tables.\n       The actual size of TIFFYCbCrToRGB inside libtiff is unknown to us, so we over-allocate. */\n    size_t buf_size = 64 * 1024; /* plenty of space for struct + tables */\n    void *buf = malloc(buf_size);\n    if (!buf) {\n        perror(\"malloc\");\n        return 1;\n    }\n    TIFFYCbCrToRGB *ctx = (TIFFYCbCrToRGB *)buf;\n\n    /* Luma coefficients where LumaGreen == 0 triggers division by zero in\n       f2 = LumaRed * f1 / LumaGreen (and similarly for f4). */\n    float luma[3] = { 0.299f, 0.0f, 0.114f }; /* LumaRed, LumaGreen(=0), LumaBlue */\n\n    /* ReferenceBlackWhite values: valid, but not important since the crash happens earlier. */\n    float refBlackWhite[6] = { 0.0f, 255.0f, 0.0f, 255.0f, 0.0f, 255.0f };\n\n    /* This call will hit: f2 = LumaRed * f1 / LumaGreen with LumaGreen == 0,\n       which raises SIGFPE due to FE_DIVBYZERO being enabled. */\n    (void)TIFFYCbCrToRGBInit(ctx, luma, refBlackWhite);\n\n    /* If we somehow returned (e.g., if FP exceptions are not enabled), clean up. */\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "/usr/bin/ld: /tmp/reproducer-059e0d.o: in function `main':\n/app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_277_divide-by-zero/reproducer.c:36:(.text+0x17f): undefined reference to `TIFFYCbCrToRGBInit'\nclang: error: linker command failed with exit code 1 (use -v to see invocation)\n"
+  }
+}

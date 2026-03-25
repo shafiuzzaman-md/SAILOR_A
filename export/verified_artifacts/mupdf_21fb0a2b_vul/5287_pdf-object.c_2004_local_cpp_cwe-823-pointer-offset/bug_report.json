@@ -1,0 +1,100 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-object.c",
+        "original_line": 2004,
+        "function": "pdf_array_delete",
+        "entry_point": "pdf_array_delete",
+        "spine": [
+            "pdf_array_delete"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "pdf-object.c",
+        "harness_line": 71,
+        "original_file": "pdf-object.c",
+        "original_line": 2004,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=1)",
+        "original_context": "",
+        "error_type": "assert",
+        "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: pdf-object.c\nLine: 71\nassembly.ll line: 238\nState: 1\nStack: \n\t#000000238 in pdf_array_delete(139467689631744, 139605128585216, symbolic) at pdf-object.c:71\n\t#100000111 in main() at driver.c:42\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "len_sym",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        },
+        {
+            "name": "i_sym",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "len_sym",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00F'"
+        },
+        {
+            "name": "i_sym",
+            "size": 4,
+            "data": "b'\\x06\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "prepare_object_for_alteration",
+        "crash_file": "source/pdf/pdf-object.c",
+        "crash_line": 1784,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==30910==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000148 (pc 0x55dc67727d1b bp 0x7fff9b038580 sp 0x7fff9b038490 T0)\n==30910==The signal is caused by a READ memory access.\n==30910==Hint: address points to the zero page.\n    #0 0x55dc67727d1b in prepare_object_for_alteration source/pdf/pdf-object.c:1784\n    #1 0x55dc677297df in pdf_array_delete source/pdf/pdf-object.c:2000\n    #2 0x55dc6771a772 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5287_pdf-object.c_2004_local_cpp_cwe-823-pointer-offset/asan_real/replay_driver.c:42\n    #3 0x7fbc64c85d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fbc64c85e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55dc6771a3b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5287_pdf-object.c_2004_local_cpp_cwe-823-pointer-offset/asan_real/replay_bin+0x1483b4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV source/pdf/pdf-object.c:1784 in prepare_object_for_alteration\n==30910==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5287_pdf-object.c_2004_local_cpp_cwe-823-pointer-offset/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-object.c",
+            "harness_line": 71,
+            "original_file": "pdf-object.c",
+            "original_line": 2004,
+            "error_type": "assert",
+            "crash_function": "pdf_array_delete",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5287_pdf-object.c_2004_local_cpp_cwe-823-pointer-offset/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "pdf-object.c",
+            "harness_line": 69,
+            "original_file": "pdf-object.c",
+            "original_line": 2004,
+            "error_type": "ptr",
+            "crash_function": "memmove",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5287_pdf-object.c_2004_local_cpp_cwe-823-pointer-offset/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "prepare_object_for_alteration",
+            "crash_file": "source/pdf/pdf-object.c",
+            "crash_line": 1784
+        }
+    ]
+}

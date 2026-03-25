@@ -1,0 +1,23 @@
+{
+  "baseline": "B1",
+  "description": "OSS-Fuzz Harness + KLEE Symbolic Execution",
+  "project": "libpng",
+  "commit": "747dd02cd2c8e7e31f6aabe1406a70b72a1f33f2",
+  "harness_source": "none (OSS-Fuzz harness is entirely in google/oss-fuzz Dockerfile, not a standalone .c file)",
+  "total_harnesses": 0,
+  "compiled": 0,
+  "build_errors": 0,
+  "se_detected": 0,
+  "unique_bugs": 0,
+  "klee_timeout": 300,
+  "run_date": "2026-03-12",
+  "run_environment": "local (KLEE 3.2-pre, clang-14)",
+  "summary": "No OSS-Fuzz harnesses available for libpng. The OSS-Fuzz project for libpng uses a custom build script that compiles the harness inline within the Dockerfile — there is no standalone .c/.cc harness file to extract and adapt for KLEE.",
+  "failure_reason": "No standalone OSS-Fuzz harness files exist for libpng",
+  "harnesses": [],
+  "key_findings": [
+    "libpng's OSS-Fuzz integration builds the harness inline in the Dockerfile, not as a separate source file",
+    "No harnesses available to convert to KLEE symbolic drivers",
+    "0 bugs found from 0 harnesses vs SAILOR's 21"
+  ]
+}

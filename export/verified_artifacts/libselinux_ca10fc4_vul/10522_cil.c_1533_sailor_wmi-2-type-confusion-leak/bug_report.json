@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cil.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "",
+            "crash_file": "",
+            "crash_line": 0
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "",
+        "crash_file": "",
+        "crash_line": 0,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1882==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000c0 at pc 0x560427c06d5d bp 0x7ffdeef43b00 sp 0x7ffdeef43af0\nREAD of size 8 at 0x5020000000c0 thread T0\n"
+    }
+}

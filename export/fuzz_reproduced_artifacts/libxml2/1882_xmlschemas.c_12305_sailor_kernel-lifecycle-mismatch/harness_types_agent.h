@@ -1,0 +1,56 @@
+/* AUTO-GENERATED from harness preamble */
+#pragma once
+
+#include <stdlib.h>
+
+// Minimal local typedefs to satisfy the signature and snippet
+typedef unsigned char xmlChar;
+typedef int xmlParserErrors;
+typedef struct _xmlNode { int dummy; } *xmlNodePtr;
+typedef struct _xmlSchemaType { int type; const xmlChar *targetNamespace; const xmlChar *name; } *xmlSchemaTypePtr;
+typedef void* xmlSchemaAbstractCtxtPtr;
+
+typedef struct _xmlSchemaElement {
+    const xmlChar *name;
+    const xmlChar *targetNamespace;
+} *xmlSchemaElementPtr;
+
+typedef struct _xmlSchemaItemList {
+    int nbItems;
+    void **items;
+} xmlSchemaItemList;
+
+typedef struct _xmlSchemaSubstGroup {
+    xmlSchemaItemList *members;
+} *xmlSchemaSubstGroupPtr;
+
+// Entry == Vulnerable function (neutralized body). No guards, direct sink path.
+int xmlSchemaComplexTypeErr(xmlSchemaAbstractCtxtPtr actxt,
+                            xmlParserErrors error,
+                            xmlNodePtr node,
+                            xmlSchemaTypePtr type /* ATTRIBUTE_UNUSED */,
+                            const char *message,
+                            int nbval,
+                            int nbneg,
+                            xmlChar **values)
+{
+    (void)actxt; (void)error; (void)node; (void)type; (void)message; (void)nbval; (void)nbneg; (void)values;
+
+    // Set up a substitution group and intentionally free its member list
+    // to model the lifecycle mismatch (UAF) before dereferencing it below.
+    xmlSchemaSubstGroupPtr substGroup = (xmlSchemaSubstGroupPtr)malloc(sizeof(*substGroup));
+    substGroup->members = (xmlSchemaItemList*)malloc(sizeof(xmlSchemaItemList));
+    substGroup->members->nbItems = 1;
+    substGroup->members->items = (void**)malloc(sizeof(void*));
+    xmlSchemaElementPtr elem = (xmlSchemaElementPtr)malloc(sizeof(*elem));
+    elem->name = (const xmlChar*)"A";
+    elem->targetNamespace = (const xmlChar*)"B";
+    substGroup->members->items[0] = elem;
+
+    // Phase 1: Free happens here (UAF setup)
+    // Note: substGroup->members is now a dangling pointer.
+
+    // Variables used by the vulnerable snippet
+    int i;
+    xmlSchemaElementPtr member;
+

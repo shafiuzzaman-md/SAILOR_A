@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "hashtab.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "hashtab_destroy",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/hashtab.c",
+            "crash_line": 219
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "hashtab_destroy",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/hashtab.c",
+        "crash_line": 219,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3526==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x5576655359b4 bp 0x7ffce0ec5f20 sp 0x7ffce0ec5ef0 T0)\n==3526==The signal is caused by a READ memory access.\n==3526==Hint: address points to the zero page.\n    #0 0x5576655359b4 in hashtab_destroy /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/hashtab.c:219\n    #1 0x5576655346c4 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:43\n    #2 0x7ff2aee7cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7ff2aee7ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x557665534264 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x1264)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/hashtab.c:219 in hashtab_destroy\n==3526==ABORTING\n"
+    }
+}

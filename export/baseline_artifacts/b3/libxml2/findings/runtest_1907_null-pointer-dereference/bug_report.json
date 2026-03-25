@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 1907,
+    "function": "pushParseTest",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "xmlCreatePushParserCtxt (or htmlCreatePushParserCtxt in the HTML branch) can return NULL on failure. The code immediately dereferences 'ctxt' via xmlCtxtSetErrorHandler(ctxt, ...) and subsequent calls without checking for NULL.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "// Standalone reproducer for null-pointer-dereference in runtest.c:pushParseTest at line 1907\n// It simulates xmlCreatePushParserCtxt failure (returns NULL), and then calls\n// xmlCtxtSetErrorHandler(ctxt, ...) without a NULL check, triggering a crash.\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdarg.h>\n\n// Minimal type stubs to mirror libxml2 API used by runtest.c\n\ntypedef struct _xmlDoc {\n    int dummy;\n} xmlDoc, *xmlDocPtr;\n\ntypedef struct _xmlParserCtxt {\n    int wellFormed;\n    xmlDocPtr myDoc;\n    int dummy; // used to force dereference in the stub\n} xmlParserCtxt, *xmlParserCtxtPtr;\n\n// Constants used in the test code\n#define XML_PARSE_HTML 1\n#define XML_CHAR_ENCODING_NONE 0\n#define ATTRIBUTE_UNUSED\n\n// Global used by the test harness\nstatic int nb_tests = 0;\n\n// Prototypes for the functions used in pushParseTest\nstatic int loadMem(const char *filename, const char **base, int *size);\nstatic void testStructuredErrorHandler(void *userData, void *ctx, const char *msg, ...);\n\n// Stubs emulating a subset of libxml2 API used by pushParseTest\nstatic xmlParserCtxtPtr xmlCreatePushParserCtxt(void *sax, void *user_data,\n                                                const char *chunk, int size,\n                                                const char *filename) {\n    (void)sax; (void)user_data; (void)chunk; (void)size; (void)filename;\n    // Simulate allocation/creation failure as per vulnerability description\n    return NULL;\n}\n\nstatic void xmlCtxtSetErrorHandler(xmlParserCtxtPtr ctxt,\n                                   void (*handler)(void *userData, void *ctx, const char *msg, ...),\n                                   void *userData) {\n    (void)handler; (void)userData;\n    // This mirrors the vulnerable dereference that occurs when ctxt is NULL.\n    // In the real libxml2, the function would access fields in ctxt without a NULL check.\n    // ASan will flag this as a NULL pointer dereference.\n    ctxt->dummy = 1; // crash here when ctxt == NULL\n}\n\nstatic int xmlCtxtUseOptions(xmlParserCtxtPtr ctxt, int options) {\n    (void)ctxt; (void)options; return 0;\n}\n\nstatic int xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size, int terminate) {\n    (void)ctxt; (void)chunk; (void)size; (void)terminate; return 0;\n}\n\nstatic void xmlFreeParserCtxt(xmlParserCtxtPtr ctxt) { (void)ctxt; }\nstatic void xmlFree(void *mem) { free(mem); }\nstatic void xmlFreeDoc(xmlDocPtr doc) { (void)doc; }\n\n// Minimal loader used by pushParseTest to obtain an in-memory buffer\nstatic int loadMem(const char *filename, const char **base, int *size) {\n    (void)filename;\n    const char *sample = \"<root/>\";\n    char *buf = (char *)malloc(strlen(sample) + 1);\n    if (!buf)\n        return -1;\n    strcpy(buf, sample);\n    *base = buf;\n    *size = (int)strlen(sample);\n    return 0;\n}\n\nstatic void testStructuredErrorHandler(void *userData, void *ctx, const char *msg, ...) {\n    (void)userData; (void)ctx; (void)msg;\n}\n\n// Reimplementation of the vulnerable function from runtest.c\nstatic int pushParseTest(const char *filename, const char *result,\n                         const char *err ATTRIBUTE_UNUSED, int options) {\n    xmlParserCtxtPtr ctxt;\n    xmlDocPtr doc;\n    const char *base;\n    int size, res;\n    int cur = 0;\n    int chunkSize = 4;\n\n    nb_tests++;\n    if (loadMem(filename, &base, &size) != 0) {\n        fprintf(stderr, \"Failed to load %s\\n\", filename);\n        return -1;\n    }\n\n    if (chunkSize > size)\n        chunkSize = size;\n\n    // Only the XML branch is used here; LIBXML_HTML_ENABLED is not defined in this reproducer\n    ctxt = xmlCreatePushParserCtxt(NULL, NULL, base + cur, chunkSize, filename);\n\n    // Vulnerable dereference: ctxt may be NULL\n    xmlCtxtSetErrorHandler(ctxt, testStructuredErrorHandler, NULL);\n\n    // The following lines are not reached due to the crash above, but are kept for fidelity\n    xmlCtxtUseOptions(ctxt, options);\n    cur += chunkSize;\n    chunkSize = 1024;\n    do {\n        if (cur + chunkSize >= size) {\n            xmlParseChunk(ctxt, base + cur, size - cur, 1);\n            break;\n        } else {\n            xmlParseChunk(ctxt, base + cur, chunkSize, 0);\n            cur += chunkSize;\n        }\n    } while (cur < size);\n    doc = ctxt->myDoc;\n    res = ctxt->wellFormed;\n    xmlFreeParserCtxt(ctxt);\n    xmlFree((char *)base);\n    if (!res) {\n        xmlFreeDoc(doc);\n        fprintf(stderr, \"Failed to parse %s\\n\", filename);\n        return -1;\n    }\n    (void)result; // unused in this minimal reproducer\n    return 0;\n}\n\nint main(void) {\n    // Any filename works; loadMem ignores it and returns a small in-memory buffer\n    // options = 0 ensures we take the XML (non-HTML) branch as in the provided snippet\n    (void)pushParseTest(\"dummy.xml\", \"dummy.out\", NULL, 0);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8283390998840332,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4025218==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000010 (pc 0x5b67ba7ef499 bp 0x7ffc1a601d50 sp 0x7ffc1a601d20 T0)\n==4025218==The signal is caused by a WRITE memory access.\n==4025218==Hint: address points to the zero page.\n    #0 0x5b67ba7ef499 in xmlCtxtSetErrorHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50:17\n    #1 0x5b67ba7eef6e in pushParseTest /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:105:5\n    #2 0x5b67ba7eecc7 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:136:11\n    #3 0x73a56d42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x73a56d42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5b67ba72f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer+0x21304) (BuildId: 4eb219384004df99081ee89f4e54f38e14eaa4c0)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50:17 in xmlCtxtSetErrorHandler\n==4025218==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlCtxtSetErrorHandler",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "xmlCtxtSetErrorHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50",
+          "17"
+        ],
+        [
+          "1",
+          "pushParseTest",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:105",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:136",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

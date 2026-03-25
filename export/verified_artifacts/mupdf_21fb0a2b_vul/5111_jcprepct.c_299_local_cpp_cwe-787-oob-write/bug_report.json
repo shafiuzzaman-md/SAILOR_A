@@ -1,0 +1,121 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 3,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jcprepct.c",
+        "original_line": 299,
+        "function": "create_context_buffer",
+        "entry_point": "jinit_c_prep_controller",
+        "spine": [
+            "jinit_c_prep_controller",
+            "create_context_buffer"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "jcprepct.c",
+        "harness_line": 44,
+        "original_file": "jcprepct.c",
+        "original_line": 299,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=6)",
+        "original_context": "",
+        "error_type": "user",
+        "error_details": "Error: invalid klee_assume call (provably false)\nFile: jcprepct.c\nLine: 44\nassembly.ll line: 103\nState: 2\nStack: \n\t#000000103 in create_context_buffer(139318447026176) at jcprepct.c:44\n\t#100000053 in jinit_c_prep_controller(139318447026176, symbolic) at jcprepct.c:25\n\t#200000031 in main() at driver.c:14\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "need_full_buffer",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "rgroup_height",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "need_full_buffer",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "rgroup_height",
+            "size": 4,
+            "data": "b'\\x10\\x00\\x00\\x00'"
+        },
+        {
+            "name": "need_full_buffer",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "rgroup_height",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jinit_c_prep_controller",
+        "crash_file": "thirdparty/libjpeg/jcprepct.c",
+        "crash_line": 328,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==28462==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x56524adab04b bp 0x7ffcdf96fa90 sp 0x7ffcdf96fa80\nREAD of size 8 at 0x502000000018 thread T0\n    #0 0x56524adab04a in jinit_c_prep_controller thirdparty/libjpeg/jcprepct.c:328\n    #1 0x56524ada9424 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:15\n    #2 0x7fe1a2b5fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fe1a2b5fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56524ada9274 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/asan_real/replay_bin+0x1274)\n\n0x502000000018 is located 4 bytes to the right of 4-byte region [0x502000000010,0x502000000014)\nallocated by thread T0 here:\n    #0 0x7fe1a2f16a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x56524ada93ce in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:10\n    #2 0x7fe1a2b5fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jcprepct.c:328 in jinit_c_prep_controller\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jcprepct.c",
+            "harness_line": 44,
+            "original_file": "jcprepct.c",
+            "original_line": 299,
+            "error_type": "user",
+            "crash_function": "create_context_buffer",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "jcprepct.c",
+            "harness_line": 47,
+            "original_file": "jcprepct.c",
+            "original_line": 299,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000002.ktest"
+        },
+        {
+            "harness_file": "jcprepct.c",
+            "harness_line": 51,
+            "original_file": "jcprepct.c",
+            "original_line": 299,
+            "error_type": "assert",
+            "crash_function": "create_context_buffer",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5111_jcprepct.c_299_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000003.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jinit_c_prep_controller",
+            "crash_file": "thirdparty/libjpeg/jcprepct.c",
+            "crash_line": 328
+        }
+    ]
+}

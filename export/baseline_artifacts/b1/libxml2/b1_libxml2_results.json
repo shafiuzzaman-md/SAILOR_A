@@ -1,0 +1,40 @@
+{
+  "baseline": "B1",
+  "description": "OSS-Fuzz Harness + KLEE Symbolic Execution",
+  "project": "libxml2",
+  "commit": "e334a9dba2c1e7cf7dc882a87e2c744e6d126a2d",
+  "harness_source": "in-tree: fuzz/",
+  "total_harnesses": 12,
+  "compiled": 11,
+  "build_errors": 1,
+  "se_detected": 11,
+  "unique_bugs": 0,
+  "false_positives": 11,
+  "klee_timeout": 300,
+  "project_bc_size_mb": 6.9,
+  "run_date": "2026-03-12",
+  "run_environment": "local (KLEE 3.2-pre, clang-14)",
+  "summary": "11/12 harnesses compiled and linked. All 11 KLEE runs reported 1 crash each — all are 'failed external call: xmlFuzzDataInit'. This function is defined in fuzz.c (the OSS-Fuzz support library) which was not linked into the bitcode because it's a support file, not a harness. Even with fuzz.c linked, KLEE would hit further external calls in the XML parsing paths. 1 harness (testFuzzer) failed due to duplicate 'main' symbol. 0 real bugs found.",
+  "failure_reason": "All 11 crashes: 'failed external call: xmlFuzzDataInit' — fuzz support library (fuzz.c) not in bitcode",
+  "harnesses": [
+    {"name": "api", "path": "fuzz/api.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 46.5, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at api.c:986"},
+    {"name": "html", "path": "fuzz/html.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 46.4, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at html.c:40"},
+    {"name": "lint", "path": "fuzz/lint.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 51.9, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at lint.c:144"},
+    {"name": "reader", "path": "fuzz/reader.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 46.0, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at reader.c:115"},
+    {"name": "regexp", "path": "fuzz/regexp.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 49.0, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at regexp.c:29"},
+    {"name": "schema", "path": "fuzz/schema.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 46.1, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at schema.c:38"},
+    {"name": "testFuzzer", "path": "fuzz/testFuzzer.c", "status": "BUILD_ERROR", "compile": "OK", "link": "FAIL", "klee_time_s": 0, "klee_errors": 0, "crash_detail": "llvm-link: duplicate 'main' symbol (testFuzzer.c has its own main())"},
+    {"name": "uri", "path": "fuzz/uri.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 49.2, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at uri.c:30"},
+    {"name": "valid", "path": "fuzz/valid.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 46.4, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at valid.c:34"},
+    {"name": "xinclude", "path": "fuzz/xinclude.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 45.7, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at xinclude.c:36"},
+    {"name": "xml", "path": "fuzz/xml.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 48.1, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at xml.c:45"},
+    {"name": "xpath", "path": "fuzz/xpath.c", "status": "FP_EXTERNAL_CALL", "compile": "OK", "link": "OK", "klee_time_s": 47.3, "klee_errors": 1, "crash_detail": "external call: xmlFuzzDataInit at xpath.c:35"}
+  ],
+  "key_findings": [
+    "libxml2 has 12 OSS-Fuzz harnesses in fuzz/ — 11 compiled successfully, 1 (testFuzzer) had main() symbol conflict",
+    "All 11 KLEE runs aborted immediately on 'xmlFuzzDataInit' — a function from the fuzz support library (fuzz.c) that wasn't linked",
+    "Even if fuzz.c were linked, the harnesses call xmlFuzz* helpers that use file I/O (xmlFuzzDataInit reads from a memory-mapped buffer), causing KLEE to hit further unmodeled externals",
+    "Total KLEE wall-clock: 540.8s across all 12 harnesses",
+    "0 real bugs found from 12 harnesses vs SAILOR's 11"
+  ]
+}

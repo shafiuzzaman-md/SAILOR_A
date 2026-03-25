@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "users.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "sepol_user_key_unpack",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+            "crash_line": 59
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "sepol_user_key_unpack",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+        "crash_line": 59,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4300==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000050 at pc 0x55a661212ec6 bp 0x7fff1cd529a0 sp 0x7fff1cd52990\nREAD of size 8 at 0x502000000050 thread T0\n    #0 0x55a661212ec5 in sepol_user_key_unpack /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:59\n    #1 0x55a66119d0a9 in sepol_user_modify /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/users.c:130\n    #2 0x55a66119bacc in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1720_users.c_165_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:41\n    #3 0x7f25d3f6dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f25d3f6de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55a66119b784 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1720_users.c_165_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x12784)\n\n0x502000000054 is located 0 bytes to the right of 4-byte region [0x502000000050,0x502000000054)\nallocated by thread T0 here:\n    #0 0x7f25d4324887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55a66119b87b in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1720_users.c_165_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:25\n    #2 0x7f25d3f6dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:59 in sepol_user_key_unpack\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 0"
+    }
+}

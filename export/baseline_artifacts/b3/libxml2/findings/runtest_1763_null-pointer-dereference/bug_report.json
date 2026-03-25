@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 1763,
+    "function": "htmlTokenizerTest",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "htmlCreatePushParserCtxt can return NULL (e.g., on allocation failure). The code dereferences 'ctxt' (ctxt->_private = &config; and ctxt->instate = ...) without checking for NULL.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for libxml2 types/macros used by the vulnerable code */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (xmlChar *)\n\n/* Parser context with only the fields that are dereferenced in the bug */\ntypedef struct _htmlParserCtxt {\n    void *_private;\n    int instate;\n} *htmlParserCtxtPtr;\n\n/* Constants mimicking libxml2 values used in the snippet */\nenum { XML_CHAR_ENCODING_UTF8 = 1 };\nenum { XML_PARSER_XML_DECL = 0 };\nenum { HTML_PARSE_HTML5 = 0x100 };\n\n/* Dummy SAX handler placeholder (type doesn't matter for this reproducer) */\nstatic int tokenizeHtmlSAXHandler;\n\n/* Stub implementations of libxml2 public APIs used by the vulnerable code */\n__attribute__((noinline))\nhtmlParserCtxtPtr htmlCreatePushParserCtxt(void *sax, void *user_data,\n                                           const char *chunk, int size,\n                                           const char *filename, int enc) {\n    (void)sax; (void)user_data; (void)chunk; (void)size; (void)filename; (void)enc;\n    /* Simulate allocation failure to make the function return NULL. */\n    return NULL;\n}\n\nvoid htmlCtxtUseOptions(htmlParserCtxtPtr ctxt, int options) {\n    (void)ctxt; (void)options;\n}\n\nvoid htmlParseChunk(htmlParserCtxtPtr ctxt, const char *data, size_t size, int terminate) {\n    (void)ctxt; (void)data; (void)size; (void)terminate;\n}\n\nvoid htmlFreeParserCtxt(htmlParserCtxtPtr ctxt) {\n    (void)ctxt;\n}\n\n/* Minimal config structure mirroring fields used in the snippet */\ntypedef struct {\n    unsigned int dataState;\n    const xmlChar *startTag;\n    int inCharacters;\n} TokenizerConfig;\n\n/* Vulnerable function skeleton mirroring the key logic from runtest.c */\nstatic int htmlTokenizerTest(const char *filename) {\n    (void)filename; /* Unused in this minimal reproducer */\n\n    unsigned int dataState = 0;\n    char startTag[31] = \"div\";\n    unsigned int size = 0; /* Unused here, but present in original */\n\n    htmlParserCtxtPtr ctxt;\n    TokenizerConfig config;\n\n    /* Create the parser context: in this reproducer it will return NULL */\n    ctxt = htmlCreatePushParserCtxt(&tokenizeHtmlSAXHandler, NULL, NULL, 0,\n                                    NULL, XML_CHAR_ENCODING_UTF8);\n\n    /* Prepare config as in original code */\n    config.dataState = dataState;\n    config.startTag = BAD_CAST startTag;\n    config.inCharacters = 0;\n\n    /* BUG: Dereference ctxt without checking for NULL */\n    /* This write to ctxt->_private will crash due to NULL ctxt */\n    ctxt->_private = &config;            /* Null-pointer dereference here */\n\n    /* The rest mirrors the original flow (won't be reached) */\n    ctxt->instate = XML_PARSER_XML_DECL; /* Also would dereference NULL */\n    htmlCtxtUseOptions(ctxt, HTML_PARSE_HTML5);\n    htmlParseChunk(ctxt, NULL, size, 1);\n    htmlFreeParserCtxt(ctxt);\n\n    return 0;\n}\n\nint main(void) {\n    /* Call the vulnerable function, which will immediately crash */\n    return htmlTokenizerTest(\"dummy-input.txt\");\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7654378414154053,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4024556==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5997c2465f80 bp 0x7ffcdae88900 sp 0x7ffcdae88780 T0)\n==4024556==The signal is caused by a WRITE memory access.\n==4024556==Hint: address points to the zero page.\n    #0 0x5997c2465f80 in htmlTokenizerTest /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:75:20\n    #1 0x5997c2465d1a in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:88:12\n    #2 0x7a1e92a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7a1e92a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5997c23a6304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer+0x21304) (BuildId: ba63effa4f510ca1b5593d1c126be243e6f2d7a7)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:75:20 in htmlTokenizerTest\n==4024556==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "htmlTokenizerTest",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:75",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "htmlTokenizerTest",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:75",
+          "20"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1763_null-pointer-dereference/reproducer.c:88",
+          "12"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

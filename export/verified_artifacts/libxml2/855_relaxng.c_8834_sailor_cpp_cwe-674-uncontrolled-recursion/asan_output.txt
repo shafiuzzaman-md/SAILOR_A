@@ -1,0 +1,50 @@
+=================================================================
+==2609701==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5030000000f0 at pc 0x5958267b441b bp 0x7ffda223b930 sp 0x7ffda223b920
+READ of size 8 at 0x5030000000f0 thread T0
+    #0 0x5958267b441a in xmlRelaxNGValidateFullElement /tmp/libxml2_upstream/relaxng.c:8271
+    #1 0x59582678cf2c in main /tmp/libxml2_upstream_verify_v5/855_relaxng.c_8834_sailor_cpp_cwe-674-uncontrolled-recursion/driver.c:52
+    #2 0x7e1ef082a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x7e1ef082a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x59582678ccd4 in _start (/tmp/libxml2_upstream_verify_v5/855_relaxng.c_8834_sailor_cpp_cwe-674-uncontrolled-recursion/bin+0x55cd4) (BuildId: d809b5f0325e0b1f218895db331062558e35c9ef)
+
+0x5030000000f0 is located 144 bytes after 32-byte region [0x503000000040,0x503000000060)
+allocated by thread T0 here:
+    #0 0x7e1ef0cfd340 in calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:77
+    #1 0x59582678cdb3 in main /tmp/libxml2_upstream_verify_v5/855_relaxng.c_8834_sailor_cpp_cwe-674-uncontrolled-recursion/driver.c:36
+    #2 0x7e1ef082a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x7e1ef082a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x59582678ccd4 in _start (/tmp/libxml2_upstream_verify_v5/855_relaxng.c_8834_sailor_cpp_cwe-674-uncontrolled-recursion/bin+0x55cd4) (BuildId: d809b5f0325e0b1f218895db331062558e35c9ef)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/relaxng.c:8271 in xmlRelaxNGValidateFullElement
+Shadow bytes around the buggy address:
+  0x502ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x502ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x502fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x502fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x503000000000: fa fa 00 00 00 fa fa fa 00 00 00 00 fa fa fa fa
+=>0x503000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]fa
+  0x503000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x503000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x503000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x503000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x503000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2609701==ABORTING

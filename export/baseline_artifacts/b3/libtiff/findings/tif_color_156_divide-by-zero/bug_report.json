@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 156,
+    "function": "TIFFCIELabToRGBInit",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "dfGamma is computed as 1.0 / cielab->display.d_gammaG. If d_gammaG is 0, this triggers a floating-point divide-by-zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE 1\n#include <stdio.h>\n#include <string.h>\n#include <fenv.h>\n#include <math.h>\n\n#include \"libtiff/tiffio.h\"\n\nint main(void)\n{\n    /* Cause a SIGFPE on floating-point divide-by-zero so the issue is visible */\n    feenableexcept(FE_DIVBYZERO);\n\n    TIFFCIELabToRGB cielab;\n    TIFFDisplay display;\n    float refWhite[3] = { 95.047f, 100.0f, 108.883f }; /* D65 white point */\n\n    memset(&cielab, 0, sizeof(cielab));\n    memset(&display, 0, sizeof(display));\n\n    /* Set sane values for red and blue so we pass the first red init loop. */\n    display.d_gammaR = 1.0f;  /* non-zero to avoid early divide-by-zero */\n    display.d_gammaB = 1.0f;\n\n    /* Craft the bug: zero green gamma triggers 1.0 / 0.0 at line 156. */\n    display.d_gammaG = 0.0f;\n\n    /* Other fields used by the init loops. Keep them simple but valid. */\n    display.d_YCR = 1.0f;     /* reference white luminance for red */\n    display.d_Y0R = 0.0f;     /* black level for red */\n    display.d_Vrwr = 1.0f;    /* max output r */\n    display.d_Vrwg = 1.0f;    /* max output g */\n    display.d_Vrwb = 1.0f;    /* max output b */\n\n    /* Call into the vulnerable function. With d_gammaG == 0.0f,\n       this will perform 1.0 / 0.0 when initializing the green channel,\n       raising FE_DIVBYZERO and causing SIGFPE due to feenableexcept. */\n    (void)TIFFCIELabToRGBInit(&cielab, &display, refWhite);\n\n    /* If we somehow get here, print something (but normally we won't). */\n    puts(\"TIFFCIELabToRGBInit returned (unexpectedly)\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_156_divide-by-zero/reproducer.c:7:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

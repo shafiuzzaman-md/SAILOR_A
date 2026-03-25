@@ -1,0 +1,1492 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+0024_tif_pixarlog_c_864_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	864		CWE-120	0	15100		
+0025_tif_pixarlog_c_885_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	885		CWE-120	0	15100		
+0026_tif_pixarlog_c_892_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	892		CWE-120	0	15100		
+0027_tif_pixarlog_c_907_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	907		CWE-120	0	15100		
+0028_tif_pixarlog_c_914_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	914		CWE-120	0	15100		
+0029_tif_pixarlog_c_926_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	926		CWE-120	0	15100		
+0030_tif_pixarlog_c_988_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_pixarlog.c	988		CWE-120	0	15100		
+0267_tif_pixarlog_c_1620_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1620		CWE-125	0	15100		
+0271_tif_pixarlog_c_1237_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1237		CWE-125	0	15100		
+0272_tif_pixarlog_c_1237_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1237		CWE-125	0	15100		
+0273_tif_pixarlog_c_1238_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1238		CWE-125	0	15100		
+0274_tif_pixarlog_c_1238_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1238		CWE-125	0	15100		
+0275_tif_pixarlog_c_1239_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1239		CWE-125	0	15100		
+0276_tif_pixarlog_c_1239_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1239		CWE-125	0	15100		
+0278_tif_pixarlog_c_1244_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1244		CWE-125	0	15100		
+0281_tif_pixarlog_c_1245_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1245		CWE-125	0	15100		
+0282_tif_pixarlog_c_1247_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1247		CWE-125	0	15100		
+0283_tif_pixarlog_c_1248_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1248		CWE-125	0	15100		
+0284_tif_pixarlog_c_1250_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1250		CWE-125	0	15100		
+0285_tif_pixarlog_c_1251_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1251		CWE-125	0	15100		
+0286_tif_pixarlog_c_1259_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1259		CWE-125	0	15100		
+0287_tif_pixarlog_c_1259_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1259		CWE-125	0	15100		
+0288_tif_pixarlog_c_1260_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1260		CWE-125	0	15100		
+0289_tif_pixarlog_c_1260_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1260		CWE-125	0	15100		
+0290_tif_pixarlog_c_1261_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1261		CWE-125	0	15100		
+0291_tif_pixarlog_c_1261_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1261		CWE-125	0	15100		
+0292_tif_pixarlog_c_1262_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1262		CWE-125	0	15100		
+0293_tif_pixarlog_c_1262_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1262		CWE-125	0	15100		
+0294_tif_pixarlog_c_1267_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1267		CWE-125	0	15100		
+0295_tif_pixarlog_c_1268_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1268		CWE-125	0	15100		
+0296_tif_pixarlog_c_1270_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1270		CWE-125	0	15100		
+0297_tif_pixarlog_c_1271_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1271		CWE-125	0	15100		
+0298_tif_pixarlog_c_1273_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1273		CWE-125	0	15100		
+0299_tif_pixarlog_c_1274_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1274		CWE-125	0	15100		
+0300_tif_pixarlog_c_1276_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1276		CWE-125	0	15100		
+0301_tif_pixarlog_c_1277_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1277		CWE-125	0	15100		
+0302_tif_pixarlog_c_1285_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1285		CWE-125	0	15100		
+0303_tif_pixarlog_c_1285_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1285		CWE-125	0	15100		
+0305_tif_pixarlog_c_1290_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1290		CWE-125	0	15100		
+0306_tif_pixarlog_c_1290_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1290		CWE-125	0	15100		
+0316_tif_pixarlog_c_1162_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1162		CWE-125	0	15100		
+0317_tif_pixarlog_c_1162_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1162		CWE-125	0	15100		
+0319_tif_pixarlog_c_1163_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1163		CWE-125	0	15100		
+0320_tif_pixarlog_c_1163_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1163		CWE-125	0	15100		
+0322_tif_pixarlog_c_1164_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1164		CWE-125	0	15100		
+0323_tif_pixarlog_c_1164_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1164		CWE-125	0	15100		
+0325_tif_pixarlog_c_1171_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1171		CWE-125	0	15100		
+0326_tif_pixarlog_c_1172_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1172		CWE-125	0	15100		
+0327_tif_pixarlog_c_1174_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1174		CWE-125	0	15100		
+0328_tif_pixarlog_c_1175_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1175		CWE-125	0	15100		
+0329_tif_pixarlog_c_1177_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1177		CWE-125	0	15100		
+0330_tif_pixarlog_c_1178_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1178		CWE-125	0	15100		
+0331_tif_pixarlog_c_1184_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1184		CWE-125	0	15100		
+0332_tif_pixarlog_c_1184_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1184		CWE-125	0	15100		
+0333_tif_pixarlog_c_1185_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1185		CWE-125	0	15100		
+0335_tif_pixarlog_c_1185_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1185		CWE-125	0	15100		
+0337_tif_pixarlog_c_1186_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1186		CWE-125	0	15100		
+0338_tif_pixarlog_c_1186_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1186		CWE-125	0	15100		
+0340_tif_pixarlog_c_1187_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1187		CWE-125	0	15100		
+0341_tif_pixarlog_c_1187_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1187		CWE-125	0	15100		
+0343_tif_pixarlog_c_1194_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1194		CWE-125	0	15100		
+0344_tif_pixarlog_c_1195_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1195		CWE-125	0	15100		
+0346_tif_pixarlog_c_1197_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1197		CWE-125	0	15100		
+0347_tif_pixarlog_c_1198_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1198		CWE-125	0	15100		
+0349_tif_pixarlog_c_1200_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1200		CWE-125	0	15100		
+0352_tif_pixarlog_c_1201_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1201		CWE-125	0	15100		
+0356_tif_pixarlog_c_1203_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1203		CWE-125	0	15100		
+0358_tif_pixarlog_c_1204_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1204		CWE-125	0	15100		
+0359_tif_pixarlog_c_1210_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1210		CWE-125	0	15100		
+0360_tif_pixarlog_c_1210_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1210		CWE-125	0	15100		
+0362_tif_pixarlog_c_1215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1215		CWE-125	0	15100		
+0363_tif_pixarlog_c_1215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1215		CWE-125	0	15100		
+0376_tif_pixarlog_c_1085_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1085		CWE-125	0	15100		
+0377_tif_pixarlog_c_1085_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1085		CWE-125	0	15100		
+0380_tif_pixarlog_c_1086_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1086		CWE-125	0	15100		
+0381_tif_pixarlog_c_1086_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1086		CWE-125	0	15100		
+0384_tif_pixarlog_c_1087_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1087		CWE-125	0	15100		
+0385_tif_pixarlog_c_1087_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1087		CWE-125	0	15100		
+0386_tif_pixarlog_c_1094_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1094		CWE-125	0	15100		
+0389_tif_pixarlog_c_1095_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	1095		CWE-125	0	15100		
+0392_tif_pixarlog_c_1097_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1097		CWE-125	0	15100		
+0394_tif_pixarlog_c_1098_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1098		CWE-125	0	15100		
+0395_tif_pixarlog_c_1100_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1100		CWE-125	0	15100		
+0398_tif_pixarlog_c_1101_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1101		CWE-125	0	15100		
+0400_tif_pixarlog_c_1107_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1107		CWE-125	0	15100		
+0401_tif_pixarlog_c_1107_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1107		CWE-125	0	15100		
+0404_tif_pixarlog_c_1108_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1108		CWE-125	0	15100		
+0405_tif_pixarlog_c_1108_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1108		CWE-125	0	15100		
+0408_tif_pixarlog_c_1109_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1109		CWE-125	0	15100		
+0409_tif_pixarlog_c_1109_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1109		CWE-125	0	15100		
+0412_tif_pixarlog_c_1110_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1110		CWE-125	0	15100		
+0413_tif_pixarlog_c_1110_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1110		CWE-125	0	15100		
+0417_tif_pixarlog_c_1117_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1117		CWE-125	0	15100		
+0419_tif_pixarlog_c_1118_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1118		CWE-125	0	15100		
+0420_tif_pixarlog_c_1120_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1120		CWE-125	0	15100		
+0423_tif_pixarlog_c_1121_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1121		CWE-125	0	15100		
+0424_tif_pixarlog_c_1123_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1123		CWE-125	0	15100		
+0425_tif_pixarlog_c_1124_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1124		CWE-125	0	15100		
+0432_tif_pixarlog_c_1126_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1126		CWE-125	0	15100		
+0435_tif_pixarlog_c_1127_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1127		CWE-125	0	15100		
+0437_tif_pixarlog_c_1133_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1133		CWE-125	0	15100		
+0438_tif_pixarlog_c_1133_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1133		CWE-125	0	15100		
+0439_tif_pixarlog_c_1138_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1138		CWE-125	0	15100		
+0440_tif_pixarlog_c_1138_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	1138		CWE-125	0	15100		
+0519_tif_pixarlog_c_457_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	457		CWE-125	0	15100		
+0520_tif_pixarlog_c_458_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	458		CWE-125	0	15100		
+0521_tif_pixarlog_c_459_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	459		CWE-125	0	15100		
+0522_tif_pixarlog_c_460_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	460		CWE-125	0	15100		
+0523_tif_pixarlog_c_461_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	461		CWE-125	0	15100		
+0524_tif_pixarlog_c_462_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	462		CWE-125	0	15100		
+0525_tif_pixarlog_c_463_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	463		CWE-125	0	15100		
+0526_tif_pixarlog_c_470_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	470		CWE-125	0	15100		
+0527_tif_pixarlog_c_471_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	471		CWE-125	0	15100		
+0528_tif_pixarlog_c_472_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	472		CWE-125	0	15100		
+0529_tif_pixarlog_c_473_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	473		CWE-125	0	15100		
+0530_tif_pixarlog_c_474_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	474		CWE-125	0	15100		
+0531_tif_pixarlog_c_475_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	475		CWE-125	0	15100		
+0532_tif_pixarlog_c_476_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	476		CWE-125	0	15100		
+0533_tif_pixarlog_c_481_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	481		CWE-125	0	15100		
+0534_tif_pixarlog_c_482_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	482		CWE-125	0	15100		
+0538_tif_pixarlog_c_483_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	483		CWE-125	0	15100		
+0539_tif_pixarlog_c_484_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	484		CWE-125	0	15100		
+0540_tif_pixarlog_c_485_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	485		CWE-125	0	15100		
+0541_tif_pixarlog_c_486_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	486		CWE-125	0	15100		
+0542_tif_pixarlog_c_487_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	487		CWE-125	0	15100		
+0543_tif_pixarlog_c_488_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	488		CWE-125	0	15100		
+0545_tif_pixarlog_c_495_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	495		CWE-125	0	15100		
+0546_tif_pixarlog_c_496_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	496		CWE-125	0	15100		
+0547_tif_pixarlog_c_497_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	497		CWE-125	0	15100		
+0549_tif_pixarlog_c_498_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	498		CWE-125	0	15100		
+0550_tif_pixarlog_c_499_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	499		CWE-125	0	15100		
+0551_tif_pixarlog_c_500_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	500		CWE-125	0	15100		
+0552_tif_pixarlog_c_501_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	501		CWE-125	0	15100		
+0553_tif_pixarlog_c_502_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	502		CWE-125	0	15100		
+0554_tif_pixarlog_c_399_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	399		CWE-125	0	15100		
+0555_tif_pixarlog_c_399_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	399		CWE-125	0	15100		
+0556_tif_pixarlog_c_400_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	400		CWE-125	0	15100		
+0557_tif_pixarlog_c_400_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	400		CWE-125	0	15100		
+0558_tif_pixarlog_c_401_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	401		CWE-125	0	15100		
+0559_tif_pixarlog_c_401_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	401		CWE-125	0	15100		
+0560_tif_pixarlog_c_408_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	408		CWE-125	0	15100		
+0561_tif_pixarlog_c_408_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	408		CWE-125	0	15100		
+0562_tif_pixarlog_c_409_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	409		CWE-125	0	15100		
+0563_tif_pixarlog_c_409_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	409		CWE-125	0	15100		
+0564_tif_pixarlog_c_410_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	410		CWE-125	0	15100		
+0565_tif_pixarlog_c_410_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	410		CWE-125	0	15100		
+0566_tif_pixarlog_c_415_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	415		CWE-125	0	15100		
+0567_tif_pixarlog_c_415_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	415		CWE-125	0	15100		
+0568_tif_pixarlog_c_416_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	416		CWE-125	0	15100		
+0569_tif_pixarlog_c_416_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	416		CWE-125	0	15100		
+0570_tif_pixarlog_c_417_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	417		CWE-125	0	15100		
+0571_tif_pixarlog_c_417_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	417		CWE-125	0	15100		
+0572_tif_pixarlog_c_418_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	418		CWE-125	0	15100		
+0573_tif_pixarlog_c_418_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	418		CWE-125	0	15100		
+0574_tif_pixarlog_c_425_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	425		CWE-125	0	15100		
+0575_tif_pixarlog_c_425_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	425		CWE-125	0	15100		
+0577_tif_pixarlog_c_426_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	426		CWE-125	0	15100		
+0578_tif_pixarlog_c_426_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	426		CWE-125	0	15100		
+0579_tif_pixarlog_c_427_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	427		CWE-125	0	15100		
+0580_tif_pixarlog_c_427_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_pixarlog.c	427		CWE-125	0	15100		
+0581_tif_pixarlog_c_428_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	428		CWE-125	0	15100		
+0582_tif_pixarlog_c_428_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	428		CWE-125	0	15100		
+0587_tif_pixarlog_c_337_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	337		CWE-125	0	15100		
+0588_tif_pixarlog_c_337_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	337		CWE-125	0	15100		
+0589_tif_pixarlog_c_338_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	338		CWE-125	0	15100		
+0590_tif_pixarlog_c_338_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	338		CWE-125	0	15100		
+0591_tif_pixarlog_c_339_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	339		CWE-125	0	15100		
+0592_tif_pixarlog_c_339_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	339		CWE-125	0	15100		
+0593_tif_pixarlog_c_340_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	340		CWE-125	0	15100		
+0594_tif_pixarlog_c_341_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	341		CWE-125	0	15100		
+0595_tif_pixarlog_c_342_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	342		CWE-125	0	15100		
+0596_tif_pixarlog_c_349_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	349		CWE-125	0	15100		
+0597_tif_pixarlog_c_349_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	349		CWE-125	0	15100		
+0598_tif_pixarlog_c_350_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	350		CWE-125	0	15100		
+0599_tif_pixarlog_c_350_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	350		CWE-125	0	15100		
+0600_tif_pixarlog_c_351_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	351		CWE-125	0	15100		
+0601_tif_pixarlog_c_351_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	351		CWE-125	0	15100		
+0602_tif_pixarlog_c_356_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	356		CWE-125	0	15100		
+0603_tif_pixarlog_c_356_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	356		CWE-125	0	15100		
+0604_tif_pixarlog_c_357_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	357		CWE-125	0	15100		
+0605_tif_pixarlog_c_357_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	357		CWE-125	0	15100		
+0606_tif_pixarlog_c_358_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	358		CWE-125	0	15100		
+0607_tif_pixarlog_c_358_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	358		CWE-125	0	15100		
+0608_tif_pixarlog_c_359_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	359		CWE-125	0	15100		
+0609_tif_pixarlog_c_359_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	359		CWE-125	0	15100		
+0610_tif_pixarlog_c_360_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	360		CWE-125	0	15100		
+0611_tif_pixarlog_c_361_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	361		CWE-125	0	15100		
+0612_tif_pixarlog_c_362_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	362		CWE-125	0	15100		
+0613_tif_pixarlog_c_363_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	363		CWE-125	0	15100		
+0614_tif_pixarlog_c_370_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	370		CWE-125	0	15100		
+0615_tif_pixarlog_c_370_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	370		CWE-125	0	15100		
+0616_tif_pixarlog_c_371_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	371		CWE-125	0	15100		
+0617_tif_pixarlog_c_371_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	371		CWE-125	0	15100		
+0618_tif_pixarlog_c_372_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	372		CWE-125	0	15100		
+0619_tif_pixarlog_c_372_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	372		CWE-125	0	15100		
+0620_tif_pixarlog_c_373_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	373		CWE-125	0	15100		
+0621_tif_pixarlog_c_373_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	373		CWE-125	0	15100		
+0622_tif_pixarlog_c_277_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	277		CWE-125	0	15100		
+0623_tif_pixarlog_c_277_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	277		CWE-125	0	15100		
+0624_tif_pixarlog_c_278_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	278		CWE-125	0	15100		
+0625_tif_pixarlog_c_278_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	278		CWE-125	0	15100		
+0626_tif_pixarlog_c_279_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	279		CWE-125	0	15100		
+0627_tif_pixarlog_c_279_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	279		CWE-125	0	15100		
+0628_tif_pixarlog_c_286_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	286		CWE-125	0	15100		
+0629_tif_pixarlog_c_286_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	286		CWE-125	0	15100		
+0630_tif_pixarlog_c_287_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	287		CWE-125	0	15100		
+0631_tif_pixarlog_c_287_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	287		CWE-125	0	15100		
+0632_tif_pixarlog_c_288_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	288		CWE-125	0	15100		
+0633_tif_pixarlog_c_288_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	288		CWE-125	0	15100		
+0634_tif_pixarlog_c_293_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	293		CWE-125	0	15100		
+0635_tif_pixarlog_c_293_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	293		CWE-125	0	15100		
+0636_tif_pixarlog_c_294_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	294		CWE-125	0	15100		
+0637_tif_pixarlog_c_294_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	294		CWE-125	0	15100		
+0638_tif_pixarlog_c_295_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	295		CWE-125	0	15100		
+0639_tif_pixarlog_c_295_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	295		CWE-125	0	15100		
+0640_tif_pixarlog_c_296_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	296		CWE-125	0	15100		
+0641_tif_pixarlog_c_296_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	296		CWE-125	0	15100		
+0642_tif_pixarlog_c_303_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	303		CWE-125	0	15100		
+0643_tif_pixarlog_c_303_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	303		CWE-125	0	15100		
+0644_tif_pixarlog_c_304_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	304		CWE-125	0	15100		
+0645_tif_pixarlog_c_304_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	304		CWE-125	0	15100		
+0646_tif_pixarlog_c_305_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	305		CWE-125	0	15100		
+0647_tif_pixarlog_c_305_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	305		CWE-125	0	15100		
+0648_tif_pixarlog_c_306_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	306		CWE-125	0	15100		
+0649_tif_pixarlog_c_306_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	306		CWE-125	0	15100		
+0650_tif_pixarlog_c_205_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	205		CWE-125	0	15100		
+0651_tif_pixarlog_c_206_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	206		CWE-125	0	15100		
+0652_tif_pixarlog_c_207_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	207		CWE-125	0	15100		
+0653_tif_pixarlog_c_208_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	208		CWE-125	0	15100		
+0654_tif_pixarlog_c_209_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	209		CWE-125	0	15100		
+0655_tif_pixarlog_c_210_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	210		CWE-125	0	15100		
+0656_tif_pixarlog_c_217_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	217		CWE-125	0	15100		
+0657_tif_pixarlog_c_218_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	218		CWE-125	0	15100		
+0660_tif_pixarlog_c_219_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	219		CWE-125	0	15100		
+0661_tif_pixarlog_c_220_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_pixarlog.c	220		CWE-125	0	15100		
+0662_tif_pixarlog_c_221_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	221		CWE-125	0	15100		
+0663_tif_pixarlog_c_222_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	222		CWE-125	0	15100		
+0664_tif_pixarlog_c_227_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	227		CWE-125	0	15100		
+0665_tif_pixarlog_c_228_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	228		CWE-125	0	15100		
+0666_tif_pixarlog_c_229_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	229		CWE-125	0	15100		
+0667_tif_pixarlog_c_230_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	230		CWE-125	0	15100		
+0668_tif_pixarlog_c_231_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	231		CWE-125	0	15100		
+0669_tif_pixarlog_c_232_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	232		CWE-125	0	15100		
+0670_tif_pixarlog_c_233_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	233		CWE-125	0	15100		
+0671_tif_pixarlog_c_234_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	234		CWE-125	0	15100		
+0672_tif_pixarlog_c_241_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	241		CWE-125	0	15100		
+0673_tif_pixarlog_c_242_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	242		CWE-125	0	15100		
+0674_tif_pixarlog_c_243_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	243		CWE-125	0	15100		
+0675_tif_pixarlog_c_244_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	244		CWE-125	0	15100		
+0676_tif_pixarlog_c_245_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	245		CWE-125	0	15100		
+0677_tif_pixarlog_c_246_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	246		CWE-125	0	15100		
+0678_tif_pixarlog_c_247_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	247		CWE-125	0	15100		
+0679_tif_pixarlog_c_248_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	248		CWE-125	0	15100		
+0680_tif_pixarlog_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	131		CWE-125	0	15100		
+0681_tif_pixarlog_c_132_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	132		CWE-125	0	15100		
+0682_tif_pixarlog_c_133_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	133		CWE-125	0	15100		
+0683_tif_pixarlog_c_134_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	134		CWE-125	0	15100		
+0684_tif_pixarlog_c_135_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	135		CWE-125	0	15100		
+0685_tif_pixarlog_c_136_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	136		CWE-125	0	15100		
+0686_tif_pixarlog_c_143_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	143		CWE-125	0	15100		
+0687_tif_pixarlog_c_144_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	144		CWE-125	0	15100		
+0688_tif_pixarlog_c_145_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	145		CWE-125	0	15100		
+0689_tif_pixarlog_c_146_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	146		CWE-125	0	15100		
+0690_tif_pixarlog_c_147_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	147		CWE-125	0	15100		
+0691_tif_pixarlog_c_148_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	148		CWE-125	0	15100		
+0692_tif_pixarlog_c_153_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	153		CWE-125	0	15100		
+0694_tif_pixarlog_c_154_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	154		CWE-125	0	15100		
+0695_tif_pixarlog_c_155_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	155		CWE-125	0	15100		
+0696_tif_pixarlog_c_156_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	156		CWE-125	0	15100		
+0697_tif_pixarlog_c_157_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	157		CWE-125	0	15100		
+0698_tif_pixarlog_c_158_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	158		CWE-125	0	15100		
+0699_tif_pixarlog_c_159_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	159		CWE-125	0	15100		
+0700_tif_pixarlog_c_160_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	160		CWE-125	0	15100		
+0701_tif_pixarlog_c_167_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	167		CWE-125	0	15100		
+0702_tif_pixarlog_c_168_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	168		CWE-125	0	15100		
+0703_tif_pixarlog_c_169_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	169		CWE-125	0	15100		
+0704_tif_pixarlog_c_170_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	170		CWE-125	0	15100		
+0705_tif_pixarlog_c_171_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	171		CWE-125	0	15100		
+0706_tif_pixarlog_c_172_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	172		CWE-125	0	15100		
+0710_tif_pixarlog_c_173_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	173		CWE-125	0	15100		
+0711_tif_pixarlog_c_174_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_pixarlog.c	174		CWE-125	0	15100		
+0009_tif_getimage_c_3566_local-cpp-cwe-120-overflow	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	3566		CWE-120	0	15100		
+0270_tif_getimage_c_2776_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2776		CWE-125	0	15100		
+0277_tif_getimage_c_2795_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2795		CWE-125	0	15100		
+0279_tif_getimage_c_2797_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2797		CWE-125	0	15100		
+0280_tif_getimage_c_2797_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2797		CWE-125	0	15100		
+0307_tif_getimage_c_2676_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2676		CWE-125	0	15100		
+0308_tif_getimage_c_2677_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2677		CWE-125	0	15100		
+0309_tif_getimage_c_2679_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2679		CWE-125	0	15100		
+0310_tif_getimage_c_2637_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2637		CWE-125	0	15100		
+0311_tif_getimage_c_2638_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2638		CWE-125	0	15100		
+0312_tif_getimage_c_2639_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2639		CWE-125	0	15100		
+0313_tif_getimage_c_2639_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2639		CWE-125	0	15100		
+0314_tif_getimage_c_2640_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2640		CWE-125	0	15100		
+0315_tif_getimage_c_2655_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2655		CWE-125	0	15100		
+0318_tif_getimage_c_2656_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2656		CWE-125	0	15100		
+0321_tif_getimage_c_2657_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2657		CWE-125	0	15100		
+0324_tif_getimage_c_2657_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2657		CWE-125	0	15100		
+0334_tif_getimage_c_2595_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2595		CWE-125	0	15100		
+0336_tif_getimage_c_2596_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2596		CWE-125	0	15100		
+0339_tif_getimage_c_2598_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2598		CWE-125	0	15100		
+0342_tif_getimage_c_2598_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2598		CWE-125	0	15100		
+0345_tif_getimage_c_2599_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2599		CWE-125	0	15100		
+0348_tif_getimage_c_2599_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2599		CWE-125	0	15100		
+0350_tif_getimage_c_2608_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2608		CWE-125	0	15100		
+0351_tif_getimage_c_2609_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2609		CWE-125	0	15100		
+0353_tif_getimage_c_2611_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2611		CWE-125	0	15100		
+0354_tif_getimage_c_2611_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2611		CWE-125	0	15100		
+0364_tif_getimage_c_2534_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2534		CWE-125	0	15100		
+0365_tif_getimage_c_2535_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2535		CWE-125	0	15100		
+0367_tif_getimage_c_2536_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2536		CWE-125	0	15100		
+0368_tif_getimage_c_2536_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2536		CWE-125	0	15100		
+0371_tif_getimage_c_2537_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2537		CWE-125	0	15100		
+0372_tif_getimage_c_2537_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2537		CWE-125	0	15100		
+0373_tif_getimage_c_2538_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2538		CWE-125	0	15100		
+0374_tif_getimage_c_2539_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2539		CWE-125	0	15100		
+0375_tif_getimage_c_2547_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2547		CWE-125	0	15100		
+0378_tif_getimage_c_2548_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2548		CWE-125	0	15100		
+0379_tif_getimage_c_2549_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2549		CWE-125	0	15100		
+0382_tif_getimage_c_2549_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2549		CWE-125	0	15100		
+0383_tif_getimage_c_2550_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2550		CWE-125	0	15100		
+0387_tif_getimage_c_2565_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2565		CWE-125	0	15100		
+0388_tif_getimage_c_2566_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2566		CWE-125	0	15100		
+0393_tif_getimage_c_2567_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2567		CWE-125	0	15100		
+0396_tif_getimage_c_2567_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2567		CWE-125	0	15100		
+0397_tif_getimage_c_2568_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2568		CWE-125	0	15100		
+0399_tif_getimage_c_2568_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2568		CWE-125	0	15100		
+0402_tif_getimage_c_2576_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2576		CWE-125	0	15100		
+0403_tif_getimage_c_2577_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2577		CWE-125	0	15100		
+0406_tif_getimage_c_2578_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2578		CWE-125	0	15100		
+0407_tif_getimage_c_2578_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2578		CWE-125	0	15100		
+0410_tif_getimage_c_2478_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2478		CWE-125	0	15100		
+0411_tif_getimage_c_2479_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2479		CWE-125	0	15100		
+0414_tif_getimage_c_2481_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2481		CWE-125	0	15100		
+0415_tif_getimage_c_2481_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2481		CWE-125	0	15100		
+0416_tif_getimage_c_2482_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2482		CWE-125	0	15100		
+0418_tif_getimage_c_2482_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2482		CWE-125	0	15100		
+0421_tif_getimage_c_2483_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2483		CWE-125	0	15100		
+0422_tif_getimage_c_2483_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2483		CWE-125	0	15100		
+0426_tif_getimage_c_2484_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2484		CWE-125	0	15100		
+0427_tif_getimage_c_2484_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2484		CWE-125	0	15100		
+0428_tif_getimage_c_2493_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2493		CWE-125	0	15100		
+0429_tif_getimage_c_2494_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2494		CWE-125	0	15100		
+0430_tif_getimage_c_2499_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2499		CWE-125	0	15100		
+0431_tif_getimage_c_2499_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2499		CWE-125	0	15100		
+0433_tif_getimage_c_2501_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2501		CWE-125	0	15100		
+0434_tif_getimage_c_2501_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2501		CWE-125	0	15100		
+0436_tif_getimage_c_2503_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2503		CWE-125	0	15100		
+0443_tif_getimage_c_2503_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2503		CWE-125	0	15100		
+0445_tif_getimage_c_2378_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2378		CWE-125	0	15100		
+0446_tif_getimage_c_2381_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2381		CWE-125	0	15100		
+0451_tif_getimage_c_2381_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2381		CWE-125	0	15100		
+0452_tif_getimage_c_2382_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2382		CWE-125	0	15100		
+0453_tif_getimage_c_2382_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2382		CWE-125	0	15100		
+0454_tif_getimage_c_2383_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2383		CWE-125	0	15100		
+0455_tif_getimage_c_2383_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2383		CWE-125	0	15100		
+0456_tif_getimage_c_2384_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2384		CWE-125	0	15100		
+0457_tif_getimage_c_2384_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2384		CWE-125	0	15100		
+0458_tif_getimage_c_2385_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2385		CWE-125	0	15100		
+0459_tif_getimage_c_2386_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2386		CWE-125	0	15100		
+0460_tif_getimage_c_2387_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	2387		CWE-125	0	15100		
+0461_tif_getimage_c_2388_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2388		CWE-125	0	15100		
+0462_tif_getimage_c_2405_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2405		CWE-125	0	15100		
+0463_tif_getimage_c_2413_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2413		CWE-125	0	15100		
+0464_tif_getimage_c_2415_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2415		CWE-125	0	15100		
+0465_tif_getimage_c_2415_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2415		CWE-125	0	15100		
+0466_tif_getimage_c_2421_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2421		CWE-125	0	15100		
+0467_tif_getimage_c_2423_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2423		CWE-125	0	15100		
+0468_tif_getimage_c_2423_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2423		CWE-125	0	15100		
+0469_tif_getimage_c_2429_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2429		CWE-125	0	15100		
+0470_tif_getimage_c_2431_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2431		CWE-125	0	15100		
+0471_tif_getimage_c_2431_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2431		CWE-125	0	15100		
+0472_tif_getimage_c_2437_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2437		CWE-125	0	15100		
+0473_tif_getimage_c_2439_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2439		CWE-125	0	15100		
+0474_tif_getimage_c_2439_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2439		CWE-125	0	15100		
+0475_tif_getimage_c_2242_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2242		CWE-125	0	15100		
+0476_tif_getimage_c_2242_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2242		CWE-125	0	15100		
+0477_tif_getimage_c_2243_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2243		CWE-125	0	15100		
+0478_tif_getimage_c_2243_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2243		CWE-125	0	15100		
+0479_tif_getimage_c_2244_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2244		CWE-125	0	15100		
+0480_tif_getimage_c_2244_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2244		CWE-125	0	15100		
+0481_tif_getimage_c_2245_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2245		CWE-125	0	15100		
+0482_tif_getimage_c_2245_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2245		CWE-125	0	15100		
+0483_tif_getimage_c_2246_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2246		CWE-125	0	15100		
+0484_tif_getimage_c_2247_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2247		CWE-125	0	15100		
+0485_tif_getimage_c_2248_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2248		CWE-125	0	15100		
+0486_tif_getimage_c_2249_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2249		CWE-125	0	15100		
+0487_tif_getimage_c_2250_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2250		CWE-125	0	15100		
+0488_tif_getimage_c_2251_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2251		CWE-125	0	15100		
+0489_tif_getimage_c_2252_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2252		CWE-125	0	15100		
+0490_tif_getimage_c_2253_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2253		CWE-125	0	15100		
+0492_tif_getimage_c_2254_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2254		CWE-125	0	15100		
+0494_tif_getimage_c_2255_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2255		CWE-125	0	15100		
+0495_tif_getimage_c_2256_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2256		CWE-125	0	15100		
+0496_tif_getimage_c_2257_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2257		CWE-125	0	15100		
+0497_tif_getimage_c_2286_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2286		CWE-125	0	15100		
+0498_tif_getimage_c_2288_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2288		CWE-125	0	15100		
+0499_tif_getimage_c_2290_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2290		CWE-125	0	15100		
+0500_tif_getimage_c_2292_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2292		CWE-125	0	15100		
+0501_tif_getimage_c_2292_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2292		CWE-125	0	15100		
+0502_tif_getimage_c_2298_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2298		CWE-125	0	15100		
+0503_tif_getimage_c_2300_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2300		CWE-125	0	15100		
+0504_tif_getimage_c_2302_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2302		CWE-125	0	15100		
+0505_tif_getimage_c_2304_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2304		CWE-125	0	15100		
+0506_tif_getimage_c_2304_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2304		CWE-125	0	15100		
+0507_tif_getimage_c_2310_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2310		CWE-125	0	15100		
+0508_tif_getimage_c_2312_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2312		CWE-125	0	15100		
+0509_tif_getimage_c_2314_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2314		CWE-125	0	15100		
+0510_tif_getimage_c_2316_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2316		CWE-125	0	15100		
+0511_tif_getimage_c_2316_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2316		CWE-125	0	15100		
+0512_tif_getimage_c_2322_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2322		CWE-125	0	15100		
+0513_tif_getimage_c_2324_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_getimage.c	2324		CWE-125	0	15100		
+0514_tif_getimage_c_2326_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2326		CWE-125	0	15100		
+0515_tif_getimage_c_2328_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2328		CWE-125	0	15100		
+0516_tif_getimage_c_2328_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2328		CWE-125	0	15100		
+0517_tif_getimage_c_2197_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_getimage.c	2197		CWE-125	0	15100		
+0518_tif_getimage_c_2198_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2198		CWE-125	0	15100		
+0535_tif_getimage_c_2172_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2172		CWE-125	0	15100		
+0536_tif_getimage_c_2173_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	2173		CWE-125	0	15100		
+0712_tif_getimage_c_1989_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1989		CWE-125	0	15100		
+0713_tif_getimage_c_1990_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1990		CWE-125	0	15100		
+0716_tif_getimage_c_1991_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1991		CWE-125	0	15100		
+0717_tif_getimage_c_1992_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1992		CWE-125	0	15100		
+0719_tif_getimage_c_1964_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1964		CWE-125	0	15100		
+0726_tif_getimage_c_1965_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1965		CWE-125	0	15100		
+0764_tif_getimage_c_1936_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1936		CWE-125	0	15100		
+0769_tif_getimage_c_1938_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1938		CWE-125	0	15100		
+0771_tif_getimage_c_1939_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1939		CWE-125	0	15100		
+0774_tif_getimage_c_1940_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1940		CWE-125	0	15100		
+0787_tif_getimage_c_1911_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1911		CWE-125	0	15100		
+0792_tif_getimage_c_1912_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1912		CWE-125	0	15100		
+0802_tif_getimage_c_1888_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1888		CWE-125	0	15100		
+0805_tif_getimage_c_1889_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1889		CWE-125	0	15100		
+0842_tif_getimage_c_1862_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1862		CWE-125	0	15100		
+0843_tif_getimage_c_1864_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1864		CWE-125	0	15100		
+0844_tif_getimage_c_1865_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1865		CWE-125	0	15100		
+0845_tif_getimage_c_1866_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1866		CWE-125	0	15100		
+0846_tif_getimage_c_1840_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1840		CWE-125	0	15100		
+0860_tif_getimage_c_1820_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	1820		CWE-125	0	15100		
+0883_tif_getimage_c_363_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	363		CWE-125	0	15100		
+0884_tif_getimage_c_373_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_getimage.c	373		CWE-125	0	15100		
+1201_tif_getimage_c_3566_local-cpp-cwe-787-oob-write	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	3566		CWE-787	0	15100		
+1209_tif_getimage_c_3566_local-cpp-cwe-823-pointer-offset	LLM_FP	FP	heap-buffer-overflow	tif_getimage.c	3566		CWE-823	0	15100		
+1409_tif_getimage_c_2703_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2703		CWE-416	0	15100		
+1410_tif_getimage_c_2679_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2679		CWE-416	0	15100		
+1411_tif_getimage_c_2639_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2639		CWE-416	0	15100		
+1412_tif_getimage_c_2640_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2640		CWE-416	0	15100		
+1413_tif_getimage_c_2657_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2657		CWE-416	0	15100		
+1414_tif_getimage_c_2598_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2598		CWE-416	0	15100		
+1415_tif_getimage_c_2599_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2599		CWE-416	0	15100		
+1416_tif_getimage_c_2611_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2611		CWE-416	0	15100		
+1417_tif_getimage_c_2536_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2536		CWE-416	0	15100		
+1418_tif_getimage_c_2537_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2537		CWE-416	0	15100		
+1419_tif_getimage_c_2538_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2538		CWE-416	0	15100		
+1420_tif_getimage_c_2539_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2539		CWE-416	0	15100		
+1421_tif_getimage_c_2549_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2549		CWE-416	0	15100		
+1422_tif_getimage_c_2550_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2550		CWE-416	0	15100		
+1423_tif_getimage_c_2567_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2567		CWE-416	0	15100		
+1424_tif_getimage_c_2568_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2568		CWE-416	0	15100		
+1425_tif_getimage_c_2578_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2578		CWE-416	0	15100		
+1426_tif_getimage_c_2481_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2481		CWE-416	0	15100		
+1427_tif_getimage_c_2482_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2482		CWE-416	0	15100		
+1428_tif_getimage_c_2483_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2483		CWE-416	0	15100		
+1429_tif_getimage_c_2484_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2484		CWE-416	0	15100		
+1430_tif_getimage_c_2499_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2499		CWE-416	0	15100		
+1431_tif_getimage_c_2501_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2501		CWE-416	0	15100		
+1432_tif_getimage_c_2503_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2503		CWE-416	0	15100		
+1433_tif_getimage_c_2381_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2381		CWE-416	0	15100		
+1434_tif_getimage_c_2382_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2382		CWE-416	0	15100		
+1435_tif_getimage_c_2383_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2383		CWE-416	0	15100		
+1436_tif_getimage_c_2384_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2384		CWE-416	0	15100		
+1437_tif_getimage_c_2385_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2385		CWE-416	0	15100		
+1438_tif_getimage_c_2386_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2386		CWE-416	0	15100		
+1439_tif_getimage_c_2387_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2387		CWE-416	0	15100		
+1440_tif_getimage_c_2388_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2388		CWE-416	0	15100		
+1441_tif_getimage_c_2413_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2413		CWE-416	0	15100		
+1442_tif_getimage_c_2415_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2415		CWE-416	0	15100		
+1443_tif_getimage_c_2421_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2421		CWE-416	0	15100		
+1444_tif_getimage_c_2423_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2423		CWE-416	0	15100		
+1445_tif_getimage_c_2429_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2429		CWE-416	0	15100		
+1446_tif_getimage_c_2431_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2431		CWE-416	0	15100		
+1447_tif_getimage_c_2437_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2437		CWE-416	0	15100		
+1448_tif_getimage_c_2439_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2439		CWE-416	0	15100		
+1449_tif_getimage_c_2242_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2242		CWE-416	0	15100		
+1450_tif_getimage_c_2243_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2243		CWE-416	0	15100		
+1451_tif_getimage_c_2244_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2244		CWE-416	0	15100		
+1452_tif_getimage_c_2245_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2245		CWE-416	0	15100		
+1453_tif_getimage_c_2246_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2246		CWE-416	0	15100		
+1454_tif_getimage_c_2247_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2247		CWE-416	0	15100		
+1455_tif_getimage_c_2248_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2248		CWE-416	0	15100		
+1456_tif_getimage_c_2249_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2249		CWE-416	0	15100		
+1457_tif_getimage_c_2250_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2250		CWE-416	0	15100		
+1458_tif_getimage_c_2251_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2251		CWE-416	0	15100		
+1459_tif_getimage_c_2252_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2252		CWE-416	0	15100		
+1460_tif_getimage_c_2253_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2253		CWE-416	0	15100		
+1461_tif_getimage_c_2254_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2254		CWE-416	0	15100		
+1462_tif_getimage_c_2255_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2255		CWE-416	0	15100		
+1463_tif_getimage_c_2256_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2256		CWE-416	0	15100		
+1464_tif_getimage_c_2257_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2257		CWE-416	0	15100		
+1465_tif_getimage_c_2286_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2286		CWE-416	0	15100		
+1466_tif_getimage_c_2288_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2288		CWE-416	0	15100		
+1467_tif_getimage_c_2290_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2290		CWE-416	0	15100		
+1468_tif_getimage_c_2292_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2292		CWE-416	0	15100		
+1469_tif_getimage_c_2298_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2298		CWE-416	0	15100		
+1470_tif_getimage_c_2300_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2300		CWE-416	0	15100		
+1471_tif_getimage_c_2302_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2302		CWE-416	0	15100		
+1472_tif_getimage_c_2304_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2304		CWE-416	0	15100		
+1473_tif_getimage_c_2310_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2310		CWE-416	0	15100		
+1474_tif_getimage_c_2312_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2312		CWE-416	0	15100		
+1475_tif_getimage_c_2314_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2314		CWE-416	0	15100		
+1476_tif_getimage_c_2316_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2316		CWE-416	0	15100		
+1477_tif_getimage_c_2322_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2322		CWE-416	0	15100		
+1478_tif_getimage_c_2324_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2324		CWE-416	0	15100		
+1479_tif_getimage_c_2326_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2326		CWE-416	0	15100		
+1480_tif_getimage_c_2328_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2328		CWE-416	0	15100		
+1481_tif_getimage_c_2197_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2197		CWE-416	0	15100		
+1482_tif_getimage_c_2199_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2199		CWE-416	0	15100		
+1483_tif_getimage_c_2172_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2172		CWE-416	0	15100		
+1484_tif_getimage_c_2174_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tif_getimage.c	2174		CWE-416	0	15100		
+0121_tiffcrop_c_5909_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	5909		CWE-120	0	15100		
+0122_tiffcrop_c_5910_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	5910		CWE-120	0	15100		
+0123_tiffcrop_c_5801_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	5801		CWE-120	0	15100		
+0130_tiffcrop_c_2586_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2586		CWE-120	0	15100		
+0131_tiffcrop_c_2592_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2592		CWE-120	0	15100		
+0132_tiffcrop_c_2601_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2601		CWE-120	0	15100		
+0133_tiffcrop_c_2605_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2605		CWE-120	0	15100		
+0134_tiffcrop_c_2155_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2155		CWE-120	0	15100		
+0135_tiffcrop_c_2162_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	2162		CWE-120	0	15100		
+0136_tiffcrop_c_1566_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	1566		CWE-120	0	15100		
+0137_tiffcrop_c_1507_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	1507		CWE-120	0	15100		
+0138_tiffcrop_c_1402_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffcrop.c	1402		CWE-120	0	15100		
+0217_tiffcrop_c_2117_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2117		CWE-125	0	15100		
+0218_tiffcrop_c_2125_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2125		CWE-125	0	15100		
+0219_tiffcrop_c_2132_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2132		CWE-125	0	15100		
+0220_tiffcrop_c_2150_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2150		CWE-125	0	15100		
+0221_tiffcrop_c_2153_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2153		CWE-125	0	15100		
+0222_tiffcrop_c_2160_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2160		CWE-125	0	15100		
+0223_tiffcrop_c_2166_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	2166		CWE-125	0	15100		
+0224_tiffcrop_c_1657_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1657		CWE-125	0	15100		
+0225_tiffcrop_c_1665_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1665		CWE-125	0	15100		
+0226_tiffcrop_c_1674_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1674		CWE-125	0	15100		
+0227_tiffcrop_c_1676_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1676		CWE-125	0	15100		
+0228_tiffcrop_c_1683_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1683		CWE-125	0	15100		
+0229_tiffcrop_c_1692_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1692		CWE-125	0	15100		
+0230_tiffcrop_c_1699_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1699		CWE-125	0	15100		
+0231_tiffcrop_c_1641_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1641		CWE-125	0	15100		
+0232_tiffcrop_c_1643_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1643		CWE-125	0	15100		
+0233_tiffcrop_c_1645_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcrop.c	1645		CWE-125	0	15100		
+1041_tiffcrop_c_10448_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10448		CWE-125	0	15100		
+1042_tiffcrop_c_10449_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10449		CWE-125	0	15100		
+1043_tiffcrop_c_10450_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10450		CWE-125	0	15100		
+1044_tiffcrop_c_10455_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10455		CWE-125	0	15100		
+1045_tiffcrop_c_10456_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10456		CWE-125	0	15100		
+1046_tiffcrop_c_10457_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10457		CWE-125	0	15100		
+1051_tiffcrop_c_10355_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10355		CWE-125	0	15100		
+1053_tiffcrop_c_10358_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10358		CWE-125	0	15100		
+1060_tiffcrop_c_10281_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10281		CWE-125	0	15100		
+1062_tiffcrop_c_10283_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	10283		CWE-125	0	15100		
+1074_tiffcrop_c_8719_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8719		CWE-125	0	15100		
+1075_tiffcrop_c_8725_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8725		CWE-125	0	15100		
+1076_tiffcrop_c_8749_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8749		CWE-125	0	15100		
+1077_tiffcrop_c_8750_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8750		CWE-125	0	15100		
+1078_tiffcrop_c_8829_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8829		CWE-125	0	15100		
+1079_tiffcrop_c_8830_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8830		CWE-125	0	15100		
+1090_tiffcrop_c_8188_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8188		CWE-125	0	15100		
+1094_tiffcrop_c_8223_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	8223		CWE-125	0	15100		
+1097_tiffcrop_c_6099_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6099		CWE-125	0	15100		
+1098_tiffcrop_c_6100_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6100		CWE-125	0	15100		
+1099_tiffcrop_c_6101_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6101		CWE-125	0	15100		
+1100_tiffcrop_c_6102_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6102		CWE-125	0	15100		
+1101_tiffcrop_c_6106_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6106		CWE-125	0	15100		
+1102_tiffcrop_c_6107_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6107		CWE-125	0	15100		
+1103_tiffcrop_c_6108_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6108		CWE-125	0	15100		
+1104_tiffcrop_c_6109_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	6109		CWE-125	0	15100		
+1105_tiffcrop_c_5795_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5795		CWE-125	0	15100		
+1106_tiffcrop_c_5449_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5449		CWE-125	0	15100		
+1107_tiffcrop_c_5484_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5484		CWE-125	0	15100		
+1108_tiffcrop_c_5485_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5485		CWE-125	0	15100		
+1109_tiffcrop_c_5490_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5490		CWE-125	0	15100		
+1110_tiffcrop_c_5491_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5491		CWE-125	0	15100		
+1113_tiffcrop_c_5313_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5313		CWE-125	0	15100		
+1114_tiffcrop_c_5346_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5346		CWE-125	0	15100		
+1115_tiffcrop_c_5347_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5347		CWE-125	0	15100		
+1116_tiffcrop_c_5349_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5349		CWE-125	0	15100		
+1117_tiffcrop_c_5350_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5350		CWE-125	0	15100		
+1130_tiffcrop_c_5195_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5195		CWE-125	0	15100		
+1131_tiffcrop_c_5228_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5228		CWE-125	0	15100		
+1132_tiffcrop_c_5230_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5230		CWE-125	0	15100		
+1149_tiffcrop_c_5087_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5087		CWE-125	0	15100		
+1150_tiffcrop_c_5020_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	5020		CWE-125	0	15100		
+1151_tiffcrop_c_4881_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4881		CWE-125	0	15100		
+1152_tiffcrop_c_4917_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4917		CWE-125	0	15100		
+1153_tiffcrop_c_4918_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4918		CWE-125	0	15100		
+1154_tiffcrop_c_4923_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4923		CWE-125	0	15100		
+1155_tiffcrop_c_4924_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4924		CWE-125	0	15100		
+1156_tiffcrop_c_4744_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4744		CWE-125	0	15100		
+1157_tiffcrop_c_4778_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4778		CWE-125	0	15100		
+1158_tiffcrop_c_4779_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4779		CWE-125	0	15100		
+1159_tiffcrop_c_4780_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4780		CWE-125	0	15100		
+1160_tiffcrop_c_4782_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4782		CWE-125	0	15100		
+1161_tiffcrop_c_4783_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4783		CWE-125	0	15100		
+1162_tiffcrop_c_4784_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4784		CWE-125	0	15100		
+1165_tiffcrop_c_4626_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4626		CWE-125	0	15100		
+1169_tiffcrop_c_4660_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4660		CWE-125	0	15100		
+1170_tiffcrop_c_4662_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4662		CWE-125	0	15100		
+1171_tiffcrop_c_4518_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4518		CWE-125	0	15100		
+1172_tiffcrop_c_4455_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4455		CWE-125	0	15100		
+1173_tiffcrop_c_4190_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4190		CWE-125	0	15100		
+1174_tiffcrop_c_4196_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4196		CWE-125	0	15100		
+1175_tiffcrop_c_4073_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4073		CWE-125	0	15100		
+1176_tiffcrop_c_4076_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	4076		CWE-125	0	15100		
+1177_tiffcrop_c_3958_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3958		CWE-125	0	15100		
+1178_tiffcrop_c_3960_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3960		CWE-125	0	15100		
+1179_tiffcrop_c_3747_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3747		CWE-125	0	15100		
+1180_tiffcrop_c_3753_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3753		CWE-125	0	15100		
+1181_tiffcrop_c_3621_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3621		CWE-125	0	15100		
+1182_tiffcrop_c_3623_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3623		CWE-125	0	15100		
+1183_tiffcrop_c_3625_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3625		CWE-125	0	15100		
+1184_tiffcrop_c_3627_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3627		CWE-125	0	15100		
+1185_tiffcrop_c_3631_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3631		CWE-125	0	15100		
+1186_tiffcrop_c_3633_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3633		CWE-125	0	15100		
+1187_tiffcrop_c_3635_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3635		CWE-125	0	15100		
+1188_tiffcrop_c_3637_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3637		CWE-125	0	15100		
+1189_tiffcrop_c_3519_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3519		CWE-125	0	15100		
+1190_tiffcrop_c_3521_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3521		CWE-125	0	15100		
+1191_tiffcrop_c_3087_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3087		CWE-125	0	15100		
+1192_tiffcrop_c_3049_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	3049		CWE-125	0	15100		
+1193_tiffcrop_c_2606_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2606		CWE-125	0	15100		
+1194_tiffcrop_c_1913_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	1913		CWE-125	0	15100		
+1195_tiffcrop_c_2198_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2198		CWE-125	0	15100		
+1196_tiffcrop_c_2223_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2223		CWE-125	0	15100		
+1197_tiffcrop_c_2360_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2360		CWE-125	0	15100		
+1198_tiffcrop_c_2392_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2392		CWE-125	0	15100		
+1199_tiffcrop_c_2402_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	2402		CWE-125	0	15100		
+1200_tiffcrop_c_1672_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcrop.c	1672		CWE-125	0	15100		
+0103_tiff2pdf_c_4890_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4890		CWE-120	0	15100		
+0104_tiff2pdf_c_4906_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4906		CWE-120	0	15100		
+0105_tiff2pdf_c_4920_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4920		CWE-120	0	15100		
+0106_tiff2pdf_c_4934_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4934		CWE-120	0	15100		
+0107_tiff2pdf_c_4377_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4377		CWE-120	0	15100		
+0108_tiff2pdf_c_4379_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4379		CWE-120	0	15100		
+0109_tiff2pdf_c_4250_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	4250		CWE-120	0	15100		
+0110_tiff2pdf_c_3317_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3317		CWE-120	0	15100		
+0111_tiff2pdf_c_3350_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3350		CWE-120	0	15100		
+0112_tiff2pdf_c_3509_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3509		CWE-120	0	15100		
+0113_tiff2pdf_c_3543_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3543		CWE-120	0	15100		
+0114_tiff2pdf_c_3556_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3556		CWE-120	0	15100		
+0115_tiff2pdf_c_3595_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3595		CWE-120	0	15100		
+0116_tiff2pdf_c_2617_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	2617		CWE-120	0	15100		
+0117_tiff2pdf_c_2652_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	2652		CWE-120	0	15100		
+0118_tiff2pdf_c_2927_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	2927		CWE-120	0	15100		
+0119_tiff2pdf_c_2970_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	2970		CWE-120	0	15100		
+0120_tiff2pdf_c_3022_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	3022		CWE-120	0	15100		
+0124_tiff2pdf_c_831_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	831		CWE-120	0	15100		
+0125_tiff2pdf_c_837_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	837		CWE-120	0	15100		
+0126_tiff2pdf_c_842_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	842		CWE-120	0	15100		
+0127_tiff2pdf_c_847_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	847		CWE-120	0	15100		
+0128_tiff2pdf_c_852_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	852		CWE-120	0	15100		
+0129_tiff2pdf_c_857_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2pdf.c	857		CWE-120	0	15100		
+1059_tiff2pdf_c_5958_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5958		CWE-125	0	15100		
+1061_tiff2pdf_c_5959_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5959		CWE-125	0	15100		
+1063_tiff2pdf_c_5960_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5960		CWE-125	0	15100		
+1064_tiff2pdf_c_5961_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5961		CWE-125	0	15100		
+1065_tiff2pdf_c_5962_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5962		CWE-125	0	15100		
+1066_tiff2pdf_c_5963_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5963		CWE-125	0	15100		
+1072_tiff2pdf_c_5813_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5813		CWE-125	0	15100		
+1073_tiff2pdf_c_5814_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5814		CWE-125	0	15100		
+1080_tiff2pdf_c_4998_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4998		CWE-125	0	15100		
+1081_tiff2pdf_c_4999_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4999		CWE-125	0	15100		
+1082_tiff2pdf_c_5000_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5000		CWE-125	0	15100		
+1083_tiff2pdf_c_5001_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5001		CWE-125	0	15100		
+1084_tiff2pdf_c_5002_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5002		CWE-125	0	15100		
+1085_tiff2pdf_c_5003_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5003		CWE-125	0	15100		
+1086_tiff2pdf_c_5004_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5004		CWE-125	0	15100		
+1087_tiff2pdf_c_5005_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5005		CWE-125	0	15100		
+1088_tiff2pdf_c_5006_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	5006		CWE-125	0	15100		
+1089_tiff2pdf_c_4870_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4870		CWE-125	0	15100		
+1091_tiff2pdf_c_4894_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4894		CWE-125	0	15100		
+1092_tiff2pdf_c_4910_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4910		CWE-125	0	15100		
+1093_tiff2pdf_c_4924_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4924		CWE-125	0	15100		
+1095_tiff2pdf_c_4938_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4938		CWE-125	0	15100		
+1096_tiff2pdf_c_4944_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	4944		CWE-125	0	15100		
+1111_tiff2pdf_c_1650_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1650		CWE-125	0	15100		
+1112_tiff2pdf_c_1665_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1665		CWE-125	0	15100		
+1118_tiff2pdf_c_1903_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1903		CWE-125	0	15100		
+1119_tiff2pdf_c_1904_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1904		CWE-125	0	15100		
+1120_tiff2pdf_c_1905_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1905		CWE-125	0	15100		
+1121_tiff2pdf_c_1906_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1906		CWE-125	0	15100		
+1122_tiff2pdf_c_1911_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1911		CWE-125	0	15100		
+1123_tiff2pdf_c_1912_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1912		CWE-125	0	15100		
+1124_tiff2pdf_c_1913_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1913		CWE-125	0	15100		
+1125_tiff2pdf_c_1914_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1914		CWE-125	0	15100		
+1126_tiff2pdf_c_1935_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1935		CWE-125	0	15100		
+1127_tiff2pdf_c_1936_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1936		CWE-125	0	15100		
+1128_tiff2pdf_c_1937_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1937		CWE-125	0	15100		
+1129_tiff2pdf_c_1938_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	1938		CWE-125	0	15100		
+1133_tiff2pdf_c_2163_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2163		CWE-125	0	15100		
+1134_tiff2pdf_c_2164_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2164		CWE-125	0	15100		
+1135_tiff2pdf_c_2178_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2178		CWE-125	0	15100		
+1136_tiff2pdf_c_2178_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2178		CWE-125	0	15100		
+1137_tiff2pdf_c_2179_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2179		CWE-125	0	15100		
+1138_tiff2pdf_c_2179_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2179		CWE-125	0	15100		
+1139_tiff2pdf_c_2180_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2180		CWE-125	0	15100		
+1140_tiff2pdf_c_2180_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2180		CWE-125	0	15100		
+1141_tiff2pdf_c_2181_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2181		CWE-125	0	15100		
+1142_tiff2pdf_c_2181_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2181		CWE-125	0	15100		
+1143_tiff2pdf_c_2182_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2182		CWE-125	0	15100		
+1144_tiff2pdf_c_2182_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2182		CWE-125	0	15100		
+1145_tiff2pdf_c_2183_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2183		CWE-125	0	15100		
+1146_tiff2pdf_c_2183_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2183		CWE-125	0	15100		
+1147_tiff2pdf_c_2194_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2194		CWE-125	0	15100		
+1148_tiff2pdf_c_2195_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	2195		CWE-125	0	15100		
+1163_tiff2pdf_c_768_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	768		CWE-125	0	15100		
+1164_tiff2pdf_c_794_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	794		CWE-125	0	15100		
+1166_tiff2pdf_c_825_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2pdf.c	825		CWE-125	0	15100		
+1167_tiff2pdf_c_829_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	out-of-bounds-read	tiff2pdf.c	829		CWE-125	0	15100		
+1168_tiff2pdf_c_830_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	out-of-bounds-read	tiff2pdf.c	830		CWE-125	0	15100		
+1206_tiff2pdf_c_4377_local-cpp-cwe-787-oob-write	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4377		CWE-787	0	15100		
+1207_tiff2pdf_c_4379_local-cpp-cwe-787-oob-write	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4379		CWE-787	0	15100		
+1208_tiff2pdf_c_4250_local-cpp-cwe-787-oob-write	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4250		CWE-787	0	15100		
+1214_tiff2pdf_c_4377_local-cpp-cwe-823-pointer-offset	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4377		CWE-823	0	15100		
+1215_tiff2pdf_c_4379_local-cpp-cwe-823-pointer-offset	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4379		CWE-823	0	15100		
+1216_tiff2pdf_c_4250_local-cpp-cwe-823-pointer-offset	LLM_FP	FP	heap-buffer-overflow	tiff2pdf.c	4250		CWE-823	0	15100		
+1405_tiff2pdf_c_1462_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	use-after-free	tiff2pdf.c	1462		CWE-125	0	15100		
+1406_tiff2pdf_c_1463_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	use-after-free	tiff2pdf.c	1463		CWE-125	0	15100		
+1407_tiff2pdf_c_1466_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	use-after-free	tiff2pdf.c	1466		CWE-125	0	15100		
+1408_tiff2pdf_c_1467_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	use-after-free	tiff2pdf.c	1467		CWE-125	0	15100		
+1485_tiff2pdf_c_1109_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1109		CWE-416	0	15100		
+1486_tiff2pdf_c_1111_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1111		CWE-416	0	15100		
+1487_tiff2pdf_c_1115_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1115		CWE-416	0	15100		
+1488_tiff2pdf_c_1117_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1117		CWE-416	0	15100		
+1489_tiff2pdf_c_1120_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1120		CWE-416	0	15100		
+1490_tiff2pdf_c_1122_sailor-kernel-lifecycle-mismatch	LLM_FP	FP	use-after-free	tiff2pdf.c	1122		CWE-416	0	15100		
+0720_tif_swab_c_314_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	314		CWE-125	0	15100		
+0721_tif_swab_c_314_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	314		CWE-125	0	15100		
+0722_tif_swab_c_315_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	315		CWE-125	0	15100		
+0723_tif_swab_c_315_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	315		CWE-125	0	15100		
+0724_tif_swab_c_316_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	316		CWE-125	0	15100		
+0725_tif_swab_c_316_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	316		CWE-125	0	15100		
+0727_tif_swab_c_317_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	317		CWE-125	0	15100		
+0728_tif_swab_c_317_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	317		CWE-125	0	15100		
+0729_tif_swab_c_318_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	318		CWE-125	0	15100		
+0730_tif_swab_c_318_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	318		CWE-125	0	15100		
+0731_tif_swab_c_319_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	319		CWE-125	0	15100		
+0732_tif_swab_c_319_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	319		CWE-125	0	15100		
+0733_tif_swab_c_320_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	320		CWE-125	0	15100		
+0734_tif_swab_c_320_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	320		CWE-125	0	15100		
+0735_tif_swab_c_321_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	321		CWE-125	0	15100		
+0736_tif_swab_c_321_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	321		CWE-125	0	15100		
+0747_tif_swab_c_231_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	231		CWE-125	0	15100		
+0748_tif_swab_c_232_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	232		CWE-125	0	15100		
+0749_tif_swab_c_233_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	233		CWE-125	0	15100		
+0750_tif_swab_c_234_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	234		CWE-125	0	15100		
+0752_tif_swab_c_235_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	235		CWE-125	0	15100		
+0753_tif_swab_c_236_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	236		CWE-125	0	15100		
+0754_tif_swab_c_237_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	237		CWE-125	0	15100		
+0755_tif_swab_c_238_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	238		CWE-125	0	15100		
+0756_tif_swab_c_239_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	239		CWE-125	0	15100		
+0757_tif_swab_c_240_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	240		CWE-125	0	15100		
+0758_tif_swab_c_241_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	241		CWE-125	0	15100		
+0759_tif_swab_c_242_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	242		CWE-125	0	15100		
+0761_tif_swab_c_206_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	206		CWE-125	0	15100		
+0762_tif_swab_c_207_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	207		CWE-125	0	15100		
+0763_tif_swab_c_208_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	208		CWE-125	0	15100		
+0765_tif_swab_c_209_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	209		CWE-125	0	15100		
+0767_tif_swab_c_210_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	210		CWE-125	0	15100		
+0768_tif_swab_c_211_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	211		CWE-125	0	15100		
+0770_tif_swab_c_212_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	212		CWE-125	0	15100		
+0772_tif_swab_c_213_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	213		CWE-125	0	15100		
+0773_tif_swab_c_214_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	214		CWE-125	0	15100		
+0775_tif_swab_c_215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	215		CWE-125	0	15100		
+0776_tif_swab_c_216_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	216		CWE-125	0	15100		
+0778_tif_swab_c_217_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	217		CWE-125	0	15100		
+0780_tif_swab_c_189_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	189		CWE-125	0	15100		
+0781_tif_swab_c_190_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	190		CWE-125	0	15100		
+0782_tif_swab_c_191_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	191		CWE-125	0	15100		
+0783_tif_swab_c_192_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	192		CWE-125	0	15100		
+0784_tif_swab_c_193_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	193		CWE-125	0	15100		
+0785_tif_swab_c_194_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	194		CWE-125	0	15100		
+0788_tif_swab_c_170_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	170		CWE-125	0	15100		
+0789_tif_swab_c_171_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	171		CWE-125	0	15100		
+0790_tif_swab_c_172_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	172		CWE-125	0	15100		
+0791_tif_swab_c_173_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	173		CWE-125	0	15100		
+0793_tif_swab_c_174_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	174		CWE-125	0	15100		
+0794_tif_swab_c_175_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	175		CWE-125	0	15100		
+0795_tif_swab_c_147_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	147		CWE-125	0	15100		
+0796_tif_swab_c_148_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	148		CWE-125	0	15100		
+0797_tif_swab_c_149_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	149		CWE-125	0	15100		
+0798_tif_swab_c_150_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	150		CWE-125	0	15100		
+0799_tif_swab_c_151_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	151		CWE-125	0	15100		
+0800_tif_swab_c_152_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	152		CWE-125	0	15100		
+0801_tif_swab_c_153_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	153		CWE-125	0	15100		
+0803_tif_swab_c_154_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	154		CWE-125	0	15100		
+0804_tif_swab_c_155_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	155		CWE-125	0	15100		
+0806_tif_swab_c_156_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	156		CWE-125	0	15100		
+0807_tif_swab_c_157_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	157		CWE-125	0	15100		
+0808_tif_swab_c_158_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	158		CWE-125	0	15100		
+0809_tif_swab_c_126_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	126		CWE-125	0	15100		
+0810_tif_swab_c_127_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	127		CWE-125	0	15100		
+0811_tif_swab_c_128_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	128		CWE-125	0	15100		
+0812_tif_swab_c_129_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	129		CWE-125	0	15100		
+0813_tif_swab_c_130_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	130		CWE-125	0	15100		
+0814_tif_swab_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	131		CWE-125	0	15100		
+0815_tif_swab_c_108_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	108		CWE-125	0	15100		
+0816_tif_swab_c_109_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	109		CWE-125	0	15100		
+0817_tif_swab_c_110_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	110		CWE-125	0	15100		
+0818_tif_swab_c_90_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	90		CWE-125	0	15100		
+0819_tif_swab_c_91_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	91		CWE-125	0	15100		
+0820_tif_swab_c_92_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	92		CWE-125	0	15100		
+0821_tif_swab_c_65_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	65		CWE-125	0	15100		
+0822_tif_swab_c_66_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	66		CWE-125	0	15100		
+0823_tif_swab_c_67_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	67		CWE-125	0	15100		
+0824_tif_swab_c_68_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	68		CWE-125	0	15100		
+0825_tif_swab_c_69_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	69		CWE-125	0	15100		
+0826_tif_swab_c_70_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	70		CWE-125	0	15100		
+0827_tif_swab_c_71_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	71		CWE-125	0	15100		
+0828_tif_swab_c_72_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	72		CWE-125	0	15100		
+0829_tif_swab_c_73_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	73		CWE-125	0	15100		
+0830_tif_swab_c_74_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	74		CWE-125	0	15100		
+0831_tif_swab_c_75_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	75		CWE-125	0	15100		
+0832_tif_swab_c_76_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	76		CWE-125	0	15100		
+0833_tif_swab_c_50_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	50		CWE-125	0	15100		
+0834_tif_swab_c_51_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	51		CWE-125	0	15100		
+0835_tif_swab_c_52_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	52		CWE-125	0	15100		
+0836_tif_swab_c_53_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	53		CWE-125	0	15100		
+0837_tif_swab_c_54_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	54		CWE-125	0	15100		
+0838_tif_swab_c_55_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	55		CWE-125	0	15100		
+0839_tif_swab_c_38_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	38		CWE-125	0	15100		
+0840_tif_swab_c_39_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	39		CWE-125	0	15100		
+0841_tif_swab_c_40_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_swab.c	40		CWE-125	0	15100		
+1294_tif_hash_set_c_291_sailor-cpp-CWE-416-DirectFreeArgUseFast	LLM_FP	FP		tif_hash_set.c	291		CWE-416	0	15100		
+1295_tif_hash_set_c_292_sailor-cpp-CWE-416-DirectFreeArgUseFast	LLM_FP	FP		tif_hash_set.c	292		CWE-416	0	15100		
+1300_tif_hash_set_c_163_sailor-cpp-uaf-free-then-return-intra.min	LLM_FP	FP		tif_hash_set.c	163		CWE-416	0	15100		
+1322_tif_hash_set_c_267_sailor-wmi-1-stale-reference-creation	LLM_FP	FP		tif_hash_set.c	267		CWE-416	0	15100		
+1323_tif_hash_set_c_238_sailor-wmi-1-stale-reference-creation	LLM_FP	FP		tif_hash_set.c	238		CWE-416	0	15100		
+1324_tif_hash_set_c_218_sailor-wmi-1-stale-reference-creation	LLM_FP	FP		tif_hash_set.c	218		CWE-416	0	15100		
+1325_tif_hash_set_c_152_sailor-wmi-1-stale-reference-creation	LLM_FP	FP		tif_hash_set.c	152		CWE-416	0	15100		
+1332_tif_hash_set_c_520_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	520		CWE-125	0	15100		
+1333_tif_hash_set_c_520_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	520		CWE-125	0	15100		
+1334_tif_hash_set_c_520_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	520		CWE-125	0	15100		
+1335_tif_hash_set_c_522_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	522		CWE-125	0	15100		
+1336_tif_hash_set_c_535_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	535		CWE-125	0	15100		
+1337_tif_hash_set_c_535_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	535		CWE-125	0	15100		
+1338_tif_hash_set_c_536_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	536		CWE-125	0	15100		
+1339_tif_hash_set_c_540_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	540		CWE-125	0	15100		
+1340_tif_hash_set_c_540_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	540		CWE-125	0	15100		
+1341_tif_hash_set_c_543_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	543		CWE-125	0	15100		
+1342_tif_hash_set_c_547_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	547		CWE-125	0	15100		
+1343_tif_hash_set_c_548_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	548		CWE-125	0	15100		
+1344_tif_hash_set_c_548_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	548		CWE-125	0	15100		
+1345_tif_hash_set_c_555_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	555		CWE-125	0	15100		
+1346_tif_hash_set_c_559_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	559		CWE-125	0	15100		
+1347_tif_hash_set_c_446_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	446		CWE-125	0	15100		
+1348_tif_hash_set_c_447_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	447		CWE-125	0	15100		
+1349_tif_hash_set_c_453_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	453		CWE-125	0	15100		
+1350_tif_hash_set_c_453_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	453		CWE-125	0	15100		
+1351_tif_hash_set_c_454_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	454		CWE-125	0	15100		
+1352_tif_hash_set_c_454_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	454		CWE-125	0	15100		
+1353_tif_hash_set_c_455_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	455		CWE-125	0	15100		
+1354_tif_hash_set_c_455_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	455		CWE-125	0	15100		
+1355_tif_hash_set_c_457_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	457		CWE-125	0	15100		
+1356_tif_hash_set_c_460_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	460		CWE-125	0	15100		
+1357_tif_hash_set_c_461_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	461		CWE-125	0	15100		
+1358_tif_hash_set_c_462_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	462		CWE-125	0	15100		
+1359_tif_hash_set_c_467_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	467		CWE-125	0	15100		
+1360_tif_hash_set_c_467_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	467		CWE-125	0	15100		
+1361_tif_hash_set_c_476_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	476		CWE-125	0	15100		
+1362_tif_hash_set_c_477_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	477		CWE-125	0	15100		
+1363_tif_hash_set_c_481_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	481		CWE-125	0	15100		
+1364_tif_hash_set_c_482_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	482		CWE-125	0	15100		
+1365_tif_hash_set_c_483_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	483		CWE-125	0	15100		
+1366_tif_hash_set_c_411_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	411		CWE-125	0	15100		
+1367_tif_hash_set_c_411_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	411		CWE-125	0	15100		
+1368_tif_hash_set_c_412_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	412		CWE-125	0	15100		
+1369_tif_hash_set_c_415_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	415		CWE-125	0	15100		
+1370_tif_hash_set_c_415_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	415		CWE-125	0	15100		
+1371_tif_hash_set_c_416_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	416		CWE-125	0	15100		
+1372_tif_hash_set_c_417_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	417		CWE-125	0	15100		
+1373_tif_hash_set_c_368_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	368		CWE-125	0	15100		
+1374_tif_hash_set_c_381_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	381		CWE-125	0	15100		
+1375_tif_hash_set_c_383_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	383		CWE-125	0	15100		
+1376_tif_hash_set_c_387_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	387		CWE-125	0	15100		
+1377_tif_hash_set_c_387_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	387		CWE-125	0	15100		
+1378_tif_hash_set_c_392_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	392		CWE-125	0	15100		
+1379_tif_hash_set_c_398_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	398		CWE-125	0	15100		
+1380_tif_hash_set_c_290_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	290		CWE-125	0	15100		
+1381_tif_hash_set_c_291_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	291		CWE-125	0	15100		
+1382_tif_hash_set_c_266_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	266		CWE-125	0	15100		
+1383_tif_hash_set_c_229_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	229		CWE-125	0	15100		
+1384_tif_hash_set_c_231_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	231		CWE-125	0	15100		
+1385_tif_hash_set_c_236_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	236		CWE-125	0	15100		
+1386_tif_hash_set_c_234_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	234		CWE-125	0	15100		
+1387_tif_hash_set_c_235_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	235		CWE-125	0	15100		
+1388_tif_hash_set_c_235_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	235		CWE-125	0	15100		
+1389_tif_hash_set_c_243_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	243		CWE-125	0	15100		
+1390_tif_hash_set_c_210_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	210		CWE-125	0	15100		
+1391_tif_hash_set_c_212_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	212		CWE-125	0	15100		
+1392_tif_hash_set_c_214_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	214		CWE-125	0	15100		
+1393_tif_hash_set_c_192_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	192		CWE-125	0	15100		
+1394_tif_hash_set_c_194_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	194		CWE-125	0	15100		
+1395_tif_hash_set_c_196_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	196		CWE-125	0	15100		
+1396_tif_hash_set_c_197_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	197		CWE-125	0	15100		
+1397_tif_hash_set_c_183_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	183		CWE-125	0	15100		
+1398_tif_hash_set_c_150_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_hash_set.c	150		CWE-125	0	15100		
+0101_tif_predict_c_1017_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_predict.c	1017		CWE-120	0	15100		
+0102_tif_predict_c_979_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_predict.c	979		CWE-120	0	15100		
+0997_tif_predict_c_1123_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	1123		CWE-125	0	15100		
+0999_tif_predict_c_950_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	950		CWE-125	0	15100		
+1000_tif_predict_c_889_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	889		CWE-125	0	15100		
+1001_tif_predict_c_850_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	850		CWE-125	0	15100		
+1003_tif_predict_c_809_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	809		CWE-125	0	15100		
+1004_tif_predict_c_732_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	732		CWE-125	0	15100		
+1007_tif_predict_c_733_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	733		CWE-125	0	15100		
+1008_tif_predict_c_734_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	734		CWE-125	0	15100		
+1009_tif_predict_c_737_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	737		CWE-125	0	15100		
+1010_tif_predict_c_738_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	738		CWE-125	0	15100		
+1011_tif_predict_c_740_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	740		CWE-125	0	15100		
+1012_tif_predict_c_741_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	741		CWE-125	0	15100		
+1013_tif_predict_c_743_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	743		CWE-125	0	15100		
+1014_tif_predict_c_744_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	744		CWE-125	0	15100		
+1015_tif_predict_c_752_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	752		CWE-125	0	15100		
+1016_tif_predict_c_753_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	753		CWE-125	0	15100		
+1017_tif_predict_c_754_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	754		CWE-125	0	15100		
+1018_tif_predict_c_755_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	755		CWE-125	0	15100		
+1019_tif_predict_c_758_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	758		CWE-125	0	15100		
+1020_tif_predict_c_759_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	759		CWE-125	0	15100		
+1021_tif_predict_c_761_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	761		CWE-125	0	15100		
+1022_tif_predict_c_762_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	762		CWE-125	0	15100		
+1023_tif_predict_c_764_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	764		CWE-125	0	15100		
+1024_tif_predict_c_765_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	765		CWE-125	0	15100		
+1025_tif_predict_c_767_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	767		CWE-125	0	15100		
+1026_tif_predict_c_768_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	768		CWE-125	0	15100		
+1027_tif_predict_c_780_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	780		CWE-125	0	15100		
+1030_tif_predict_c_568_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	568		CWE-125	0	15100		
+1031_tif_predict_c_569_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	569		CWE-125	0	15100		
+1032_tif_predict_c_570_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	570		CWE-125	0	15100		
+1033_tif_predict_c_571_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	571		CWE-125	0	15100		
+1034_tif_predict_c_572_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	572		CWE-125	0	15100		
+1035_tif_predict_c_573_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	573		CWE-125	0	15100		
+1036_tif_predict_c_574_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	574		CWE-125	0	15100		
+1037_tif_predict_c_575_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	575		CWE-125	0	15100		
+1038_tif_predict_c_579_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	579		CWE-125	0	15100		
+1039_tif_predict_c_587_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	587		CWE-125	0	15100		
+1040_tif_predict_c_528_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	528		CWE-125	0	15100		
+1047_tif_predict_c_494_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	494		CWE-125	0	15100		
+1048_tif_predict_c_458_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	458		CWE-125	0	15100		
+1049_tif_predict_c_373_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	373		CWE-125	0	15100		
+1050_tif_predict_c_389_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	389		CWE-125	0	15100		
+1052_tif_predict_c_390_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	390		CWE-125	0	15100		
+1054_tif_predict_c_391_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	391		CWE-125	0	15100		
+1055_tif_predict_c_402_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	402		CWE-125	0	15100		
+1056_tif_predict_c_403_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	403		CWE-125	0	15100		
+1057_tif_predict_c_404_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	404		CWE-125	0	15100		
+1058_tif_predict_c_405_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_predict.c	405		CWE-125	0	15100		
+1399_tif_predict_c_914_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	914		CWE-125	0	15100		
+1400_tif_predict_c_540_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	540		CWE-125	0	15100		
+1401_tif_predict_c_513_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	513		CWE-125	0	15100		
+1402_tif_predict_c_479_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	479		CWE-125	0	15100		
+1403_tif_predict_c_442_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	442		CWE-125	0	15100		
+1404_tif_predict_c_357_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_predict.c	357		CWE-125	0	15100		
+0064_test_RGBAImage_c_846_local-cpp-cwe-120-overflow	LLM_FP	FP		test_RGBAImage.c	846		CWE-120	0	15100		
+0066_test_RGBAImage_c_779_local-cpp-cwe-120-overflow	LLM_FP	FP		test_RGBAImage.c	779		CWE-120	0	15100		
+0067_test_RGBAImage_c_780_local-cpp-cwe-120-overflow	LLM_FP	FP		test_RGBAImage.c	780		CWE-120	0	15100		
+0079_test_RGBAImage_c_310_local-cpp-cwe-120-overflow	LLM_FP	FP		test_RGBAImage.c	310		CWE-120	0	15100		
+0080_test_RGBAImage_c_367_local-cpp-cwe-120-overflow	LLM_FP	FP		test_RGBAImage.c	367		CWE-120	0	15100		
+0904_test_RGBAImage_c_590_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	590		CWE-125	0	15100		
+0905_test_RGBAImage_c_591_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	591		CWE-125	0	15100		
+0906_test_RGBAImage_c_592_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	592		CWE-125	0	15100		
+0907_test_RGBAImage_c_593_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	593		CWE-125	0	15100		
+0908_test_RGBAImage_c_594_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	594		CWE-125	0	15100		
+0909_test_RGBAImage_c_595_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	595		CWE-125	0	15100		
+0910_test_RGBAImage_c_596_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	596		CWE-125	0	15100		
+0911_test_RGBAImage_c_597_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	597		CWE-125	0	15100		
+0912_test_RGBAImage_c_600_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	600		CWE-125	0	15100		
+0913_test_RGBAImage_c_601_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	601		CWE-125	0	15100		
+0914_test_RGBAImage_c_602_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	602		CWE-125	0	15100		
+0915_test_RGBAImage_c_603_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	603		CWE-125	0	15100		
+0916_test_RGBAImage_c_604_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	604		CWE-125	0	15100		
+0917_test_RGBAImage_c_605_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	605		CWE-125	0	15100		
+0918_test_RGBAImage_c_606_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	606		CWE-125	0	15100		
+0919_test_RGBAImage_c_607_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	607		CWE-125	0	15100		
+0920_test_RGBAImage_c_610_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	610		CWE-125	0	15100		
+0921_test_RGBAImage_c_611_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	611		CWE-125	0	15100		
+0922_test_RGBAImage_c_612_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	612		CWE-125	0	15100		
+0923_test_RGBAImage_c_613_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	613		CWE-125	0	15100		
+0924_test_RGBAImage_c_614_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	614		CWE-125	0	15100		
+0925_test_RGBAImage_c_615_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	615		CWE-125	0	15100		
+0926_test_RGBAImage_c_616_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	616		CWE-125	0	15100		
+0927_test_RGBAImage_c_617_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	617		CWE-125	0	15100		
+0928_test_RGBAImage_c_620_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	620		CWE-125	0	15100		
+0929_test_RGBAImage_c_621_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	621		CWE-125	0	15100		
+0930_test_RGBAImage_c_622_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	622		CWE-125	0	15100		
+0931_test_RGBAImage_c_623_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	623		CWE-125	0	15100		
+0932_test_RGBAImage_c_624_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	624		CWE-125	0	15100		
+0933_test_RGBAImage_c_625_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	625		CWE-125	0	15100		
+0934_test_RGBAImage_c_626_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	626		CWE-125	0	15100		
+0935_test_RGBAImage_c_627_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_RGBAImage.c	627		CWE-125	0	15100		
+1218_test_RGBAImage_c_1185_sailor-cpp-cwe-120-stack-sprintf-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	stack-buffer-overflow	test_RGBAImage.c	1185		CWE-120	0	15100		
+1222_test_RGBAImage_c_721_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_RGBAImage.c	721		CWE-120	0	15100		
+0083_raw2tiff_c_533_local-cpp-cwe-120-overflow	LLM_FP	FP		raw2tiff.c	533		CWE-120	0	15100		
+0084_raw2tiff_c_540_local-cpp-cwe-120-overflow	LLM_FP	FP		raw2tiff.c	540		CWE-120	0	15100		
+0087_raw2tiff_c_370_local-cpp-cwe-120-overflow	LLM_FP	FP		raw2tiff.c	370		CWE-120	0	15100		
+0088_raw2tiff_c_380_local-cpp-cwe-120-overflow	LLM_FP	FP		raw2tiff.c	380		CWE-120	0	15100		
+0089_raw2tiff_c_386_local-cpp-cwe-120-overflow	LLM_FP	FP		raw2tiff.c	386		CWE-120	0	15100		
+0163_raw2tiff_c_714_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	714		CWE-125	0	15100		
+0164_raw2tiff_c_731_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	731		CWE-125	0	15100		
+0165_raw2tiff_c_738_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	738		CWE-125	0	15100		
+0170_raw2tiff_c_551_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	551		CWE-125	0	15100		
+0172_raw2tiff_c_138_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	138		CWE-125	0	15100		
+0173_raw2tiff_c_140_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	140		CWE-125	0	15100		
+0174_raw2tiff_c_142_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	142		CWE-125	0	15100		
+0175_raw2tiff_c_144_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	144		CWE-125	0	15100		
+0176_raw2tiff_c_146_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	146		CWE-125	0	15100		
+0178_raw2tiff_c_148_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	148		CWE-125	0	15100		
+0179_raw2tiff_c_150_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	150		CWE-125	0	15100		
+0180_raw2tiff_c_152_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	152		CWE-125	0	15100		
+0181_raw2tiff_c_165_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	165		CWE-125	0	15100		
+0182_raw2tiff_c_167_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	167		CWE-125	0	15100		
+0183_raw2tiff_c_169_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	169		CWE-125	0	15100		
+0184_raw2tiff_c_171_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	171		CWE-125	0	15100		
+0185_raw2tiff_c_173_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	173		CWE-125	0	15100		
+0186_raw2tiff_c_175_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	175		CWE-125	0	15100		
+0187_raw2tiff_c_177_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	177		CWE-125	0	15100		
+0188_raw2tiff_c_179_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	179		CWE-125	0	15100		
+0189_raw2tiff_c_188_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	188		CWE-125	0	15100		
+0190_raw2tiff_c_190_local-cpp-cwe-125-oob-read	LLM_FP	FP		raw2tiff.c	190		CWE-125	0	15100		
+0946_raw2tiff_c_721_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		raw2tiff.c	721		CWE-125	0	15100		
+0947_raw2tiff_c_723_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		raw2tiff.c	723		CWE-125	0	15100		
+1205_raw2tiff_c_380_local-cpp-cwe-787-oob-write	LLM_FP	FP		raw2tiff.c	380		CWE-787	0	15100		
+1213_raw2tiff_c_380_local-cpp-cwe-823-pointer-offset	LLM_FP	FP		raw2tiff.c	380		CWE-823	0	15100		
+1233_tiff-palette_c_96_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-palette.c	96		CWE-476	0	15100		
+1234_tiff-palette_c_98_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	98		CWE-476	0	15100		
+1236_tiff-palette_c_100_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	100		CWE-476	0	15100		
+1238_tiff-palette_c_102_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	102		CWE-476	0	15100		
+1239_tiff-palette_c_104_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	104		CWE-476	0	15100		
+1240_tiff-palette_c_106_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	106		CWE-476	0	15100		
+1241_tiff-palette_c_108_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	108		CWE-476	0	15100		
+1242_tiff-palette_c_110_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	110		CWE-476	0	15100		
+1243_tiff-palette_c_113_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-palette.c	113		CWE-476	0	15100		
+1244_tiff-palette_c_115_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	115		CWE-476	0	15100		
+1245_tiff-palette_c_117_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	117		CWE-476	0	15100		
+1246_tiff-palette_c_119_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	119		CWE-476	0	15100		
+1247_tiff-palette_c_121_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	121		CWE-476	0	15100		
+1248_tiff-palette_c_123_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	123		CWE-476	0	15100		
+1249_tiff-palette_c_125_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	125		CWE-476	0	15100		
+1250_tiff-palette_c_127_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	127		CWE-476	0	15100		
+1251_tiff-palette_c_130_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-palette.c	130		CWE-476	0	15100		
+1252_tiff-palette_c_132_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	132		CWE-476	0	15100		
+1253_tiff-palette_c_134_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	134		CWE-476	0	15100		
+1254_tiff-palette_c_136_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	136		CWE-476	0	15100		
+1279_tiff-palette_c_257_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-palette.c	257		CWE-476	0	15100		
+1280_tiff-palette_c_261_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	261		CWE-476	0	15100		
+1281_tiff-palette_c_266_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	266		CWE-476	0	15100		
+1282_tiff-palette_c_272_sailor-cpp-cwe-476-unchecked-alloc-deref	LLM_FP	FP		tiff-palette.c	272		CWE-476	0	15100		
+0065_test_directory_c_1693_local-cpp-cwe-120-overflow	LLM_FP	FP		test_directory.c	1693		CWE-120	0	15100		
+0077_test_directory_c_1170_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	stack-buffer-overflow	test_directory.c	1170		CWE-120	0	15100		
+0078_test_directory_c_919_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	stack-buffer-overflow	test_directory.c	919		CWE-120	0	15100		
+0085_test_directory_c_188_local-cpp-cwe-120-overflow	LLM_FP	FP		test_directory.c	188		CWE-120	0	15100		
+0177_test_directory_c_258_local-cpp-cwe-125-oob-read	LLM_FP	FP		test_directory.c	258		CWE-125	0	15100		
+0896_test_directory_c_2298_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	2298		CWE-125	0	15100		
+0897_test_directory_c_2216_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	2216		CWE-125	0	15100		
+0898_test_directory_c_2123_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	2123		CWE-125	0	15100		
+0899_test_directory_c_1592_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	1592		CWE-125	0	15100		
+0936_test_directory_c_1396_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	1396		CWE-125	0	15100		
+0937_test_directory_c_1236_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	1236		CWE-125	0	15100		
+0944_test_directory_c_1092_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	1092		CWE-125	0	15100		
+0945_test_directory_c_817_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	817		CWE-125	0	15100		
+0948_test_directory_c_358_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_directory.c	358		CWE-125	0	15100		
+1219_test_directory_c_2224_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	2224		CWE-120	0	15100		
+1220_test_directory_c_2131_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	2131		CWE-120	0	15100		
+1221_test_directory_c_1600_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	1600		CWE-120	0	15100		
+1223_test_directory_c_1404_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	1404		CWE-120	0	15100		
+1224_test_directory_c_1406_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	1406		CWE-120	0	15100		
+1225_test_directory_c_1244_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	1244		CWE-120	0	15100		
+1226_test_directory_c_1100_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	1100		CWE-120	0	15100		
+1227_test_directory_c_825_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	825		CWE-120	0	15100		
+1228_test_directory_c_366_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_directory.c	366		CWE-120	0	15100		
+0242_tif_dir_c_1786_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1786		CWE-125	0	15100		
+0243_tif_dir_c_1787_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1787		CWE-125	0	15100		
+0247_tif_dir_c_1638_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1638		CWE-125	0	15100		
+0248_tif_dir_c_1639_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1639		CWE-125	0	15100		
+0249_tif_dir_c_1640_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1640		CWE-125	0	15100		
+0257_tif_dir_c_1286_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1286		CWE-125	0	15100		
+0258_tif_dir_c_1300_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1300		CWE-125	0	15100		
+0259_tif_dir_c_1326_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1326		CWE-125	0	15100		
+0260_tif_dir_c_1327_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1327		CWE-125	0	15100		
+0261_tif_dir_c_1330_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1330		CWE-125	0	15100		
+0262_tif_dir_c_1331_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1331		CWE-125	0	15100		
+0263_tif_dir_c_1334_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1334		CWE-125	0	15100		
+0264_tif_dir_c_1335_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1335		CWE-125	0	15100		
+0265_tif_dir_c_1336_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1336		CWE-125	0	15100		
+0266_tif_dir_c_1355_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1355		CWE-125	0	15100		
+0268_tif_dir_c_1403_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1403		CWE-125	0	15100		
+0269_tif_dir_c_1404_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	1404		CWE-125	0	15100		
+0447_tif_dir_c_434_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	434		CWE-125	0	15100		
+0448_tif_dir_c_435_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	435		CWE-125	0	15100		
+0449_tif_dir_c_438_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	438		CWE-125	0	15100		
+0450_tif_dir_c_439_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	439		CWE-125	0	15100		
+0491_tif_dir_c_554_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	554		CWE-125	0	15100		
+0493_tif_dir_c_555_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dir.c	555		CWE-125	0	15100		
+0016_tif_lzw_c_419_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	419		CWE-120	0	15100		
+0017_tif_lzw_c_590_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	590		CWE-120	0	15100		
+0018_tif_lzw_c_598_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	598		CWE-120	0	15100		
+0019_tif_lzw_c_635_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	635		CWE-120	0	15100		
+0020_tif_lzw_c_734_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	734		CWE-120	0	15100		
+0021_tif_lzw_c_745_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	745		CWE-120	0	15100		
+0022_tif_lzw_c_752_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	752		CWE-120	0	15100		
+0023_tif_lzw_c_235_local-cpp-cwe-120-overflow	LLM_FP	FP	none	tif_lzw.c	235		CWE-120	0	15100		
+0253_tif_lzw_c_1373_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	1373		CWE-125	0	15100		
+0355_tif_lzw_c_610_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	610		CWE-125	0	15100		
+0357_tif_lzw_c_611_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	611		CWE-125	0	15100		
+0361_tif_lzw_c_612_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	612		CWE-125	0	15100		
+0366_tif_lzw_c_620_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	620		CWE-125	0	15100		
+0369_tif_lzw_c_621_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	621		CWE-125	0	15100		
+0370_tif_lzw_c_622_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	622		CWE-125	0	15100		
+0390_tif_lzw_c_261_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	261		CWE-125	0	15100		
+0391_tif_lzw_c_262_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP	none	tif_lzw.c	262		CWE-125	0	15100		
+1326_tif_lzw_c_1388_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	none	tif_lzw.c	1388		CWE-125	0	15100		
+1327_tif_lzw_c_1389_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	none	tif_lzw.c	1389		CWE-125	0	15100		
+1328_tif_lzw_c_1391_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	none	tif_lzw.c	1391		CWE-125	0	15100		
+1329_tif_lzw_c_1392_sailor-wmi-2-type-confusion-leak	LLM_FP	FP	none	tif_lzw.c	1392		CWE-125	0	15100		
+0737_tif_strip_c_279_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	279		CWE-125	0	15100		
+0738_tif_strip_c_279_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	279		CWE-125	0	15100		
+0739_tif_strip_c_280_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	280		CWE-125	0	15100		
+0740_tif_strip_c_281_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	281		CWE-125	0	15100		
+0741_tif_strip_c_281_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	281		CWE-125	0	15100		
+0742_tif_strip_c_282_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	282		CWE-125	0	15100		
+0743_tif_strip_c_283_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	283		CWE-125	0	15100		
+0744_tif_strip_c_289_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	289		CWE-125	0	15100		
+0745_tif_strip_c_291_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	291		CWE-125	0	15100		
+0751_tif_strip_c_298_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	298		CWE-125	0	15100		
+0849_tif_strip_c_118_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	118		CWE-125	0	15100		
+0850_tif_strip_c_118_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	118		CWE-125	0	15100		
+0851_tif_strip_c_119_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	119		CWE-125	0	15100		
+0852_tif_strip_c_120_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	120		CWE-125	0	15100		
+0853_tif_strip_c_120_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	120		CWE-125	0	15100		
+0854_tif_strip_c_121_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	121		CWE-125	0	15100		
+0855_tif_strip_c_122_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	122		CWE-125	0	15100		
+0856_tif_strip_c_125_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	125		CWE-125	0	15100		
+0857_tif_strip_c_128_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	128		CWE-125	0	15100		
+0858_tif_strip_c_130_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	130		CWE-125	0	15100		
+0859_tif_strip_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_strip.c	131		CWE-125	0	15100		
+1255_tiff-rgb_c_118_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	118		CWE-476	0	15100		
+1256_tiff-rgb_c_119_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	119		CWE-476	0	15100		
+1257_tiff-rgb_c_120_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	120		CWE-476	0	15100		
+1258_tiff-rgb_c_124_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	124		CWE-476	0	15100		
+1259_tiff-rgb_c_125_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	125		CWE-476	0	15100		
+1263_tiff-rgb_c_126_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	126		CWE-476	0	15100		
+1264_tiff-rgb_c_130_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	130		CWE-476	0	15100		
+1265_tiff-rgb_c_131_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	131		CWE-476	0	15100		
+1266_tiff-rgb_c_132_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	132		CWE-476	0	15100		
+1267_tiff-rgb_c_136_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	136		CWE-476	0	15100		
+1268_tiff-rgb_c_137_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	137		CWE-476	0	15100		
+1269_tiff-rgb_c_138_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	138		CWE-476	0	15100		
+1270_tiff-rgb_c_142_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	142		CWE-476	0	15100		
+1271_tiff-rgb_c_143_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	143		CWE-476	0	15100		
+1272_tiff-rgb_c_144_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	144		CWE-476	0	15100		
+1273_tiff-rgb_c_148_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	148		CWE-476	0	15100		
+1274_tiff-rgb_c_149_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	149		CWE-476	0	15100		
+1275_tiff-rgb_c_150_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	150		CWE-476	0	15100		
+1276_tiff-rgb_c_154_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	154		CWE-476	0	15100		
+1277_tiff-rgb_c_155_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	155		CWE-476	0	15100		
+1278_tiff-rgb_c_156_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-rgb.c	156		CWE-476	0	15100		
+0050_custom_dir_EXIF_231_c_742_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	742		CWE-120	0	15100		
+0052_custom_dir_EXIF_231_c_1087_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1087		CWE-120	0	15100		
+0053_custom_dir_EXIF_231_c_1108_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1108		CWE-120	0	15100		
+0054_custom_dir_EXIF_231_c_1131_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1131		CWE-120	0	15100		
+0055_custom_dir_EXIF_231_c_1225_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1225		CWE-120	0	15100		
+0056_custom_dir_EXIF_231_c_1234_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1234		CWE-120	0	15100		
+0057_custom_dir_EXIF_231_c_1273_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1273		CWE-120	0	15100		
+0058_custom_dir_EXIF_231_c_1282_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1282		CWE-120	0	15100		
+0059_custom_dir_EXIF_231_c_1336_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1336		CWE-120	0	15100		
+0060_custom_dir_EXIF_231_c_1345_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1345		CWE-120	0	15100		
+0062_custom_dir_EXIF_231_c_1505_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1505		CWE-120	0	15100		
+0068_custom_dir_EXIF_231_c_1738_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1738		CWE-120	0	15100		
+0069_custom_dir_EXIF_231_c_1763_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1763		CWE-120	0	15100		
+0070_custom_dir_EXIF_231_c_1898_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1898		CWE-120	0	15100		
+0071_custom_dir_EXIF_231_c_1938_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1938		CWE-120	0	15100		
+0072_custom_dir_EXIF_231_c_1961_local-cpp-cwe-120-overflow	LLM_FP	FP		custom_dir_EXIF_231.c	1961		CWE-120	0	15100		
+0149_custom_dir_EXIF_231_c_1190_local-cpp-cwe-125-oob-read	LLM_FP	FP		custom_dir_EXIF_231.c	1190		CWE-125	0	15100		
+0150_custom_dir_EXIF_231_c_1255_local-cpp-cwe-125-oob-read	LLM_FP	FP		custom_dir_EXIF_231.c	1255		CWE-125	0	15100		
+0152_custom_dir_EXIF_231_c_1511_local-cpp-cwe-125-oob-read	LLM_FP	FP		custom_dir_EXIF_231.c	1511		CWE-125	0	15100		
+0901_custom_dir_EXIF_231_c_1962_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		custom_dir_EXIF_231.c	1962		CWE-125	0	15100		
+1302_tif_write_c_457_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	457		CWE-416	0	15100		
+1303_tif_write_c_457_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	457		CWE-416	0	15100		
+1304_tif_write_c_463_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	463		CWE-416	0	15100		
+1305_tif_write_c_464_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	464		CWE-416	0	15100		
+1306_tif_write_c_464_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	464		CWE-416	0	15100		
+1307_tif_write_c_470_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	470		CWE-416	0	15100		
+1308_tif_write_c_489_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	489		CWE-416	0	15100		
+1309_tif_write_c_494_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	494		CWE-416	0	15100		
+1310_tif_write_c_503_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	503		CWE-416	0	15100		
+1311_tif_write_c_513_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	513		CWE-416	0	15100		
+1312_tif_write_c_120_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	120		CWE-416	0	15100		
+1313_tif_write_c_121_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	121		CWE-416	0	15100		
+1314_tif_write_c_122_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	122		CWE-416	0	15100		
+1315_tif_write_c_122_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	122		CWE-416	0	15100		
+1316_tif_write_c_123_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	123		CWE-416	0	15100		
+1317_tif_write_c_128_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	128		CWE-416	0	15100		
+1318_tif_write_c_128_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	128		CWE-416	0	15100		
+1319_tif_write_c_161_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	161		CWE-416	0	15100		
+1320_tif_write_c_161_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_write.c	161		CWE-416	0	15100		
+0061_test_IFD_enlargement_c_1293_local-cpp-cwe-120-overflow	LLM_FP	FP		test_IFD_enlargement.c	1293		CWE-120	0	15100		
+0081_test_IFD_enlargement_c_107_local-cpp-cwe-120-overflow	LLM_FP	FP		test_IFD_enlargement.c	107		CWE-120	0	15100		
+0082_test_IFD_enlargement_c_127_local-cpp-cwe-120-overflow	LLM_FP	FP		test_IFD_enlargement.c	127		CWE-120	0	15100		
+0162_test_IFD_enlargement_c_293_local-cpp-cwe-125-oob-read	LLM_FP	FP		test_IFD_enlargement.c	293		CWE-125	0	15100		
+0938_test_IFD_enlargement_c_825_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	825		CWE-125	0	15100		
+0939_test_IFD_enlargement_c_834_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	834		CWE-125	0	15100		
+0940_test_IFD_enlargement_c_839_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	839		CWE-125	0	15100		
+0941_test_IFD_enlargement_c_848_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	848		CWE-125	0	15100		
+0942_test_IFD_enlargement_c_854_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	854		CWE-125	0	15100		
+0943_test_IFD_enlargement_c_860_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	860		CWE-125	0	15100		
+0950_test_IFD_enlargement_c_83_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	83		CWE-125	0	15100		
+0952_test_IFD_enlargement_c_84_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	84		CWE-125	0	15100		
+0953_test_IFD_enlargement_c_85_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	85		CWE-125	0	15100		
+0954_test_IFD_enlargement_c_111_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	111		CWE-125	0	15100		
+0955_test_IFD_enlargement_c_111_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	111		CWE-125	0	15100		
+0956_test_IFD_enlargement_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	131		CWE-125	0	15100		
+0957_test_IFD_enlargement_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_IFD_enlargement.c	131		CWE-125	0	15100		
+1217_test_IFD_enlargement_c_1765_sailor-cpp-cwe-120-stack-sprintf-overflow	LLM_FP	FP		test_IFD_enlargement.c	1765		CWE-120	0	15100		
+0006_tif_overview_c_848_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_overview.c	848		CWE-120	0	15100		
+0007_tif_overview_c_849_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_overview.c	849		CWE-120	0	15100		
+0008_tif_overview_c_850_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_overview.c	850		CWE-120	0	15100		
+0139_tif_overview_c_433_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	433		CWE-125	0	15100		
+0140_tif_overview_c_434_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	434		CWE-125	0	15100		
+0141_tif_overview_c_490_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	490		CWE-125	0	15100		
+0142_tif_overview_c_491_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	491		CWE-125	0	15100		
+0143_tif_overview_c_336_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	336		CWE-125	0	15100		
+0144_tif_overview_c_337_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	337		CWE-125	0	15100		
+0145_tif_overview_c_365_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	365		CWE-125	0	15100		
+0146_tif_overview_c_366_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_overview.c	366		CWE-125	0	15100		
+0234_tif_overview_c_208_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	208		CWE-125	0	15100		
+0235_tif_overview_c_212_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	212		CWE-125	0	15100		
+0236_tif_overview_c_216_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	216		CWE-125	0	15100		
+0237_tif_overview_c_220_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	220		CWE-125	0	15100		
+0238_tif_overview_c_224_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	224		CWE-125	0	15100		
+0239_tif_overview_c_228_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_overview.c	228		CWE-125	0	15100		
+0090_tiffdump_c_360_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffdump.c	360		CWE-120	0	15100		
+0091_tiffdump_c_503_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffdump.c	503		CWE-120	0	15100		
+0092_tiffdump_c_514_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffdump.c	514		CWE-120	0	15100		
+0093_tiffdump_c_199_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffdump.c	199		CWE-120	0	15100		
+0094_tiffdump_c_215_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffdump.c	215		CWE-120	0	15100		
+0963_tiffdump_c_833_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	833		CWE-125	0	15100		
+0964_tiffdump_c_833_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	833		CWE-125	0	15100		
+0965_tiffdump_c_834_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	834		CWE-125	0	15100		
+0966_tiffdump_c_835_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	835		CWE-125	0	15100		
+0967_tiffdump_c_838_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	838		CWE-125	0	15100		
+0969_tiffdump_c_849_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	849		CWE-125	0	15100		
+0970_tiffdump_c_850_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	850		CWE-125	0	15100		
+0971_tiffdump_c_851_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	851		CWE-125	0	15100		
+0972_tiffdump_c_854_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	854		CWE-125	0	15100		
+0982_tiffdump_c_702_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	702		CWE-125	0	15100		
+0983_tiffdump_c_437_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdump.c	437		CWE-125	0	15100		
+1321_tiffdump_c_267_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tiffdump.c	267		CWE-416	0	15100		
+0201_tiffcp_c_488_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	488		CWE-125	0	15100		
+0202_tiffcp_c_505_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	505		CWE-125	0	15100		
+0203_tiffcp_c_514_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	514		CWE-125	0	15100		
+0204_tiffcp_c_521_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	521		CWE-125	0	15100		
+0205_tiffcp_c_526_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	526		CWE-125	0	15100		
+0206_tiffcp_c_531_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	531		CWE-125	0	15100		
+0207_tiffcp_c_536_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	536		CWE-125	0	15100		
+0208_tiffcp_c_541_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	541		CWE-125	0	15100		
+0209_tiffcp_c_546_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	546		CWE-125	0	15100		
+0210_tiffcp_c_550_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	550		CWE-125	0	15100		
+0211_tiffcp_c_466_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	466		CWE-125	0	15100		
+0212_tiffcp_c_468_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	468		CWE-125	0	15100		
+0213_tiffcp_c_470_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcp.c	470		CWE-125	0	15100		
+1005_tiffcp_c_495_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcp.c	495		CWE-125	0	15100		
+1006_tiffcp_c_497_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcp.c	497		CWE-125	0	15100		
+1028_tiffcp_c_231_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcp.c	231		CWE-125	0	15100		
+1029_tiffcp_c_233_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffcp.c	233		CWE-125	0	15100		
+0011_tif_dirread_c_8403_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirread.c	8403		CWE-120	0	15100		
+0012_tif_dirread_c_8407_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirread.c	8407		CWE-120	0	15100		
+0040_tif_dirread_c_5086_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirread.c	5086		CWE-120	0	15100		
+0254_tif_dirread_c_8098_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirread.c	8098		CWE-125	0	15100		
+0255_tif_dirread_c_8021_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirread.c	8021		CWE-125	0	15100		
+0304_tif_dirread_c_6648_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirread.c	6648		CWE-125	0	15100		
+1202_tif_dirread_c_8403_local-cpp-cwe-787-oob-write	LLM_FP	FP		tif_dirread.c	8403		CWE-787	0	15100		
+1203_tif_dirread_c_8407_local-cpp-cwe-787-oob-write	LLM_FP	FP		tif_dirread.c	8407		CWE-787	0	15100		
+1210_tif_dirread_c_8403_local-cpp-cwe-823-pointer-offset	LLM_FP	FP		tif_dirread.c	8403		CWE-823	0	15100		
+1211_tif_dirread_c_8407_local-cpp-cwe-823-pointer-offset	LLM_FP	FP		tif_dirread.c	8407		CWE-823	0	15100		
+1296_tif_dirread_c_6020_sailor-cpp-uaf-lookup-remove-use-intra	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	use-after-free	tif_dirread.c	6020		CWE-416	0	15100		
+1297_tif_dirread_c_6022_sailor-cpp-uaf-lookup-remove-use-intra	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	use-after-free	tif_dirread.c	6022		CWE-416	0	15100		
+1298_tif_dirread_c_5839_sailor-cpp-uaf-lookup-remove-use-intra	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	use-after-free	tif_dirread.c	5839		CWE-416	0	15100		
+1299_tif_dirread_c_5846_sailor-cpp-uaf-lookup-remove-use-intra	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	use-after-free	tif_dirread.c	5846		CWE-416	0	15100		
+0147_iptcutil_c_173_local-cpp-cwe-125-oob-read	LLM_FP	FP		iptcutil.c	173		CWE-125	0	15100		
+0240_iptcutil_c_254_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		iptcutil.c	254		CWE-125	0	15100		
+0241_iptcutil_c_255_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		iptcutil.c	255		CWE-125	0	15100		
+1283_iptcutil_c_461_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	461		CWE-476	0	15100		
+1284_iptcutil_c_461_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	461		CWE-476	0	15100		
+1285_iptcutil_c_472_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	472		CWE-476	0	15100		
+1286_iptcutil_c_472_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	472		CWE-476	0	15100		
+1287_iptcutil_c_476_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	476		CWE-476	0	15100		
+1288_iptcutil_c_478_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	478		CWE-476	0	15100		
+1289_iptcutil_c_491_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	491		CWE-476	0	15100		
+1290_iptcutil_c_492_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	492		CWE-476	0	15100		
+1291_iptcutil_c_492_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	492		CWE-476	0	15100		
+1292_iptcutil_c_497_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	iptcutil.c	497		CWE-476	0	15100		
+0198_tiffmedian_c_345_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffmedian.c	345		CWE-125	0	15100		
+0199_tiffmedian_c_352_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffmedian.c	352		CWE-125	0	15100		
+0973_tiffmedian_c_992_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	992		CWE-125	0	15100		
+0974_tiffmedian_c_993_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	993		CWE-125	0	15100		
+0975_tiffmedian_c_994_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	994		CWE-125	0	15100		
+0976_tiffmedian_c_1004_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1004		CWE-125	0	15100		
+0977_tiffmedian_c_1005_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1005		CWE-125	0	15100		
+0978_tiffmedian_c_1006_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1006		CWE-125	0	15100		
+0979_tiffmedian_c_1009_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1009		CWE-125	0	15100		
+0980_tiffmedian_c_1010_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1010		CWE-125	0	15100		
+0981_tiffmedian_c_1011_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffmedian.c	1011		CWE-125	0	15100		
+0537_tif_print_c_361_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	361		CWE-125	0	15100		
+0544_tif_print_c_470_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	470		CWE-125	0	15100		
+0548_tif_print_c_491_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	491		CWE-125	0	15100		
+0576_tif_print_c_554_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	554		CWE-125	0	15100		
+0583_tif_print_c_555_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	555		CWE-125	0	15100		
+0584_tif_print_c_556_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	556		CWE-125	0	15100		
+0585_tif_print_c_565_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	565		CWE-125	0	15100		
+0586_tif_print_c_566_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	566		CWE-125	0	15100		
+0707_tif_print_c_188_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	188		CWE-125	0	15100		
+0708_tif_print_c_196_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	196		CWE-125	0	15100		
+0709_tif_print_c_197_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_print.c	197		CWE-125	0	15100		
+0032_tif_fax3_c_656_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_fax3.c	656		CWE-120	0	15100		
+0256_tif_fax3_c_1637_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	1637		CWE-125	0	15100		
+0658_tif_fax3_c_507_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	507		CWE-125	0	15100		
+0659_tif_fax3_c_510_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	510		CWE-125	0	15100		
+0714_tif_fax3_c_550_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	550		CWE-125	0	15100		
+0715_tif_fax3_c_550_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	550		CWE-125	0	15100		
+0718_tif_fax3_c_553_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	553		CWE-125	0	15100		
+0848_tif_fax3_c_415_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_fax3.c	415		CWE-125	0	15100		
+1330_tif_fax3_c_1419_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_fax3.c	1419		CWE-125	0	15100		
+1331_tif_fax3_c_1291_sailor-wmi-2-type-confusion-leak	LLM_FP	FP		tif_fax3.c	1291		CWE-125	0	15100		
+0042_defer_strile_loading_c_83_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_loading.c	83		CWE-120	0	15100		
+0044_defer_strile_loading_c_128_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_loading.c	128		CWE-120	0	15100		
+0046_defer_strile_loading_c_172_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_loading.c	172		CWE-120	0	15100		
+0049_defer_strile_loading_c_239_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_loading.c	239		CWE-120	0	15100		
+0875_defer_strile_loading_c_131_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	131		CWE-125	0	15100		
+0876_defer_strile_loading_c_135_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	135		CWE-125	0	15100		
+0877_defer_strile_loading_c_176_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	176		CWE-125	0	15100		
+0878_defer_strile_loading_c_180_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	180		CWE-125	0	15100		
+0881_defer_strile_loading_c_243_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	243		CWE-125	0	15100		
+0882_defer_strile_loading_c_246_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_loading.c	246		CWE-125	0	15100		
+0861_tif_tile_c_215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	215		CWE-125	0	15100		
+0862_tif_tile_c_215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	215		CWE-125	0	15100		
+0863_tif_tile_c_216_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	216		CWE-125	0	15100		
+0864_tif_tile_c_217_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	217		CWE-125	0	15100		
+0865_tif_tile_c_217_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	217		CWE-125	0	15100		
+0866_tif_tile_c_218_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	218		CWE-125	0	15100		
+0867_tif_tile_c_221_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	221		CWE-125	0	15100		
+0868_tif_tile_c_224_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	224		CWE-125	0	15100		
+0869_tif_tile_c_226_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	226		CWE-125	0	15100		
+0870_tif_tile_c_227_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_tile.c	227		CWE-125	0	15100		
+0036_tif_read_c_1598_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	1598		CWE-120	0	15100		
+0037_tif_read_c_1627_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	1627		CWE-120	0	15100		
+0039_tif_read_c_1003_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	1003		CWE-120	0	15100		
+0041_tif_read_c_578_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	578		CWE-120	0	15100		
+0043_tif_read_c_487_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	487		CWE-120	0	15100		
+0048_tif_read_c_218_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	218		CWE-120	0	15100		
+0051_tif_read_c_134_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_read.c	134		CWE-120	0	15100		
+1204_tif_read_c_134_local-cpp-cwe-787-oob-write	LLM_FP	FP		tif_read.c	134		CWE-787	0	15100		
+1212_tif_read_c_134_local-cpp-cwe-823-pointer-offset	LLM_FP	FP		tif_read.c	134		CWE-823	0	15100		
+0155_ppm2tiff_c_488_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	488		CWE-125	0	15100		
+0156_ppm2tiff_c_505_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	505		CWE-125	0	15100		
+0157_ppm2tiff_c_514_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	514		CWE-125	0	15100		
+0158_ppm2tiff_c_521_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	521		CWE-125	0	15100		
+0159_ppm2tiff_c_470_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	470		CWE-125	0	15100		
+0160_ppm2tiff_c_472_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	472		CWE-125	0	15100		
+0161_ppm2tiff_c_474_local-cpp-cwe-125-oob-read	LLM_FP	FP		ppm2tiff.c	474		CWE-125	0	15100		
+0902_ppm2tiff_c_495_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		ppm2tiff.c	495		CWE-125	0	15100		
+0903_ppm2tiff_c_497_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		ppm2tiff.c	497		CWE-125	0	15100		
+0984_test_signed_tags_c_984_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	984		CWE-125	0	15100		
+0985_test_signed_tags_c_986_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	986		CWE-125	0	15100		
+0986_test_signed_tags_c_987_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	987		CWE-125	0	15100		
+0987_test_signed_tags_c_988_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	988		CWE-125	0	15100		
+0993_test_signed_tags_c_1041_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	1041		CWE-125	0	15100		
+0994_test_signed_tags_c_1046_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	1046		CWE-125	0	15100		
+0995_test_signed_tags_c_1050_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	1050		CWE-125	0	15100		
+0996_test_signed_tags_c_1055_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	1055		CWE-125	0	15100		
+1002_test_signed_tags_c_188_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_signed_tags.c	188		CWE-125	0	15100		
+0038_tif_thunder_c_162_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_thunder.c	162		CWE-120	0	15100		
+0746_tif_thunder_c_115_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	115		CWE-125	0	15100		
+0760_tif_thunder_c_133_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	133		CWE-125	0	15100		
+0766_tif_thunder_c_136_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	136		CWE-125	0	15100		
+0777_tif_thunder_c_139_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	139		CWE-125	0	15100		
+0779_tif_thunder_c_145_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	145		CWE-125	0	15100		
+0786_tif_thunder_c_148_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	148		CWE-125	0	15100		
+0847_tif_thunder_c_151_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_thunder.c	151		CWE-125	0	15100		
+0191_tiffdither_c_198_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	198		CWE-125	0	15100		
+0192_tiffdither_c_205_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	205		CWE-125	0	15100		
+0193_tiffdither_c_212_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	212		CWE-125	0	15100		
+0194_tiffdither_c_180_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	180		CWE-125	0	15100		
+0195_tiffdither_c_182_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	182		CWE-125	0	15100		
+0196_tiffdither_c_184_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffdither.c	184		CWE-125	0	15100		
+0962_tiffdither_c_144_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdither.c	144		CWE-125	0	15100		
+0968_tiffdither_c_151_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffdither.c	151		CWE-125	0	15100		
+0097_tiffsplit_c_186_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffsplit.c	186		CWE-120	0	15100		
+0098_tiffsplit_c_188_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffsplit.c	188		CWE-120	0	15100		
+0988_tiffsplit_c_261_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffsplit.c	261		CWE-125	0	15100		
+0989_tiffsplit_c_268_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffsplit.c	268		CWE-125	0	15100		
+0990_tiffsplit_c_279_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffsplit.c	279		CWE-125	0	15100		
+0991_tiffsplit_c_283_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	global-buffer-overflow	tiffsplit.c	283		CWE-125	0	15100		
+0992_tiffsplit_c_120_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiffsplit.c	120		CWE-125	0	15100		
+0010_tif_dirwrite_c_3662_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirwrite.c	3662		CWE-120	0	15100		
+0013_tif_dirwrite_c_3813_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirwrite.c	3813		CWE-120	0	15100		
+0014_tif_dirwrite_c_3818_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_dirwrite.c	3818		CWE-120	0	15100		
+0441_tif_dirwrite_c_2172_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirwrite.c	2172		CWE-125	0	15100		
+0442_tif_dirwrite_c_2173_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirwrite.c	2173		CWE-125	0	15100		
+0444_tif_dirwrite_c_2174_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirwrite.c	2174		CWE-125	0	15100		
+0086_tiff2ps_c_3080_local-cpp-cwe-120-overflow	LLM_FP	FP		tiff2ps.c	3080		CWE-120	0	15100		
+0961_tiff2ps_c_3171_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2ps.c	3171		CWE-125	0	15100		
+0998_tiff2ps_c_1823_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff2ps.c	1823		CWE-125	0	15100		
+1069_tiff2ps_c_291_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2ps.c	291		CWE-125	0	15100		
+1070_tiff2ps_c_343_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2ps.c	343		CWE-125	0	15100		
+1071_tiff2ps_c_372_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2ps.c	372		CWE-125	0	15100		
+0001_tiffset_c_148_cpp-offset-use-before-range-check	LLM_FP	FP		tiffset.c	148		CWE-120	0	15100		
+0002_tiffset_c_159_cpp-offset-use-before-range-check	LLM_FP	FP		tiffset.c	159		CWE-120	0	15100		
+0003_tiffset_c_172_cpp-offset-use-before-range-check	LLM_FP	FP		tiffset.c	172		CWE-120	0	15100		
+0004_tiffset_c_188_cpp-offset-use-before-range-check	LLM_FP	FP		tiffset.c	188		CWE-120	0	15100		
+0005_tiffset_c_434_cpp-offset-use-before-range-check	LLM_FP	FP		tiffset.c	434		CWE-120	0	15100		
+0073_tif_zip_c_182_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_zip.c	182		CWE-120	0	15100		
+0074_tif_zip_c_289_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_zip.c	289		CWE-120	0	15100		
+0075_tif_zip_c_297_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_zip.c	297		CWE-120	0	15100		
+0076_tif_zip_c_309_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_zip.c	309		CWE-120	0	15100		
+0900_tif_zip_c_715_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_zip.c	715		CWE-125	0	15100		
+0095_tif_unix_c_357_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_unix.c	357		CWE-120	0	15100		
+0096_tif_unix_c_353_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_unix.c	353		CWE-120	0	15100		
+0100_tif_unix_c_88_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_unix.c	88		CWE-120	0	15100		
+0197_tif_unix_c_362_local-cpp-cwe-125-oob-read	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_unix.c	362		CWE-125	0	15100		
+0200_tif_unix_c_119_local-cpp-cwe-125-oob-read	LLM_FP	FP		tif_unix.c	119		CWE-125	0	15100		
+0166_tiff2bw_c_357_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiff2bw.c	357		CWE-125	0	15100		
+0167_tiff2bw_c_374_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiff2bw.c	374		CWE-125	0	15100		
+0168_tiff2bw_c_381_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiff2bw.c	381		CWE-125	0	15100		
+0949_tiff2bw_c_364_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2bw.c	364		CWE-125	0	15100		
+0951_tiff2bw_c_366_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2bw.c	366		CWE-125	0	15100		
+0214_pal2rgb_c_282_local-cpp-cwe-125-oob-read	LLM_FP	FP		pal2rgb.c	282		CWE-125	0	15100		
+0215_pal2rgb_c_299_local-cpp-cwe-125-oob-read	LLM_FP	FP		pal2rgb.c	299		CWE-125	0	15100		
+0216_pal2rgb_c_306_local-cpp-cwe-125-oob-read	LLM_FP	FP		pal2rgb.c	306		CWE-125	0	15100		
+1067_pal2rgb_c_289_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		pal2rgb.c	289		CWE-125	0	15100		
+1068_pal2rgb_c_291_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		pal2rgb.c	291		CWE-125	0	15100		
+1235_tiff-grayscale_c_79_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-grayscale.c	79		CWE-476	0	15100		
+1237_tiff-grayscale_c_81_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-grayscale.c	81		CWE-476	0	15100		
+1260_tiff-grayscale_c_116_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-grayscale.c	116		CWE-476	0	15100		
+1261_tiff-grayscale_c_120_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-grayscale.c	120		CWE-476	0	15100		
+1262_tiff-grayscale_c_125_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-grayscale.c	125		CWE-476	0	15100		
+0031_tif_lzma_c_189_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_lzma.c	189		CWE-120	0	15100		
+0033_tif_lzma_c_206_local-cpp-cwe-120-overflow	LLM_FP	FP	heap-buffer-overflow	tif_lzma.c	206		CWE-120	0	15100		
+0034_tif_lzma_c_231_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_lzma.c	231		CWE-120	0	15100		
+0035_tif_lzma_c_252_local-cpp-cwe-120-overflow	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	tif_lzma.c	252		CWE-120	0	15100		
+0045_defer_strile_writing_c_144_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_writing.c	144		CWE-120	0	15100		
+0047_defer_strile_writing_c_180_local-cpp-cwe-120-overflow	LLM_FP	FP		defer_strile_writing.c	180		CWE-120	0	15100		
+0879_defer_strile_writing_c_183_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_writing.c	183		CWE-125	0	15100		
+0880_defer_strile_writing_c_187_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		defer_strile_writing.c	187		CWE-125	0	15100		
+0887_short_tag_c_126_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		short_tag.c	126		CWE-125	0	15100		
+0888_short_tag_c_137_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		short_tag.c	137		CWE-125	0	15100		
+0889_short_tag_c_187_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		short_tag.c	187		CWE-125	0	15100		
+0891_short_tag_c_194_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		short_tag.c	194		CWE-125	0	15100		
+0892_test_append_to_strip_c_85_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_append_to_strip.c	85		CWE-125	0	15100		
+0893_test_append_to_strip_c_89_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_append_to_strip.c	89		CWE-125	0	15100		
+0894_test_append_to_strip_c_91_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_append_to_strip.c	91		CWE-125	0	15100		
+0895_test_append_to_strip_c_95_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		test_append_to_strip.c	95		CWE-125	0	15100		
+1229_tiff-bi_c_64_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-bi.c	64		CWE-476	0	15100		
+1230_tiff-bi_c_67_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-bi.c	67		CWE-476	0	15100		
+1231_tiff-bi_c_73_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-bi.c	73		CWE-476	0	15100		
+1232_tiff-bi_c_76_sailor-cpp-cwe-476-unchecked-alloc-deref	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	null-deref	tiff-bi.c	76		CWE-476	0	15100		
+0244_tif_next_c_109_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_next.c	109		CWE-125	0	15100		
+0245_tif_next_c_110_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_next.c	110		CWE-125	0	15100		
+0246_tif_next_c_144_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_next.c	144		CWE-125	0	15100		
+0250_tif_aux_c_313_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_aux.c	313		CWE-125	0	15100		
+0251_tif_aux_c_335_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_aux.c	335		CWE-125	0	15100		
+0252_tif_aux_c_336_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_aux.c	336		CWE-125	0	15100		
+0872_tif_luv_c_345_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_luv.c	345		CWE-125	0	15100		
+0873_tif_luv_c_293_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_luv.c	293		CWE-125	0	15100		
+0874_tif_luv_c_215_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_luv.c	215		CWE-125	0	15100		
+0063_test_ifd_loop_detection_c_131_local-cpp-cwe-120-overflow	LLM_FP	FP		test_ifd_loop_detection.c	131		CWE-120	0	15100		
+0153_test_ifd_loop_detection_c_57_local-cpp-cwe-125-oob-read	LLM_FP	FP		test_ifd_loop_detection.c	57		CWE-125	0	15100		
+0169_tiffcmp_c_672_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcmp.c	672		CWE-125	0	15100		
+0171_tiffcmp_c_372_local-cpp-cwe-125-oob-read	LLM_FP	FP		tiffcmp.c	372		CWE-125	0	15100		
+0885_rewrite_tag_c_120_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		rewrite_tag.c	120		CWE-125	0	15100		
+0886_rewrite_tag_c_121_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		rewrite_tag.c	121		CWE-125	0	15100		
+0958_thumbnail_c_643_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		thumbnail.c	643		CWE-125	0	15100		
+0959_thumbnail_c_499_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		thumbnail.c	499		CWE-125	0	15100		
+0000_tif_open_c_376_cpp-unbounded-write	LLM_FP	FP		tif_open.c	376		CWE-120	0	15100		
+0015_tif_packbits_c_309_local-cpp-cwe-120-overflow	LLM_FP	FP		tif_packbits.c	309		CWE-120	0	15100		
+0099_tiffinfo_c_231_local-cpp-cwe-120-overflow	LLM_FP	FP		tiffinfo.c	231		CWE-120	0	15100		
+0148_ascii_tag_c_163_local-cpp-cwe-125-oob-read	LLM_FP	FP		ascii_tag.c	163		CWE-125	0	15100		
+0151_strip_c_105_local-cpp-cwe-125-oob-read	LLM_FP	FP		strip.c	105		CWE-125	0	15100		
+0154_fax2ps_c_441_local-cpp-cwe-125-oob-read	LLM_FP	FP		fax2ps.c	441		CWE-125	0	15100		
+0693_tif_dirinfo_c_535_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tif_dirinfo.c	535		CWE-125	0	15100		
+0871_check_tag_c_60_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		check_tag.c	60		CWE-125	0	15100		
+0890_custom_dir_c_200_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	REPRODUCER_BUILD_FAIL	REPRODUCER_BUILD_FAIL	heap-buffer-overflow	custom_dir.c	200		CWE-125	0	15100		
+0960_tiff2rgba_c_497_local-cpp-cwe-125-cursor-lookahead-missing-bytes-check	LLM_FP	FP		tiff2rgba.c	497		CWE-125	0	15100		
+1293_tif_close_c_136_sailor-cpp-CWE-416-DirectFreeArgUseFast	LLM_FP	FP		tif_close.c	136		CWE-416	0	15100		
+1301_tif_compress_c_281_sailor-cpp-cwe-416-use-after-realloc	LLM_FP	FP		tif_compress.c	281		CWE-416	0	15100		

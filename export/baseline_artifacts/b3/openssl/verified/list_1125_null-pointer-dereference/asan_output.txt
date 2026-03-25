@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==21144==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b6ab6e532a0 bp 0x7ffdfa140400 sp 0x7ffdfa13fbb0 T0)
+==21144==The signal is caused by a READ memory access.
+==21144==Hint: address points to the zero page.
+    #0 0x5b6ab6e532a0 in strcmp (/app/export/baseline_artifacts/b3/openssl/verified/list_1125_null-pointer-dereference/reproducer+0x382a0) (BuildId: 6c7a40347e52b92304ef05c5ef0e7686955b79b5)
+    #1 0x5b6ab6efbf39 in list_objects /app/export/baseline_artifacts/b3/openssl/verified/list_1125_null-pointer-dereference/reproducer.c:140:27
+    #2 0x5b6ab6efbd27 in main /app/export/baseline_artifacts/b3/openssl/verified/list_1125_null-pointer-dereference/reproducer.c:156:5
+    #3 0x7a544722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7a544722a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5b6ab6e3c304 in _start (/app/export/baseline_artifacts/b3/openssl/verified/list_1125_null-pointer-dereference/reproducer+0x21304) (BuildId: 6c7a40347e52b92304ef05c5ef0e7686955b79b5)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (/app/export/baseline_artifacts/b3/openssl/verified/list_1125_null-pointer-dereference/reproducer+0x382a0) (BuildId: 6c7a40347e52b92304ef05c5ef0e7686955b79b5) in strcmp
+==21144==ABORTING

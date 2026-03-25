@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "xps-util.c",
+        "original_line": 133,
+        "function": "clean_path",
+        "entry_point": "xps_resolve_url",
+        "spine": [
+            "xps_resolve_url",
+            "clean_path"
+        ],
+        "original_context": "128: \t{\n129: \t\tif(p[0] == '/') /* null element */\n130: \t\t\tp++;\n131: \t\telse if (p[0] == '.' && SEP(p[1]))\n132: \t\t\tp += 1; /* don't count the separator in case it is nul */\n133: \t\telse if (p[0] == '.' && p[1] == '.' && SEP(p[2]))\n134: \t\t{\n135: \t\t\tp += 2;\n136: \t\t\tif (q > dotdot) /* can backtrack */\n137: \t\t\t{\n138: \t\t\t\twhile(--q > dotdot && *q != '/')"
+    },
+    "klee_crash": {
+        "harness_file": "xps-util.c",
+        "harness_line": 44,
+        "original_file": "xps-util.c",
+        "original_line": 133,
+        "original_code": "else if (p[0] == '.' && p[1] == '.' && SEP(p[2]))",
+        "original_context": "    130: \t\t\tp++;\n    131: \t\telse if (p[0] == '.' && SEP(p[1]))\n    132: \t\t\tp += 1; /* don't count the separator in case it is nul */\n>>> 133: \t\telse if (p[0] == '.' && p[1] == '.' && SEP(p[2]))\n    134: \t\t{\n    135: \t\t\tp += 2;\n    136: \t\t\tif (q > dotdot) /* can backtrack */",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: xps-util.c\nLine: 44\nassembly.ll line: 235\nState: 1\nStack: \n\t#000000235 in clean_path(138849232220160) at xps-util.c:44\n\t#100000122 in xps_resolve_url(0, 0, 138849232220160, 0, 0, 2) at xps-util.c:86\n\t#200000076 in main() at driver.c:29\nInfo: \n\taddress: (Add w64 138849232220162\n          (SExt w64 (ZExt w32 (Eq 47 (Read w8 0 output_buf)))))\n\texample: 138849232220162\n\trange: [138849232220162, 138849232220162]\n\tnext: object at 138549658251264 of size "
+    },
+    "concrete_inputs": [
+        {
+            "name": "output_buf",
+            "size": 2,
+            "data": "b'..'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "skip_scheme",
+        "crash_file": "source/xps/xps-util.c",
+        "crash_line": 62,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==6637==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55c08df56b07 bp 0x7ffc9a5c40c0 sp 0x7ffc9a5c40c0 T0)\n==6637==The signal is caused by a READ memory access.\n==6637==Hint: address points to the zero page.\n    #0 0x55c08df56b07 in skip_scheme source/xps/xps-util.c:62\n    #1 0x55c08df56c78 in xps_resolve_url source/xps/xps-util.c:171\n    #2 0x55c08df56a4d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1473_xps-util.c_133_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:30\n    #3 0x7f08d78c8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f08d78c8e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55c08df568e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1473_xps-util.c_133_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x108e4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV source/xps/xps-util.c:62 in skip_scheme\n==6637==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1473_xps-util.c_133_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xps-util.c",
+            "harness_line": 44,
+            "original_file": "xps-util.c",
+            "original_line": 133,
+            "error_type": "ptr",
+            "crash_function": "clean_path",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1473_xps-util.c_133_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "skip_scheme",
+            "crash_file": "source/xps/xps-util.c",
+            "crash_line": 62
+        }
+    ]
+}

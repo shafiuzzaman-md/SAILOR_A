@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/gregbook/rpng2-x.c",
+    "line": 2077,
+    "function": "is_number",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "isdigit() is called with *p of type char, which may be negative on platforms where char is signed. The ctype macros require either EOF or an unsigned char value. Passing a negative value can cause an out-of-bounds table access in the ctype implementation (undefined behavior). Cast to (unsigned char) before calling isdigit.",
+    "abs_path": "/tmp/libpng_upstream/contrib/gregbook/rpng2-x.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/*\n   Self-contained reproducer for the out-of-bounds read caused by calling\n   isdigit() with a potentially negative char value (undefined behavior).\n\n   We replicate the vulnerable helper from contrib/gregbook/rpng2-x.c:\n       static int is_number(char *p) {\n           while (*p) {\n               if (!isdigit(*p))\n                   return FALSE;\n               ++p;\n           }\n           return TRUE;\n       }\n\n   To make the UB observable under ASan on any libc, we provide a stub\n   implementation of isdigit() that mimics a table-based ctype and indexes\n   a too-small table directly by the int argument (without casting to\n   unsigned char). Passing a byte with value 0x80 (which may be negative on\n   platforms where char is signed) will index out of bounds and trigger ASan.\n*/\n\n#define TRUE 1\n#define FALSE 0\n\n/* Intentionally tiny classification table to force OOB on bad inputs. */\nstatic const unsigned char tiny_ctype_digit_table[16] = {\n    /* Only small indices are valid; everything else will be OOB. */\n    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0\n};\n\n/* Stub isdigit with the same signature, intentionally vulnerable: no bounds check,\n   no cast to unsigned char; indexes directly by c. */\nstatic int isdigit(int c)\n{\n    /* This line will perform an out-of-bounds read when c is negative (e.g., -128)\n       or larger than 15 (e.g., 128), which is exactly the UB the real ctype may\n       exhibit when passed a signed char outside the unsigned char range. */\n    return tiny_ctype_digit_table[c] != 0;\n}\n\n/* Vulnerable helper, copied to mirror the project bug (no cast to unsigned char). */\nstatic int is_number(char *p)\n{\n    while (*p) {\n        if (!isdigit(*p))\n            return FALSE;\n        ++p;\n    }\n    return TRUE;\n}\n\nint main(void)\n{\n    /* Craft input with a single byte 0x80 followed by NUL terminator. On platforms\n       where char is signed (common on x86), *p will be -128. Even if char is\n       unsigned, *p will be 128; both cause OOB access with the tiny table above. */\n    char s[2];\n    s[0] = (char)0x80; /* problematic byte (may be negative if char is signed) */\n    s[1] = '\\0';\n\n    /* Call the vulnerable function: this will call the stub isdigit with c = *p\n       and trigger an out-of-bounds read flagged by ASan. */\n    int res = is_number(s);\n\n    /* Print to keep side effects visible (though ASan should report before). */\n    printf(\"is_number returned: %d\\n\", res);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0034818649291992188,
+      "output": "is_number returned: 1\n"
+    }
+  }
+}

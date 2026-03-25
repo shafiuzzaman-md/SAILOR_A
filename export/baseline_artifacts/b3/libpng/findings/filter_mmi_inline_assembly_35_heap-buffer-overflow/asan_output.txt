@@ -1,0 +1,50 @@
+=================================================================
+==3733061==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000019 at pc 0x5e20ddf0ee0a bp 0x7ffd18a3ddd0 sp 0x7ffd18a3ddc8
+READ of size 1 at 0x602000000019 thread T0
+    #0 0x5e20ddf0ee09 in png_read_filter_row_up_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33:38
+    #1 0x5e20ddf0f265 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:71:5
+    #2 0x7e015122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7e015122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5e20dde4f304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0x21304) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)
+
+0x602000000019 is located 0 bytes to the right of 9-byte region [0x602000000010,0x602000000019)
+allocated by thread T0 here:
+    #0 0x5e20dded2d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)
+    #1 0x5e20ddf0f0c8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:55:33
+    #2 0x7e015122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7e015122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5e20dde4f304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0x21304) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33:38 in png_read_filter_row_up_mmi
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 00[01]fa fa 00 01 fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3733061==ABORTING

@@ -1,0 +1,64 @@
+{
+  "ivi_dsp.c": {
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 65,
+      "code": "}"
+    },
+    "17": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 387,
+      "code": "int     t0, t1, t2, t3, t4;"
+    },
+    "19": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 673,
+      "code": "row2 = pitch << 1;"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 739,
+      "code": "IVI_INV_SLANT4(in[0], in[4], in[8], in[12],"
+    },
+    "25": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 740,
+      "code": "out[0], out[pitch], out[row2], out[row2 + pitch],"
+    },
+    "26": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 741,
+      "code": "t0, t1, t2, t3, t4);"
+    },
+    "29": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 742,
+      "code": "} else {"
+    },
+    "30": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 743,
+      "code": "out[0] = out[pitch] = out[row2] = out[row2 + pitch] = 0;"
+    },
+    "31": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 744,
+      "code": "}"
+    },
+    "32": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 744,
+      "code": "}"
+    },
+    "33": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 744,
+      "code": "}"
+    },
+    "39": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 744,
+      "code": "}"
+    }
+  }
+}

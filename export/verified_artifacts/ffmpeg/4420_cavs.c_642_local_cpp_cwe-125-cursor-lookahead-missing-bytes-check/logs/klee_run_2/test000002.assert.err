@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: cavs.c
+Line: 35
+assembly.ll line: 53
+State: 1
+Stack: 
+	#000000053 in ff_cavs_init_mb(139367457554432) at cavs.c:35
+	#100000072 in entry_func(139367457554432) at cavs.c:42
+	#200000164 in main() at driver.c:33

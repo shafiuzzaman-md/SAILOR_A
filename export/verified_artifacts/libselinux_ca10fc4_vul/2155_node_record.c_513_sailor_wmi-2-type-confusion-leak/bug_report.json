@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "double-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "node",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "double-free",
+            "crash_function": "__interceptor_free",
+            "crash_file": "../../../../src/libsanitizer/asan/asan_malloc_linux.cpp",
+            "crash_line": 127
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "double-free",
+        "crash_function": "__interceptor_free",
+        "crash_file": "../../../../src/libsanitizer/asan/asan_malloc_linux.cpp",
+        "crash_line": 127,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==5111==ERROR: AddressSanitizer: attempting double-free on 0x503000000040 in thread T0:\n    #0 0x7f99c7c2a537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x55818b255ac3 in sepol_node_set_mask_bytes /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:513\n    #2 0x55818b251802 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2155_node_record.c_513_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:42\n    #3 0x7f99c7873d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f99c7873e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55818b251484 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2155_node_record.c_513_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x3484)\n\n0x503000000040 is located 0 bytes inside of 32-byte region [0x503000000040,0x503000000060)\nfreed by thread T0 here:\n    #0 0x7f99c7c2a537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x55818b2516d8 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2155_node_record.c_513_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:27\n    #2 0x7f99c7873d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7f99c7c2a887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55818b251615 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2155_node_record.c_513_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:23\n    #2 0x7f99c7873d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: double-free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127 in __interceptor_free\n==5111==ABORTING\n"
+    }
+}

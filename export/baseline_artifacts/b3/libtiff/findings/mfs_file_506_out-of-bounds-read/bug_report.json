@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 506,
+    "function": "mfs_close",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Uses fds[fd] without validating that fd is within [0, MAX_BUFFS). If fd is negative or >= MAX_BUFFS, this reads past the bounds of the fds array. mem_init() shows fds is sized by MAX_BUFFS.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\n\n/* Match the vulnerable code's expectations: fds is sized by MAX_BUFFS */\n#define MAX_BUFFS 8\n\nstatic int fds[MAX_BUFFS];\n\nstatic void mem_init(void)\n{\n    for (int i = 0; i < MAX_BUFFS; i++)\n        fds[i] = -1; /* mark all as not open */\n}\n\n/* Vulnerable function (mirrors contrib/mfs/mfs_file.c:mfs_close) */\nint mfs_close(int fd)\n{\n    int ret;\n\n    if (fds[fd] == -1) /* Not open */\n    {\n        ret = -1;\n        errno = EBADF;\n    }\n    else\n    {\n        fds[fd] = -1;\n        ret = 0;\n    }\n\n    return (ret);\n}\n\nint main(void)\n{\n    mem_init();\n\n    /* Craft an out-of-bounds index: one past the end of fds[] */\n    int bad_fd = MAX_BUFFS;  /* >= MAX_BUFFS triggers OOB read on fds[fd] */\n\n    /* Triggers the out-of-bounds read at: if (fds[fd] == -1) */\n    int ret = mfs_close(bad_fd);\n\n    /* Keep side effects visible */\n    printf(\"mfs_close(%d) -> %d, errno=%d\\n\", bad_fd, ret, errno);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6481161117553711,
+      "output": "=================================================================\n==3828328==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5ea3fec9b540 at pc 0x5ea3fe312cf6 bp 0x7fff007a0d40 sp 0x7fff007a0d38\nREAD of size 4 at 0x5ea3fec9b540 thread T0\n    #0 0x5ea3fe312cf5 in mfs_close /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21:9\n    #1 0x5ea3fe312de2 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:43:15\n    #2 0x791b2422a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x791b2422a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5ea3fe253304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer+0x21304) (BuildId: 175518ba133fde743ff5eac20924516946cc0e3b)\n\n0x5ea3fec9b540 is located 0 bytes to the right of global variable 'fds' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:8:12' (0x5ea3fec9b520) of size 32\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21:9 in mfs_close\nShadow bytes around the buggy address:\n  0x0bd4ffd8b650: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b660: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b670: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0bd4ffd8b6a0: 00 00 00 00 00 00 00 00[f9]f9 f9 f9 00 00 00 00\n  0x0bd4ffd8b6b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b6c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b6d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b6e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bd4ffd8b6f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3828328==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "mfs_close",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21",
+      "crash_line": 9,
+      "frames": [
+        [
+          "0",
+          "mfs_close",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21",
+          "9"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:43",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

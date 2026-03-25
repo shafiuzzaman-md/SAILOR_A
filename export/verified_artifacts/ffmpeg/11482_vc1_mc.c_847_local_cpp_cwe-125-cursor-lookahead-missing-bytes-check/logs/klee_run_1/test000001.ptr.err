@@ -1,0 +1,17 @@
+Error: memory error: out of bound pointer
+File: vc1_mc.c
+Line: 27
+assembly.ll line: 131
+State: 1
+Stack: 
+	#000000131 in ff_vc1_mc_4mv_chroma4(139399157137408, symbolic, symbolic, symbolic) at vc1_mc.c:27
+	#100000159 in entry_func(139399157137408, symbolic, symbolic, symbolic) at vc1_mc.c:35
+	#200000083 in main() at driver.c:38
+Info: 
+	address: (Add w64 139261718183936
+          (Mul w64 4
+                   (SExt w64 (ReadLSB w32 0 block_index0))))
+	example: 139261718184956
+	range: [139253128249344, 139270308118524]
+	next: object at 138961607344128 of size 4
+		MO69[4] allocated at entry_func():  %8 = alloca i32, align 4

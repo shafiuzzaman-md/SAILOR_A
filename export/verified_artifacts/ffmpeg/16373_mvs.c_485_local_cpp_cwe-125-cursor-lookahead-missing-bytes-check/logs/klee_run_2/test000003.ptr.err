@@ -1,0 +1,18 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 503
+State: 12
+Stack: 
+	#000000503 in memcpy(138507972354048, symbolic, 12) at runtime/Freestanding/memcpy.c:17
+	#100000337 in ff_hevc_luma_mv_merge_mode(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, 138510119837696) at mvs.c:122
+	#200000477 in entry_func(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, 138510119837696) at mvs.c:136
+	#300000198 in main() at driver.c:94
+Info: 
+	address: (Add w64 138527299706880
+          (Mul w64 12
+                   (SExt w64 (ReadLSB w32 0 merge_idx))))
+	example: 138519998224764
+	range: [138501529903116, 138553069510644]
+	next: object at 138488779218944 of size 4
+		MO197[4] allocated at ff_hevc_luma_mv_merge_mode():  %26 = alloca i32, align 4

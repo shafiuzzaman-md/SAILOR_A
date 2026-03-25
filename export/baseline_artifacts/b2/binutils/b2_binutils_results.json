@@ -1,0 +1,23 @@
+{
+  "baseline": "B2",
+  "description": "Project-Level LLM Harness + KLEE (No SA, No Iteration)",
+  "project": "binutils",
+  "commit": "b2bc71a",
+  "llm_model": "GPT-5",
+  "num_rounds": 3,
+  "total_harnesses": 30,
+  "build_errors": 29,
+  "se_detected": 0,
+  "no_bug": 1,
+  "harness_artifacts": 0,
+  "unique_bugs": 0,
+  "real_bugs_in_library": 0,
+  "klee_timeout": 300,
+  "run_date": "2026-03-12",
+  "key_findings": [
+    "30 LLM-generated harnesses across 3 rounds",
+    "29 BUILD_ERROR (29/30 failed to compile)",
+    "0 SE_DETECTED",
+    "0 real bugs found vs SAILOR's 73"
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testdict.c",
+    "line": 404,
+    "function": "testall_dict",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The return value of xmlMalloc for strings1 is not checked for NULL before being passed to memset, leading to a NULL pointer dereference on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/testdict.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/*\n * Self-contained reproducer for the null-pointer-dereference in testdict.c:testall_dict\n * It mimics the vulnerable allocation + memset sequence where xmlMalloc can\n * return NULL and its result is passed directly to memset, causing a crash.\n */\n\n/* Minimal stand-ins for libxml2-ish types/APIs used by the test code */\ntypedef void* xmlDictPtr;\n\n/* Global arrays as in the original test code */\nstatic char **strings1 = NULL;\nstatic char **strings2 = NULL;\nstatic char **test1 = NULL;\nstatic char **test2 = NULL;\n\n/* Constants used by the test code */\n#define NB_STRINGS_MAX 1024\n\n/* Stub implementations for functions referenced later but not reached */\nstatic void fill_string_pool(char **unused1, unsigned unused2) { (void)unused1; (void)unused2; }\nstatic void clean_strings(void) {}\nstatic int test_dict(xmlDictPtr dict) { (void)dict; return 0; }\nstatic int test_subdict(xmlDictPtr dict) { (void)dict; return 0; }\nstatic xmlDictPtr xmlDictCreate(void) { return (xmlDictPtr)0x1; }\nstatic void xmlDictFree(xmlDictPtr dict) { (void)dict; }\n\n/* Stub xmlFree compatible with our stubs */\nstatic void xmlFree(void *ptr) { free(ptr); }\n\n/* Critical piece: xmlMalloc that simulates allocation failure (returns NULL) */\nstatic void *xmlMalloc(size_t size) {\n    (void)size; /* Simulate OOM regardless of requested size */\n    return NULL;\n}\n\n/* Function replicating the vulnerable logic around the reported crash site */\nstatic int testall_dict(void) {\n    xmlDictPtr dict;\n    int ret = 0;\n\n    /* xmlMalloc returns NULL by design; memset on NULL triggers the bug */\n    strings1 = (char **)xmlMalloc(NB_STRINGS_MAX * sizeof(strings1[0]));\n    /* Vulnerable line: no NULL check before memset */\n    memset(strings1, 0, NB_STRINGS_MAX * sizeof(strings1[0]));\n\n    /* The following lines are never reached due to the crash above,\n       but are kept to mirror structure of the original function. */\n    strings2 = (char **)xmlMalloc(NB_STRINGS_MAX * sizeof(strings2[0]));\n    memset(strings2, 0, NB_STRINGS_MAX * sizeof(strings2[0]));\n    test1 = (char **)xmlMalloc(NB_STRINGS_MAX * sizeof(test1[0]));\n    memset(test1, 0, NB_STRINGS_MAX * sizeof(test1[0]));\n    test2 = (char **)xmlMalloc(NB_STRINGS_MAX * sizeof(test2[0]));\n    memset(test2, 0, NB_STRINGS_MAX * sizeof(test2[0]));\n\n    fill_string_pool(strings1, 0);\n    fill_string_pool(strings2, 0);\n\n    dict = xmlDictCreate();\n    if (dict == NULL) {\n        fprintf(stderr, \"Out of memory while creating dictionary\\n\");\n        exit(1);\n    }\n    if (test_dict(dict) != 0)\n        ret = 1;\n    if (test_subdict(dict) != 0)\n        ret = 1;\n    xmlDictFree(dict);\n\n    clean_strings();\n    xmlFree(strings1);\n    xmlFree(strings2);\n    xmlFree(test1);\n    xmlFree(test2);\n\n    return ret;\n}\n\nint main(void) {\n    /* Trigger the vulnerable path */\n    return testall_dict();\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.833416223526001,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4070728==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x726d1458954a bp 0x7ffdf99bd000 sp 0x7ffdf99bc7c8 T0)\n==4070728==The signal is caused by a WRITE memory access.\n==4070728==Hint: address points to the zero page.\n    #0 0x726d1458954a in __memset_avx2_unaligned_erms string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:328\n    #1 0x5ebf05775347 in __asan_memset (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer+0xa4347) (BuildId: a5753ba688e7ac509dfca08b3239ecbf4f2eae56)\n    #2 0x5ebf057b1d02 in testall_dict /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:49:5\n    #3 0x5ebf057b1cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:85:12\n    #4 0x726d1442a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x726d1442a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5ebf056f2314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer+0x21314) (BuildId: a5753ba688e7ac509dfca08b3239ecbf4f2eae56)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:328 in __memset_avx2_unaligned_erms\n==4070728==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memset_avx2_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+      "crash_line": 328,
+      "frames": [
+        [
+          "0",
+          "__memset_avx2_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+          "328"
+        ],
+        [
+          "2",
+          "testall_dict",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:49",
+          "5"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_404_null-pointer-dereference/reproducer.c:85",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

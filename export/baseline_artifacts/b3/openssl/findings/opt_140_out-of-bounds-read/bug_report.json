@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/opt.c",
+    "line": 140,
+    "function": "opt_progname",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "On non-Windows, non-VMS builds, opt_path_end() can return filename-1 when the input is an empty string due to the pre-decrement loop. opt_progname() then calls strncpy(prog, p, sizeof(prog) - 1) at line 140 with p pointing before the buffer start, leading to an out-of-bounds read. Passing an empty string to opt_progname() triggers this.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/opt.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n/* Minimal stand-in for the global buffer used by opt_progname */\nstatic char prog[64];\n\n/* Vulnerable implementation from the non-Windows, non-VMS code path */\nconst char *opt_path_end(const char *filename)\n{\n    const char *p;\n\n    /* For empty filename, this pre-decrements p to filename-1 */\n    for (p = filename + strlen(filename); --p > filename;)\n        if (*p == '/') {\n            p++;\n            break;\n        }\n    return p;\n}\n\nchar *opt_progname(const char *argv0)\n{\n    const char *p;\n\n    p = opt_path_end(argv0);\n    if (prog != p)\n        /* p may point to one byte before argv0 when argv0 is \"\" */\n        strncpy(prog, p, sizeof(prog) - 1);\n    prog[sizeof(prog) - 1] = '\\0';\n    return prog;\n}\n\nint main(void)\n{\n    /* Allocate a 1-byte heap buffer for the empty string so ASan redzones catch the OOB read */\n    char *empty = (char *)malloc(1);\n    if (!empty) {\n        perror(\"malloc\");\n        return 1;\n    }\n    empty[0] = '\\0';\n\n    /* Triggers: opt_path_end(empty) returns empty-1, so strncpy reads from redzone */\n    char *out = opt_progname(empty);\n\n    /* Use the result to prevent it from being optimized away */\n    printf(\"prog: %s\\n\", out);\n\n    /* No need to free 'empty' for this repro; program exits immediately */\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08883261680603027,
+      "output": ""
+    }
+  }
+}

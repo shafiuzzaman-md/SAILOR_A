@@ -1,0 +1,16 @@
+Failed to create a name foo element
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4016931==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000028 (pc 0x578b1c11c8f1 bp 0x7fff6b7236d0 sp 0x7fff6b723620 T0)
+==4016931==The signal is caused by a READ memory access.
+==4016931==Hint: address points to the zero page.
+    #0 0x578b1c11c8f1 in xmlSetProp /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68:26
+    #1 0x578b1c11c36f in xmlRelaxNGCleanupTree /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:159:17
+    #2 0x578b1c11be17 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:191:5
+    #3 0x7f21ae02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7f21ae02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x578b1c05c304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer+0x21304) (BuildId: f86db42949640eecd10aa4050ca0bc112f2a522c)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68:26 in xmlSetProp
+==4016931==ABORTING

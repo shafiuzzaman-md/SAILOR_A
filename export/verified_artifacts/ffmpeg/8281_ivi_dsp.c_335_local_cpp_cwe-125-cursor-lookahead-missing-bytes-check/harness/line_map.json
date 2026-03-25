@@ -1,0 +1,94 @@
+{
+  "ivi_dsp.c": {
+    "3": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 29,
+      "code": "#include <string.h>"
+    },
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 65,
+      "code": "}"
+    },
+    "16": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 326,
+      "code": "void ff_ivi_row_haar8(const int32_t *in, int16_t *out, ptrdiff_t pitch,"
+    },
+    "17": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 327,
+      "code": "const uint8_t *flags)"
+    },
+    "18": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 328,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 329,
+      "code": "int     i;"
+    },
+    "23": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 333,
+      "code": "#define COMPENSATE(x) (x)"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 334,
+      "code": "for (i = 0; i < 8; i++) {"
+    },
+    "25": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 335,
+      "code": "if (   !in[0] && !in[1] && !in[2] && !in[3]"
+    },
+    "26": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 336,
+      "code": "&& !in[4] && !in[5] && !in[6] && !in[7]) {"
+    },
+    "27": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 337,
+      "code": "memset(out, 0, 8 * sizeof(out[0]));"
+    },
+    "30": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 338,
+      "code": "} else {"
+    },
+    "34": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 344,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 345,
+      "code": "in  += 8;"
+    },
+    "36": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 346,
+      "code": "out += pitch;"
+    },
+    "37": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 347,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 348,
+      "code": "#undef  COMPENSATE"
+    },
+    "39": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 349,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,71 @@
+
+KLEE: NOTE: Using POSIX model: /home/user/tools/klee/build/runtime/lib/libkleeRuntimePOSIX64_Debug+Asserts.bca
+KLEE: NOTE: Using klee-uclibc : /home/user/tools/klee/build/runtime/lib/klee-uclibc.bca
+KLEE: output directory is "/app/se_runs/b1/libtiff_run/tiff_read_rgba_fuzzer/klee_out"
+KLEE: Using Z3 solver backend
+KLEE: Deterministic allocator: Using quarantine queue size 8
+KLEE: Deterministic allocator: globals (start-address=0x7b739a000000 size=10 GiB)
+KLEE: Deterministic allocator: constants (start-address=0x7b711a000000 size=10 GiB)
+KLEE: Deterministic allocator: heap (start-address=0x7a711a000000 size=1024 GiB)
+KLEE: Deterministic allocator: stack (start-address=0x7a511a000000 size=128 GiB)
+KLEE: WARNING: undefined reference to function: _Z14TIFFStreamOpenPKcPSi
+KLEE: WARNING: undefined reference to function: _ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEv
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE10_M_disposeEv
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE11_M_capacityEm
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcRKS3_
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_local_dataEv
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_set_lengthEm
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEPc
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEC1ERKNS_12basic_stringIcS2_S3_EESt13_Ios_Openmode
+KLEE: WARNING: undefined reference to function: _ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEED1Ev
+KLEE: WARNING: undefined reference to function: _ZSt9terminatev
+KLEE: WARNING: undefined reference to function: __cxa_begin_catch
+KLEE: WARNING: undefined reference to function: __gxx_personality_v0
+KLEE: WARNING: undefined reference to function: atan2
+KLEE: WARNING: undefined reference to function: deflate
+KLEE: WARNING: undefined reference to function: deflateEnd
+KLEE: WARNING: undefined reference to function: deflateInit_
+KLEE: WARNING: undefined reference to function: deflateParams
+KLEE: WARNING: undefined reference to function: deflateReset
+KLEE: WARNING: undefined reference to function: exp
+KLEE: WARNING: undefined reference to function: floor
+KLEE: WARNING: undefined reference to function: inflate
+KLEE: WARNING: undefined reference to function: inflateEnd
+KLEE: WARNING: undefined reference to function: inflateInit_
+KLEE: WARNING: undefined reference to function: inflateReset
+KLEE: WARNING: undefined reference to function: log
+KLEE: WARNING: undefined reference to function: lzma_code
+KLEE: WARNING: undefined reference to function: lzma_end
+KLEE: WARNING: undefined reference to function: lzma_lzma_preset
+KLEE: WARNING: undefined reference to function: lzma_memusage
+KLEE: WARNING: undefined reference to function: lzma_stream_decoder
+KLEE: WARNING: undefined reference to function: lzma_stream_encoder
+KLEE: WARNING: undefined reference to function: pow
+KLEE: WARNING: undefined reference to function: sqrt
+KLEE: WARNING: executable has module level assembly (ignoring)
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 134533844303872) at runtime/POSIX/fd.c:997 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_local_dataEv(134529549336576) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:762 33
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE12_Alloc_hiderC1EPcRKS3_(134529549336576, 134529549336592, 134493042114560) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.h:762 39
+KLEE: WARNING ONCE: silently concretizing (reason: external call) expression (Extract w8 0 (SExt w64 (ReadLSB w32 0 fuzz_size))) to value 0 (/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:229)
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm(134529549336576, 134507940282368, 0) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:229 6
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEPc(134529549336576, 108333598786464) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:230 18
+KLEE: WARNING ONCE: silently concretizing (reason: external call) expression (SExt w64 (ReadLSB w32 0 fuzz_size)) to value 4096 (/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:231)
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE11_M_capacityEm(134529549336576, (SExt w64 (ReadLSB w32 0 fuzz_size))) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:231 4
+KLEE: WARNING ONCE: calling external: _ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE7_M_dataEv(134529549336576) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:247 33
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE13_M_set_lengthEm(134529549336576, (SExt w64 (ReadLSB w32 0 fuzz_size))) at /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:252 7
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1119basic_istringstreamIcSt11char_traitsIcESaIcEEC1ERKNS_12basic_stringIcS2_S3_EESt13_Ios_Openmode(134551024173056, 134529549336576, 8) at se_runs/b1/libtiff_run/tiff_read_rgba_fuzzer/harness/tiff_read_rgba_fuzzer.cc:61 24
+KLEE: WARNING ONCE: calling external: _ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEED1Ev(134529549336576) at se_runs/b1/libtiff_run/tiff_read_rgba_fuzzer/harness/tiff_read_rgba_fuzzer.cc:47 0
+KLEE: WARNING ONCE: calling external: _Z14TIFFStreamOpenPKcPSi(135728699801600, 134551024173056) at se_runs/b1/libtiff_run/tiff_read_rgba_fuzzer/harness/tiff_read_rgba_fuzzer.cc:62 11
+KLEE: ERROR: se_runs/b1/libtiff_run/tiff_read_rgba_fuzzer/harness/tiff_read_rgba_fuzzer.cc:62: failed external call: _Z14TIFFStreamOpenPKcPSi
+KLEE: NOTE: now ignoring this error at this location
+KLEE: WARNING ONCE: silently concretizing (reason: external call) expression (Read w8 0 fuzz_data) to value 0 (/usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/basic_string.tcc:252)
+KLEE: ERROR: /usr/lib/gcc/x86_64-linux-gnu/13/../../../../include/c++/13/bits/char_traits.h:358: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location
+
+KLEE: done: total instructions = 14788
+KLEE: done: completed paths = 0
+KLEE: done: partially completed paths = 17
+KLEE: done: generated tests = 2

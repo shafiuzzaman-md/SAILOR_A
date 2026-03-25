@@ -1,0 +1,100 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "users.c",
+        "original_line": 258,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "253: \t\t\t\t   (hashtab_datum_t) usrdatum) < 0)\n254: \t\t\tgoto omem;\n255: \n256: \t\t/* Set up reverse entry */\n257: \t\tpolicydb->p_user_val_to_name[usrdatum->s.value - 1] = name;\n258: \t\tpolicydb->user_val_to_struct[usrdatum->s.value - 1] = usrdatum;\n259: \t\tname = NULL;\n260: \n261: \t\t/* Expand roles */\n262: \t\tif (role_set_expand(&usrdatum->roles, &usrdatum->cache,\n263: \t\t\t\t    policydb, NULL, NULL)) {"
+    },
+    "klee_crash": {
+        "harness_file": "users.c",
+        "harness_line": 42,
+        "original_file": "users.c",
+        "original_line": 258,
+        "original_code": "policydb->user_val_to_struct[usrdatum->s.value - 1] = usrdatum;",
+        "original_context": "    255: \n    256: \t\t/* Set up reverse entry */\n    257: \t\tpolicydb->p_user_val_to_name[usrdatum->s.value - 1] = name;\n>>> 258: \t\tpolicydb->user_val_to_struct[usrdatum->s.value - 1] = usrdatum;\n    259: \t\tname = NULL;\n    260: \n    261: \t\t/* Expand roles */",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: users.c\nLine: 42\nassembly.ll line: 134\nState: 2\nStack: \n\t#000000134 in sepol_user_modify(139070788276224, 139002068799488, 0, 139053608407040) at users.c:42\n\t#100000166 in entry_func(139070788276224, 139002068799488, 0, 139053608407040) at users.c:51\n\t#200000066 in main() at driver.c:30\nInfo: \n\taddress: (Add w64 139087968145408\n          (Mul w64 8\n                   (ZExt w64 (Add w32 4294967295\n                                      (ReadLSB w32 0"
+    },
+    "concrete_inputs": [
+        {
+            "name": "user_val_to_struct_array",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "usr_s_value",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\xe2'"
+        },
+        {
+            "name": "user_val_to_struct_array",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "usr_s_value",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "sepol_user_key_unpack",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+        "crash_line": 59,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4783==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56009dfb8c77 bp 0x7ffeadd249d0 sp 0x7ffeadd249c0 T0)\n==4783==The signal is caused by a READ memory access.\n==4783==Hint: address points to the zero page.\n    #0 0x56009dfb8c77 in sepol_user_key_unpack /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:59\n    #1 0x56009df42e56 in sepol_user_modify /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/users.c:130\n    #2 0x56009df4194a in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2028_users.c_258_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:31\n    #3 0x7f66a5bd2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f66a5bd2e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x56009df417a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2028_users.c_258_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x127a4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:59 in sepol_user_key_unpack\n==4783==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2028_users.c_258_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "users.c",
+            "harness_line": 42,
+            "original_file": "users.c",
+            "original_line": 258,
+            "error_type": "ptr",
+            "crash_function": "sepol_user_modify",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2028_users.c_258_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "users.c",
+            "harness_line": 44,
+            "original_file": "users.c",
+            "original_line": 258,
+            "error_type": "assert",
+            "crash_function": "sepol_user_modify",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2028_users.c_258_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "sepol_user_key_unpack",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+            "crash_line": 59
+        }
+    ]
+}

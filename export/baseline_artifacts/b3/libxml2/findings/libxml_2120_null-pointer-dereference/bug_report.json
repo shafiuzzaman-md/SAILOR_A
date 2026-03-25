@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 2120,
+    "function": "libxml_xpathCallbacksInitialize",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlMalloc result assigned to libxml_xpathCallbacks is not checked for NULL; the subsequent loop immediately dereferences (*libxml_xpathCallbacks)[i], causing a NULL pointer dereference on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stddef.h>\n\n/* Minimal type definitions mirroring the python/libxml.c usage */\ntypedef unsigned char xmlChar;\n\ntypedef struct {\n    void *ctx;\n    xmlChar *name;\n    xmlChar *ns_uri;\n    void *function;\n} libxml_xpathCallback;\n\n/* This mirrors the odd \"pointer-to-array\" pattern used in libxml2 */\ntypedef libxml_xpathCallback libxml_xpathCallbackArray[];\n\nstatic libxml_xpathCallbackArray *libxml_xpathCallbacks = NULL;\nstatic int libxml_xpathCallbacksInitialized = 0;\nstatic int libxml_xpathCallbacksAllocd = 2; /* any positive value triggers the loop */\n\n/* Stub xmlMalloc that forces allocation failure to trigger the bug */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    return NULL; /* Force failure */\n}\n\n/* Vulnerable function as in python/libxml.c */\nstatic void libxml_xpathCallbacksInitialize(void)\n{\n    int i;\n\n    if (libxml_xpathCallbacksInitialized != 0)\n        return;\n\n    libxml_xpathCallbacks = (libxml_xpathCallbackArray*)xmlMalloc(\n            libxml_xpathCallbacksAllocd * sizeof(libxml_xpathCallback));\n\n    /* BUG: libxml_xpathCallbacks is not checked for NULL before dereference */\n    for (i = 0; i < libxml_xpathCallbacksAllocd; i++) {\n        (*libxml_xpathCallbacks)[i].ctx = NULL;\n        (*libxml_xpathCallbacks)[i].name = NULL;\n        (*libxml_xpathCallbacks)[i].ns_uri = NULL;\n        (*libxml_xpathCallbacks)[i].function = NULL;\n    }\n    libxml_xpathCallbacksInitialized = 1;\n}\n\nint main(void) {\n    fprintf(stderr, \"About to call libxml_xpathCallbacksInitialize (xmlMalloc forced to return NULL) ...\\n\");\n    /* This call will NULL-deref inside the loop above */\n    libxml_xpathCallbacksInitialize();\n\n    /* Should never reach here */\n    fprintf(stderr, \"If you see this, the bug did not trigger.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9865405559539795,
+      "output": "About to call libxml_xpathCallbacksInitialize (xmlMalloc forced to return NULL) ...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4009875==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56e8c6fe8dd2 bp 0x7ffc86411490 sp 0x7ffc86411460 T0)\n==4009875==The signal is caused by a WRITE memory access.\n==4009875==Hint: address points to the zero page.\n    #0 0x56e8c6fe8dd2 in libxml_xpathCallbacksInitialize /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41:41\n    #1 0x56e8c6fe8cff in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:52:5\n    #2 0x7d5f9aa2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d5f9aa2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x56e8c6f29304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer+0x21304) (BuildId: d04b75a31c28814f8298e57c2164e94c368bba8e)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41:41 in libxml_xpathCallbacksInitialize\n==4009875==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "libxml_xpathCallbacksInitialize",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41",
+      "crash_line": 41,
+      "frames": [
+        [
+          "0",
+          "libxml_xpathCallbacksInitialize",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41",
+          "41"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:52",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

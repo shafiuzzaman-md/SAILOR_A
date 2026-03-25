@@ -1,0 +1,76 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1553058557
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x560fb0bb0bc0, 0x560fb0bb0bc4), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x560fb0bb0bc8,0x560fb0bb0c08), 
+INFO:        0 files found in /tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/corpus
+INFO:        2 files found in /tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/seed_corpus
+INFO: seed corpus: files: 2 min: 191b max: 191b total: 382b rss: 31Mb
+=================================================================
+==3118123==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6070000005a8 at pc 0x560fb0aa08ca bp 0x7ffcd879c6a0 sp 0x7ffcd879c698
+READ of size 8 at 0x6070000005a8 thread T0
+    #0 0x560fb0aa08c9 in TIFFErrorExtR /tmp/libtiff_upstream/libtiff/tif_error.c:110:19
+    #1 0x560fb0a4dd82 in TIFFWriteCheck /tmp/libtiff_upstream/libtiff/tif_write.c:609:9
+    #2 0x560fb0a4c6fa in TIFFWriteEncodedTile /tmp/libtiff_upstream/libtiff/tif_write.c:421:10
+    #3 0x560fb0a4a55e in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_harness.c:47:11
+    #4 0x560fb097099a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x5f99a) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #5 0x560fb0970065 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x5f065) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #6 0x560fb0971c68 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x60c68) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #7 0x560fb09720e6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x610e6) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #8 0x560fb095f6d2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4e6d2) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #9 0x560fb098ab76 in main (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x79b76) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #10 0x7a96c9e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x7a96c9e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x560fb0953b04 in _start (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x42b04) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+
+0x6070000005a8 is located 1232 bytes to the right of 72-byte region [0x607000000090,0x6070000000d8)
+allocated by thread T0 here:
+    #0 0x560fb0a0e6ac in __interceptor_calloc (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0xfd6ac) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #1 0x560fb0a4a486 in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_harness.c:28:38
+    #2 0x560fb097099a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x5f99a) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #3 0x560fb0970065 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x5f065) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #4 0x560fb0971c68 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x60c68) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #5 0x560fb09720e6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x610e6) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #6 0x560fb095f6d2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4e6d2) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #7 0x560fb098ab76 in main (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x79b76) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+    #8 0x7a96c9e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7a96c9e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x560fb0953b04 in _start (/tmp/libtiff_fuzz_verify/1310_tif_write.c_503_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x42b04) (BuildId: 55306d7137a4f774c5eb0265ebeb66faecdbc33c)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libtiff_upstream/libtiff/tif_error.c:110:19 in TIFFErrorExtR
+Shadow bytes around the buggy address:
+  0x0c0e7fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c0e7fff80b0: fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff80d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff80e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff80f0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0e7fff8100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3118123==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x74,0x69,0x6c,0x65,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x34,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0x2c,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x64,0x61,0x74,0x61,0x5f,0x62,0x75,0x66,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x34,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x31,0x36,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"tile\",\012    \"offset\": 0,\012    \"size\": 4,\012    \"source\": \"concrete_block\"\012  },\012  {\012    \"name\": \"data_buf\",\012    \"offset\": 4,\012    \"size\": 16,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-ba66db186601f2e44f3e9d9758914145c31dd29b
+Base64: WwogIHsKICAgICJuYW1lIjogInRpbGUiLAogICAgIm9mZnNldCI6IDAsCiAgICAic2l6ZSI6IDQsCiAgICAic291cmNlIjogImNvbmNyZXRlX2Jsb2NrIgogIH0sCiAgewogICAgIm5hbWUiOiAiZGF0YV9idWYiLAogICAgIm9mZnNldCI6IDQsCiAgICAic2l6ZSI6IDE2LAogICAgInNvdXJjZSI6ICJjb25jcmV0ZV9ibG9jayIKICB9Cl0=

@@ -1,0 +1,79 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3081618834
+INFO: Loaded 1 modules   (7 inline 8-bit counters): 7 [0x5e0c21095900, 0x5e0c21095907), 
+INFO: Loaded 1 PC tables (7 PCs): 7 [0x5e0c21095908,0x5e0c21095978), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 8b max: 8b total: 8b rss: 31Mb
+=================================================================
+==87563==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6020000000a0 at pc 0x5e0c20eb9bc3 bp 0x7ffd0d8b9640 sp 0x7ffd0d8b9638
+READ of size 8 at 0x6020000000a0 thread T0
+    #0 0x5e0c20eb9bc2 in fz_lock_debug_lock /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/memory.c:378:16
+    #1 0x5e0c20eb89cf in fz_lock /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/include/mupdf/fitz/context.h:846:2
+    #2 0x5e0c20eb8ce7 in do_scavenging_malloc /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/memory.c:50:2
+    #3 0x5e0c20eb91d7 in fz_calloc /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/memory.c:115:6
+    #4 0x5e0c20eaa4ee in fz_clone_path /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/path.c:1519:13
+    #5 0x5e0c20e9f678 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_harness.c:30:12
+    #6 0x5e0c20dc59fa in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x569fa) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #7 0x5e0c20dc50c5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x560c5) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #8 0x5e0c20dc6cc8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x57cc8) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #9 0x5e0c20dc7146 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x58146) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #10 0x5e0c20db4732 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x45732) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #11 0x5e0c20ddfbd6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x70bd6) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #12 0x73a0e122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #13 0x73a0e122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #14 0x5e0c20da8b64 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x39b64) (BuildId: e82f9652895048370d21733890cade665812d1be)
+
+0x6020000000a0 is located 8 bytes to the right of 8-byte region [0x602000000090,0x602000000098)
+allocated by thread T0 here:
+    #0 0x5e0c20e63522 in malloc (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0xf4522) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #1 0x5e0c20e9f55b in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_harness.c:19:44
+    #2 0x5e0c20dc59fa in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x569fa) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #3 0x5e0c20dc50c5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x560c5) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #4 0x5e0c20dc6cc8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x57cc8) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #5 0x5e0c20dc7146 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x58146) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #6 0x5e0c20db4732 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x45732) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #7 0x5e0c20ddfbd6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x70bd6) (BuildId: e82f9652895048370d21733890cade665812d1be)
+    #8 0x73a0e122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x73a0e122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5e0c20da8b64 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/065_path.c_1505_local_cpp_cwe-120-overflow/fuzz_bin+0x39b64) (BuildId: e82f9652895048370d21733890cade665812d1be)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/memory.c:378:16 in fz_lock_debug_lock
+Shadow bytes around the buggy address:
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 00 fa fa fa 00 fa fa fa 04 fa
+=>0x0c047fff8010: fa fa 00 fa[fa]fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==87563==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-05fe405753166f125559e7c9ac558654f107c7e9
+Base64: AAAAAAAAAAA=

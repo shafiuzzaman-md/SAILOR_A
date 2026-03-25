@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/cmp_mock_srv.c",
+    "line": 346,
+    "function": "process_cert_request",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Uses strcmp on data returned by ASN1_STRING_get0_data(str). ASN1_UTF8STRING buffers are not guaranteed to be NUL-terminated; strcmp may read past the end of the buffer. Triggered when a client supplies a certProfile ITAV with a non-NUL-terminated UTF8String.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/cmp_mock_srv.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stub types emulating the pieces used by apps/lib/cmp_mock_srv.c */\n\n/* ASN1 UTF8 string */\ntypedef struct {\n    unsigned char *data;\n    int length;\n} ASN1_UTF8STRING;\n\nstatic const unsigned char *ASN1_STRING_get0_data(const ASN1_UTF8STRING *str) {\n    return str ? str->data : NULL;\n}\n\n/* ASN1 object carrying just a NID */\ntypedef struct {\n    int nid;\n} ASN1_OBJECT;\n\nstatic int OBJ_obj2nid(const ASN1_OBJECT *obj) {\n    return obj ? obj->nid : -1;\n}\n\n/* Fake NID for id-it-certProfile */\n#define NID_id_it_certProfile 12345\n\n/* Fake CMP constants */\n#define OSSL_CMP_CR 1\n\n/* Forward decls */\nstruct OSSL_CMP_ITAV;\n\n/* Simple stack for ASN1_UTF8STRING */\ntypedef struct {\n    int num;\n    ASN1_UTF8STRING **data;\n} STACK_OF_ASN1_UTF8STRING;\n\nstatic int sk_ASN1_UTF8STRING_num(const STACK_OF_ASN1_UTF8STRING *s) {\n    return s ? s->num : 0;\n}\n\nstatic ASN1_UTF8STRING *sk_ASN1_UTF8STRING_value(const STACK_OF_ASN1_UTF8STRING *s, int i) {\n    if (!s || i < 0 || i >= s->num) return NULL;\n    return s->data[i];\n}\n\n/* Simple stack for OSSL_CMP_ITAV */\ntypedef struct {\n    int num;\n    struct OSSL_CMP_ITAV **data;\n} STACK_OF_OSSL_CMP_ITAV;\n\nstatic int sk_OSSL_CMP_ITAV_num(const STACK_OF_OSSL_CMP_ITAV *s) {\n    return s ? s->num : 0;\n}\n\nstatic struct OSSL_CMP_ITAV *sk_OSSL_CMP_ITAV_value(const STACK_OF_OSSL_CMP_ITAV *s, int i) {\n    if (!s || i < 0 || i >= s->num) return NULL;\n    return s->data[i];\n}\n\n/* ITAV carrying type and a stack of UTF8STRINGs as certProfile */\ntypedef struct OSSL_CMP_ITAV {\n    ASN1_OBJECT *type;\n    STACK_OF_ASN1_UTF8STRING *strs; /* for certProfile */\n} OSSL_CMP_ITAV;\n\nstatic ASN1_OBJECT *OSSL_CMP_ITAV_get0_type(const OSSL_CMP_ITAV *itav) {\n    return itav ? itav->type : NULL;\n}\n\nstatic int OSSL_CMP_ITAV_get0_certProfile(const OSSL_CMP_ITAV *itav, STACK_OF_ASN1_UTF8STRING **out) {\n    if (!itav || !out) return 0;\n    *out = itav->strs;\n    return 1;\n}\n\n/* CMP header holding generalInfo ITAVs */\ntypedef struct {\n    STACK_OF_OSSL_CMP_ITAV *itavs;\n} OSSL_CMP_HDR;\n\nstatic STACK_OF_OSSL_CMP_ITAV *OSSL_CMP_HDR_get0_geninfo_ITAVs(const OSSL_CMP_HDR *hdr) {\n    return hdr ? hdr->itavs : NULL;\n}\n\n/* CMP message with bodytype and header */\ntypedef struct {\n    int bodytype;\n    OSSL_CMP_HDR *hdr;\n} OSSL_CMP_MSG;\n\nstatic int OSSL_CMP_MSG_get_bodytype(const OSSL_CMP_MSG *msg) {\n    return msg ? msg->bodytype : -1;\n}\n\nstatic const OSSL_CMP_HDR *OSSL_CMP_MSG_get0_header(const OSSL_CMP_MSG *msg) {\n    return msg ? msg->hdr : NULL;\n}\n\n/* Minimal server context with only fields touched before the vulnerable strcmp */\ntypedef struct {\n    int pollCount;\n    int curr_pollCount;\n} MY_SRV_CTX;\n\n/* Dummy error raiser to keep code readable */\nstatic void ERR_raise(int lib, int reason) {\n    (void)lib; (void)reason;\n}\n\n/* Vulnerable function mirroring the relevant logic of apps/lib/cmp_mock_srv.c */\nstatic void *process_cert_request(MY_SRV_CTX *ctx, const OSSL_CMP_MSG *cert_req,\n                                  void **certOut, void **chainOut, void **caPubs) {\n    (void)ctx; /* Unused beyond the pre-checks in this minimal reproducer */\n    if (certOut) *certOut = NULL;\n    if (chainOut) *chainOut = NULL;\n    if (caPubs) *caPubs = NULL;\n\n    /* accept cert profile for cr messages only with the configured name */\n    if (OSSL_CMP_MSG_get_bodytype(cert_req) == OSSL_CMP_CR) {\n        const OSSL_CMP_HDR *hdr = OSSL_CMP_MSG_get0_header(cert_req);\n        STACK_OF_OSSL_CMP_ITAV *itavs = (STACK_OF_OSSL_CMP_ITAV *)OSSL_CMP_HDR_get0_geninfo_ITAVs(hdr);\n        int i;\n\n        for (i = 0; i < sk_OSSL_CMP_ITAV_num(itavs); i++) {\n            OSSL_CMP_ITAV *itav = sk_OSSL_CMP_ITAV_value(itavs, i);\n            ASN1_OBJECT *obj = OSSL_CMP_ITAV_get0_type(itav);\n            STACK_OF_ASN1_UTF8STRING *strs;\n            ASN1_UTF8STRING *str;\n            const char *data;\n\n            if (OBJ_obj2nid(obj) == NID_id_it_certProfile) {\n                if (!OSSL_CMP_ITAV_get0_certProfile(itav, &strs))\n                    return NULL;\n                if (sk_ASN1_UTF8STRING_num(strs) < 1) {\n                    ERR_raise(0, 0);\n                    return NULL;\n                }\n                str = sk_ASN1_UTF8STRING_value(strs, 0);\n                if (str == NULL || (data = (const char *)ASN1_STRING_get0_data(str)) == NULL) {\n                    ERR_raise(0, 0);\n                    return NULL;\n                }\n                /* Vulnerable use: ASN1_STRING_get0_data may not be NUL-terminated. */\n                if (strcmp(data, \"profile1\") != 0) { /* OOB read here if data isn't NUL-terminated */\n                    ERR_raise(0, 0);\n                    return NULL;\n                }\n                break;\n            }\n        }\n    }\n    return NULL;\n}\n\n/* Helper to create a non-NUL-terminated ASN1_UTF8STRING with exact length */\nstatic ASN1_UTF8STRING *make_asn1_utf8_exact(const char *s) {\n    size_t len = strlen(s);\n    ASN1_UTF8STRING *str = (ASN1_UTF8STRING *)calloc(1, sizeof(*str));\n    if (!str) return NULL;\n    str->data = (unsigned char *)malloc(len); /* allocate EXACT length, no room for NUL */\n    if (!str->data) { free(str); return NULL; }\n    memcpy(str->data, s, len); /* copy without trailing NUL */\n    str->length = (int)len;\n    return str;\n}\n\nint main(void) {\n    /* Build certProfile ITAV with a UTF8String \"profile1\" that is NOT NUL-terminated */\n    ASN1_UTF8STRING *utf8 = make_asn1_utf8_exact(\"profile1\");\n    if (!utf8) {\n        fprintf(stderr, \"alloc failed\\n\");\n        return 1;\n    }\n\n    STACK_OF_ASN1_UTF8STRING *strs = (STACK_OF_ASN1_UTF8STRING *)calloc(1, sizeof(*strs));\n    strs->num = 1;\n    strs->data = (ASN1_UTF8STRING **)calloc(1, sizeof(ASN1_UTF8STRING *));\n    strs->data[0] = utf8;\n\n    ASN1_OBJECT *obj = (ASN1_OBJECT *)calloc(1, sizeof(*obj));\n    obj->nid = NID_id_it_certProfile;\n\n    OSSL_CMP_ITAV *itav = (OSSL_CMP_ITAV *)calloc(1, sizeof(*itav));\n    itav->type = obj;\n    itav->strs = strs;\n\n    STACK_OF_OSSL_CMP_ITAV *itavs = (STACK_OF_OSSL_CMP_ITAV *)calloc(1, sizeof(*itavs));\n    itavs->num = 1;\n    itavs->data = (OSSL_CMP_ITAV **)calloc(1, sizeof(OSSL_CMP_ITAV *));\n    itavs->data[0] = itav;\n\n    OSSL_CMP_HDR *hdr = (OSSL_CMP_HDR *)calloc(1, sizeof(*hdr));\n    hdr->itavs = itavs;\n\n    OSSL_CMP_MSG msg;\n    msg.bodytype = OSSL_CMP_CR; /* Ensure the CR path is taken */\n    msg.hdr = hdr;\n\n    MY_SRV_CTX ctx;\n    ctx.pollCount = 0; /* Bypass polling logic */\n    ctx.curr_pollCount = 0;\n\n    void *certOut = NULL, *chainOut = NULL, *caPubs = NULL;\n    /* Call into the vulnerable function: this will call strcmp on a non-NUL string */\n    (void)process_cert_request(&ctx, &msg, &certOut, &chainOut, &caPubs);\n\n    /* Clean up (not strictly necessary for ASan reproducer) */\n    free(utf8->data);\n    free(utf8);\n    free(strs->data);\n    free(strs);\n    free(itavs->data);\n    free(itavs);\n    free(itav);\n    free(obj);\n    free(hdr);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7560293674468994,
+      "output": "=================================================================\n==4132981==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000038 at pc 0x5ce0c038c418 bp 0x7ffe54d953f0 sp 0x7ffe54d94ba0\nREAD of size 9 at 0x602000000038 thread T0\n    #0 0x5ce0c038c417 in strcmp (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer+0x38417) (BuildId: e9a83801916d13edff5b84eef6f83761e02c57f5)\n    #1 0x5ce0c0435aeb in process_cert_request /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:150:21\n    #2 0x5ce0c043544f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:211:11\n    #3 0x7facb7e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7facb7e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5ce0c0375304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer+0x21304) (BuildId: e9a83801916d13edff5b84eef6f83761e02c57f5)\n\n0x602000000038 is located 0 bytes to the right of 8-byte region [0x602000000030,0x602000000038)\nallocated by thread T0 here:\n    #0 0x5ce0c03f8d12 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer+0xa4d12) (BuildId: e9a83801916d13edff5b84eef6f83761e02c57f5)\n    #1 0x5ce0c0435663 in make_asn1_utf8_exact /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:166:34\n    #2 0x5ce0c0434dee in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:175:29\n    #3 0x7facb7e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7facb7e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5ce0c0375304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer+0x21304) (BuildId: e9a83801916d13edff5b84eef6f83761e02c57f5)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer+0x38417) (BuildId: e9a83801916d13edff5b84eef6f83761e02c57f5) in strcmp\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00 fa fa 00[fa]fa fa 00 00 fa fa 00 fa\n  0x0c047fff8010: fa fa 04 fa fa fa 00 00 fa fa 00 00 fa fa 00 fa\n  0x0c047fff8020: fa fa 00 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4132981==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "process_cert_request",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:150",
+          "21"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:211",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "make_asn1_utf8_exact",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:166",
+          "34"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_346_out-of-bounds-read/reproducer.c:175",
+          "29"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,51 @@
+=================================================================
+==4079970==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x612000000000 at pc 0x64da6cec6ffb bp 0x7fff0d7c4020 sp 0x7fff0d7c37f0
+READ of size 256 at 0x612000000000 thread T0
+    #0 0x64da6cec6ffa in __asan_memcpy (/app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 1d1d406526195a3c31761196454504478c6a7ad9)
+    #1 0x64da6cf03eb5 in bfd_coff_get_auxent /app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer.c:110:21
+    #2 0x64da6cf047cd in main /app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer.c:171:9
+    #3 0x7a4c7122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7a4c7122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x64da6ce44314 in _start (/app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer+0x21314) (BuildId: 1d1d406526195a3c31761196454504478c6a7ad9)
+
+0x612000000000 is located 64 bytes to the left of 272-byte region [0x612000000040,0x612000000150)
+allocated by thread T0 here:
+    #0 0x64da6cec7d22 in __interceptor_malloc (/app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 1d1d406526195a3c31761196454504478c6a7ad9)
+    #1 0x64da6cf0452d in main /app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer.c:144:67
+    #2 0x7a4c7122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7a4c7122a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64da6ce44314 in _start (/app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer+0x21314) (BuildId: 1d1d406526195a3c31761196454504478c6a7ad9)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/export/baseline_artifacts/b3/binutils/verified/coff-bfd_85_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 1d1d406526195a3c31761196454504478c6a7ad9) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c247fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c247fff8000:[fa]fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00
+  0x0c247fff8010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff8020: 00 00 00 00 00 00 00 00 00 00 fa fa fa fa fa fa
+  0x0c247fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c247fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c247fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4079970==ABORTING

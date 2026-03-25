@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "port",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "sepol_port_key_extract",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/port_record.c",
+            "crash_line": 66
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "sepol_port_key_extract",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/port_record.c",
+        "crash_line": 66,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4754==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000048 at pc 0x55829228eb2c bp 0x7ffe6fabb490 sp 0x7ffe6fabb480\nREAD of size 4 at 0x503000000048 thread T0\n    #0 0x55829228eb2b in sepol_port_key_extract /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/port_record.c:66\n    #1 0x55829228e605 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1950_port_record.c_66_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:36\n    #2 0x7fbf7d7e4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fbf7d7e4e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55829228e3a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1950_port_record.c_66_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x23a4)\n\n0x503000000048 is located 8 bytes inside of 24-byte region [0x503000000040,0x503000000058)\nfreed by thread T0 here:\n    #0 0x7fbf7db9b537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x55829228e5bf in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1950_port_record.c_66_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:33\n    #2 0x7fbf7d7e4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7fbf7db9ba57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55829228e514 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1950_port_record.c_66_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:27\n    #2 0x7fbf7d7e4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/port_record.c:66 in sepol_port_key_extract\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 "
+    }
+}

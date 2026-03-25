@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080514==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x75456d588acd bp 0x7fffd3e1e5e0 sp 0x7fffd3e1dda8 T0)
+==4080514==The signal is caused by a WRITE memory access.
+==4080514==Hint: address points to the zero page.
+    #0 0x75456d588acd in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:321
+    #1 0x59127e1c40d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/libxml2/verified/testchar_840_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 4a1b38c1dd852e3eac58ae9df17993776c02b54b)
+    #2 0x59127e200f45 in trigger_null_deref_in_testUTF8Chunks /app/export/baseline_artifacts/b3/libxml2/verified/testchar_840_null-pointer-dereference/reproducer.c:78:9
+    #3 0x59127e200ec3 in main /app/export/baseline_artifacts/b3/libxml2/verified/testchar_840_null-pointer-dereference/reproducer.c:88:12
+    #4 0x75456d42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x75456d42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x59127e141304 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/testchar_840_null-pointer-dereference/reproducer+0x21304) (BuildId: 4a1b38c1dd852e3eac58ae9df17993776c02b54b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:321 in __memcpy_avx_unaligned_erms
+==4080514==ABORTING

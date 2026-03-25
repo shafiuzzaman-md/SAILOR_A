@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "font.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "get_gid_bbox",
+            "crash_file": "source/fitz/font.c",
+            "crash_line": 1307
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "get_gid_bbox",
+        "crash_file": "source/fitz/font.c",
+        "crash_line": 1307,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==32378==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5040000000c8 at pc 0x55604f5f6c5f bp 0x7ffeafb0ade0 sp 0x7ffeafb0add0\nREAD of size 4 at 0x5040000000c8 thread T0\n    #0 0x55604f5f6c5e in get_gid_bbox source/fitz/font.c:1307\n    #1 0x55604f6002d5 in fz_bound_glyph source/fitz/font.c:1780\n    #2 0x55604f5f573a in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/564_font.c_1313_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:47\n    #3 0x7f697e1c6d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f697e1c6e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55604f5f53b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/564_font.c_1313_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x1483b4)\n\n0x5040000000c8 is located 136 bytes to the right of 48-byte region [0x504000000010,0x504000000040)\nallocated by thread T0 here:\n    #0 0x7f697e57da57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55604f5f5541 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/564_font.c_1313_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:25\n    #2 0x7f697e1c6d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/font.c:1307 in get_gid_bbox\nShadow bytes around the buggy address:\n  0x0a087fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff8000: fa fa 00 00 00 00 00 00 fa fa fa fa fa fa fa fa\n=>0x0a087fff8010: fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa\n  0x0a087fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8040: fa fa fa fa "
+    }
+}

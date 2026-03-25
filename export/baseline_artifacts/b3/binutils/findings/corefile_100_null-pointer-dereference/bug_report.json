@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/corefile.c",
+    "line": 100,
+    "function": "bfd_core_file_pid",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "Dereferences abfd->format without checking abfd for NULL, allowing a NULL pointer dereference if the function is called with a NULL bfd.",
+    "abs_path": "/tmp/binutils_upstream/bfd/corefile.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal re-declarations to mirror the relevant BFD pieces. */\n\ntypedef struct bfd {\n  int format; /* In real BFD this is an enum bfd_format, but int suffices here */\n} bfd;\n\n/* Enum values approximating the real ones. */\nenum {\n  bfd_object = 0,\n  bfd_core = 1\n};\n\nenum {\n  bfd_error_invalid_operation = 1,\n  bfd_error_wrong_format = 2\n};\n\n/* Stubs to satisfy references in the vulnerable function's body. */\nstatic void bfd_set_error(int error) {\n  (void)error; /* No-op stub */\n}\n\n/* In real BFD this dispatches to target-specific implementations. */\n#define BFD_SEND(abfd, method, args) (0)\n\n/* Vulnerable function copied/replicated from the provided source context. */\nstatic int bfd_core_file_pid(bfd *abfd) {\n  /* NULL pointer dereference occurs here when abfd == NULL. */\n  if (abfd->format != bfd_core) {\n    bfd_set_error(bfd_error_invalid_operation);\n    return 0;\n  }\n  return BFD_SEND(abfd, _core_file_pid, (abfd));\n}\n\nint main(void) {\n  fprintf(stderr, \"About to trigger NULL pointer dereference in bfd_core_file_pid...\\n\");\n\n  /* Pass a NULL bfd pointer to directly hit the vulnerable dereference. */\n  int pid = bfd_core_file_pid(NULL);\n\n  /* This line is not expected to be reached due to the crash. */\n  printf(\"Returned pid: %d\\n\", pid);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7480497360229492,
+      "output": "About to trigger NULL pointer dereference in bfd_core_file_pid...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3634123==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x648a77156d5d bp 0x7ffd39a59020 sp 0x7ffd39a59000 T0)\n==3634123==The signal is caused by a READ memory access.\n==3634123==Hint: address points to the zero page.\n    #0 0x648a77156d5d in bfd_core_file_pid /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33:20\n    #1 0x648a77156cf3 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:44:13\n    #2 0x71fad302a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x71fad302a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x648a77097304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer+0x21304) (BuildId: dfccc84dd30c1f584fbdc0d3963c605d7f109c60)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33:20 in bfd_core_file_pid\n==3634123==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "bfd_core_file_pid",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "bfd_core_file_pid",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33",
+          "20"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:44",
+          "13"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

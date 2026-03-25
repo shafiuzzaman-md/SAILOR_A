@@ -1,0 +1,100 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 31 (sink assert at 35)\nCrash: CRASH: ptr at vc1_loopfilter.c:31\nOriginal: vc1_loopfilter.c:178 \u2192 if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])\nASan: not confirmed\n\nAll crashes (1):\n  ptr at vc1_loopfilter.c:31 \u2192 vc1_loopfilter.c:178\n"
+    ]
+  ],
+  "line_map": {
+    "vc1_loopfilter.c": {
+      "27": {
+        "orig_file": "vc1_loopfilter.c",
+        "orig_line": 107,
+        "code": "MpegEncContext *s = &v->s;"
+      },
+      "31": {
+        "orig_file": "vc1_loopfilter.c",
+        "orig_line": 178,
+        "code": "if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])"
+      },
+      "36": {
+        "orig_file": "vc1_loopfilter.c",
+        "orig_line": 184,
+        "code": "}"
+      },
+      "42": {
+        "orig_file": "vc1_loopfilter.c",
+        "orig_line": 184,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "vc1_loopfilter.c",
+      "original_line": 178,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "173: \n174:     for (i = 0; i < block_count; i++) {\n175:         if (s->mb_x == 0 && (i & 5) != 1)\n176:             continue;\n177: \n178:         if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])\n179:             vc1_h_overlap_filter(v,\n180:                                  s->mb_x ? left_blk : cur_blk, cur_blk,\n181:                                  v->fcm == ILACE_FRAME && s->mb_x && v->fieldtx_plane[mb_pos - 1],\n182:                                  v->fcm == ILACE_FRAME && v->fieldtx_plane[mb_pos],\n183:                                  i);"
+    },
+    "klee_crash": {
+      "harness_file": "vc1_loopfilter.c",
+      "harness_line": 31,
+      "original_file": "vc1_loopfilter.c",
+      "original_line": 178,
+      "original_code": "if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])",
+      "original_context": "    175:         if (s->mb_x == 0 && (i & 5) != 1)\n    176:             continue;\n    177: \n>>> 178:         if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])\n    179:             vc1_h_overlap_filter(v,\n    180:                                  s->mb_x ? left_blk : cur_blk, cur_blk,\n    181:                                  v->fcm == ILACE_FRAME && s->mb_x && v->fieldtx_plane[mb_pos - 1],",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: vc1_loopfilter.c\nLine: 31\nassembly.ll line: 150\nState: 1\nStack: \n\t#000000150 in ff_vc1_p_overlap_filter(139040716910592) at vc1_loopfilter.c:31\n\t#100000172 in harness_entry(139040716910592) at vc1_loopfilter.c:40\n\t#200000085 in main() at driver.c:28\nInfo: \n\taddress: 138748659134463\n\tnext: object at 138467338776576 of size 4\n\t\tMO22[4] allocated at main():  %4 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "mb_type0_buf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "vc1_loopfilter.c",
+        "harness_line": 31,
+        "original_file": "vc1_loopfilter.c",
+        "original_line": 178,
+        "error_type": "ptr",
+        "crash_function": "ff_vc1_p_overlap_filter",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

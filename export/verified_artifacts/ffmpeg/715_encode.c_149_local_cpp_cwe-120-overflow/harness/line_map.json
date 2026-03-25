@@ -1,0 +1,29 @@
+{
+  "encode.c": {
+    "11": {
+      "orig_file": "encode.c",
+      "orig_line": 222,
+      "code": "#endif"
+    },
+    "30": {
+      "orig_file": "encode.c",
+      "orig_line": 232,
+      "code": "return 0;"
+    },
+    "31": {
+      "orig_file": "encode.c",
+      "orig_line": 233,
+      "code": "}"
+    },
+    "36": {
+      "orig_file": "encode.c",
+      "orig_line": 232,
+      "code": "return 0;"
+    },
+    "37": {
+      "orig_file": "encode.c",
+      "orig_line": 233,
+      "code": "}"
+    }
+  }
+}

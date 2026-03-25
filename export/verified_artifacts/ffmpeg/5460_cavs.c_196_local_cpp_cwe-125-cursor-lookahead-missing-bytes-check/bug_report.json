@@ -1,0 +1,68 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "cavs.c",
+    "original_line": 196,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "191:         *left               = h->left_border_y;\n192:         h->left_border_y[0] = h->left_border_y[1];\n193:         memset(&h->left_border_y[17], h->left_border_y[16], 9);\n194:         memcpy(&top[1], &h->top_border_y[h->mbx * 16], 16);\n195:         top[17] = top[16];\n196:         top[0]  = top[1];\n197:         if ((h->flags & A_AVAIL) && (h->flags & B_AVAIL))\n198:             h->left_border_y[0] = top[0] = h->topleft_border_y;\n199:         break;\n200:     case 1:\n201:         *left = h->intern_border_y;"
+  },
+  "klee_crash": {
+    "harness_file": "cavs.c",
+    "harness_line": 15,
+    "original_file": "cavs.c",
+    "original_line": 196,
+    "original_code": "top[0]  = top[1];",
+    "original_context": "    193:         memset(&h->left_border_y[17], h->left_border_y[16], 9);\n    194:         memcpy(&top[1], &h->top_border_y[h->mbx * 16], 16);\n    195:         top[17] = top[16];\n>>> 196:         top[0]  = top[1];\n    197:         if ((h->flags & A_AVAIL) && (h->flags & B_AVAIL))\n    198:             h->left_border_y[0] = top[0] = h->topleft_border_y;\n    199:         break;",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: cavs.c\nLine: 15\nassembly.ll line: 36\nState: 1\nStack: \n\t#000000036 in ff_cavs_load_intra_pred_luma(139913076854784, 139569479471104, 139283864145920, 0) at cavs.c:15\n\t#100000074 in decode_entry(139913076854784, 139569479471104, 139283864145920, 0) at cavs.c:26\n\t#200000115 in main() at driver.c:26\nInfo: \n\taddress: 139569479471105\n\tnext: object at 139269905502208 of size 4\n\t\tMO56[4] allocated at ff_cavs_load_intra_pred_luma():  %8 = alloca i32, align "
+  },
+  "concrete_inputs": [
+    {
+      "name": "top_buf",
+      "size": 1,
+      "data": "b'\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/5460_cavs.c_196_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "cavs.c",
+      "harness_line": 15,
+      "original_file": "cavs.c",
+      "original_line": 196,
+      "error_type": "ptr",
+      "crash_function": "ff_cavs_load_intra_pred_luma",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/5460_cavs.c_196_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

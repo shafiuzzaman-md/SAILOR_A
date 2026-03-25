@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "catalog.c",
+    "line": 1093,
+    "function": "xmlCatalogNormalizePublic",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "ret is assigned the result of xmlStrdup(pubID) without checking for allocation failure. If xmlStrdup returns NULL, subsequent writes via q (which equals ret) such as '*q = 0' will dereference a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/libxml2_upstream/catalog.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal libxml2-like typedefs */\ntypedef unsigned char xmlChar;\n\n/* Stub: whitespace check similar to libxml2's xmlIsBlank_ch */\nstatic int xmlIsBlank_ch(unsigned int c) {\n    return (c == 0x20 || c == 0x9 || c == 0xA || c == 0xD);\n}\n\n/* Stub: simulate allocation failure in xmlStrdup */\nstatic xmlChar *xmlStrdup(const xmlChar *cur) {\n    (void)cur;\n    /* Simulate out-of-memory: return NULL to trigger the bug */\n    return NULL;\n}\n\n/* Vulnerable function (adapted from catalog.c) */\nstatic xmlChar *\nxmlCatalogNormalizePublic(const xmlChar *pubID)\n{\n    int ok = 1;\n    int white;\n    const xmlChar *p;\n    xmlChar *ret;\n    xmlChar *q;\n\n    if (pubID == NULL)\n        return(NULL);\n\n    white = 1;\n    for (p = pubID; *p != 0 && ok; p++) {\n        if (!xmlIsBlank_ch(*p))\n            white = 0;\n        else if (*p == 0x20 && !white)\n            white = 1;\n        else\n            ok = 0;\n    }\n    if (ok && !white) /* is normalized */\n        return(NULL);\n\n    ret = xmlStrdup(pubID); /* returns NULL in our stub */\n    q = ret;\n    white = 0;\n    for (p = pubID; *p != 0; p++) {\n        if (xmlIsBlank_ch(*p)) {\n            if (q != ret)\n                white = 1;\n        } else {\n            if (white) {\n                *(q++) = 0x20; /* write via NULL q if reached */\n                white = 0;\n            }\n            *(q++) = *p;       /* write via NULL q if reached */\n        }\n    }\n    *q = 0; /* NULL pointer dereference when pubID is empty */\n    return(ret);\n}\n\nint main(void) {\n    /* Use an empty public ID so the inner loop doesn't run and *q=0 executes */\n    const xmlChar *pubID = (const xmlChar *)\"\";\n\n    /* This call will crash due to *q = 0 with q == NULL */\n    xmlChar *res = xmlCatalogNormalizePublic(pubID);\n\n    /* Not reached, but keep to satisfy return type */\n    if (res) free(res);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6805188655853271,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3986111==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c05a32af100 bp 0x7ffef5bc0050 sp 0x7ffef5bbff90 T0)\n==3986111==The signal is caused by a WRITE memory access.\n==3986111==Hint: address points to the zero page.\n    #0 0x5c05a32af100 in xmlCatalogNormalizePublic /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61:8\n    #1 0x5c05a32aecc2 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:70:20\n    #2 0x7fd7ef22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7fd7ef22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c05a31ef304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer+0x20304) (BuildId: 289a175ae24a791d77183475abdf28660e72e755)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61:8 in xmlCatalogNormalizePublic\n==3986111==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlCatalogNormalizePublic",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61",
+      "crash_line": 8,
+      "frames": [
+        [
+          "0",
+          "xmlCatalogNormalizePublic",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:61",
+          "8"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_1093_null-pointer-dereference/reproducer.c:70",
+          "20"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

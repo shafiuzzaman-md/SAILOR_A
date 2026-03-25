@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngimage.c",
+    "line": 1193,
+    "function": "compare_read",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "In the 16-bit path of the sBIT handling, the loop uses b = (bpp >> 4) down to 1, but indexes sig_bits[b] and writes to sig_bits[2*b+1] and sig_bits[2*b]. For RGBA16 (comps=4), this reads sig_bits[4] (OOB) and writes sig_bits[9] and sig_bits[8] (OOB) into an 8-byte array. This leads to out-of-bounds read and stack-based buffer overflow when bit_depth == 16 and color_type has multiple components.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngimage.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdarg.h>\n#include <string.h>\n\n/* Minimal typedefs/constants to mirror pngimage.c environment */\ntypedef unsigned char png_byte;\n\n#define LIBPNG_BUG 1\n#define INTERNAL_ERROR 2\n\n/* Stubbed logger used by the vulnerable code */\nstatic void display_log(void *dp, int code, const char *fmt, ...)\n{\n    (void)dp; (void)code;\n    va_list ap;\n    va_start(ap, fmt);\n    vfprintf(stderr, fmt, ap);\n    fputc('\\n', stderr);\n    va_end(ap);\n}\n\n/* Reimplementation of the vulnerable function's sBIT handling path.\n * This mirrors the logic around contrib/libtests/pngimage.c:1184-1196.\n */\nstatic void compare_read(void)\n{\n    /* Stack array that will be overflowed */\n    png_byte sig_bits[8];\n\n    /* Craft conditions: 16-bit depth and 4 components (RGBA) => bpp = 4 * 16 = 64 */\n    int bit_depth = 16;\n    unsigned int bpp = 64; /* bits-per-pixel */\n\n    /* Initialize sig_bits to non-zero values within range to pass earlier checks */\n    for (int i = 0; i < 8; ++i)\n        sig_bits[i] = 1;\n\n    /* Preceding validation loop from pngimage.c (safe, stays in-bounds here) */\n    for (int b = 0; 8U * (unsigned)b < bpp; ++b)\n    {\n        if (sig_bits[b] == 0 || sig_bits[b] > bit_depth /*!palette*/)\n            display_log(NULL, LIBPNG_BUG,\n                        \"invalid sBIT[%u]  value %d returned for PNG bit depth %d\",\n                        b, sig_bits[b], bit_depth);\n    }\n\n    /* Vulnerable 16-bit path: for RGBA16, (bpp >> 4) == 4.\n     * The loop writes to sig_bits[2*b+1] and sig_bits[2*b].\n     * When b == 4, writes hit indices 9 and 8 (OOB for 8-byte array).\n     */\n    switch (bit_depth)\n    {\n        int b;\n        case 16: /* Two bytes per component, big-endian */\n            for (b = (bpp >> 4); b > 0; --b)\n            {\n                unsigned int sig = (unsigned int)(0xffff0000U >> sig_bits[b]);\n                /* Out-of-bounds writes when b == 4: indices 9 and 8 */\n                sig_bits[2*b+1] = (png_byte)sig;\n                sig_bits[2*b+0] = (png_byte)(sig >> 8); /* big-endian */\n            }\n            break;\n        default:\n            break;\n    }\n\n    /* Prevent the compiler from optimizing the array away */\n    volatile unsigned int sum = 0;\n    for (int i = 0; i < 8; ++i) sum += sig_bits[i];\n    fprintf(stderr, \"sum=%u\\n\", sum);\n}\n\nint main(void)\n{\n    compare_read();\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7726898193359375,
+      "output": "=================================================================\n==3719281==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffff442bde9 at pc 0x5cb85ed540c8 bp 0x7ffff442bdb0 sp 0x7ffff442bda8\nWRITE of size 1 at 0x7ffff442bde9 thread T0\n    #0 0x5cb85ed540c7 in compare_read /app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:60:33\n    #1 0x5cb85ed53cc3 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:76:5\n    #2 0x74e7cdc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x74e7cdc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5cb85ec94314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer+0x21314) (BuildId: ec9c6e37e3110298453f2a88a8b754e5dbd002b9)\n\nAddress 0x7ffff442bde9 is located in stack of thread T0 at offset 41 in frame\n    #0 0x5cb85ed53cdf in compare_read /app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:27\n\n  This frame has 2 object(s):\n    [32, 40) 'sig_bits' (line 29) <== Memory access at offset 41 overflows this variable\n    [64, 68) 'sum' (line 69)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:60:33 in compare_read\nShadow bytes around the buggy address:\n  0x10007e87d760: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d770: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d790: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d7a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x10007e87d7b0: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00[f2]f2 f2\n  0x10007e87d7c0: f8 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d7d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d7e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d7f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10007e87d800: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3719281==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "compare_read",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:60",
+      "crash_line": 33,
+      "frames": [
+        [
+          "0",
+          "compare_read",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:60",
+          "33"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c:76",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "compare_read",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngimage_1193_stack-buffer-overflow/reproducer.c",
+          "27"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

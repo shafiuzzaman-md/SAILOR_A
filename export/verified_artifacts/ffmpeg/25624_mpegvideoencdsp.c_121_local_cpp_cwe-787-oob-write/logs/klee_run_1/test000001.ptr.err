@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: mpegvideoencdsp.c
+Line: 23
+assembly.ll line: 136
+State: 1
+Stack: 
+	#000000136 in draw_edges_impl(139628002525184, 64, 64, 100, 16, 16, 15) at mpegvideoencdsp.c:23
+	#100000180 in entry_func(138687404691456, 139628002525184, 64, 64, 100, 16, 16, 15) at mpegvideoencdsp.c:36
+	#200000071 in main() at driver.c:27
+Info: 
+	address: 139628002531584
+	next: object at 138674788225024 of size 4
+		MO102[4] allocated at draw_edges_impl():  %14 = alloca i32, align 4

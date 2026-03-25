@@ -1,0 +1,77 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "xps-util.c",
+        "original_line": 96,
+        "function": "skip_authority",
+        "entry_point": "xps_resolve_url",
+        "spine": [
+            "xps_resolve_url",
+            "clean_path",
+            "skip_authority"
+        ],
+        "original_context": "91: skip_authority(char *path)\n92: {\n93: \tchar *p = path;\n94: \n95: \t/* Authority section must start with '//' */\n96: \tif (p[0] != '/' || p[1] != '/')\n97: \t\treturn path;\n98: \tp += 2;\n99: \n100: \t/* Authority is terminated by end of URL, '/' or '?' */\n101: \twhile (*p && *p != '/' && *p != '?')"
+    },
+    "klee_crash": {
+        "harness_file": "xps-util.c",
+        "harness_line": 39,
+        "original_file": "xps-util.c",
+        "original_line": 96,
+        "original_code": "if (p[0] != '/' || p[1] != '/')",
+        "original_context": "    93: \tchar *p = path;\n    94: \n    95: \t/* Authority section must start with '//' */\n>>> 96: \tif (p[0] != '/' || p[1] != '/')\n    97: \t\treturn path;\n    98: \tp += 2;\n    99: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: xps-util.c\nLine: 39\nassembly.ll line: 121\nState: 1\nStack: \n\t#000000121 in skip_authority(139264581488640) at xps-util.c:39\n\t#100000095 in clean_path(0, 0, 138974671196160, 138978966163456, 139264581488640, 8) at xps-util.c:15\n\t#200000171 in xps_resolve_url(138974671196160, 138978966163456, 139264581488640) at xps-util.c:22\n\t#300000055 in main() at driver.c:23\nInfo: \n\taddress: 139264581488641\n\tnext: object at 138966081261568 of size 4\n\t\tMO61[4] allo"
+    },
+    "concrete_inputs": [
+        {
+            "name": "path_byte0",
+            "size": 1,
+            "data": "b'/'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "skip_authority",
+        "crash_file": "source/xps/xps-util.c",
+        "crash_line": 96,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==6782==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000011 at pc 0x55a03bcb53fc bp 0x7fff474c12a0 sp 0x7fff474c1290\nREAD of size 1 at 0x502000000011 thread T0\n    #0 0x55a03bcb53fb in skip_authority source/xps/xps-util.c:96\n    #1 0x55a03bcb53fb in xps_resolve_url source/xps/xps-util.c:171\n    #2 0x55a03bcb4b07 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1499_xps-util.c_96_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:23\n    #3 0x7f4a2211ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f4a2211ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55a03bcb48e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1499_xps-util.c_96_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x108e4)\n\n0x502000000011 is located 0 bytes to the right of 1-byte region [0x502000000010,0x502000000011)\nallocated by thread T0 here:\n    #0 0x7f4a224d1887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55a03bcb4a4e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1499_xps-util.c_96_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:11\n    #2 0x7f4a2211ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/xps/xps-util.c:96 in skip_authority\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1499_xps-util.c_96_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xps-util.c",
+            "harness_line": 39,
+            "original_file": "xps-util.c",
+            "original_line": 96,
+            "error_type": "ptr",
+            "crash_function": "skip_authority",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1499_xps-util.c_96_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "skip_authority",
+            "crash_file": "source/xps/xps-util.c",
+            "crash_line": 96
+        }
+    ]
+}

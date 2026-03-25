@@ -1,0 +1,49 @@
+=================================================================
+==4139669==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc41eaf050 at pc 0x5d6d3b613101 bp 0x7ffc41eaef80 sp 0x7ffc41eaef78
+READ of size 1 at 0x7ffc41eaf050 thread T0
+    #0 0x5d6d3b613100 in OPENSSL_strcasecmp /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17:12
+    #1 0x5d6d3b612dca in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:51:12
+    #2 0x7b2d9042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7b2d9042a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5d6d3b553314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer+0x21314) (BuildId: bb4bf5f1aa89cfff3de293fd2be5ff359e333ac3)
+
+Address 0x7ffc41eaf050 is located in stack of thread T0 at offset 112 in frame
+    #0 0x5d6d3b612cbf in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:34
+
+  This frame has 1 object(s):
+    [32, 112) 'TermBuff' (line 36) <== Memory access at offset 112 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_150_out-of-bounds-read/reproducer.c:17:12 in OPENSSL_strcasecmp
+Shadow bytes around the buggy address:
+  0x1000083cddb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cddc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cddd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cdde0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cddf0: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+=>0x1000083cde00: 00 00 00 00 00 00 00 00 00 00[f3]f3 f3 f3 f3 f3
+  0x1000083cde10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cde20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cde30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cde40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x1000083cde50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4139669==ABORTING

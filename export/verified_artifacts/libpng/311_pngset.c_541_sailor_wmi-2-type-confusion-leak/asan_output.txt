@@ -1,0 +1,59 @@
+=================================================================
+==2644734==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000440 at pc 0x5672770c4b53 bp 0x7fffc6567040 sp 0x7fffc6567030
+READ of size 8 at 0x502000000440 thread T0
+    #0 0x5672770c4b52 in png_malloc_base /tmp/libpng_upstream/pngmem.c:91
+    #1 0x5672770c4e22 in png_malloc_warn /tmp/libpng_upstream/pngmem.c:219
+    #2 0x56727709931b in png_set_pCAL /tmp/libpng_upstream/pngset.c:529
+    #3 0x567277096a89 in main /app/artifacts/libpng_747dd02_vul/concrete_artifacts/findings/311_pngset.c_541_sailor_wmi-2-type-confusion-leak//reproducer.c:37
+    #4 0x71030062a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #5 0x71030062a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #6 0x5672770967f4 in _start (/tmp/libpng_reverify/311_pngset.c_541_sailor_wmi-2-type-confusion-leak_bin+0xa7f4) (BuildId: 47675337347ce7b72c99df33d4ff088607c81aaf)
+
+0x502000000440 is located 1032 bytes after 8-byte region [0x502000000030,0x502000000038)
+freed by thread T0 here:
+    #0 0x710300afc4d8 in free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52
+    #1 0x5672770969d5 in main /app/artifacts/libpng_747dd02_vul/concrete_artifacts/findings/311_pngset.c_541_sailor_wmi-2-type-confusion-leak//reproducer.c:31
+    #2 0x71030062a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x71030062a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x5672770967f4 in _start (/tmp/libpng_reverify/311_pngset.c_541_sailor_wmi-2-type-confusion-leak_bin+0xa7f4) (BuildId: 47675337347ce7b72c99df33d4ff088607c81aaf)
+
+previously allocated by thread T0 here:
+    #0 0x710300afd340 in calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:77
+    #1 0x567277096979 in main /app/artifacts/libpng_747dd02_vul/concrete_artifacts/findings/311_pngset.c_541_sailor_wmi-2-type-confusion-leak//reproducer.c:21
+    #2 0x71030062a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x71030062a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x5672770967f4 in _start (/tmp/libpng_reverify/311_pngset.c_541_sailor_wmi-2-type-confusion-leak_bin+0xa7f4) (BuildId: 47675337347ce7b72c99df33d4ff088607c81aaf)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libpng_upstream/pngmem.c:91 in png_malloc_base
+Shadow bytes around the buggy address:
+  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000380: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x502000000400: fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa
+  0x502000000480: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000500: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000580: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000600: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000680: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2644734==ABORTING

@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: vc1_pred.c
+Line: 33
+assembly.ll line: 136
+State: 1
+Stack: 
+	#000000136 in ff_vc1_pred_mv(139864923459584) at vc1_pred.c:33
+	#100000155 in entry_func(139864923459584) at vc1_pred.c:42
+	#200000071 in main() at driver.c:36
+Info: 
+	address: 139727484506120
+	next: object at 139427373666304 of size 4
+		MO55[4] allocated at ff_vc1_pred_mv():  %10 = alloca i32, align 4

@@ -1,0 +1,72 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 535261770
+INFO: Loaded 1 modules   (9 inline 8-bit counters): 9 [0x5c754d83bfa0, 0x5c754d83bfa9), 
+INFO: Loaded 1 PC tables (9 PCs): 9 [0x5c754d83bfb0,0x5c754d83c040), 
+INFO:        0 files found in /tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/corpus
+INFO:        1 files found in /tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/seed_corpus
+INFO: seed corpus: files: 1 min: 286b max: 286b total: 286b rss: 33Mb
+=================================================================
+==3115159==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000038 at pc 0x5c754d49f699 bp 0x7ffdac141dd0 sp 0x7ffdac141dc8
+READ of size 4 at 0x602000000038 thread T0
+    #0 0x5c754d49f698 in xmlSchemaFormatNodeForError /tmp/libxml2_upstream/xmlschemas.c:2198:7
+    #1 0x5c754d4a2575 in xmlSchemaComplexTypeErr /tmp/libxml2_upstream/xmlschemas.c:2569:5
+    #2 0x5c754d4995e3 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_harness.c:60:5
+    #3 0x5c754d3bf98a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x9698a) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #4 0x5c754d3bf055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x96055) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #5 0x5c754d3c0c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x97c58) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #6 0x5c754d3c10d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x980d6) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #7 0x5c754d3ae6c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x856c2) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #8 0x5c754d3d9b66 in main (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0xb0b66) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #9 0x72f1bcc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x72f1bcc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5c754d3a2af4 in _start (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x79af4) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+
+0x602000000038 is located 4 bytes to the right of 4-byte region [0x602000000030,0x602000000034)
+allocated by thread T0 here:
+    #0 0x5c754d45d69c in __interceptor_calloc (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x13469c) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #1 0x5c754d499486 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_harness.c:39:35
+    #2 0x5c754d3bf98a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x9698a) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #3 0x5c754d3bf055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x96055) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #4 0x5c754d3c0c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x97c58) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #5 0x5c754d3c10d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x980d6) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #6 0x5c754d3ae6c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x856c2) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #7 0x5c754d3d9b66 in main (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0xb0b66) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+    #8 0x72f1bcc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x72f1bcc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5c754d3a2af4 in _start (/tmp/libxml2_fuzz_verify/1882_xmlschemas.c_12305_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x79af4) (BuildId: e32f00afca0fef10c237d3fb0c3da1f66d604f4f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/xmlschemas.c:2198:7 in xmlSchemaFormatNodeForError
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa 04[fa]fa fa 00 00 fa fa 00 00
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3115159==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+artifact_prefix='./'; Test unit written to ./crash-22c8a04b142a39253c02402ee201be7693db2616

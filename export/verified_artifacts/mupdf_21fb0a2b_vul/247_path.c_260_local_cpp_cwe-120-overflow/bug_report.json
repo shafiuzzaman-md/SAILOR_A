@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "path.c",
+        "original_line": 260,
+        "function": "fz_pack_path",
+        "entry_point": "fz_pack_path",
+        "spine": [
+            "fz_pack_path"
+        ],
+        "original_context": "255: \t\t\tpack->refs = 1;\n256: \t\t\tpack->packed = FZ_PATH_PACKED_FLAT;\n257: \t\t\tpack->cmd_len = path->cmd_len;\n258: \t\t\tpack->coord_len = path->coord_len;\n259: \t\t\tptr = (uint8_t *)&pack[1];\n260: \t\t\tmemcpy(ptr, path->coords, sizeof(float) * path->coord_len);\n261: \t\t\tptr += sizeof(float) * path->coord_len;\n262: \t\t\tmemcpy(ptr, path->cmds, sizeof(uint8_t) * path->cmd_len);\n263: \t\t}\n264: \n265: \t\treturn size;"
+    },
+    "klee_crash": {
+        "harness_file": "path.c",
+        "harness_line": 60,
+        "original_file": "path.c",
+        "original_line": 260,
+        "original_code": "memcpy(ptr, path->coords, sizeof(float) * path->coord_len);",
+        "original_context": "    257: \t\t\tpack->cmd_len = path->cmd_len;\n    258: \t\t\tpack->coord_len = path->coord_len;\n    259: \t\t\tptr = (uint8_t *)&pack[1];\n>>> 260: \t\t\tmemcpy(ptr, path->coords, sizeof(float) * path->coord_len);\n    261: \t\t\tptr += sizeof(float) * path->coord_len;\n    262: \t\t\tmemcpy(ptr, path->cmds, sizeof(uint8_t) * path->cmd_len);\n    263: \t\t}",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 288\nState: 1\nStack: \n\t#000000288 in memcpy(139895106269188, 140101264699392, 1200) at runtime/Freestanding/memcpy.c:17\n\t#100000231 in fz_pack_path(139757667315712, 139895106269184, 139963825745920) at path.c:60\n\t#200000138 in main() at driver.c:42\nInfo: \n\taddress: 139895106269204\n\tnext: object at 139461314572288 of size 4\n\t\tMO24[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "coords",
+            "size": 1200,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "cmds",
+            "size": 300,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "pack_buf",
+            "size": 20,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_pack_path",
+        "crash_file": "source/fitz/path.c",
+        "crash_line": 226,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==13164==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000068 at pc 0x56543df2da85 bp 0x7ffe006f0840 sp 0x7ffe006f0830\nWRITE of size 4 at 0x503000000068 thread T0\n    #0 0x56543df2da84 in fz_pack_path source/fitz/path.c:226\n    #1 0x56543df2bd58 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/247_path.c_260_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:42\n    #2 0x7fd2aa14fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fd2aa14fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56543df2b924 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/247_path.c_260_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10924)\n\n0x503000000068 is located 20 bytes to the right of 20-byte region [0x503000000040,0x503000000054)\nallocated by thread T0 here:\n    #0 0x7fd2aa506887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x56543df2bd04 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/247_path.c_260_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:37\n    #2 0x7fd2aa14fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/path.c:226 in fz_pack_path\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 04 fa fa[fa]fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8040: fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/247_path.c_260_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "path.c",
+            "harness_line": 60,
+            "original_file": "path.c",
+            "original_line": 260,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/247_path.c_260_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_pack_path",
+            "crash_file": "source/fitz/path.c",
+            "crash_line": 226
+        }
+    ]
+}

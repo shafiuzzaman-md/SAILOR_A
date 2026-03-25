@@ -1,0 +1,122 @@
+{
+  "description": "B1 Baseline: Complete inventory of OSS-Fuzz harnesses per project",
+  "notes": "B1 converts existing OSS-Fuzz fuzz harnesses to KLEE symbolic drivers. Harnesses use LLVMFuzzerTestOneInput or project-specific wrappers (e.g. FuzzerTestOneInput for OpenSSL).",
+  "total_harnesses": 69,
+  "binutils": {
+    "commit": "b2bc71a12976fc169295662ab17f692f13d167d2",
+    "source": "google/oss-fuzz repo (projects/binutils/)",
+    "total": 15,
+    "harnesses": [
+      {"name": "fuzz_addr2line", "path": "oss-fuzz/fuzz_addr2line.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_as", "path": "oss-fuzz/fuzz_as.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_bfd", "path": "oss-fuzz/fuzz_bfd.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_bfd_ext", "path": "oss-fuzz/fuzz_bfd_ext.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_disas_ext", "path": "oss-fuzz/fuzz_disas_ext.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_disassemble", "path": "oss-fuzz/fuzz_disassemble.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_dlltool", "path": "oss-fuzz/fuzz_dlltool.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_dwarf", "path": "oss-fuzz/fuzz_dwarf.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_nm", "path": "oss-fuzz/fuzz_nm.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_objcopy", "path": "oss-fuzz/fuzz_objcopy.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_objdump", "path": "oss-fuzz/fuzz_objdump.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_ranlib_simulation", "path": "oss-fuzz/fuzz_ranlib_simulation.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_readelf", "path": "oss-fuzz/fuzz_readelf.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_strings", "path": "oss-fuzz/fuzz_strings.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_windres", "path": "oss-fuzz/fuzz_windres.c", "entry_point": "LLVMFuzzerTestOneInput"}
+    ]
+  },
+  "libpng": {
+    "commit": "747dd02cd2c8e7e31f6aabe1406a70b72a1f33f2",
+    "source": "none (OSS-Fuzz harness is entirely in google/oss-fuzz Dockerfile, not a standalone .c file)",
+    "total": 0,
+    "harnesses": []
+  },
+  "libtiff": {
+    "commit": "f3244156eda339cfe0eaa9a7db60fc2868fe29f5",
+    "source": "in-tree: contrib/oss-fuzz/",
+    "total": 1,
+    "harnesses": [
+      {"name": "tiff_read_rgba_fuzzer", "path": "contrib/oss-fuzz/tiff_read_rgba_fuzzer.cc", "entry_point": "LLVMFuzzerTestOneInput"}
+    ]
+  },
+  "libxml2": {
+    "commit": "e334a9dba2c1e7cf7dc882a87e2c744e6d126a2d",
+    "source": "in-tree: fuzz/",
+    "total": 12,
+    "harnesses": [
+      {"name": "api", "path": "fuzz/api.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "html", "path": "fuzz/html.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "lint", "path": "fuzz/lint.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "reader", "path": "fuzz/reader.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "regexp", "path": "fuzz/regexp.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "schema", "path": "fuzz/schema.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "testFuzzer", "path": "fuzz/testFuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "uri", "path": "fuzz/uri.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "valid", "path": "fuzz/valid.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "xinclude", "path": "fuzz/xinclude.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "xml", "path": "fuzz/xml.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "xpath", "path": "fuzz/xpath.c", "entry_point": "LLVMFuzzerTestOneInput"}
+    ]
+  },
+  "curl": {
+    "commit": "2eebc58c4b8d68c98c8344381a9f6df4cca838fd",
+    "source": "external: curl/curl-fuzzer repo",
+    "total": 4,
+    "harnesses": [
+      {"name": "curl_fuzzer", "path": "curl-fuzzer/curl_fuzzer.cc", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_bufq", "path": "curl-fuzzer/fuzz_bufq.cc", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_fnmatch", "path": "curl-fuzzer/fuzz_fnmatch.cc", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "fuzz_url", "path": "curl-fuzzer/fuzz_url.cc", "entry_point": "LLVMFuzzerTestOneInput"}
+    ]
+  },
+  "openssl": {
+    "commit": "67b5686b4419b4cb8caa502711c41815f5279751",
+    "source": "in-tree: fuzz/",
+    "total": 31,
+    "harnesses": [
+      {"name": "acert", "path": "fuzz/acert.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "asn1", "path": "fuzz/asn1.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "asn1parse", "path": "fuzz/asn1parse.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "bignum", "path": "fuzz/bignum.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "bndiv", "path": "fuzz/bndiv.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "client", "path": "fuzz/client.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "cmp", "path": "fuzz/cmp.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "cms", "path": "fuzz/cms.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "conf", "path": "fuzz/conf.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "crl", "path": "fuzz/crl.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "ct", "path": "fuzz/ct.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "decoder", "path": "fuzz/decoder.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "dtlsclient", "path": "fuzz/dtlsclient.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "dtlsserver", "path": "fuzz/dtlsserver.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "hashtable", "path": "fuzz/hashtable.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "ml-dsa", "path": "fuzz/ml-dsa.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "ml-kem", "path": "fuzz/ml-kem.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "pem", "path": "fuzz/pem.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "provider", "path": "fuzz/provider.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "punycode", "path": "fuzz/punycode.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "quic-client", "path": "fuzz/quic-client.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "quic-lcidm", "path": "fuzz/quic-lcidm.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "quic-rcidm", "path": "fuzz/quic-rcidm.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "quic-server", "path": "fuzz/quic-server.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "quic-srtm", "path": "fuzz/quic-srtm.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "server", "path": "fuzz/server.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "slh-dsa", "path": "fuzz/slh-dsa.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "smime", "path": "fuzz/smime.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "test-corpus", "path": "fuzz/test-corpus.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "v3name", "path": "fuzz/v3name.c", "entry_point": "FuzzerTestOneInput"},
+      {"name": "x509", "path": "fuzz/x509.c", "entry_point": "FuzzerTestOneInput"}
+    ]
+  },
+  "ffmpeg": {
+    "commit": "f46e5144bc58ddb3a01a09af553e769f171bea81",
+    "source": "in-tree: tools/",
+    "total": 6,
+    "harnesses": [
+      {"name": "target_bsf_fuzzer", "path": "tools/target_bsf_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "target_dec_fuzzer", "path": "tools/target_dec_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "target_dem_fuzzer", "path": "tools/target_dem_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "target_enc_fuzzer", "path": "tools/target_enc_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "target_swr_fuzzer", "path": "tools/target_swr_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"},
+      {"name": "target_sws_fuzzer", "path": "tools/target_sws_fuzzer.c", "entry_point": "LLVMFuzzerTestOneInput"}
+    ]
+  }
+}

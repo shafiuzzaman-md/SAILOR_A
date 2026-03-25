@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "boolean",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "sepol_bool_clone",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c",
+            "crash_line": 156
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "sepol_bool_clone",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c",
+        "crash_line": 156,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3258==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000030 at pc 0x55688a5063d3 bp 0x7ffc9296fb70 sp 0x7ffc9296fb60\nREAD of size 8 at 0x502000000030 thread T0\n    #0 0x55688a5063d2 in sepol_bool_clone /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c:156\n    #1 0x55688a505678 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1282_boolean_record.c_156_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:36\n    #2 0x7fd1a26c4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fd1a26c4e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55688a5052e4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1282_boolean_record.c_156_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x22e4)\n\n0x502000000030 is located 0 bytes inside of 16-byte region [0x502000000030,0x502000000040)\nfreed by thread T0 here:\n    #0 0x7fd1a2a7b537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x55688a506740 in sepol_bool_free /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c:178\n    #2 0x55688a50564e in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1282_boolean_record.c_156_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:29\n    #3 0x7fd1a26c4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7fd1a2a7ba57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55688a505457 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1282_boolean_record.c_156_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:19\n    #2 0x7fd1a26c4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/sailor_engine/libselinux_ca10fc4"
+    }
+}

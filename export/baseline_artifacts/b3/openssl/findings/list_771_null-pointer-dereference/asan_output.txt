@@ -1,0 +1,18 @@
+Triggering collect_signatures with NULL stack...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4141962==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b2cf6391f91 bp 0x7ffd7b41a4a0 sp 0x7ffd7b41a470 T0)
+==4141962==The signal is caused by a READ memory access.
+==4141962==Hint: address points to the zero page.
+    #0 0x5b2cf6391f91 in sk_EVP_SIGNATURE_push /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81:13
+    #1 0x5b2cf6391e98 in collect_signatures /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:38:12
+    #2 0x5b2cf6391e27 in EVP_SIGNATURE_do_all_provided /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:101:5
+    #3 0x5b2cf6391d6f in list_signatures /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:48:5
+    #4 0x5b2cf6391cef in main /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:106:5
+    #5 0x780f46e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x780f46e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5b2cf62d2304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer+0x21304) (BuildId: b26bd1147cddb750cc6b1152f71407b27682728e)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81:13 in sk_EVP_SIGNATURE_push
+==4141962==ABORTING

@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c",
+    "line": 859,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Indexes into the string literal info_arch using argc without validating the index; if argc exceeds the string length, this reads beyond the buffer.",
+    "abs_path": "/tmp/libtiff_upstream/build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Mimic the CMakeCCompilerId.c globals as string literals accessed via const char* */\nstatic const char info_compiler_lit[] = \"INFO:compiler[clang]\";\nstatic const char* info_compiler = info_compiler_lit;\nstatic const char info_platform_lit[] = \"INFO:platform[linux]\";\nstatic const char* info_platform = info_platform_lit;\nstatic const char info_arch_lit[] = \"INFO:arch[x86_64]\";\nstatic const char* info_arch = info_arch_lit;\nstatic const char info_language_standard_default_lit[] = \"INFO:standard_default[11]\";\nstatic const char* info_language_standard_default = info_language_standard_default_lit;\nstatic const char info_language_extensions_default_lit[] = \"INFO:extensions_default[ON]\";\nstatic const char* info_language_extensions_default = info_language_extensions_default_lit;\n\n/* Vulnerable code path modeled after CMakeCCompilerId.c:main */\nstatic int cmake_compilerid_main_like(int argc, char** argv) {\n    int require = 0;\n    require += info_compiler[argc];\n    require += info_platform[argc];\n    require += info_arch[argc]; /* out-of-bounds when argc > strlen(info_arch_lit) */\n    require += info_language_standard_default[argc];\n    require += info_language_extensions_default[argc];\n    (void)argv;\n    return require;\n}\n\nint main(void) {\n    /* Craft argc to be just past the end of info_arch to trigger OOB read */\n    int crafted_argc = (int)strlen(info_arch_lit) + 1;\n    char* dummy_argv[] = { (char*)\"repro\", NULL };\n\n    volatile int res = cmake_compilerid_main_like(crafted_argc, dummy_argv);\n    /* Use res so the compiler can't optimize away the reads */\n    printf(\"Result: %d\\n\", res);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7502522468566895,
+      "output": "=================================================================\n==3807993==ERROR: AddressSanitizer: global-buffer-overflow on address 0x58cfd85a6592 at pc 0x58cfd8592f99 bp 0x7ffc77036240 sp 0x7ffc77036238\nREAD of size 1 at 0x58cfd85a6592 thread T0\n    #0 0x58cfd8592f98 in cmake_compilerid_main_like /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22:16\n    #1 0x58cfd8592dcc in main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:34:24\n    #2 0x79e12182a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x79e12182a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58cfd84d3304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer+0x21304) (BuildId: c260664b74b1513fc10de3f5cd62dff853011a02)\n\n0x58cfd85a6592 is located 46 bytes to the left of global variable '<string literal>' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:32:35' (0x58cfd85a65c0) of size 6\n  '<string literal>' is ascii string 'repro'\n0x58cfd85a6592 is located 0 bytes to the right of global variable 'info_arch_lit' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:10:19' (0x58cfd85a6580) of size 18\n  'info_arch_lit' is ascii string 'INFO:arch[x86_64]'\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22:16 in cmake_compilerid_main_like\nShadow bytes around the buggy address:\n  0x0b1a7b0acc60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0acc70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0acc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0acc90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0acca0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0b1a7b0accb0: 00 00[02]f9 f9 f9 f9 f9 06 f9 f9 f9 00 04 f9 f9\n  0x0b1a7b0accc0: 00 00 05 f9 f9 f9 f9 f9 00 00 05 f9 f9 f9 f9 f9\n  0x0b1a7b0accd0: 00 00 00 02 f9 f9 f9 f9 00 00 00 04 f9 f9 f9 f9\n  0x0b1a7b0acce0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0accf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b1a7b0acd00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3807993==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "cmake_compilerid_main_like",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "cmake_compilerid_main_like",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:34",
+          "24"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

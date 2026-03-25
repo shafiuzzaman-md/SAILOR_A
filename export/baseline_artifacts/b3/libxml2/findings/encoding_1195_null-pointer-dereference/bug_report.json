@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "encoding.c",
+    "line": 1195,
+    "function": "xmlFindCharEncodingHandler",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The function calls xmlStrcasecmp(BAD_CAST name, ...) without checking if 'name' is NULL. If a caller passes name == NULL, this results in a NULL pointer dereference and crash.",
+    "abs_path": "/tmp/libxml2_upstream/encoding.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n#include <string.h>\n\n/* Minimal type and macro redefinitions to mirror libxml2 API used here */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (const xmlChar *)\n\ntypedef struct _xmlCharEncodingHandler xmlCharEncodingHandler;\ntypedef xmlCharEncodingHandler *xmlCharEncodingHandlerPtr;\n\nstruct _xmlCharEncodingHandler {\n    /* Minimal stub; real libxml2 has function pointers here */\n    int dummy;\n};\n\ntypedef int xmlCharEncFlags; /* stub */\n\nenum {\n    XML_ERR_OK = 0\n};\n\n/* Flags used in the vulnerable code path */\n#define XML_ENC_INPUT  (1 << 0)\n#define XML_ENC_OUTPUT (1 << 1)\n\n/* Index used by the vulnerable function to return a built-in handler */\n#define XML_CHAR_ENCODING_UTF8 1\n\n/* Stub default handler table with at least two entries so index 1 is valid */\nstatic xmlCharEncodingHandler defaultHandlers[2];\n\n/* Simplified, bug-relevant implementation of xmlStrcasecmp from libxml2.\n * Critically, this function does not check for NULL inputs, matching the\n * behavior needed to demonstrate the NULL dereference when called with\n * a NULL 'name' argument cast via BAD_CAST. */\nstatic int xmlStrcasecmp(const xmlChar *a, const xmlChar *b) {\n    /* This will dereference 'a' and 'b' immediately. If 'a' is NULL, it crashes. */\n    while (*a && *b) {\n        int ca = tolower((unsigned char)*a);\n        int cb = tolower((unsigned char)*b);\n        if (ca != cb)\n            return ca - cb;\n        a++;\n        b++;\n    }\n    return tolower((unsigned char)*a) - tolower((unsigned char)*b);\n}\n\n/* Stub for xmlCreateCharEncodingHandler used later in the function */\ntypedef int xmlParserErrors;\nstatic xmlParserErrors xmlCreateCharEncodingHandler(const char *name,\n                                                    xmlCharEncFlags flags,\n                                                    void *a, void *b,\n                                                    xmlCharEncodingHandler **out) {\n    if (out)\n        *out = NULL;\n    (void)name; (void)flags; (void)a; (void)b;\n    return XML_ERR_OK;\n}\n\n/* Vulnerable function recreated from the provided source context */\nxmlCharEncodingHandler *\nxmlFindCharEncodingHandler(const char *name) {\n    xmlCharEncodingHandler *ret;\n    xmlCharEncFlags flags;\n\n    /*\n     * This handler shouldn't be used, but we must return a non-NULL\n     * handler.\n     */\n    if ((xmlStrcasecmp(BAD_CAST name, BAD_CAST \"UTF-8\") == 0) ||\n        (xmlStrcasecmp(BAD_CAST name, BAD_CAST \"UTF8\") == 0))\n        return (xmlCharEncodingHandlerPtr)\n                &defaultHandlers[XML_CHAR_ENCODING_UTF8];\n\n    flags = XML_ENC_INPUT;\n#ifdef LIBXML_OUTPUT_ENABLED\n    flags |= XML_ENC_OUTPUT;\n#endif\n    xmlCreateCharEncodingHandler(name, flags, NULL, NULL, &ret);\n    return ret;\n}\n\nint main(void) {\n    /* Trigger: Pass NULL for 'name' to cause NULL dereference in xmlStrcasecmp */\n    const char *name = NULL;\n\n    /* This call should crash with AddressSanitizer due to NULL deref */\n    xmlCharEncodingHandler *h = xmlFindCharEncodingHandler(name);\n\n    /* If it didn't crash (it should), print the result to avoid warnings */\n    printf(\"handler=%p\\n\", (void*)h);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.0614595413208008,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3988111==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x58377d19bec0 bp 0x7ffdfdfdb3d0 sp 0x7ffdfdfdb340 T0)\n==3988111==The signal is caused by a READ memory access.\n==3988111==Hint: address points to the zero page.\n    #0 0x58377d19bec0 in xmlStrcasecmp /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40:12\n    #1 0x58377d19bd80 in xmlFindCharEncodingHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:73:10\n    #2 0x58377d19c13f in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:91:33\n    #3 0x7e9194a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7e9194a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x58377d0dc314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer+0x21314) (BuildId: 9e0d0edae5c8236ab13809f708fb549f622adab1)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40:12 in xmlStrcasecmp\n==3988111==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlStrcasecmp",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "xmlStrcasecmp",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:40",
+          "12"
+        ],
+        [
+          "1",
+          "xmlFindCharEncodingHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:73",
+          "10"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_1195_null-pointer-dereference/reproducer.c:91",
+          "33"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

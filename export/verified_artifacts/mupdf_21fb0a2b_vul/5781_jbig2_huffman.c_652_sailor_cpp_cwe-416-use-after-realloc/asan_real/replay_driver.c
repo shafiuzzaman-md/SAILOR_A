@@ -1,0 +1,25 @@
+#include "harness_types.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+// klee removed for replay
+
+int jbig2_table(Jbig2Ctx *ctx, Jbig2Segment *segment, const byte *segment_data);
+
+int main() {
+    Jbig2Ctx *ctx = (Jbig2Ctx *)calloc(1, sizeof(Jbig2Ctx));
+    Jbig2Segment *segment = (Jbig2Segment *)calloc(1, sizeof(Jbig2Segment));
+
+    const size_t seg_size = 64; // concrete size > 10 and > LOG_TABLE_SIZE_MAX
+    byte *seg_data = (byte *)malloc(seg_size);
+    if (!ctx || !segment || !seg_data) return 0;
+
+    { static const unsigned char segment_data_data[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; memcpy(seg_data, segment_data_data, (seg_size < sizeof(segment_data_data)) ? seg_size : sizeof(segment_data_data)); };
+
+    segment->result = NULL;
+    segment->data_length = seg_size; // >= 10
+    segment->number = 0;
+
+    jbig2_table(ctx, segment, seg_data);
+    return 0;
+}

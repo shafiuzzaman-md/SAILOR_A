@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4025218==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000010 (pc 0x5b67ba7ef499 bp 0x7ffc1a601d50 sp 0x7ffc1a601d20 T0)
+==4025218==The signal is caused by a WRITE memory access.
+==4025218==Hint: address points to the zero page.
+    #0 0x5b67ba7ef499 in xmlCtxtSetErrorHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50:17
+    #1 0x5b67ba7eef6e in pushParseTest /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:105:5
+    #2 0x5b67ba7eecc7 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:136:11
+    #3 0x73a56d42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x73a56d42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5b67ba72f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer+0x21304) (BuildId: 4eb219384004df99081ee89f4e54f38e14eaa4c0)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1907_null-pointer-dereference/reproducer.c:50:17 in xmlCtxtSetErrorHandler
+==4025218==ABORTING

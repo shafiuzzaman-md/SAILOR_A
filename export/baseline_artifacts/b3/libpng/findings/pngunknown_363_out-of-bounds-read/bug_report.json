@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngunknown.c",
+    "line": 363,
+    "function": "ancillary",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "The function indexes name[0..3] without validating that the provided 'name' points to at least 4 bytes. Passing a shorter string leads to out-of-bounds reads when constructing the 32-bit chunk code.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngunknown.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n/* Minimal typedefs/macros to mirror the vulnerable code path */\ntypedef uint32_t png_uint_32;\ntypedef unsigned char png_byte;\n\n/* Equivalent to libpng's macros used by ancillary() */\n#define PNG_U32(a,b,c,d) \\\n    ((((png_uint_32)(a)) << 24) | (((png_uint_32)(b)) << 16) | \\\n     (((png_uint_32)(c)) << 8)  |  ((png_uint_32)(d)))\n\n#define PNG_CHUNK_ANCILLARY(c) (((c) & 0x20000000U) != 0)\n\n/* Vulnerable function (from contrib/libtests/pngunknown.c) */\nstatic int ancillary(const char *name)\n{\n    /* BUG: indexes name[0..3] without validating length */\n    return PNG_CHUNK_ANCILLARY(PNG_U32(name[0], name[1], name[2], name[3]));\n}\n\nint main(void)\n{\n    /* Allocate a buffer that is too small (1 byte) for a 4-byte chunk name */\n    char *name = (char*)malloc(1);\n    if (!name) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Fill the single byte; the function will read name[1], name[2], name[3]\n       which are out-of-bounds. */\n    name[0] = 'a';\n\n    /* Call the vulnerable function; ASan should flag an OOB read here */\n    volatile int r = ancillary(name);\n    (void)r; /* prevent unused warning */\n\n    /* If ASan didn't abort, print something (unlikely) */\n    printf(\"ancillary returned: %d\\n\", r);\n\n    free(name);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7536730766296387,
+      "output": "=================================================================\n==3720817==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x5c6057ba6f5f bp 0x7ffc3d346030 sp 0x7ffc3d346028\nREAD of size 1 at 0x602000000011 thread T0\n    #0 0x5c6057ba6f5e in ancillary /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:20:12\n    #1 0x5c6057ba6dfb in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:37:22\n    #2 0x7036da02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7036da02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c6057ae7314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer+0x21314) (BuildId: fff33893d0bbba72746e263a9eaa182c08d6a1de)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5c6057b6ad22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer+0xa4d22) (BuildId: fff33893d0bbba72746e263a9eaa182c08d6a1de)\n    #1 0x5c6057ba6d79 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:26:25\n    #2 0x7036da02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7036da02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c6057ae7314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer+0x21314) (BuildId: fff33893d0bbba72746e263a9eaa182c08d6a1de)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:20:12 in ancillary\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3720817==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "ancillary",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:20",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "ancillary",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:20",
+          "12"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:37",
+          "22"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_363_out-of-bounds-read/reproducer.c:26",
+          "25"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

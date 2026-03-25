@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "loongarch/filter_lsx_intrinsics.c",
+    "line": 238,
+    "function": "png_read_filter_row_avg3_lsx",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "__lsx_vldrepl_w(prev_nxt, 0) reads 4 bytes from the previous row without verifying at least 4 bytes are available. For a 1-pixel-wide 3 bpp row (rowbytes == 3), this reads 1 byte past prev_row.",
+    "abs_path": "/tmp/libpng_upstream/loongarch/filter_lsx_intrinsics.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for libpng types */\ntypedef unsigned char png_byte;\ntypedef struct {\n    size_t rowbytes;\n} png_row_info;\n\n/* Extremely small stubs for LSX intrinsics used by the function. */\ntypedef struct { unsigned char b[16]; } __m128i;\n\nstatic inline __m128i __lsx_vldrepl_w(const void *p, int off)\n{\n    /* Intentionally perform a 4-byte read to match the buggy behavior. */\n    const unsigned char *bp = (const unsigned char *)p + off;\n    /* This 4-byte load will trigger ASan if fewer than 4 bytes are addressable. */\n    uint32_t v = *(const uint32_t *)bp;\n    __m128i out;\n    /* Just replicate the 4 bytes across the vector for simplicity. */\n    for (int i = 0; i < 16; i += 4) {\n        out.b[i + 0] = (unsigned char)(v & 0xFF);\n        out.b[i + 1] = (unsigned char)((v >> 8) & 0xFF);\n        out.b[i + 2] = (unsigned char)((v >> 16) & 0xFF);\n        out.b[i + 3] = (unsigned char)((v >> 24) & 0xFF);\n    }\n    return out;\n}\n\nstatic inline __m128i __lsx_vldrepl_b(const void *p, int off)\n{\n    const unsigned char *bp = (const unsigned char *)p + off;\n    unsigned char v = *bp; /* 1-byte read */\n    __m128i out;\n    for (int i = 0; i < 16; ++i) out.b[i] = v;\n    return out;\n}\n\nstatic inline __m128i __lsx_vsrli_b(__m128i a, int sh)\n{\n    __m128i out;\n    int s = sh & 7;\n    for (int i = 0; i < 16; ++i) out.b[i] = (unsigned char)(a.b[i] >> s);\n    return out;\n}\n\nstatic inline __m128i __lsx_vadd_b(__m128i a, __m128i b)\n{\n    __m128i out;\n    for (int i = 0; i < 16; ++i) out.b[i] = (unsigned char)(a.b[i] + b.b[i]);\n    return out;\n}\n\nstatic inline __m128i __lsx_vavg_bu(__m128i a, __m128i b)\n{\n    __m128i out;\n    for (int i = 0; i < 16; ++i) {\n        unsigned int av = a.b[i];\n        unsigned int bv = b.b[i];\n        out.b[i] = (unsigned char)(((av + bv) + 1) >> 1);\n    }\n    return out;\n}\n\nstatic inline void __lsx_vstelm_h(__m128i v, void *p, int /*imm*/, int /*idx*/)\n{\n    /* Store the first 2 bytes */\n    unsigned char *bp = (unsigned char *)p;\n    bp[0] = v.b[0];\n    bp[1] = v.b[1];\n}\n\nstatic inline void __lsx_vstelm_b(__m128i v, void *p, int /*imm*/, int /*idx*/)\n{\n    /* Store the 3rd byte to match the usage with idx=2 in the snippet */\n    unsigned char *bp = (unsigned char *)p;\n    bp[0] = v.b[2];\n}\n\n/* Vulnerable function reproduced with the same signature and core logic. */\nvoid png_read_filter_row_avg3_lsx(png_row_info *row_info, png_byte *row,\n                                  const png_byte *prev_row)\n{\n    size_t n = row_info->rowbytes;\n    png_byte *nxt = row;\n    const png_byte *prev_nxt = prev_row;\n    __m128i vec_0, vec_1, vec_2;\n\n    vec_0 = __lsx_vldrepl_w(nxt, 0);\n    vec_1 = __lsx_vldrepl_w(prev_nxt, 0); /* OOB 4-byte read when rowbytes == 3 */\n    prev_nxt += 3;\n    vec_1 = __lsx_vsrli_b(vec_1, 1);\n    vec_1 = __lsx_vadd_b(vec_1, vec_0);\n    __lsx_vstelm_h(vec_1, nxt, 0, 0);\n    nxt += 2;\n    __lsx_vstelm_b(vec_1, nxt, 0, 2);\n    nxt += 1;\n    n -= 3;\n\n    while (n >= 3)\n    {\n        vec_2 = vec_1;\n        vec_0 = __lsx_vldrepl_w(nxt, 0);\n        vec_1 = __lsx_vldrepl_w(prev_nxt, 0);\n        prev_nxt += 3;\n\n        vec_1 = __lsx_vavg_bu(vec_1, vec_2);\n        vec_1 = __lsx_vadd_b(vec_1, vec_0);\n\n        __lsx_vstelm_h(vec_1, nxt, 0, 0);\n        nxt += 2;\n        __lsx_vstelm_b(vec_1, nxt, 0, 2);\n        nxt += 1;\n        n -= 3;\n    }\n\n    row = nxt - 3;\n    while (n--)\n    {\n        vec_2 = __lsx_vldrepl_b(row, 0);\n        row++;\n        vec_0 = __lsx_vldrepl_b(nxt, 0);\n        vec_1 = __lsx_vldrepl_b(prev_nxt, 0);\n        prev_nxt++;\n\n        vec_1 = __lsx_vavg_bu(vec_1, vec_2);\n        vec_1 = __lsx_vadd_b(vec_1, vec_0);\n\n        __lsx_vstelm_b(vec_1, nxt, 0, 0);\n        nxt++;\n    }\n}\n\nint main(void)\n{\n    /* Set up a 1-pixel-wide row with 3 bytes per pixel (rowbytes == 3). */\n    png_row_info info;\n    info.rowbytes = 3; /* 3 BPP, width == 1 */\n\n    /* Row buffer: allocate 4 bytes so the first 4-byte load from 'row' does NOT trip ASan. */\n    png_byte *row = (png_byte *)malloc(4);\n    if (!row) return 1;\n    memset(row, 0x11, 4);\n\n    /* Previous row buffer: allocate EXACTLY 3 bytes so the 4-byte load overreads by 1. */\n    png_byte *prev = (png_byte *)malloc(3);\n    if (!prev) return 1;\n    memset(prev, 0x22, 3);\n\n    /* This call should trigger an AddressSanitizer heap-buffer-overflow (read of size 4) */\n    png_read_filter_row_avg3_lsx(&info, row, prev);\n\n    /* Cleanup (may not be reached if ASan aborts on error). */\n    free(prev);\n    free(row);\n\n    /* If no ASan, program may just exit. */\n    puts(\"Done\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6734902858734131,
+      "output": "=================================================================\n==3731584==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000030 at pc 0x5cf98b297fcb bp 0x7fffb3039e10 sp 0x7fffb3039e08\nREAD of size 4 at 0x602000000030 thread T0\n    #0 0x5cf98b297fca in __lsx_vldrepl_w /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20:18\n    #1 0x5cf98b29514a in png_read_filter_row_avg3_lsx /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:92:13\n    #2 0x5cf98b299de7 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:153:5\n    #3 0x7c6ad942a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7c6ad942a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5cf98b1d5304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0x20304) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)\n\n0x602000000033 is located 0 bytes to the right of 3-byte region [0x602000000030,0x602000000033)\nallocated by thread T0 here:\n    #0 0x5cf98b258d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0xa3d12) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)\n    #1 0x5cf98b299da1 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:148:34\n    #2 0x7c6ad942a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c6ad942a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5cf98b1d5304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer+0x20304) (BuildId: 8ffdc8a6e69352fa2c7d942dfb40e7ffe8b3de0b)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20:18 in __lsx_vldrepl_w\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 04 fa fa fa[03]fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3731584==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "__lsx_vldrepl_w",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "__lsx_vldrepl_w",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:20",
+          "18"
+        ],
+        [
+          "1",
+          "png_read_filter_row_avg3_lsx",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:92",
+          "13"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:153",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_lsx_intrinsics_238_out-of-bounds-read/reproducer.c:148",
+          "34"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

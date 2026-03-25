@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_msa_intrinsics.c",
+    "line": 388,
+    "function": "png_read_filter_row_up_msa",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Tail handling reads 64 bytes with LD_UB4 when only 49\u201363 bytes remain, overreading both the current row and prev_row by up to 15 bytes.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_msa_intrinsics.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal libpng-like typedefs used by the vulnerable function */\ntypedef unsigned char png_byte;\ntypedef struct {\n    size_t rowbytes;\n} png_row_info;\n\n/* Minimal vector type to emulate 16-byte MSA vector loads/stores */\ntypedef struct { uint8_t b[16]; } v16u8;\n\nstatic inline v16u8 load16(const uint8_t *p) {\n    v16u8 v;\n    /* This memcpy will trigger ASan on out-of-bounds reads */\n    memcpy(v.b, p, 16);\n    return v;\n}\n\nstatic inline void store16(uint8_t *p, v16u8 v) {\n    memcpy(p, v.b, 16);\n}\n\nstatic inline v16u8 add_vec(v16u8 x, v16u8 y) {\n    v16u8 r;\n    for (int i = 0; i < 16; i++) r.b[i] = (uint8_t)(x.b[i] + y.b[i]);\n    return r;\n}\n\n/* Emulate the used MSA helper macros with plain C */\n#define LD_UB(p)           load16((const uint8_t*)(p))\n#define ST_UB(v, p)        store16((uint8_t*)(p), (v))\n\n#define LD_UB2(p, stride, a, b)                         \\\n    do {                                                \\\n        (a) = load16((const uint8_t*)(p) + 0*(stride)); \\\n        (b) = load16((const uint8_t*)(p) + 1*(stride)); \\\n    } while (0)\n\n#define ST_UB2(a, b, p, stride)                         \\\n    do {                                                \\\n        store16((uint8_t*)(p) + 0*(stride), (a));       \\\n        store16((uint8_t*)(p) + 1*(stride), (b));       \\\n    } while (0)\n\n#define LD_UB4(p, stride, a, b, c, d)                   \\\n    do {                                                \\\n        (a) = load16((const uint8_t*)(p) + 0*(stride)); \\\n        (b) = load16((const uint8_t*)(p) + 1*(stride)); \\\n        (c) = load16((const uint8_t*)(p) + 2*(stride)); \\\n        (d) = load16((const uint8_t*)(p) + 3*(stride)); \\\n    } while (0)\n\n#define ST_UB4(a, b, c, d, p, stride)                   \\\n    do {                                                \\\n        store16((uint8_t*)(p) + 0*(stride), (a));       \\\n        store16((uint8_t*)(p) + 1*(stride), (b));       \\\n        store16((uint8_t*)(p) + 2*(stride), (c));       \\\n        store16((uint8_t*)(p) + 3*(stride), (d));       \\\n    } while (0)\n\n#define ADD2(a0, b0, a1, b1, o0, o1)                    \\\n    do {                                                \\\n        (o0) = add_vec((a0), (b0));                     \\\n        (o1) = add_vec((a1), (b1));                     \\\n    } while (0)\n\n#define ADD3(a0, b0, a1, b1, a2, b2, o0, o1, o2)        \\\n    do {                                                \\\n        (o0) = add_vec((a0), (b0));                     \\\n        (o1) = add_vec((a1), (b1));                     \\\n        (o2) = add_vec((a2), (b2));                     \\\n    } while (0)\n\n#define ADD4(a0, b0, a1, b1, a2, b2, a3, b3, o0, o1, o2, o3) \\\n    do {                                                     \\\n        (o0) = add_vec((a0), (b0));                          \\\n        (o1) = add_vec((a1), (b1));                          \\\n        (o2) = add_vec((a2), (b2));                          \\\n        (o3) = add_vec((a3), (b3));                          \\\n    } while (0)\n\n/* Buggy function extracted/simplified from mips/filter_msa_intrinsics.c */\nstatic void png_read_filter_row_up_msa(png_row_info *row_info, png_byte *row,\n                                       const png_byte *prev_row)\n{\n    size_t cnt, cnt16, cnt32;\n    size_t istop = row_info->rowbytes;\n    png_byte *rp = row;\n    const png_byte *pp = prev_row;\n    v16u8 src0, src1, src2, src3, src4, src5, src6, src7;\n\n    /* We intentionally omit the 64-byte main loop to focus on the tail. */\n\n    if (istop & 0x3F)\n    {\n        cnt32 = istop & 0x20;\n        cnt16 = istop & 0x10;\n        cnt = istop & 0xF;\n\n        if (cnt32)\n        {\n            if (cnt16 && cnt)\n            {\n                /* Vulnerable tail: reads 4x16=64 bytes when only 49..63 remain */\n                LD_UB4(rp, 16, src0, src1, src2, src3);   /* overreads row */\n                LD_UB4(pp, 16, src4, src5, src6, src7);   /* overreads prev_row */\n\n                ADD4(src0, src4, src1, src5, src2, src6, src3, src7,\n                     src0, src1, src2, src3);\n\n                ST_UB4(src0, src1, src2, src3, rp, 16);\n            }\n            else if (cnt16 || cnt)\n            {\n                /* Not taken in our repro, but implemented for completeness */\n                LD_UB2(rp, 16, src0, src1);\n                LD_UB2(pp, 16, src4, src5);\n                src2 = LD_UB(rp + 32);\n                src6 = LD_UB(pp + 32);\n                ADD3(src0, src4, src1, src5, src2, src6, src0, src1, src2);\n                ST_UB2(src0, src1, rp, 16);\n                ST_UB(src2, rp + 32);\n            }\n            else\n            {\n                /* Not taken in our repro, but implemented for completeness */\n                LD_UB2(rp, 16, src0, src1);\n                LD_UB2(pp, 16, src4, src5);\n                ADD2(src0, src4, src1, src5, src0, src1);\n                ST_UB2(src0, src1, rp, 16);\n            }\n        }\n        else if (cnt16 && cnt)\n        {\n            /* Other tails - not used in this repro */\n            LD_UB2(rp, 16, src0, src1);\n            LD_UB2(pp, 16, src4, src5);\n            ADD2(src0, src4, src1, src5, src0, src1);\n            ST_UB2(src0, src1, rp, 16);\n            ST_UB(LD_UB(rp + 32), rp + 32); /* dummy op to keep structure similar */\n        }\n        else if (cnt16 || cnt)\n        {\n            /* Minimal no-op to keep compiler happy; not part of the bug path. */\n        }\n    }\n}\n\nint main(void)\n{\n    /* Choose rowbytes so that: cnt32!=0, cnt16!=0, cnt!=0 -> triggers buggy path.\n       Example: 49 = 0x31 = 0x20 + 0x10 + 0x01. */\n    const size_t rowbytes = 49;  /* 49..63 all trigger the same buggy tail */\n\n    png_byte *row = (png_byte*)malloc(rowbytes);\n    png_byte *prev = (png_byte*)malloc(rowbytes);\n    if (!row || !prev) {\n        fprintf(stderr, \"malloc failed\\n\");\n        return 1;\n    }\n\n    /* Initialize buffers with some data */\n    for (size_t i = 0; i < rowbytes; i++) {\n        row[i] = (png_byte)(i & 0xFF);\n        prev[i] = (png_byte)((255 - i) & 0xFF);\n    }\n\n    png_row_info info;\n    info.rowbytes = rowbytes;\n\n    /* This call will perform 4x16B loads (64 bytes) from row and prev\n       even though only 49 bytes remain, causing out-of-bounds reads\n       detectable by AddressSanitizer. */\n    png_read_filter_row_up_msa(&info, row, prev);\n\n    /* Prevent optimization from discarding results */\n    volatile uint8_t sink = row[0];\n    (void)sink;\n\n    free(row);\n    free(prev);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7337808609008789,
+      "output": "=================================================================\n==3740000==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x606000000051 at pc 0x5a4fda939feb bp 0x7ffecb722a30 sp 0x7ffecb722200\nREAD of size 16 at 0x606000000051 thread T0\n    #0 0x5a4fda939fea in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 95d2910d7c59b8c1f20095817f68b208148e6ae6)\n    #1 0x5a4fda97e55d in load16 /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:18:5\n    #2 0x5a4fda977be1 in png_read_filter_row_up_msa /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:108:17\n    #3 0x5a4fda976f55 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:177:5\n    #4 0x75eaca42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x75eaca42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5a4fda8b7304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0x21304) (BuildId: 95d2910d7c59b8c1f20095817f68b208148e6ae6)\n\n0x606000000051 is located 0 bytes to the right of 49-byte region [0x606000000020,0x606000000051)\nallocated by thread T0 here:\n    #0 0x5a4fda93ad12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 95d2910d7c59b8c1f20095817f68b208148e6ae6)\n    #1 0x5a4fda976d8c in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:158:32\n    #2 0x75eaca42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x75eaca42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5a4fda8b7304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0x21304) (BuildId: 95d2910d7c59b8c1f20095817f68b208148e6ae6)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 95d2910d7c59b8c1f20095817f68b208148e6ae6) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c0c7fff8000: fa fa fa fa 00 00 00 00 00 00[01]fa fa fa fa fa\n  0x0c0c7fff8010: 00 00 00 00 00 00 01 fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3740000==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "load16",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:18",
+          "5"
+        ],
+        [
+          "2",
+          "png_read_filter_row_up_msa",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:108",
+          "17"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:177",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:158",
+          "32"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

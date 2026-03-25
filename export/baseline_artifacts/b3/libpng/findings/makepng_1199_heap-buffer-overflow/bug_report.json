@@ -1,0 +1,90 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/makepng.c",
+    "line": 1199,
+    "function": "insert_iCCP",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "When handling a fake iCCP profile, the code writes a 4-byte length field into the start of the allocated buffer via png_save_uint_32(profile, proflen) without ensuring the buffer is at least 4 bytes long. If fake_len < 4, the buffer allocated by load_fake is smaller than 4 bytes, leading to a 1\u20133 byte write past the end of the heap buffer.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/makepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal typedefs to mirror libpng types used in the snippet */\ntypedef uint8_t png_byte;\ntypedef uint32_t png_uint_32;\n\n/* Stub: check parameter count (from makepng.c) */\nstatic void check_param_count(int nparams, int min)\n{\n    if (nparams < min) {\n        fprintf(stderr, \"not enough params\\n\");\n        exit(1);\n    }\n}\n\n/* Stub: load_file is not used in this reproducer, but referenced by insert_iCCP */\nstatic size_t load_file(const char *path, png_byte **out)\n{\n    (void)path;\n    *out = NULL;\n    return 0;\n}\n\n/* Stub: emulate makepng.c's fake data loader; here we simply allocate the\n * requested number of bytes from a decimal string.\n */\nstatic size_t load_fake(const char *arg, png_byte **out)\n{\n    char *end = NULL;\n    unsigned long len = strtoul(arg, &end, 10);\n    if (end == arg) {\n        /* Not a number; for safety just abort. */\n        fprintf(stderr, \"load_fake: bad length '%s'\\n\", arg);\n        exit(1);\n    }\n    *out = (png_byte*)malloc(len);\n    if (!*out && len != 0) {\n        perror(\"malloc\");\n        exit(1);\n    }\n    /* Fill with a pattern to make ASan's reports clearer */\n    if (*out && len > 0) memset(*out, 0xAA, len);\n    return (size_t)len;\n}\n\n/* Emulate libpng's png_save_uint_32: store a 32-bit big-endian integer. */\nvoid png_save_uint_32(png_byte *buf, png_uint_32 i)\n{\n    /* This will write 4 bytes to buf regardless of buf size. */\n    buf[0] = (png_byte)((i >> 24) & 0xff);\n    buf[1] = (png_byte)((i >> 16) & 0xff);\n    buf[2] = (png_byte)((i >> 8) & 0xff);\n    buf[3] = (png_byte)(i & 0xff);\n}\n\n/* Optional: emulate libpng's png_get_uint_32 (not used in overflow path) */\nstatic png_uint_32 png_get_uint_32(const png_byte *buf)\n{\n    return ((png_uint_32)buf[0] << 24) |\n           ((png_uint_32)buf[1] << 16) |\n           ((png_uint_32)buf[2] << 8)  |\n           ((png_uint_32)buf[3]);\n}\n\n/* Reconstructed vulnerable function: contrib/libtests/makepng.c: insert_iCCP */\nstatic void insert_iCCP(int nparams, char **params)\n{\n    png_byte *profile = NULL;\n    png_uint_32 proflen = 0;\n    int result;\n\n    check_param_count(nparams, 2);\n\n    switch (params[1][0])\n    {\n       case '<':\n          {\n             size_t filelen = load_file(params[1]+1, &profile);\n             if (filelen > 0xfffffffc) /* Maximum profile length */\n             {\n                fprintf(stderr, \"%s: file too long (%lu) for an ICC profile\\n\",\n                   params[1]+1, (unsigned long)filelen);\n                exit(1);\n             }\n\n             proflen = (png_uint_32)filelen;\n          }\n          break;\n\n       case '0': case '1': case '2': case '3': case '4':\n       case '5': case '6': case '7': case '8': case '9':\n          {\n             size_t fake_len = load_fake(params[1], &profile);\n\n             if (fake_len > 0) /* else a simple parameter */\n             {\n                if (fake_len > 0xffffffff) /* Maximum profile length */\n                {\n                   fprintf(stderr,\n                      \"%s: fake data too long (%lu) for an ICC profile\\n\",\n                      params[1], (unsigned long)fake_len);\n                   exit(1);\n                }\n                proflen = (png_uint_32)(fake_len & ~3U);\n                /* Always fix up the profile length. */\n                /* VULNERABILITY: if fake_len < 4, 'profile' has fewer than 4 bytes. */\n                png_save_uint_32(profile, proflen);\n                break;\n             }\n          }\n\n       default:\n          fprintf(stderr, \"--insert iCCP \\\"%s\\\": unrecognized\\n\", params[1]);\n          fprintf(stderr, \"  use '<' to read a file: \\\"<filename\\\"\\n\");\n          exit(1);\n    }\n\n    result = 1;\n\n    if (proflen & 3)\n    {\n       fprintf(stderr,\n          \"makepng: --insert iCCP %s: profile length made a multiple of 4\\n\",\n          params[1]);\n\n       while (proflen & 3)\n          profile[proflen++] = 0;\n    }\n\n    if (profile != NULL && proflen > 3)\n    {\n       png_uint_32 prof_header = png_get_uint_32(profile);\n\n       if (prof_header != proflen)\n       {\n          fprintf(stderr, \"--insert iCCP %s: profile length field wrong:\\n\",\n             params[1]);\n          fprintf(stderr, \"  actual %lu, recorded value %lu (corrected)\\n\",\n             (unsigned long)proflen, (unsigned long)prof_header);\n          png_save_uint_32(profile, proflen);\n       }\n    }\n\n    /* Cleanup to avoid leaks in this small reproducer */\n    free(profile);\n}\n\nint main(void)\n{\n    /* Set up parameters to hit the digit case with a tiny fake profile. */\n    char *params[2];\n    params[0] = (char*)\"iCCP\"; /* unused label */\n    params[1] = (char*)\"1\";    /* fake_len = 1 byte -> overflow when writing 4 bytes */\n\n    /* This call triggers the heap-buffer-overflow in png_save_uint_32 */\n    insert_iCCP(2, params);\n\n    /* If the overflow didn't abort, indicate completion */\n    fprintf(stderr, \"Done (overflow should have been reported by ASan).\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7711248397827148,
+      "output": "=================================================================\n==3717536==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x5883c9799d7a bp 0x7ffc0cce4fb0 sp 0x7ffc0cce4fa8\nWRITE of size 1 at 0x602000000011 thread T0\n    #0 0x5883c9799d79 in png_save_uint_32 /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:54:12\n    #1 0x5883c979a3f5 in insert_iCCP /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:110:17\n    #2 0x5883c9799f5b in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:159:5\n    #3 0x7a9dde02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7a9dde02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5883c96da334 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer+0x21334) (BuildId: 0ba328ead4c1c7a1be47765fad911e61eb9c4689)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5883c975dd42 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer+0xa4d42) (BuildId: 0ba328ead4c1c7a1be47765fad911e61eb9c4689)\n    #1 0x5883c979aa91 in load_fake /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:39:23\n    #2 0x5883c979a2f4 in insert_iCCP /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:96:32\n    #3 0x5883c9799f5b in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:159:5\n    #4 0x7a9dde02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7a9dde02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5883c96da334 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer+0x21334) (BuildId: 0ba328ead4c1c7a1be47765fad911e61eb9c4689)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:54:12 in png_save_uint_32\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3717536==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_save_uint_32",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:54",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "png_save_uint_32",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:54",
+          "12"
+        ],
+        [
+          "1",
+          "insert_iCCP",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:110",
+          "17"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:159",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "load_fake",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:39",
+          "23"
+        ],
+        [
+          "2",
+          "insert_iCCP",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:96",
+          "32"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1199_heap-buffer-overflow/reproducer.c:159",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

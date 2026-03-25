@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 3568,
+    "function": "schemasTest",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "After computing len = strlen(base) and only checking (len > 499) || (len < 5), the code does len -= 4 to strip \".xsd\" and then reads base[len - 2] without ensuring len >= 2. For a minimal valid base length of 5 (e.g., \"a.xsd\"), len becomes 1 and base[len - 2] accesses base[-1], reading before the start of the string.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Stub types to mirror the original code's expectations */\ntypedef void* xmlSchemaParserCtxtPtr;\ntypedef void* xmlSchemaPtr;\n\n/* Global variables referenced by the original code */\nint testErrorsSize = 0;\nchar *testErrors[1024];\nint nb_tests = 0;\n\n/* Stubs for functions referenced in schemasTest */\nconst char *baseFilename(const char *filename) {\n    /* In the real code, this returns the basename component.\n       For this reproducer, return the input directly. */\n    return filename;\n}\n\nxmlSchemaParserCtxtPtr xmlSchemaNewParserCtxt(const char *filename) {\n    (void)filename;\n    return (void*)0x1;\n}\n\nvoid testStructuredErrorHandler(void *userData, void *error) {\n    (void)userData; (void)error;\n}\n\nvoid xmlSchemaSetParserStructuredErrors(xmlSchemaParserCtxtPtr ctxt, void (*handler)(void*, void*), void *userData) {\n    (void)ctxt; (void)handler; (void)userData;\n}\n\nxmlSchemaPtr xmlSchemaParse(xmlSchemaParserCtxtPtr ctxt) {\n    (void)ctxt;\n    return (void*)0x2;\n}\n\nvoid xmlSchemaFreeParserCtxt(xmlSchemaParserCtxtPtr ctxt) {\n    (void)ctxt;\n}\n\nvoid xmlSchemaFree(xmlSchemaPtr schemas) {\n    (void)schemas;\n}\n\nint schemasOneTest(const char *filename, const char *instance, const char *err, int options, xmlSchemaPtr schemas) {\n    (void)filename; (void)instance; (void)err; (void)options; (void)schemas;\n    return 0;\n}\n\n/* Reimplementation of the vulnerable function focusing on the buggy code path */\nint schemasTest(const char *filename, const char *resul, const char *errr, int options) {\n    (void)resul; (void)errr; (void)options;\n\n    const char *base = baseFilename(filename);\n    xmlSchemaParserCtxtPtr ctxt;\n    xmlSchemaPtr schemas;\n    int len;\n\n    /* Setup stubs as in original code */\n    ctxt = xmlSchemaNewParserCtxt(filename);\n    xmlSchemaSetParserStructuredErrors(ctxt, testStructuredErrorHandler, NULL);\n    schemas = xmlSchemaParse(ctxt);\n    xmlSchemaFreeParserCtxt(ctxt);\n    (void)schemas; /* Not used further in this minimal reproducer */\n\n    /* Vulnerable logic */\n    len = (int)strlen(base);\n    if ((len > 499) || (len < 5)) {\n        xmlSchemaFree(schemas);\n        return -1;\n    }\n    len -= 4; /* remove trailing .xsd */\n\n    /* Out-of-bounds read when base is of minimal allowed length (e.g., \"a.xsd\").\n       For len == 1, base[len - 2] becomes base[-1]. Use volatile to ensure the read happens. */\n    volatile char c = base[len - 2];\n    (void)c;\n\n    /* Not necessary to continue; the bug is already triggered. */\n    xmlSchemaFree(schemas);\n    return 0;\n}\n\nint main(void) {\n    /* Allocate the minimal filename that passes the (len < 5) check but\n       causes len -= 4 to produce len == 1. */\n    const char *fname = \"a.xsd\"; /* length 5 */\n\n    /* Place the string at the start of a heap allocation so that reading base[-1]\n       hits the ASan left redzone and reports a heap-buffer-underflow. */\n    size_t n = strlen(fname) + 1; /* include NUL */\n    char *heap_fname = (char*)malloc(n);\n    if (!heap_fname) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memcpy(heap_fname, fname, n);\n\n    /* This call will perform base[len - 2] with len == 1, i.e., base[-1]. */\n    (void)schemasTest(heap_fname, NULL, NULL, 0);\n\n    /* If ASan didn't abort (it should), clean up. */\n    free(heap_fname);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09579706192016602,
+      "output": ""
+    }
+  }
+}

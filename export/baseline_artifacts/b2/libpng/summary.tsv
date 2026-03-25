@@ -1,0 +1,21 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+filter_up_row	NO_BUG	FP			0	png_read_filter_row_up_neon		1	4720		
+filter_sub3_row	NO_BUG	FP			0	png_read_filter_row_sub3_neon		1	4720		
+filter_sub4_row	NO_BUG	FP			0	png_read_filter_row_sub4_neon		1	4720		
+filter_avg3_row_nullprev	NO_BUG	FP			0	png_read_filter_row_avg3_neon		1	4720		
+riffle_palette_rgba8	NO_BUG	FP			0	png_riffle_palette_neon		1	4720		
+expand_palette_wrapper_rgba_or_rgb	NO_BUG	FP			0	png_target_do_expand_palette_neon		1	4720		
+expand_palette_rgba8_core	NO_BUG	FP			0	png_target_do_expand_palette_rgba8_neon		1	4720		
+expand_palette_rgb8_core	NO_BUG	FP			0	png_target_do_expand_palette_rgb8_neon		1	4720		
+expand_palette_rgb_no_trns	BUILD_ERROR	FP			0	png_target_do_expand_palette_neon		0	4720		
+expand_palette_rgba_with_trns	BUILD_ERROR	FP			0	png_target_do_expand_palette_neon		0	4720		
+init_filter_functions_small_array	NO_BUG	FP			0	png_init_filter_functions_neon		1	4720		
+have_neon_linux_cpuinfo_state_machine	BUILD_ERROR	FP			0	png_have_neon		0	4720		
+have_neon_linux_auxv_error_paths	BUILD_ERROR	FP			0	png_have_neon		0	4720		
+safe_read_standalone_stress	BUILD_ERROR	FP			0	safe_read		0	4720		
+have_neon_android_ndk_path	BUILD_ERROR	FP			0	png_have_neon		0	4720		
+free_target_data_arm	BUILD_ERROR	FP			0	png_target_free_data_arm		0	4720		
+filter_avg4_neon_path	NO_BUG	FP			0	png_read_filter_row_avg4_neon		1	4720		
+filter_paeth3_neon_path	NO_BUG	FP			0	png_read_filter_row_paeth3_neon		1	4720		
+filter_paeth4_neon_path	NO_BUG	FP			0	png_read_filter_row_paeth4_neon		1	4720		
+free_target_data_impl_alias	BUILD_ERROR	FP			0	png_target_free_data_impl		0	4720		

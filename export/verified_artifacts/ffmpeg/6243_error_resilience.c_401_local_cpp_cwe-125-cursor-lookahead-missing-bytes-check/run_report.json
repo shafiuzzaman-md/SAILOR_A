@@ -1,0 +1,98 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 129737,
+    "tokens_prompt": 110573,
+    "tokens_completion": 19164,
+    "turns": 11,
+    "klee_runs": 2
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "error_resilience.c",
+    "line": 408,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/6243_error_resilience.c_401_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "error_resilience.c",
+  "vul_line": "401",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "error_resilience.c",
+      "original_line": 401,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "396:     int i, num_avail;\n397:     int mb_x, mb_y;\n398:     ptrdiff_t mot_step, mot_stride;\n399:     int blocklist_length, next_blocklist_length;\n400: \n401:     if (s->last_pic.f && s->last_pic.f->data[0])\n402:         mb_height = FFMIN(mb_height, (s->last_pic.f->height+15)>>4);\n403:     if (s->next_pic.f && s->next_pic.f->data[0])\n404:         mb_height = FFMIN(mb_height, (s->next_pic.f->height+15)>>4);\n405: \n406:     blocklist      = (int (*)[2])s->er_temp_buffer;"
+    },
+    "klee_crash": {
+      "harness_file": "error_resilience.c",
+      "harness_line": 58,
+      "original_file": "error_resilience.c",
+      "original_line": 408,
+      "original_code": "fixed          = (uint8_t *)(next_blocklist + s->mb_stride * s->mb_height);",
+      "original_context": "    405: \n    406:     blocklist      = (int (*)[2])s->er_temp_buffer;\n    407:     next_blocklist = blocklist + s->mb_stride * s->mb_height;\n>>> 408:     fixed          = (uint8_t *)(next_blocklist + s->mb_stride * s->mb_height);\n    409: \n    410:     set_mv_strides(s, &mot_step, &mot_stride);\n    411: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: error_resilience.c\nLine: 58\nassembly.ll line: 176\nState: 1\nStack: \n\t#000000176 in ff_er_frame_end(140037764653056, 139831606222848) at error_resilience.c:58\n\t#100000110 in entry_func(140037764653056, 139831606222848) at error_resilience.c:36\n\t#200000081 in main() at driver.c:44\nInfo: \n\taddress: 139969045176576\n\tnext: object at 139457944068096 of size 1\n\t\tMO65[1] allocated at ff_er_frame_end():  %10 = alloca i8, align 1\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "er_temp_buffer",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "decode_error_flags",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6243_error_resilience.c_401_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "error_resilience.c",
+        "harness_line": 58,
+        "original_file": "error_resilience.c",
+        "original_line": 408,
+        "error_type": "ptr",
+        "crash_function": "ff_er_frame_end",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6243_error_resilience.c_401_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

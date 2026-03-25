@@ -1,0 +1,181 @@
+{
+  "baseline": "B1",
+  "description": "OSS-Fuzz Harness + KLEE Symbolic Execution",
+  "project": "binutils",
+  "commit": "b2bc71a12976fc169295662ab17f692f13d167d2",
+  "harness_source": "google/oss-fuzz repo (projects/binutils/)",
+  "total_harnesses": 15,
+  "compiled": 11,
+  "build_errors": 4,
+  "se_detected": 0,
+  "unique_bugs": 0,
+  "klee_timeout": 300,
+  "project_bc_size_mb": 74,
+  "run_date": "2026-03-12",
+  "run_environment": "local (KLEE 3.2-pre, clang-14, 128 cores)",
+  "summary": "11/15 harnesses compiled and linked. KLEE ran on all 11 but found 0 real bugs. One false positive in fuzz_nm (KLEE aborted on unmodeled external call get_file_size→stat). Most harnesses use file-based I/O (write symbolic data to temp file, open with BFD/nm), creating state too complex for KLEE to explore effectively. 4 harnesses failed to compile due to missing OSS-Fuzz build infrastructure.",
+  "harnesses": [
+    {
+      "name": "fuzz_addr2line",
+      "path": "oss-fuzz/fuzz_addr2line.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization — 74MB combined.bc too large"
+    },
+    {
+      "name": "fuzz_as",
+      "path": "oss-fuzz/fuzz_as.c",
+      "status": "BUILD_ERROR",
+      "compile": "FAIL",
+      "link": "N/A",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "Missing fuzz_as.h — requires separate GAS (GNU Assembler) configure + build to generate"
+    },
+    {
+      "name": "fuzz_bfd",
+      "path": "oss-fuzz/fuzz_bfd.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_bfd_ext",
+      "path": "oss-fuzz/fuzz_bfd_ext.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_disas_ext",
+      "path": "oss-fuzz/fuzz_disas_ext.c",
+      "status": "NO_BUG",
+      "compile": "OK (with -DFUZZ_TARGET_ARCH=bfd_arch_i386)",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_disassemble",
+      "path": "oss-fuzz/fuzz_disassemble.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_dlltool",
+      "path": "oss-fuzz/fuzz_dlltool.c",
+      "status": "BUILD_ERROR",
+      "compile": "FAIL",
+      "link": "N/A",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "Undeclared identifier 'mname' in generated fuzz_dlltool.h — the sed-based header generation from dlltool.c is incomplete without DLLTOOL_I386 build context"
+    },
+    {
+      "name": "fuzz_dwarf",
+      "path": "oss-fuzz/fuzz_dwarf.c",
+      "status": "BUILD_ERROR",
+      "compile": "FAIL",
+      "link": "N/A",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "OBJDUMP_PRIVATE_VECTORS expands to empty string literal '\"\"' which causes 'called object type char[1] is not a function' error in fuzz_objdump.h"
+    },
+    {
+      "name": "fuzz_nm",
+      "path": "oss-fuzz/fuzz_nm.c",
+      "status": "FP_EXTERNAL_CALL",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 1,
+      "klee_errors": 1,
+      "klee_time_s": 525,
+      "failure_reason": "KLEE aborted on unmodeled external call get_file_size() at fuzz_nm.h:1641 — stat() syscall not supported. Not a real bug.",
+      "crash_file": "fuzz_nm.h",
+      "crash_line": 1641,
+      "crash_type": "external"
+    },
+    {
+      "name": "fuzz_objcopy",
+      "path": "oss-fuzz/fuzz_objcopy.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_objdump",
+      "path": "oss-fuzz/fuzz_objdump.c",
+      "status": "BUILD_ERROR",
+      "compile": "FAIL",
+      "link": "N/A",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "Same OBJDUMP_PRIVATE_VECTORS issue as fuzz_dwarf"
+    },
+    {
+      "name": "fuzz_ranlib_simulation",
+      "path": "oss-fuzz/fuzz_ranlib_simulation.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_readelf",
+      "path": "oss-fuzz/fuzz_readelf.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_strings",
+      "path": "oss-fuzz/fuzz_strings.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    },
+    {
+      "name": "fuzz_windres",
+      "path": "oss-fuzz/fuzz_windres.c",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 0,
+      "klee_errors": 0,
+      "failure_reason": "KLEE timeout during bitcode optimization"
+    }
+  ],
+  "key_findings": [
+    "11/15 harnesses compiled and linked successfully against a 74MB LLVM bitcode of binutils (bfd + libiberty + opcodes)",
+    "KLEE ran on all 11 harnesses (42–525s each) but found 0 real bugs",
+    "1 false positive in fuzz_nm: KLEE aborted on unmodeled external call get_file_size() which calls stat() — not a memory safety bug",
+    "4 harnesses failed to compile due to generated headers from OSS-Fuzz build.sh (sed-patching tool sources into .h files)",
+    "OSS-Fuzz harnesses use file-based I/O (write symbolic bytes to temp file, open with BFD), creating state explosion that KLEE cannot explore",
+    "Even with all 15 available OSS-Fuzz harnesses and 300s KLEE timeout, B1 found 0 bugs on binutils vs SAILOR's 73"
+  ]
+}

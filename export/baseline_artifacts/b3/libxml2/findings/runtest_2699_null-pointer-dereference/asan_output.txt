@@ -1,0 +1,17 @@
+Relax-NG schema invalid.rng failed to compile
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4025887==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x72c1a08852a4 bp 0x7fffb16bcc20 sp 0x7fffb16bcc00 T0)
+==4025887==The signal is caused by a READ memory access.
+==4025887==Hint: address points to the zero page.
+    #0 0x72c1a08852a4 in fclose libio/./libio/iofclose.c:48:9
+    #1 0x646bdf4a87f4 in fclose (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer+0x767f4) (BuildId: 77a2c2661515bb396ee9c3faa9b52cf12b0363be)
+    #2 0x646bdf512f00 in streamProcessTest /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:95:13
+    #3 0x646bdf512d19 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer.c:152:13
+    #4 0x72c1a082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x72c1a082a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x646bdf453324 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_2699_null-pointer-dereference/reproducer+0x21324) (BuildId: 77a2c2661515bb396ee9c3faa9b52cf12b0363be)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV libio/./libio/iofclose.c:48:9 in fclose
+==4025887==ABORTING

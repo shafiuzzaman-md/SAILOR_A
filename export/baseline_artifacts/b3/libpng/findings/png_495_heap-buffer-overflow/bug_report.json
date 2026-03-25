@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "png.c",
+    "line": 495,
+    "function": "png_free_data",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Indexes info_ptr->text[num] without validating that 'num' is within bounds (and also allows negative values other than -1). If 'num' is out of range, this performs an out-of-bounds access: first reads an out-of-bounds pointer value to free, then writes to info_ptr->text[num].key = NULL, corrupting heap memory. This can be triggered by calling png_free_data(..., PNG_FREE_TEXT, num) with an invalid 'num'.",
+    "abs_path": "/tmp/libpng_upstream/png.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-in types/defines to mirror libpng structures/flags */\ntypedef uint32_t png_uint_32;\n\ntypedef struct png_struct_def {\n    int dummy;\n} png_struct;\n\ntypedef struct png_text_def {\n    char *key; /* The field accessed without bounds checking */\n} png_text;\n\ntypedef struct png_info_def {\n    png_uint_32 free_me;\n    png_text *text;\n    int num_text;\n    int max_text;\n} png_info;\n\n#define PNG_TEXT_SUPPORTED 1\n#define PNG_FREE_TEXT 0x01\n\n#define png_debug(level, message) ((void)0)\n\nstatic void png_error(const png_struct *png_ptr, const char *msg) {\n    (void)png_ptr;\n    fprintf(stderr, \"png_error: %s\\n\", msg);\n    abort();\n}\n\n/* Stand-in for libpng's png_free: just calls free on the pointer */\nstatic void png_free(const png_struct *png_ptr, void *ptr) {\n    (void)png_ptr;\n    free(ptr);\n}\n\n/* Vulnerable function (reduced to the PNG_TEXT_SUPPORTED block) */\nvoid png_free_data(const png_struct *png_ptr, png_info *info_ptr, png_uint_32 mask, int num)\n{\n    png_debug(1, \"in png_free_data\");\n\n    if (png_ptr == NULL || info_ptr == NULL)\n        return;\n\n#ifdef PNG_TEXT_SUPPORTED\n    /* Free text item num or (if num == -1) all text items */\n    if (info_ptr->text != NULL &&\n        ((mask & PNG_FREE_TEXT) & info_ptr->free_me) != 0)\n    {\n        if (num != -1)\n        {\n            /* BUG: no bounds check on num; may be out of range or negative */\n            png_free(png_ptr, info_ptr->text[num].key);\n            info_ptr->text[num].key = NULL;\n        }\n        else\n        {\n            int i;\n            for (i = 0; i < info_ptr->num_text; i++)\n                png_free(png_ptr, info_ptr->text[i].key);\n\n            png_free(png_ptr, info_ptr->text);\n            info_ptr->text = NULL;\n            info_ptr->num_text = 0;\n            info_ptr->max_text = 0;\n        }\n    }\n#endif\n}\n\nint main(void) {\n    /* Set up minimal structures to reach the vulnerable path */\n    png_struct *png_ptr = (png_struct *)malloc(sizeof(png_struct));\n    png_info *info = (png_info *)malloc(sizeof(png_info));\n    if (!png_ptr || !info) {\n        fprintf(stderr, \"alloc failed\\n\");\n        return 1;\n    }\n    memset(info, 0, sizeof(*info));\n\n    /* Make PNG_FREE_TEXT active in both mask and info->free_me */\n    info->free_me = PNG_FREE_TEXT;\n\n    /* Allocate exactly 1 text entry so index 1 is out-of-bounds */\n    info->num_text = 1;\n    info->max_text = 1;\n    info->text = (png_text *)malloc(sizeof(png_text) * 1);\n    if (!info->text) {\n        fprintf(stderr, \"alloc text failed\\n\");\n        return 1;\n    }\n    info->text[0].key = (char *)malloc(4);\n    if (!info->text[0].key) {\n        fprintf(stderr, \"alloc key failed\\n\");\n        return 1;\n    }\n    memcpy(info->text[0].key, \"abc\", 4); /* small dummy string */\n\n    /* Trigger: pass num = 1 (out-of-bounds; only index 0 is valid) */\n    png_free_data(png_ptr, info, PNG_FREE_TEXT, 1);\n\n    /* If the program reaches here without ASan aborting, clean up */\n    if (info->text) {\n        if (info->text[0].key) free(info->text[0].key);\n        free(info->text);\n    }\n    free(info);\n    free(png_ptr);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7477960586547852,
+      "output": "=================================================================\n==3745772==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000038 at pc 0x647b0b11fdc8 bp 0x7ffe4724b090 sp 0x7ffe4724b088\nREAD of size 8 at 0x602000000038 thread T0\n    #0 0x647b0b11fdc7 in png_free_data /app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:57:51\n    #1 0x647b0b12047f in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:104:5\n    #2 0x70c7e822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70c7e822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x647b0b060304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer+0x21304) (BuildId: 82cfb55caa0f1c77c7af12a9b55f22b619a5da51)\n\n0x602000000038 is located 0 bytes to the right of 8-byte region [0x602000000030,0x602000000038)\nallocated by thread T0 here:\n    #0 0x647b0b0e3d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 82cfb55caa0f1c77c7af12a9b55f22b619a5da51)\n    #1 0x647b0b120229 in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:91:30\n    #2 0x70c7e822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70c7e822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x647b0b060304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer+0x21304) (BuildId: 82cfb55caa0f1c77c7af12a9b55f22b619a5da51)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:57:51 in png_free_data\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 04 fa fa fa 00[fa]fa fa 04 fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3745772==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_free_data",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:57",
+      "crash_line": 51,
+      "frames": [
+        [
+          "0",
+          "png_free_data",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:57",
+          "51"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:104",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_495_heap-buffer-overflow/reproducer.c:91",
+          "30"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

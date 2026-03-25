@@ -1,0 +1,11 @@
+Error: memory error: invalid pointer: make_symbolic
+File: driver.c
+Line: 35
+assembly.ll line: 57
+State: 1
+Stack: 
+	#000000057 in main() at driver.c:35
+Info: 
+	address: 138850466037768
+	next: object at 138483246333952 of size 4
+		MO30[4] allocated at main():  %6 = alloca i32, align 4

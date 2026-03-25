@@ -1,0 +1,66 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "buf.c",
+    "line": 1125,
+    "function": "xmlBufferWriteQuotedString",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The function calls xmlStrchr(string, '\"') without verifying that 'string' is non-NULL. If a caller passes string == NULL, this will dereference a NULL pointer and crash.",
+    "abs_path": "/tmp/libxml2_upstream/buf.c"
+  },
+  "reproducer_code": "// Standalone reproducer for null-pointer-dereference in xmlBufferWriteQuotedString\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <string.h>\n#include <stdint.h>\n\n// Minimal re-declarations to mimic libxml2 types/APIs\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlBuffer {\n    int dummy;\n} xmlBuffer;\n\n#define BAD_CAST (const xmlChar *)\n\n// Buggy xmlStrchr: emulate libxml2 behavior by delegating to strchr without NULL checks\nstatic const xmlChar *xmlStrchr(const xmlChar *str, xmlChar val) {\n    // This will dereference NULL if 'str' is NULL, matching the vulnerability scenario\n    const char *ret = strchr((const char *)str, (int)val);\n    return (const xmlChar *)ret;\n}\n\n// Stubs for buffer manipulation used by xmlBufferWriteQuotedString\nstatic void xmlBufferAdd(xmlBuffer *buf, const xmlChar *string, int len) {\n    (void)buf; (void)string; (void)len; /* no-op */\n}\n\nstatic void xmlBufferCCat(xmlBuffer *buf, const char *string) {\n    (void)buf; (void)string; /* no-op */\n}\n\nstatic void xmlBufferCat(xmlBuffer *buf, const xmlChar *string) {\n    (void)buf; (void)string; /* no-op */\n}\n\n// Vulnerable function copied/adapted from buf.c\nstatic void xmlBufferWriteQuotedString(xmlBuffer *buf, const xmlChar *string) {\n    const xmlChar *cur, *base;\n    if (buf == NULL)\n        return;\n    if (xmlStrchr(string, '\"')) {    // BUG: no NULL-check on 'string' before xmlStrchr\n        if (xmlStrchr(string, '\\'')) {\n            xmlBufferCCat(buf, \"\\\"\");\n            base = cur = string;\n            while (*cur != 0) {\n                if (*cur == '\"') {\n                    if (base != cur)\n                        xmlBufferAdd(buf, base, (int)(cur - base));\n                    xmlBufferAdd(buf, BAD_CAST \"&quot;\", 6);\n                    cur++;\n                    base = cur;\n                } else {\n                    cur++;\n                }\n            }\n            if (base != cur)\n                xmlBufferAdd(buf, base, (int)(cur - base));\n            xmlBufferCCat(buf, \"\\\"\");\n        } else {\n            xmlBufferCCat(buf, \"'\\0\" + 0); // same as xmlBufferCCat(buf, \"'\") but avoids escape confusion\n            xmlBufferCat(buf, string);\n            xmlBufferCCat(buf, \"'\\0\" + 0);\n        }\n    } else {\n        xmlBufferCCat(buf, \"\\\"\");\n        xmlBufferCat(buf, string);\n        xmlBufferCCat(buf, \"\\\"\");\n    }\n}\n\nint main(void) {\n    // Prepare a non-NULL buffer so the function proceeds to the vulnerable path\n    xmlBuffer buf = {0};\n\n    // Trigger: pass NULL for 'string'\n    const xmlChar *input = NULL;\n\n    // This call will attempt to evaluate xmlStrchr(NULL, '\"'), causing a NULL dereference\n    xmlBufferWriteQuotedString(&buf, input);\n\n    // If the bug does not trigger (should not happen), print a message\n    puts(\"Unexpectedly survived null dereference\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.874337911605835,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3984233==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x766e27d8ac03 bp 0x7ffc0c69a8d0 sp 0x7ffc0c69a088 T0)\n==3984233==The signal is caused by a READ memory access.\n==3984233==Hint: address points to the zero page.\n    #0 0x766e27d8ac03 in __strchr_avx2 string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67\n    #1 0x57e874cfe2dc in strchr (/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer+0x3a2dc) (BuildId: 15a6b408093d689507711e1fd9ecfeb5353eba2b)\n    #2 0x57e874da502e in xmlStrchr /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:21:23\n    #3 0x57e874da4e24 in xmlBufferWriteQuotedString /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:43:9\n    #4 0x57e874da4d88 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:81:5\n    #5 0x766e27c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x766e27c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x57e874ce5304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer+0x21304) (BuildId: 15a6b408093d689507711e1fd9ecfeb5353eba2b)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67 in __strchr_avx2\n==3984233==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__strchr_avx2",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/strchr-avx2.S",
+      "crash_line": 67,
+      "frames": [
+        [
+          "0",
+          "__strchr_avx2",
+          "string/../sysdeps/x86_64/multiarch/strchr-avx2.S",
+          "67"
+        ],
+        [
+          "2",
+          "xmlStrchr",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:21",
+          "23"
+        ],
+        [
+          "3",
+          "xmlBufferWriteQuotedString",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:43",
+          "9"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:81",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

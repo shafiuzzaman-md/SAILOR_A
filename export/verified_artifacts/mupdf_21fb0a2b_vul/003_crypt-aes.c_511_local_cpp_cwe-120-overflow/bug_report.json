@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "crypt-aes.c",
+        "original_line": 511,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "506: \t\t\tfz_aes_crypt_ecb( ctx, mode, input, output );\n507: \n508: \t\t\tfor( i = 0; i < 16; i++ )\n509: \t\t\t\toutput[i] = (uint8_t)( output[i] ^ iv[i] );\n510: \n511: \t\t\tmemcpy( iv, temp, 16 );\n512: \n513: \t\t\tinput += 16;\n514: \t\t\toutput += 16;\n515: \t\t\tlength -= 16;\n516: \t\t}"
+    },
+    "klee_crash": {
+        "harness_file": "crypt-aes.c",
+        "harness_line": 31,
+        "original_file": "crypt-aes.c",
+        "original_line": 511,
+        "original_code": "memcpy( iv, temp, 16 );",
+        "original_context": "    508: \t\t\tfor( i = 0; i < 16; i++ )\n    509: \t\t\t\toutput[i] = (uint8_t)( output[i] ^ iv[i] );\n    510: \n>>> 511: \t\t\tmemcpy( iv, temp, 16 );\n    512: \n    513: \t\t\tinput += 16;\n    514: \t\t\toutput += 16;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 204\nState: 1\nStack: \n\t#000000204 in memcpy(139087780179968, 138808607305728, 16) at runtime/Freestanding/memcpy.c:17\n\t#100000059 in fz_aes_crypt_cbc(138789279952896, 0, 16, 139087780179968, 139156499656704, 139139319787520) at crypt-aes.c:31\n\t#200000105 in harness_entry(138789279952896, 0, 16, 139087780179968, 139156499656704, 139139319787520) at crypt-aes.c:49\n\t#300000170 in main() at driver"
+    },
+    "concrete_inputs": [
+        {
+            "name": "iv_bytes",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "input_bytes",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "output_bytes",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "fz_aes_crypt_ecb",
+        "crash_file": "source/fitz/crypt-aes.c",
+        "crash_line": 406,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3395==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffed402ad08 at pc 0x5560bd4a3a39 bp 0x7ffed402ab30 sp 0x7ffed402ab20\nREAD of size 8 at 0x7ffed402ad08 thread T0\n    #0 0x5560bd4a3a38 in fz_aes_crypt_ecb source/fitz/crypt-aes.c:406\n    #1 0x5560bd4a3e1e in fz_aes_crypt_cbc source/fitz/crypt-aes.c:506\n    #2 0x5560bd49e6d9 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:31\n    #3 0x7f7430270d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f7430270e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5560bd49e334 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x2334)\n\nAddress 0x7ffed402ad08 is located in stack of thread T0 at offset 40 in frame\n    #0 0x5560bd49e408 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:16\n\n  This frame has 1 object(s):\n    [32, 36) 'ctx' (line 17) <== Memory access at offset 40 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow source/fitz/crypt-aes.c:406 in fz_aes_crypt_ecb\nShadow bytes around the buggy address:\n  0x10005a7fd550: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a7fd560: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a7fd570: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a7fd580: 00 00 f1 f1 f1 f1 00 00 f3 f3 00 00 00 00 00 00\n  0x10005a7fd590: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1\n=>0x10005a7fd5a0: 04[f3]f3 f3 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a7fd5b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "crypt-aes.c",
+            "harness_line": 31,
+            "original_file": "crypt-aes.c",
+            "original_line": 511,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "fz_aes_crypt_ecb",
+            "crash_file": "source/fitz/crypt-aes.c",
+            "crash_line": 406
+        }
+    ]
+}

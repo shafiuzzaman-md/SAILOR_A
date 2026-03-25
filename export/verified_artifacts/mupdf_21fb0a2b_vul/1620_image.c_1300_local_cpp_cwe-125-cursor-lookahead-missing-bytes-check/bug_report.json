@@ -1,0 +1,91 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "image.c",
+        "original_line": 1300,
+        "function": "fz_recognize_image_format",
+        "entry_point": "fz_new_image_from_buffer",
+        "spine": [
+            "fz_new_image_from_buffer",
+            "fz_recognize_image_format"
+        ],
+        "original_context": "1295: }\n1296: \n1297: int\n1298: fz_recognize_image_format(fz_context *ctx, unsigned char p[8])\n1299: {\n1300: \tif (p[0] == 'P' && p[1] >= '1' && p[1] <= '7')\n1301: \t\treturn FZ_IMAGE_PNM;\n1302: \tif (p[0] == 'P' && (p[1] == 'F' || p[1] == 'f'))\n1303: \t\treturn FZ_IMAGE_PNM;\n1304: \tif (p[0] == 0xff && p[1] == 0x4f)\n1305: \t\treturn FZ_IMAGE_JPX;"
+    },
+    "klee_crash": {
+        "harness_file": "image.c",
+        "harness_line": 44,
+        "original_file": "image.c",
+        "original_line": 1294,
+        "original_code": "return FZ_IMAGE_UNKNOWN;",
+        "original_context": "    1291: \tif (!strcmp(type, \"png\")) return FZ_IMAGE_PNG;\n    1292: \tif (!strcmp(type, \"pnm\")) return FZ_IMAGE_PNM;\n    1293: \tif (!strcmp(type, \"tiff\")) return FZ_IMAGE_TIFF;\n>>> 1294: \treturn FZ_IMAGE_UNKNOWN;\n    1295: }\n    1296: \n    1297: int",
+        "error_type": "assert",
+        "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: image.c\nLine: 44\nassembly.ll line: 103\nState: 2\nStack: \n\t#000000103 in fz_recognize_image_format(0, 138940832165888) at image.c:44\n\t#100000133 in fz_new_image_from_buffer(0, 139009551642624) at image.c:53\n\t#200000050 in main() at driver.c:24\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "imgbuf",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "imgbuf",
+            "size": 1,
+            "data": "b'P'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_new_image_from_buffer",
+        "crash_file": "source/fitz/image.c",
+        "crash_line": 1340,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==8315==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000028 at pc 0x564ebf5729f2 bp 0x7ffd12545b70 sp 0x7ffd12545b60\nREAD of size 8 at 0x502000000028 thread T0\n    #0 0x564ebf5729f1 in fz_new_image_from_buffer source/fitz/image.c:1340\n    #1 0x564ebf56954d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:25\n    #2 0x7f1296cbad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f1296cbae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x564ebf5693b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1483b4)\n\n0x502000000028 is located 8 bytes to the left of 1-byte region [0x502000000030,0x502000000031)\nallocated by thread T0 here:\n    #0 0x7f1297071887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x564ebf5694b3 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:16\n    #2 0x7f1296cbad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/image.c:1340 in fz_new_image_from_buffer\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa[fa]01 fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "image.c",
+            "harness_line": 44,
+            "original_file": "image.c",
+            "original_line": 1294,
+            "error_type": "assert",
+            "crash_function": "fz_recognize_image_format",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "image.c",
+            "harness_line": 41,
+            "original_file": "image.c",
+            "original_line": 1300,
+            "error_type": "ptr",
+            "crash_function": "fz_recognize_image_format",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1620_image.c_1300_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_new_image_from_buffer",
+            "crash_file": "source/fitz/image.c",
+            "crash_line": 1340
+        }
+    ]
+}

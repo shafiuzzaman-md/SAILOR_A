@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4126755==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55aaea976e15 bp 0x7fffc4813a10 sp 0x7fffc4813860 T0)
+==4126755==The signal is caused by a READ memory access.
+==4126755==Hint: address points to the zero page.
+    #0 0x55aaea976e15 in BIO_printf /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22:20
+    #1 0x55aaea97709d in engine_main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:61:5
+    #2 0x55aaea9770e1 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:68:12
+    #3 0x70b8d6c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x70b8d6c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x55aaea8b7304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer+0x21304) (BuildId: 55542e3eab8fd220b63c274dda76780f22c77e65)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22:20 in BIO_printf
+==4126755==ABORTING

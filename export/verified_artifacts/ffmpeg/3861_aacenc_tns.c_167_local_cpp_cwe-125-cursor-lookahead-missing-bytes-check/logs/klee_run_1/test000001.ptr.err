@@ -1,0 +1,15 @@
+Error: memory error: out of bound pointer
+File: aacenc_tns.c
+Line: 30
+assembly.ll line: 30
+State: 23
+Stack: 
+	#000000030 in ff_aac_search_for_tns(139051431112704, 139120150589440) at aacenc_tns.c:30
+	#100000054 in entry_func(139051431112704, 139120150589440) at aacenc_tns.c:37
+	#200000083 in main() at driver.c:20
+Info: 
+	address: (ReadLSB w64 0 window_sequence_ptr)
+	example: 0
+	range: [0, 18446744073709551615]
+	next: object at 138752930885632 of size 4
+		MO42[4] allocated at ff_aac_search_for_tns():  %5 = alloca i32, align 4

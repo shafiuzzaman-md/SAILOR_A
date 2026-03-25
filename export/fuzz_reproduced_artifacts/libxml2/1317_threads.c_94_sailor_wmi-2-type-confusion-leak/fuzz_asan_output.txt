@@ -1,0 +1,56 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2811501657
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x5d8cffa6ef00, 0x5d8cffa6ef06), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x5d8cffa6ef08,0x5d8cffa6ef68), 
+INFO:        0 files found in /tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/corpus
+INFO:        1 files found in /tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: seed corpus: files: 1 min: 98b max: 98b total: 98b rss: 33Mb
+=================================================================
+==3115090==ERROR: AddressSanitizer: attempting double-free on 0x606000000080 in thread T0:
+    #0 0x5d8cff6901f6 in __interceptor_free (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x1341f6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #1 0x5d8cff6cc5bb in xmlFreeMutex /tmp/libxml2_upstream/threads.c:114:5
+    #2 0x5d8cff6cc489 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:36:5
+    #3 0x5d8cff5f297a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x9697a) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #4 0x5d8cff5f2045 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x96045) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #5 0x5d8cff5f3c48 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x97c48) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #6 0x5d8cff5f40c6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x980c6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #7 0x5d8cff5e16b2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x856b2) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #8 0x5d8cff60cb56 in main (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xb0b56) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #9 0x796dd0a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x796dd0a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5d8cff5d5ae4 in _start (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x79ae4) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+
+0x606000000080 is located 0 bytes inside of 64-byte region [0x606000000080,0x6060000000c0)
+freed by thread T0 here:
+    #0 0x5d8cff6901f6 in __interceptor_free (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x1341f6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #1 0x5d8cff6cc481 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:33:5
+    #2 0x5d8cff5f297a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x9697a) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #3 0x5d8cff5f2045 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x96045) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #4 0x5d8cff5f3c48 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x97c48) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #5 0x5d8cff5f40c6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x980c6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #6 0x5d8cff5e16b2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x856b2) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #7 0x5d8cff60cb56 in main (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xb0b56) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #8 0x796dd0a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x796dd0a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5d8cff5d5ae4 in _start (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x79ae4) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+
+previously allocated by thread T0 here:
+    #0 0x5d8cff6904a2 in malloc (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x1344a2) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #1 0x5d8cff6cc45a in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:26:32
+    #2 0x5d8cff5f297a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x9697a) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #3 0x5d8cff5f2045 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x96045) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #4 0x5d8cff5f3c48 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x97c48) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #5 0x5d8cff5f40c6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x980c6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #6 0x5d8cff5e16b2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x856b2) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #7 0x5d8cff60cb56 in main (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xb0b56) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+    #8 0x796dd0a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x796dd0a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5d8cff5d5ae4 in _start (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x79ae4) (BuildId: 5c374ca1197d358164831592406a36d3119e7109)
+
+SUMMARY: AddressSanitizer: double-free (/tmp/libxml2_fuzz_verify/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x1341f6) (BuildId: 5c374ca1197d358164831592406a36d3119e7109) in __interceptor_free
+==3115090==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x74,0x6f,0x6b,0x5f,0x6d,0x65,0x6d,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x36,0x34,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"tok_mem\",\012    \"offset\": 0,\012    \"size\": 64,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-606a686c9d6e5f954715ca512adb35b1b376be4d
+Base64: WwogIHsKICAgICJuYW1lIjogInRva19tZW0iLAogICAgIm9mZnNldCI6IDAsCiAgICAic2l6ZSI6IDY0LAogICAgInNvdXJjZSI6ICJjb25jcmV0ZV9ibG9jayIKICB9Cl0=

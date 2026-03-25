@@ -1,0 +1,66 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 1285,
+    "function": "pythonInternalSubset",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "PyObject_CallMethod uses format \"sss\" with ExternalID and SystemID, which can be NULL in libxml2's internalSubset callback. The \"s\" format does not accept NULL and will dereference it.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal typedef to match libxml2's xmlChar */\ntypedef unsigned char xmlChar;\n\n/* Minimal stand-ins for Python C-API objects and functions */\ntypedef struct { int dummy; } PyObject;\n\n/* Simulate attribute presence: report that handler has \"internalSubset\" */\nint PyObject_HasAttrString(PyObject *handler, const char *attr) {\n    (void)handler;\n    /* For the purpose of the reproducer, pretend the attribute exists */\n    if (attr && strcmp(attr, \"internalSubset\") == 0)\n        return 1;\n    return 0;\n}\n\n/* Simulate PyErr_Occurred / PyErr_Print (no-op for this reproducer) */\nint PyErr_Occurred(void) { return 0; }\nvoid PyErr_Print(void) { }\n\n/* Simulate Py_XDECREF by freeing allocated stub objects */\nvoid Py_XDECREF(PyObject *obj) {\n    if (obj) free(obj);\n}\n\n/*\n * Stub for PyObject_CallMethod that purposefully mimics the dangerous behavior\n * of the Python C-API \"s\" format: it dereferences the provided char*.\n * Using strlen() on a NULL pointer will cause a NULL dereference under ASan.\n */\nPyObject *PyObject_CallMethod(PyObject *handler, const char *name, const char *format, ...) {\n    (void)handler;\n    (void)name;\n\n    va_list ap;\n    va_start(ap, format);\n\n    for (const char *f = format; f && *f; ++f) {\n        switch (*f) {\n            case 's': {\n                /* Expect a char* argument; emulate Python's behavior of requiring non-NULL */\n                const char *s = va_arg(ap, const char *);\n                /* This strlen will crash if s == NULL, which is what we want to expose */\n                size_t len = strlen(s);\n                /* Do something with len to avoid optimizing away */\n                if (len == (size_t)-1) {\n                    fprintf(stderr, \"Impossible branch\\n\");\n                }\n                break;\n            }\n            case 'i': {\n                (void)va_arg(ap, int);\n                break;\n            }\n            case 'O': {\n                (void)va_arg(ap, void *);\n                break;\n            }\n            default:\n                /* Ignore other specifiers for this stub */\n                break;\n        }\n    }\n\n    va_end(ap);\n\n    /* Return a dummy PyObject */\n    PyObject *ret = (PyObject *)malloc(sizeof(PyObject));\n    if (ret) ret->dummy = 0;\n    return ret;\n}\n\n/* The vulnerable function as in python/libxml.c */\nstatic void pythonInternalSubset(void *user_data, const xmlChar *name,\n                                 const xmlChar *ExternalID, const xmlChar *SystemID) {\n    PyObject *handler;\n    PyObject *result;\n\n    handler = (PyObject *)user_data;\n    if (PyObject_HasAttrString(handler, \"internalSubset\")) {\n        /* BUG: ExternalID or SystemID may be NULL, but format uses \"s\" */\n        result = PyObject_CallMethod(handler, \"internalSubset\", \"sss\",\n                                     (const char *)name,\n                                     (const char *)ExternalID,\n                                     (const char *)SystemID);\n        if (PyErr_Occurred())\n            PyErr_Print();\n        Py_XDECREF(result);\n    }\n}\n\nint main(void) {\n    /* Prepare a dummy handler object */\n    PyObject handler = {0};\n\n    /* Name is valid, ExternalID is intentionally NULL, SystemID is valid */\n    const xmlChar *name = (const xmlChar *)\"doc\";\n    const xmlChar *ExternalID = NULL;  /* This should trigger the NULL deref in \"s\" */\n    const xmlChar *SystemID = (const xmlChar *)\"http://example.com/system-id\";\n\n    fprintf(stderr, \"About to trigger pythonInternalSubset with NULL ExternalID...\\n\");\n\n    /* Call the vulnerable path */\n    pythonInternalSubset((void *)&handler, name, ExternalID, SystemID);\n\n    /* If we got here without crashing, something went wrong with the reproducer */\n    fprintf(stderr, \"Reproducer did not crash as expected.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.930290699005127,
+      "output": "About to trigger pythonInternalSubset with NULL ExternalID...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4006780==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7cd3e5b8b7dd bp 0x7fffe1f8fbf0 sp 0x7fffe1f8f3a8 T0)\n==4006780==The signal is caused by a READ memory access.\n==4006780==Hint: address points to the zero page.\n    #0 0x7cd3e5b8b7dd in __strlen_avx2 string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76\n    #1 0x557e719ad76c in strlen (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer+0x3776c) (BuildId: 52f5e23f94acae70b955bb4cc31920f7ec9790cb)\n    #2 0x557e71a5719b in PyObject_CallMethod /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:49:30\n    #3 0x557e71a5785d in pythonInternalSubset /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:87:18\n    #4 0x557e71a5775e in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:109:5\n    #5 0x7cd3e5a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7cd3e5a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x557e71997304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer+0x21304) (BuildId: 52f5e23f94acae70b955bb4cc31920f7ec9790cb)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76 in __strlen_avx2\n==4006780==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__strlen_avx2",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+      "crash_line": 76,
+      "frames": [
+        [
+          "0",
+          "__strlen_avx2",
+          "string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+          "76"
+        ],
+        [
+          "2",
+          "PyObject_CallMethod",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:49",
+          "30"
+        ],
+        [
+          "3",
+          "pythonInternalSubset",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:87",
+          "18"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1285_null-pointer-dereference/reproducer.c:109",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

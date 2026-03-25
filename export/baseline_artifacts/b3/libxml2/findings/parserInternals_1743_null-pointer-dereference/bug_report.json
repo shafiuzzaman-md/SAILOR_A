@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "parserInternals.c",
+    "line": 1743,
+    "function": "xmlGetActualEncoding",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The function dereferences ctxt and ctxt->input without NULL checks (e.g., ctxt->input->flags at line 1743). Calling xmlGetActualEncoding with a NULL ctxt or with ctxt->input unset leads to a NULL pointer dereference and crash.",
+    "abs_path": "/tmp/libxml2_upstream/parserInternals.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal type and macro definitions compatible with the vulnerable code */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (xmlChar *)\n\n/* Input flags mimicking libxml2's internal flags */\n#define XML_INPUT_USES_ENC_DECL (1<<0)\n#define XML_INPUT_AUTO_ENCODING (1<<1)\n#define XML_INPUT_HAS_ENCODING  (1<<2)\n\n/* Minimal handler/buffer/input/context structures to satisfy field accesses */\ntypedef struct _xmlCharEncodingHandler {\n    const char *name; /* not used for this crash path */\n} xmlCharEncodingHandler;\n\ntypedef struct _xmlParserInputBuffer {\n    xmlCharEncodingHandler *encoder; /* not used for this crash path */\n} xmlParserInputBuffer;\n\ntypedef struct _xmlParserInput {\n    int flags;                      /* used */\n    xmlParserInputBuffer *buf;      /* used in other branches */\n    const char *filename;           /* unused, here for completeness */\n    const char *version;            /* unused */\n    void (*free)(xmlChar *);        /* unused */\n    const xmlChar *base;            /* unused */\n} xmlParserInput;\n\ntypedef struct _xmlParserCtxt {\n    const xmlChar *encoding;  /* used in first branch */\n    xmlParserInput *input;    /* dereferenced without NULL checks */\n} xmlParserCtxt;\n\n/* Vulnerable function, reproduced from the source context */\nconst xmlChar *\nxmlGetActualEncoding(xmlParserCtxt *ctxt) {\n    const xmlChar *encoding = NULL;\n\n    /* NULL dereference when ctxt is NULL or ctxt->input is NULL */\n    if ((ctxt->input->flags & XML_INPUT_USES_ENC_DECL) ||\n        (ctxt->input->flags & XML_INPUT_AUTO_ENCODING)) {\n        /* Preserve encoding exactly */\n        encoding = ctxt->encoding;\n    } else if ((ctxt->input->buf) && (ctxt->input->buf->encoder)) {\n        encoding = BAD_CAST ctxt->input->buf->encoder->name;\n    } else if (ctxt->input->flags & XML_INPUT_HAS_ENCODING) {\n        encoding = BAD_CAST \"UTF-8\";\n    }\n\n    return(encoding);\n}\n\nint main(int argc, char **argv) {\n    (void)argc; (void)argv;\n\n    /* Case 1: Trigger by passing a NULL parser context. */\n    /* This will dereference ctxt->input at the first if-condition and crash. */\n    const xmlChar *enc = xmlGetActualEncoding(NULL);\n\n    /* The following lines won't be reached, but keep a use of enc to avoid warnings */\n    if (enc)\n        printf(\"Encoding: %s\\n\", (const char *)enc);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08820295333862305,
+      "output": ""
+    }
+  }
+}

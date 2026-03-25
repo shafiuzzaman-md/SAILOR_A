@@ -1,0 +1,18 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memmove.c
+Line: 26
+assembly.ll line: 333
+State: 3
+Stack: 
+	#000000333 in memmove(139223423143940, 139223423143936, symbolic) at runtime/Freestanding/memmove.c:26
+	#100000204 in update_hmvp(139223423143936, 139223423143968, 138965725106176) at mvs.c:55
+	#200000153 in ff_vvc_update_hmvp(139085984190464, 138931365367808) at mvs.c:68
+	#300000115 in main() at driver.c:71
+Info: 
+	address: (Add w64 139223423143939
+          (Mul w64 4
+                   (SExt w64 (ReadLSB w32 0 num_hmvp))))
+	example: 139223423144011
+	range: [139223423144011, 139223423144011]
+	next: object at 138650045009920 of size 4
+		MO34[4] allocated at main():  %10 = alloca i32, align 4

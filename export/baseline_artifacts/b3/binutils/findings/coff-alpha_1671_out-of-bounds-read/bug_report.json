@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-alpha.c",
+    "line": 1671,
+    "function": "alpha_relocate_section",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Indexes symndx_to_section with r_symndx from the object file without any bounds check in the ALPHA_R_OP_* non-extern path, allowing an out-of-bounds read of the section pointer array.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-alpha.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used in the vulnerable code path. */\n\ntypedef unsigned long bfd_vma;\n\nstruct asection;\ntypedef struct asection asection;\n\nstruct asection {\n  bfd_vma vma;\n  bfd_vma output_offset;\n  asection *output_section;\n};\n\n/* Simulated global mapping like the real symndx_to_section[] used by\n   coff-alpha.c:alpha_relocate_section. */\nstatic asection **symndx_to_section = NULL;\nstatic size_t symndx_to_section_count = 0;\n\n/* Some of the ALPHA_R_OP_* relocation opcodes that reach the buggy path. */\nenum {\n  ALPHA_R_OP_PUSH = 1,\n  ALPHA_R_OP_PSUB = 2,\n  ALPHA_R_OP_PRSHIFT = 3\n};\n\n/* This is a minimal reproduction of the vulnerable path inside\n   alpha_relocate_section. It intentionally indexes symndx_to_section\n   by r_symndx without any bounds check when r_extern == 0. */\nstatic void alpha_relocate_section_repro(int reloc_op, int r_extern, size_t r_symndx) {\n  switch (reloc_op) {\n    case ALPHA_R_OP_PUSH:\n    case ALPHA_R_OP_PSUB:\n    case ALPHA_R_OP_PRSHIFT:\n      /* In the non-extern case, the real code does:\n           s = symndx_to_section[r_symndx];\n         without checking that r_symndx is a valid index. */\n      if (!r_extern) {\n        asection *s;\n        /* Out-of-bounds read happens here when r_symndx >= symndx_to_section_count. */\n        s = symndx_to_section[r_symndx];\n        /* Use the value so the compiler keeps the read; ASan will instrument this load. */\n        volatile uintptr_t sink = (uintptr_t)s;\n        (void)sink;\n\n        /* The real code would then check s == NULL and potentially use s->fields,\n           but we don't need to dereference s to demonstrate the OOB read \u2014 the\n           out-of-bounds array load above is sufficient for ASan to report. */\n      }\n      break;\n    default:\n      break;\n  }\n}\n\nint main(void) {\n  /* Allocate a very small table to make going out-of-bounds easy and obvious. */\n  symndx_to_section_count = 4;\n  symndx_to_section = (asection **)malloc(symndx_to_section_count * sizeof(*symndx_to_section));\n  if (!symndx_to_section) {\n    fprintf(stderr, \"alloc failed\\n\");\n    return 1;\n  }\n  memset(symndx_to_section, 0, symndx_to_section_count * sizeof(*symndx_to_section));\n\n  /* Craft r_symndx to be well beyond the allocated array bounds. */\n  size_t r_symndx = symndx_to_section_count + 1000000; /* Far OOB to ensure ASan triggers. */\n  int r_extern = 0; /* Non-extern path to reach the buggy index. */\n\n  /* Trigger the vulnerable code path corresponding to ALPHA_R_OP_* ops. */\n  alpha_relocate_section_repro(ALPHA_R_OP_PUSH, r_extern, r_symndx);\n\n  /* Cleanup (unreached if ASan aborts on error, but harmless). */\n  free(symndx_to_section);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7764780521392822,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3582072==ERROR: AddressSanitizer: SEGV on unknown address 0x6030007a1260 (pc 0x594b6fe62ead bp 0x7ffd0b4834a0 sp 0x7ffd0b4833c0 T0)\n==3582072==The signal is caused by a READ memory access.\n    #0 0x594b6fe62ead in alpha_relocate_section_repro /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:45:13\n    #1 0x594b6fe62d68 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:75:3\n    #2 0x7bc76242a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7bc76242a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x594b6fda3304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer+0x21304) (BuildId: 306fcb216beb3eedd782625c88fa614e47144d53)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:45:13 in alpha_relocate_section_repro\n==3582072==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "alpha_relocate_section_repro",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:45",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "alpha_relocate_section_repro",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:45",
+          "13"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-alpha_1671_out-of-bounds-read/reproducer.c:75",
+          "3"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

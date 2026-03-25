@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testdict.c",
+    "line": 502,
+    "function": "pool_new",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlMalloc at line 501 can return NULL, but ret is dereferenced immediately at line 502 without a NULL check, causing a NULL pointer dereference on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/testdict.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal libxml2-compatible typedefs/stubs */\ntypedef unsigned char xmlChar;\n\n/* Stub allocator that simulates allocation failure to trigger the bug */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    return NULL; /* Force failure on every allocation */\n}\n\nvoid xmlFree(void *ptr) {\n    /* Free is a no-op for this reproducer; free(NULL) is safe anyway */\n    free(ptr);\n}\n\n/* Copied/derived structure and vulnerable function from testdict.c */\ntypedef struct {\n    xmlChar **strings;\n    size_t num_entries;\n    size_t num_keys;\n    size_t num_strings;\n    size_t index;\n    xmlChar id;\n} StringPool;\n\nstatic StringPool *\npool_new(size_t num_entries, size_t num_keys, xmlChar id) {\n    StringPool *ret;\n    size_t num_strings;\n\n    ret = (StringPool *)xmlMalloc(sizeof(*ret));\n    /* Vulnerability: ret is dereferenced without a NULL check */\n    ret->num_entries = num_entries; /* NULL deref here when xmlMalloc fails */\n    ret->num_keys = num_keys;\n    num_strings = num_entries * num_keys;\n    ret->strings = (xmlChar **)xmlMalloc(num_strings * sizeof(ret->strings[0]));\n    memset(ret->strings, 0, num_strings * sizeof(ret->strings[0]));\n    ret->num_strings = num_strings;\n    ret->index = 0;\n    ret->id = id;\n\n    return ret;\n}\n\nint main(void) {\n    /* Any arguments will do; xmlMalloc is forced to fail */\n    (void)pool_new(10, 10, (xmlChar)'X');\n\n    /* If the program reaches this point, the bug did not trigger as expected */\n    puts(\"Unexpectedly survived null dereference\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09570670127868652,
+      "output": ""
+    }
+  }
+}

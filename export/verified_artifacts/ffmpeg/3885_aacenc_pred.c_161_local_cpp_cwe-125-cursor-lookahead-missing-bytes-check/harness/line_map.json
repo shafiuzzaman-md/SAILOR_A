@@ -1,0 +1,54 @@
+{
+  "aacenc_pred.c": {
+    "30": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 151,
+      "code": "void ff_aac_adjust_common_pred(AACEncContext *s, ChannelElement *cpe)"
+    },
+    "31": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 152,
+      "code": "{"
+    },
+    "32": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 154,
+      "code": "SingleChannelElement *sce0 = &cpe->ch[0];"
+    },
+    "33": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 155,
+      "code": "SingleChannelElement *sce1 = &cpe->ch[1];"
+    },
+    "36": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 160,
+      "code": "if (!cpe->common_window ||"
+    },
+    "37": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 161,
+      "code": "sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||"
+    },
+    "38": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 162,
+      "code": "sce1->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE)"
+    },
+    "43": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 149,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 148,
+      "code": "return 0;"
+    },
+    "49": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 149,
+      "code": "}"
+    }
+  }
+}

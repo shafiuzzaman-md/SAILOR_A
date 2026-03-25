@@ -1,0 +1,93 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "relaxng.c",
+    "line": 2456,
+    "function": "xmlRelaxNGSchemaFacetCheck",
+    "bug_type": "double-free",
+    "cwe": "CWE-415",
+    "confidence": "high",
+    "explanation": "A newly allocated xmlSchemaFacet (facet = xmlSchemaNewFacet()) has its value field set to the caller-provided pointer 'val' (facet->value = val). The function then frees the facet via xmlSchemaFreeFacet(facet) on both the error path (lines 2458\u20132461) and the success path (line 2463). xmlSchemaFreeFacet frees facet->value, leading to freeing memory that the function does not own. Since 'val' typically points to Relax NG parameter text managed elsewhere, this causes an invalid free and can later result in a double-free when the original owner frees the same memory.",
+    "abs_path": "/tmp/libxml2_upstream/relaxng.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for double-free in xmlRelaxNGSchemaFacetCheck\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n// Minimal types/macros to mimic libxml2 pieces used by relaxng.c\ntypedef unsigned char xmlChar;\n#define BAD_CAST (xmlChar *)\n\n// Facet types (subset, just to drive the branch logic)\n#define XML_SCHEMA_FACET_MININCLUSIVE   1\n#define XML_SCHEMA_FACET_MINEXCLUSIVE   2\n#define XML_SCHEMA_FACET_MAXINCLUSIVE   3\n#define XML_SCHEMA_FACET_MAXEXCLUSIVE   4\n#define XML_SCHEMA_FACET_TOTALDIGITS    5\n#define XML_SCHEMA_FACET_FRACTIONDIGITS 6\n#define XML_SCHEMA_FACET_PATTERN        7\n#define XML_SCHEMA_FACET_ENUMERATION    8\n#define XML_SCHEMA_FACET_WHITESPACE     9\n#define XML_SCHEMA_FACET_LENGTH         10\n#define XML_SCHEMA_FACET_MAXLENGTH      11\n#define XML_SCHEMA_FACET_MINLENGTH      12\n\n// Minimal facet structure\ntypedef struct _xmlSchemaFacet {\n    int type;\n    void *value; // This will be set to caller-provided 'val'\n} xmlSchemaFacet;\n\n// Minimal helpers to simulate libxml2 APIs used by the buggy function\nstatic int xmlStrEqual(const xmlChar *a, const xmlChar *b) {\n    if (a == NULL || b == NULL) return 0;\n    return strcmp((const char *)a, (const char *)b) == 0;\n}\n\nstatic void *xmlSchemaGetPredefinedType(const xmlChar *type, const xmlChar *ns) {\n    (void)type; (void)ns;\n    // Return non-NULL to drive success path\n    return (void *)0x1;\n}\n\nstatic xmlSchemaFacet *xmlSchemaNewFacet(void) {\n    xmlSchemaFacet *f = (xmlSchemaFacet *)calloc(1, sizeof(xmlSchemaFacet));\n    return f;\n}\n\nstatic void xmlSchemaFreeFacet(xmlSchemaFacet *facet) {\n    if (facet == NULL) return;\n    // Bug relevance: this frees facet->value even though the value is owned by caller\n    if (facet->value != NULL) {\n        free(facet->value);\n    }\n    free(facet);\n}\n\nstatic int xmlSchemaCheckFacet(xmlSchemaFacet *facet, void *typ, void *unused, const xmlChar *type) {\n    (void)facet; (void)typ; (void)unused; (void)type;\n    // Return success to continue to success path where facet is freed\n    return 0;\n}\n\nstatic int xmlSchemaValidateFacet(void *typ, xmlSchemaFacet *facet, const xmlChar *strval, void **value) {\n    (void)typ; (void)facet; (void)strval; (void)value;\n    // Return success; the function will free the facet unconditionally on success path\n    return 0;\n}\n\n// Reimplementation of the vulnerable function around lines 2416-2467\nstatic int xmlRelaxNGSchemaFacetCheck(const xmlChar *type,\n                                      const xmlChar *facetname,\n                                      xmlChar *val,\n                                      const xmlChar *strval,\n                                      void **value) {\n    void *typ;\n    xmlSchemaFacet *facet;\n    int ret;\n\n    if ((type == NULL) || (strval == NULL))\n        return -1;\n\n    typ = xmlSchemaGetPredefinedType(type, BAD_CAST \"http://www.w3.org/2001/XMLSchema\");\n    if (typ == NULL)\n        return -1;\n\n    facet = xmlSchemaNewFacet();\n    if (facet == NULL)\n        return -1;\n\n    if (xmlStrEqual(facetname, BAD_CAST \"minInclusive\")) {\n        facet->type = XML_SCHEMA_FACET_MININCLUSIVE;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"minExclusive\")) {\n        facet->type = XML_SCHEMA_FACET_MINEXCLUSIVE;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"maxInclusive\")) {\n        facet->type = XML_SCHEMA_FACET_MAXINCLUSIVE;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"maxExclusive\")) {\n        facet->type = XML_SCHEMA_FACET_MAXEXCLUSIVE;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"totalDigits\")) {\n        facet->type = XML_SCHEMA_FACET_TOTALDIGITS;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"fractionDigits\")) {\n        facet->type = XML_SCHEMA_FACET_FRACTIONDIGITS;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"pattern\")) {\n        facet->type = XML_SCHEMA_FACET_PATTERN;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"enumeration\")) {\n        facet->type = XML_SCHEMA_FACET_ENUMERATION;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"whiteSpace\")) {\n        facet->type = XML_SCHEMA_FACET_WHITESPACE;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"length\")) {\n        facet->type = XML_SCHEMA_FACET_LENGTH;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"maxLength\")) {\n        facet->type = XML_SCHEMA_FACET_MAXLENGTH;\n    } else if (xmlStrEqual(facetname, BAD_CAST \"minLength\")) {\n        facet->type = XML_SCHEMA_FACET_MINLENGTH;\n    } else {\n        xmlSchemaFreeFacet(facet);\n        return -1;\n    }\n\n    // Vulnerable assignment: takes ownership of caller-provided pointer\n    facet->value = val;\n\n    ret = xmlSchemaCheckFacet(facet, typ, NULL, type);\n    if (ret != 0) {\n        xmlSchemaFreeFacet(facet); // Frees facet->value (caller-owned)\n        return -1;\n    }\n\n    ret = xmlSchemaValidateFacet(typ, facet, strval, value);\n\n    // Unconditional free on success path as well; also frees facet->value\n    xmlSchemaFreeFacet(facet);\n\n    if (ret != 0)\n        return -1;\n    return 0;\n}\n\nint main(void) {\n    // Simulate caller-owned value buffer\n    char *caller_owned_val = (char *)malloc(16);\n    if (!caller_owned_val) {\n        perror(\"malloc\");\n        return 1;\n    }\n    strcpy(caller_owned_val, \"123\");\n\n    // Inputs to drive the function down the success path\n    const xmlChar *type      = BAD_CAST \"integer\";       // any non-NULL\n    const xmlChar *facetname = BAD_CAST \"minInclusive\";  // recognized facet\n    const xmlChar *strval    = BAD_CAST \"5\";             // any non-NULL\n    void *outValue = NULL;\n\n    // This call will free caller_owned_val via xmlSchemaFreeFacet(facet)\n    int ret = xmlRelaxNGSchemaFacetCheck(type, facetname,\n                                         (xmlChar *)caller_owned_val,\n                                         strval, &outValue);\n\n    printf(\"xmlRelaxNGSchemaFacetCheck returned %d\\n\", ret);\n\n    // Double-free: caller still thinks it owns the memory and frees it again.\n    // ASan should report double-free here, because it was already freed inside\n    // xmlRelaxNGSchemaFacetCheck via xmlSchemaFreeFacet(facet).\n    free(caller_owned_val);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.856635570526123,
+      "output": "=================================================================\n==4016379==ERROR: AddressSanitizer: attempting double-free on 0x602000000010 in thread T0:\n    #0 0x5b9c074aba76 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n    #1 0x5b9c074e7e3e in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:166:5\n    #2 0x7337c482a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7337c482a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b9c07428314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n\n0x602000000010 is located 0 bytes inside of 16-byte region [0x602000000010,0x602000000020)\nfreed by thread T0 here:\n    #0 0x5b9c074aba76 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n    #1 0x5b9c074e8711 in xmlSchemaFreeFacet /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:55:9\n    #2 0x5b9c074e85a2 in xmlRelaxNGSchemaFacetCheck /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:134:5\n    #3 0x5b9c074e7e21 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:157:15\n    #4 0x7337c482a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7337c482a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5b9c07428314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n\npreviously allocated by thread T0 here:\n    #0 0x5b9c074abd22 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0xa4d22) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n    #1 0x5b9c074e7d79 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:143:38\n    #2 0x7337c482a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7337c482a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b9c07428314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94)\n\nSUMMARY: AddressSanitizer: double-free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 873d422182d4a69bb04effe13227ed1324829e94) in free\n==4016379==ABORTING\n",
+      "error_type": "attempting",
+      "frames": [
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:166",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlSchemaFreeFacet",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:55",
+          "9"
+        ],
+        [
+          "2",
+          "xmlRelaxNGSchemaFacetCheck",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:134",
+          "5"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:157",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_2456_double-free/reproducer.c:143",
+          "38"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

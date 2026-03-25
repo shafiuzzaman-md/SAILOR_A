@@ -1,0 +1,7 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+target_dem_fuzzer	BUILD_ERROR	FP			0			0	0		
+target_bsf_fuzzer	BUILD_ERROR	FP			0			0	0		
+target_enc_fuzzer	BUILD_ERROR	FP			0			0	0		
+target_sws_fuzzer	BUILD_ERROR	FP			0			0	0		
+target_swr_fuzzer	BUILD_ERROR	FP			0			0	0		
+target_dec_fuzzer	BUILD_ERROR	FP			0			0	0		

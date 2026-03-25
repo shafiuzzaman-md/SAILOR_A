@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,15,11,1,0,0,0,0,1 FP external call (get_file_size/stat)
+B2: LLM+KLEE no SA,30,1,0,0,0,0,0,29 BUILD_ERROR
+B3: Pure LLM detect,97,—,81,67,0,14,14,14 unique library crash locations (coff*/archive/coffgen/cpu-arm)
+B4: SA+LLM detect,—,—,—,—,—,—,52,TBD pending re-verification
+SAILOR-GPT5,—,—,266,—,—,—,73,73 unique verified bugs

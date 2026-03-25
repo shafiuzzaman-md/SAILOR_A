@@ -1,0 +1,7 @@
+Error: Wrong size given to klee_make_symbolic
+File: driver.c
+Line: 20
+assembly.ll line: 204
+State: 1
+Stack: 
+	#000000204 in main() at driver.c:20

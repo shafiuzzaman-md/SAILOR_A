@@ -1,0 +1,4 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+mupdf_open_document_harness	BUILD_ERROR	FP			0			0	0		
+mupdf_pixmap_harness	BUILD_ERROR	FP			0			0	0		
+mupdf_buffer_harness	BUILD_ERROR	FP			0			0	0		

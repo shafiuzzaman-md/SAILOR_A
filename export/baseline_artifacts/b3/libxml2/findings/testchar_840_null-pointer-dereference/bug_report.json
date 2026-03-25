@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testchar.c",
+    "line": 840,
+    "function": "testUTF8Chunks",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "xmlMalloc result for buf is not checked; memcpy(buf + i, ...) will dereference a NULL destination if allocation fails.",
+    "abs_path": "/tmp/libxml2_upstream/testchar.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stddef.h>\n\n/* Minimal type re-declarations to mirror libxml2 test code context */\ntypedef unsigned char xmlChar;\ntypedef struct _xmlDoc xmlDoc;\ntypedef struct _xmlParserCtxt xmlParserCtxt;\ntypedef xmlParserCtxt* xmlParserCtxtPtr;\n\nstruct _xmlDoc {\n    int dummy;\n};\n\nstruct _xmlParserCtxt {\n    void *myDoc;\n};\n\n/* Stub implementations of libxml2 APIs used by testUTF8Chunks */\nxmlParserCtxtPtr xmlCreatePushParserCtxt(void *sax, void *user_data,\n                                         const char *chunk, int size,\n                                         const char *filename) {\n    (void)sax; (void)user_data; (void)chunk; (void)size; (void)filename;\n    xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr)malloc(sizeof(xmlParserCtxt));\n    if (ctxt) ctxt->myDoc = malloc(sizeof(xmlDoc));\n    return ctxt;\n}\n\nint xmlParseChunk(xmlParserCtxtPtr ctxt, const char *chunk, int size, int terminate) {\n    (void)ctxt; (void)chunk; (void)size; (void)terminate;\n    return 0;\n}\n\nvoid xmlDocDumpMemory(void *doc, xmlChar **out, int *outSize) {\n    (void)doc;\n    const char *s = \"<?xml version=\\\"1.0\\\"?>\\n<d></d>\\n\";\n    *outSize = (int)strlen(s);\n    *out = (xmlChar*)strdup(s);\n}\n\nvoid xmlFree(void *ptr) {\n    free(ptr);\n}\n\nvoid xmlFreeDoc(void *doc) {\n    free(doc);\n}\n\nvoid xmlFreeParserCtxt(xmlParserCtxtPtr ctxt) {\n    if (!ctxt) return;\n    free(ctxt->myDoc);\n    free(ctxt);\n}\n\n/* Critical piece: xmlMalloc returns NULL to simulate allocation failure */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    return NULL; /* Force allocation failure */\n}\n\n/* Reproduction of the vulnerable portion of testUTF8Chunks (testchar.c:840) */\nstatic int trigger_null_deref_in_testUTF8Chunks(void) {\n    xmlParserCtxtPtr ctxt;\n    char *buf;\n    int i;\n\n    /* Setup as in the original test before the vulnerable allocation */\n    ctxt = xmlCreatePushParserCtxt(NULL, NULL, NULL, 0, NULL);\n    xmlParseChunk(ctxt, \"<d>\", 3, 0);\n\n    /* This allocation fails (xmlMalloc returns NULL), but the code doesn't check */\n    buf = (char *)xmlMalloc(1000 * 2 + 1);\n\n    /* Vulnerable loop: dereferences buf even if NULL */\n    for (i = 0; i < 2000; i += 2) {\n        /* Corresponds to testchar.c:840 - memcpy(buf + i, \"\\xCE\\xB1\", 2); */\n        memcpy(buf + i, \"\\xCE\\xB1\", 2); /* NULL destination -> crash */\n    }\n\n    /* Not reached, but keep for structural similarity */\n    (void)ctxt;\n    return 0;\n}\n\nint main(void) {\n    /* ASan should report a NULL-dereference here */\n    return trigger_null_deref_in_testUTF8Chunks();\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7228238582611084,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4069346==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x73c628188acd bp 0x7ffe94328cd0 sp 0x7ffe94328498 T0)\n==4069346==The signal is caused by a WRITE memory access.\n==4069346==Hint: address points to the zero page.\n    #0 0x73c628188acd in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:321\n    #1 0x6480e962f0d5 in __asan_memcpy (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 12df43a62a6eae290e4645f8ad9ef05e2baef338)\n    #2 0x6480e966bf45 in trigger_null_deref_in_testUTF8Chunks /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer.c:78:9\n    #3 0x6480e966bec3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer.c:88:12\n    #4 0x73c62802a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73c62802a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x6480e95ac304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer+0x21304) (BuildId: 12df43a62a6eae290e4645f8ad9ef05e2baef338)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:321 in __memcpy_avx_unaligned_erms\n==4069346==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 321,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "321"
+        ],
+        [
+          "2",
+          "trigger_null_deref_in_testUTF8Chunks",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer.c:78",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_840_null-pointer-dereference/reproducer.c:88",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

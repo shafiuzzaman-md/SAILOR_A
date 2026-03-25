@@ -1,0 +1,31 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2852952606
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x5dd0d12a8420, 0x5dd0d12a8426), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x5dd0d12a8428,0x5dd0d12a8488), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 8b max: 8b total: 8b rss: 31Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==89671==ERROR: AddressSanitizer: stack-overflow on address 0x7ffefd1d3410 (pc 0x5dd0d10c5c40 bp 0x7ffefd1c4810 sp 0x7ffefd1c47e0 T0)
+    #0 0x5dd0d10c5c40 in fz_init_process_color_converter /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/colorspace.c:948:9
+    #1 0x5dd0d10c6550 in fz_find_color_converter /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/colorspace.c:1032:3
+    #2 0x5dd0d10be942 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_harness.c:56:5
+    #3 0x5dd0d0fe49fa in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x559fa) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #4 0x5dd0d0fe40c5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x550c5) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #5 0x5dd0d0fe5cc8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x56cc8) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #6 0x5dd0d0fe6146 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x57146) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #7 0x5dd0d0fd3732 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x44732) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #8 0x5dd0d0ffebd6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x6fbd6) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+    #9 0x76593f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x76593f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5dd0d0fc7b64 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/208_colorspace.c_840_local_cpp_cwe-120-overflow/fuzz_bin+0x38b64) (BuildId: b0154252ec4edc7ae624a32b089add94c83c7dd9)
+
+SUMMARY: AddressSanitizer: stack-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/colorspace.c:948:9 in fz_init_process_color_converter
+==89671==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-05fe405753166f125559e7c9ac558654f107c7e9
+Base64: AAAAAAAAAAA=

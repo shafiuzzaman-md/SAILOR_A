@@ -1,0 +1,5 @@
+Project,BugID,SourceFile,SourceLine,BugType,CrashFunction,CrashFile,CrashLine
+libpng,B3-001,png.c,4007,SEGV,png_safecat,png.c,34
+libpng,B3-002,png.c,609,SEGV,png_free,png.c,28
+libpng,B3-003,pngrutil.c,4911,heap-buffer-overflow,png_read_reinit,pngrutil.c,37
+libpng,B3-004,pngset.c,794,heap-buffer-overflow,png_set_PLTE,pngset.c,107

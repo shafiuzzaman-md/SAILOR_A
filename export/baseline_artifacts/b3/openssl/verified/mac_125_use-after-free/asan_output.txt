@@ -1,0 +1,60 @@
+=================================================================
+==21195==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000040 at pc 0x5c5c4e6c18ba bp 0x7ffc5ec75b70 sp 0x7ffc5ec75338
+READ of size 2 at 0x603000000040 thread T0
+    #0 0x5c5c4e6c18b9 in strlen (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0x378b9) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+    #1 0x5c5c4e76b5a9 in app_params_new_from_opts /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:86:29
+    #2 0x5c5c4e76aed1 in main /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:119:11
+    #3 0x77f78dc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x77f78dc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5c5c4e6ab304 in _start (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0x21304) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+
+0x603000000040 is located 0 bytes inside of 19-byte region [0x603000000040,0x603000000053)
+freed by thread T0 here:
+    #0 0x5c5c4e72ea66 in free (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0xa4a66) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+    #1 0x5c5c4e76b3d4 in OPENSSL_free /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:9:37
+    #2 0x5c5c4e76ae22 in main /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:109:5
+    #3 0x77f78dc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x77f78dc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5c5c4e6ab304 in _start (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0x21304) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+
+previously allocated by thread T0 here:
+    #0 0x5c5c4e72ed12 in __interceptor_malloc (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0xa4d12) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+    #1 0x5c5c4e76b1d5 in alloc_mac_algorithm_name /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:57:23
+    #2 0x5c5c4e76adac in main /app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer.c:100:14
+    #3 0x77f78dc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x77f78dc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5c5c4e6ab304 in _start (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0x21304) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd)
+
+SUMMARY: AddressSanitizer: heap-use-after-free (/app/export/baseline_artifacts/b3/openssl/verified/mac_125_use-after-free/reproducer+0x378b9) (BuildId: a27230cae2a1e2861a6866da9d3c255e139f76bd) in strlen
+Shadow bytes around the buggy address:
+  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c067fff8000: fa fa 00 00 00 fa fa fa[fd]fd fd fa fa fa 00 00
+  0x0c067fff8010: 00 00 fa fa 00 00 03 fa fa fa fa fa fa fa fa fa
+  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==21195==ABORTING

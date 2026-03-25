@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080515==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x74fc91188aa1 bp 0x7ffc12fc4b00 sp 0x7ffc12fc42c8 T0)
+==4080515==The signal is caused by a WRITE memory access.
+==4080515==Hint: address points to the zero page.
+    #0 0x74fc91188aa1 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271
+    #1 0x640222aea0d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/libpng/verified/png_4007_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 51469d56c379b07e0d221d706651308782b3860f)
+    #2 0x640222b26dde in png_safecat /app/export/baseline_artifacts/b3/libpng/verified/png_4007_null-pointer-dereference/reproducer.c:34:22
+    #3 0x640222b26cd9 in png_image_error /app/export/baseline_artifacts/b3/libpng/verified/png_4007_null-pointer-dereference/reproducer.c:45:5
+    #4 0x640222b26e76 in main /app/export/baseline_artifacts/b3/libpng/verified/png_4007_null-pointer-dereference/reproducer.c:57:11
+    #5 0x74fc9102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x74fc9102a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x640222a67304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/png_4007_null-pointer-dereference/reproducer+0x21304) (BuildId: 51469d56c379b07e0d221d706651308782b3860f)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271 in __memcpy_avx_unaligned_erms
+==4080515==ABORTING

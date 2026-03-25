@@ -1,0 +1,50 @@
+
+=================================================================
+==3357157==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000058 at pc 0x563f03758564 bp 0x7ffcf9646920 sp 0x7ffcf9646918
+READ of size 4 at 0x602000000058 thread T0
+    #0 0x563f03758563 in bfd_get_format /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:2339:14
+    #1 0x563f0377c63f in bfd_elf_link_add_symbols /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elflink.c:6454:11
+    #2 0x563f037581ec in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/11565_elflink.c_1127_sailor_wmi-2-type-confusion-leak/reproducer.c:62:11
+    #3 0x7f32e65d2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #4 0x7f32e65d2e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #5 0x563f0369a534 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/11565_elflink.c_1127_sailor_wmi-2-type-confusion-leak/reproducer_bin+0xb5534) (BuildId: 3dbbf546cd8986030a023d996a4019b51f456fb9)
+
+0x602000000058 is located 7 bytes to the right of 1-byte region [0x602000000050,0x602000000051)
+allocated by thread T0 here:
+    #0 0x563f0371d568 in __interceptor_calloc (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/11565_elflink.c_1127_sailor_wmi-2-type-confusion-leak/reproducer_bin+0x138568) (BuildId: 3dbbf546cd8986030a023d996a4019b51f456fb9)
+    #1 0x563f03758111 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/11565_elflink.c_1127_sailor_wmi-2-type-confusion-leak/reproducer.c:37:32
+    #2 0x7f32e65d2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:2339:14 in bfd_get_format
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 04 fa fa fa 04 fa fa fa 01[fa]fa fa 00 fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3357157==ABORTING

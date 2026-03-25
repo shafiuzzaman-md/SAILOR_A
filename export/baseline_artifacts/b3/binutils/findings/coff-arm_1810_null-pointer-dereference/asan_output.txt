@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3587273==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x650935d5a8ee bp 0x7fff0e307940 sp 0x7fff0e3078e0 T0)
+==3587273==The signal is caused by a WRITE memory access.
+==3587273==Hint: address points to the zero page.
+    #0 0x650935d5a8ee in bfd_put_32 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110:14
+    #1 0x650935d5a886 in simulate_glue_emission /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:122:5
+    #2 0x650935d5a72f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:154:5
+    #3 0x7d2a40e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7d2a40e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x650935c9a314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer+0x21314) (BuildId: 353d5629678059fba5cd2174d8afa618ddccdb83)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110:14 in bfd_put_32
+==3587273==ABORTING

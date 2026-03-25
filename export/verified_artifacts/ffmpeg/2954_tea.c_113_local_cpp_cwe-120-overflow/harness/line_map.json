@@ -1,0 +1,134 @@
+{
+  "tea.c": {
+    "2": {
+      "orig_file": "tea.c",
+      "orig_line": 25,
+      "code": "#include <string.h>"
+    },
+    "6": {
+      "orig_file": "tea.c",
+      "orig_line": 30,
+      "code": "typedef struct AVTEA {"
+    },
+    "7": {
+      "orig_file": "tea.c",
+      "orig_line": 31,
+      "code": "uint32_t key[16];"
+    },
+    "8": {
+      "orig_file": "tea.c",
+      "orig_line": 32,
+      "code": "int rounds;"
+    },
+    "9": {
+      "orig_file": "tea.c",
+      "orig_line": 33,
+      "code": "} AVTEA;"
+    },
+    "12": {
+      "orig_file": "tea.c",
+      "orig_line": 52,
+      "code": "static void tea_crypt_ecb(AVTEA *ctx, uint8_t *dst, const uint8_t *src,"
+    },
+    "13": {
+      "orig_file": "tea.c",
+      "orig_line": 53,
+      "code": "int decrypt, uint8_t *iv)"
+    },
+    "14": {
+      "orig_file": "tea.c",
+      "orig_line": 54,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "tea.c",
+      "orig_line": 50,
+      "code": "}"
+    },
+    "22": {
+      "orig_file": "tea.c",
+      "orig_line": 95,
+      "code": "void av_tea_crypt(AVTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+    },
+    "23": {
+      "orig_file": "tea.c",
+      "orig_line": 96,
+      "code": "uint8_t *iv, int decrypt)"
+    },
+    "24": {
+      "orig_file": "tea.c",
+      "orig_line": 97,
+      "code": "{"
+    },
+    "25": {
+      "orig_file": "tea.c",
+      "orig_line": 98,
+      "code": "int i;"
+    },
+    "28": {
+      "orig_file": "tea.c",
+      "orig_line": 101,
+      "code": "while (count--) {"
+    },
+    "29": {
+      "orig_file": "tea.c",
+      "orig_line": 109,
+      "code": "if (iv) {"
+    },
+    "30": {
+      "orig_file": "tea.c",
+      "orig_line": 110,
+      "code": "for (i = 0; i < 8; i++)"
+    },
+    "31": {
+      "orig_file": "tea.c",
+      "orig_line": 111,
+      "code": "dst[i] = src[i] ^ iv[i];"
+    },
+    "32": {
+      "orig_file": "tea.c",
+      "orig_line": 112,
+      "code": "tea_crypt_ecb(ctx, dst, dst, decrypt, NULL);"
+    },
+    "33": {
+      "orig_file": "tea.c",
+      "orig_line": 113,
+      "code": "memcpy(iv, dst, 8);"
+    },
+    "36": {
+      "orig_file": "tea.c",
+      "orig_line": 114,
+      "code": "} else {"
+    },
+    "37": {
+      "orig_file": "tea.c",
+      "orig_line": 115,
+      "code": "tea_crypt_ecb(ctx, dst, src, decrypt, NULL);"
+    },
+    "38": {
+      "orig_file": "tea.c",
+      "orig_line": 116,
+      "code": "}"
+    },
+    "39": {
+      "orig_file": "tea.c",
+      "orig_line": 117,
+      "code": "src   += 8;"
+    },
+    "40": {
+      "orig_file": "tea.c",
+      "orig_line": 118,
+      "code": "dst   += 8;"
+    },
+    "41": {
+      "orig_file": "tea.c",
+      "orig_line": 119,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "tea.c",
+      "orig_line": 120,
+      "code": "}"
+    }
+  }
+}

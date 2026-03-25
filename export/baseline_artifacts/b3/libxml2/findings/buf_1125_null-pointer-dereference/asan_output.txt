@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3984233==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x766e27d8ac03 bp 0x7ffc0c69a8d0 sp 0x7ffc0c69a088 T0)
+==3984233==The signal is caused by a READ memory access.
+==3984233==Hint: address points to the zero page.
+    #0 0x766e27d8ac03 in __strchr_avx2 string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67
+    #1 0x57e874cfe2dc in strchr (/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer+0x3a2dc) (BuildId: 15a6b408093d689507711e1fd9ecfeb5353eba2b)
+    #2 0x57e874da502e in xmlStrchr /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:21:23
+    #3 0x57e874da4e24 in xmlBufferWriteQuotedString /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:43:9
+    #4 0x57e874da4d88 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer.c:81:5
+    #5 0x766e27c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x766e27c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x57e874ce5304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/buf_1125_null-pointer-dereference/reproducer+0x21304) (BuildId: 15a6b408093d689507711e1fd9ecfeb5353eba2b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strchr-avx2.S:67 in __strchr_avx2
+==3984233==ABORTING

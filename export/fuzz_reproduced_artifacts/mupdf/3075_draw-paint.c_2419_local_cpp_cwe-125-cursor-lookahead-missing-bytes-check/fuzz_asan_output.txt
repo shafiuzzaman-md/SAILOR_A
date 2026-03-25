@@ -1,0 +1,75 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 718535544
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x5f3162233b80, 0x5f3162233b84), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x5f3162233b88,0x5f3162233bc8), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 2b max: 2b total: 2b rss: 30Mb
+=================================================================
+==91655==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6030000001e8 at pc 0x5f316203a282 bp 0x7fff115e6910 sp 0x7fff115e6908
+READ of size 1 at 0x6030000001e8 thread T0
+    #0 0x5f316203a281 in fz_paint_pixmap_alpha /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/draw-paint.c:2438:2
+    #1 0x5f316202c9f4 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:56:5
+    #2 0x5f3161f529fa in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x569fa) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #3 0x5f3161f520c5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x560c5) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #4 0x5f3161f53cc8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x57cc8) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #5 0x5f3161f54146 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x58146) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #6 0x5f3161f41732 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x45732) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #7 0x5f3161f6cbd6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x70bd6) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #8 0x741af6e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x741af6e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5f3161f35b64 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x39b64) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+
+0x6030000001e8 is located 8 bytes to the right of 32-byte region [0x6030000001c0,0x6030000001e0)
+allocated by thread T0 here:
+    #0 0x5f3161ff070c in __interceptor_calloc (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xf470c) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #1 0x5f316202c554 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:28:35
+    #2 0x5f3161f529fa in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x569fa) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #3 0x5f3161f520c5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x560c5) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #4 0x5f3161f53cc8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x57cc8) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #5 0x5f3161f54146 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x58146) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #6 0x5f3161f41732 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x45732) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #7 0x5f3161f6cbd6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x70bd6) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+    #8 0x741af6e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x741af6e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5f3161f35b64 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x39b64) (BuildId: 2619899e359dc2a770c2a13be8eecbb229d01ebc)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/draw-paint.c:2438:2 in fz_paint_pixmap_alpha
+Shadow bytes around the buggy address:
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+  0x0c067fff8010: 03 fa fa fa 00 00 00 00 fa fa 00 00 00 fa fa fa
+  0x0c067fff8020: 00 00 00 00 fa fa 00 00 00 00 fa fa fd fd fd fd
+=>0x0c067fff8030: fa fa 00 00 00 00 fa fa 00 00 00 00 fa[fa]fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==91655==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,
+\000\000
+artifact_prefix='./'; Test unit written to ./crash-1489f923c4dca729178b3e3233458550d8dddf29
+Base64: AAA=

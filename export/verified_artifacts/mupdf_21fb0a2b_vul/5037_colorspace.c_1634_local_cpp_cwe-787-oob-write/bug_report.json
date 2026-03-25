@@ -1,0 +1,111 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "colorspace.c",
+        "original_line": 1634,
+        "function": "memoize_spots",
+        "entry_point": "fz_convert_slow_pixmap_samples",
+        "spine": [
+            "fz_convert_slow_pixmap_samples",
+            "memoize_spots"
+        ],
+        "original_context": "1629: \t\t\t\t\t\tif (da)\n1630: \t\t\t\t\t\t{\n1631: \t\t\t\t\t\t\tfor (k = 0; k < dst_c; k++)\n1632: \t\t\t\t\t\t\t\td[k] = fz_mul255(dstv[k] * 255, alpha);\n1633: \t\t\t\t\t\t\tif (dst_s)\n1634: \t\t\t\t\t\t\t\tmemset(d + dst_c, 0, dst_s);\n1635: \t\t\t\t\t\t\tdold[dst_c] = d[dst_n-1] = alpha;\n1636: \t\t\t\t\t\t}\n1637: \t\t\t\t\t\telse\n1638: \t\t\t\t\t\t{\n1639: \t\t\t\t\t\t\tfor (k = 0; k < dst_c; k++)"
+    },
+    "klee_crash": {
+        "harness_file": "colorspace.c",
+        "harness_line": 47,
+        "original_file": "colorspace.c",
+        "original_line": 1642,
+        "original_code": "memset(d + dst_c, 0, dst_s);",
+        "original_context": "    1639: \t\t\t\t\t\t\tfor (k = 0; k < dst_c; k++)\n    1640: \t\t\t\t\t\t\t\td[k] = dstv[k] * 255;\n    1641: \t\t\t\t\t\t\tif (dst_s)\n>>> 1642: \t\t\t\t\t\t\t\tmemset(d + dst_c, 0, dst_s);\n    1643: \t\t\t\t\t\t}\n    1644: \t\t\t\t\t\tmemcpy(dold, d, dst_c);\n    1645: ",
+        "error_type": "assert",
+        "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: colorspace.c\nLine: 47\nassembly.ll line: 117\nState: 1\nStack: \n\t#000000117 in memoize_spots(0, 0, 0, 0, 2880154539) at colorspace.c:47\n\t#100000048 in fz_convert_slow_pixmap_samples(0, 0, 0, 0, 2880154539, symbolic) at colorspace.c:19\n\t#200000163 in main() at driver.c:15\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "copy_spots",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_c",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_s",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "copy_spots",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_c",
+            "size": 4,
+            "data": "b'\\x80\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_s",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00@'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "fz_convert_slow_pixmap_samples",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 1673,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==28056==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000020 (pc 0x5581505155d1 bp 0x7ffeb3bba920 sp 0x7ffeb3bba8d0 T0)\n==28056==The signal is caused by a READ memory access.\n==28056==Hint: address points to the zero page.\n    #0 0x5581505155d1 in fz_convert_slow_pixmap_samples source/fitz/colorspace.c:1673\n    #1 0x55815050aa8c in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5037_colorspace.c_1634_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:16\n    #2 0x7fd75a47bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fd75a47be3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55815050a894 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5037_colorspace.c_1634_local_cpp_cwe-787-oob-write/asan_real/replay_bin+0x10894)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV source/fitz/colorspace.c:1673 in fz_convert_slow_pixmap_samples\n==28056==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5037_colorspace.c_1634_local_cpp_cwe-787-oob-write/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 47,
+            "original_file": "colorspace.c",
+            "original_line": 1642,
+            "error_type": "assert",
+            "crash_function": "memoize_spots",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5037_colorspace.c_1634_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 45,
+            "original_file": "colorspace.c",
+            "original_line": 1642,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5037_colorspace.c_1634_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "fz_convert_slow_pixmap_samples",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 1673
+        }
+    ]
+}

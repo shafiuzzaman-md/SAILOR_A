@@ -1,0 +1,91 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "image.c",
+        "original_line": 200,
+        "function": "fz_mask_color_key",
+        "entry_point": "fz_decomp_image_from_stream",
+        "spine": [
+            "fz_decomp_image_from_stream",
+            "fz_mask_color_key"
+        ],
+        "original_context": "195: \tcase 32: max = 0xffffffff; break;\n196: \t}\n197: \n198: \tfor (k = 0; k < 2 * n; k++)\n199: \t{\n200: \t\tcolorkey[k] = colorkey_in[k];\n201: \n202: \t\tif (colorkey[k] > max)\n203: \t\t{\n204: \t\t\tif (indexed && bpc == 1)\n205: \t\t\t{"
+    },
+    "klee_crash": {
+        "harness_file": "image.c",
+        "harness_line": 36,
+        "original_file": "image.c",
+        "original_line": 200,
+        "original_code": "colorkey[k] = colorkey_in[k];",
+        "original_context": "    197: \n    198: \tfor (k = 0; k < 2 * n; k++)\n    199: \t{\n>>> 200: \t\tcolorkey[k] = colorkey_in[k];\n    201: \n    202: \t\tif (colorkey[k] > max)\n    203: \t\t{",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: image.c\nLine: 36\nassembly.ll line: 234\nState: 2\nStack: \n\t#000000234 in fz_mask_color_key(139509648220160, symbolic, symbolic, 139784526127104, symbolic) at image.c:36\n\t#100000184 in fz_decomp_image_from_stream(139509648220160, 139492468350976, 139647087173632, 0, symbolic, 0, 0) at image.c:48\n\t#200000129 in main() at driver.c:44\nInfo: \n\taddress: 139239065280544\n\tnext: object at 139209537380352 of size 4\n\t\tMO116[4] allocated at fz_mask_color_key(): "
+    },
+    "concrete_inputs": [
+        {
+            "name": "n",
+            "size": 4,
+            "data": "b'\\x05\\x00\\x00\\x00'"
+        },
+        {
+            "name": "bpc",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "colorkey_in",
+            "size": 256,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "indexed",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_decomp_image_from_stream",
+        "crash_file": "source/fitz/image.c",
+        "crash_line": 610,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==29704==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000060 at pc 0x558b85eb74cf bp 0x7ffd6052ff30 sp 0x7ffd6052ff20\nREAD of size 4 at 0x503000000060 thread T0\n    #0 0x558b85eb74ce in fz_decomp_image_from_stream source/fitz/image.c:610\n    #1 0x558b85eb198e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5107_image.c_200_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:44\n    #2 0x7fcfd8ec5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fcfd8ec5e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x558b85eb13b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5107_image.c_200_local_cpp_cwe-787-oob-write/asan_real/replay_bin+0x1483b4)\n\n0x503000000060 is located 0 bytes to the right of 32-byte region [0x503000000040,0x503000000060)\nallocated by thread T0 here:\n    #0 0x7fcfd927ca57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x558b85eb154c in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5107_image.c_200_local_cpp_cwe-787-oob-write/asan_real/replay_driver.c:11\n    #2 0x7fcfd8ec5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/image.c:610 in fz_decomp_image_from_stream\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00[fa]fa fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5107_image.c_200_local_cpp_cwe-787-oob-write/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "image.c",
+            "harness_line": 36,
+            "original_file": "image.c",
+            "original_line": 200,
+            "error_type": "ptr",
+            "crash_function": "fz_mask_color_key",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5107_image.c_200_local_cpp_cwe-787-oob-write/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_decomp_image_from_stream",
+            "crash_file": "source/fitz/image.c",
+            "crash_line": 610
+        }
+    ]
+}

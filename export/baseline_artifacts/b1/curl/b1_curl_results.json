@@ -1,0 +1,72 @@
+{
+  "baseline": "B1",
+  "description": "OSS-Fuzz Harness + KLEE Symbolic Execution",
+  "project": "curl",
+  "commit": "2eebc58c4b8d68c98c8344381a9f6df4cca838fd",
+  "harness_source": "external: curl/curl-fuzzer repo",
+  "total_harnesses": 4,
+  "compiled": 4,
+  "build_errors": 0,
+  "se_detected": 5,
+  "unique_bugs": 0,
+  "false_positives": 5,
+  "klee_timeout": 300,
+  "project_bc_size_mb": 1.5,
+  "run_date": "2026-03-12",
+  "run_environment": "local (KLEE 3.2-pre, clang-14)",
+  "summary": "All 4 curl harnesses compiled and linked successfully. KLEE reported 5 crashes across 3 harnesses — all false positives: (1) curl_fuzzer: external call to fuzz_get_first_tlv (from curl_fuzzer_tlv.cc, support file not linked), (2) fuzz_bufq: assertion fail in harness code (KLEE symbolic value), (3-4) fuzz_url: concretized symbolic size + illegal instruction (KLEE model errors). fuzz_fnmatch ran full 309s with no crashes. 0 real bugs found.",
+  "failure_reason": "All crashes are KLEE artifacts: external calls to support libraries, assertion on symbolic values, model concretization errors",
+  "harnesses": [
+    {
+      "name": "curl_fuzzer",
+      "path": "curl-fuzzer/curl_fuzzer.cc",
+      "language": "C++",
+      "status": "FP_EXTERNAL_CALL",
+      "compile": "OK",
+      "link": "OK",
+      "klee_time_s": 11,
+      "klee_errors": 1,
+      "crash_detail": "external call: fuzz_get_first_tlv (from curl_fuzzer_tlv.cc, not linked)"
+    },
+    {
+      "name": "fuzz_bufq",
+      "path": "curl-fuzzer/fuzz_bufq.cc",
+      "language": "C++",
+      "status": "FP_ASSERTION",
+      "compile": "OK",
+      "link": "OK",
+      "klee_time_s": 8,
+      "klee_errors": 1,
+      "crash_detail": "ASSERTION FAIL: buf != (unsigned char *)-1 at fuzz_bufq.cc:48 — KLEE symbolic value triggers harness assertion"
+    },
+    {
+      "name": "fuzz_fnmatch",
+      "path": "curl-fuzzer/fuzz_fnmatch.cc",
+      "language": "C++",
+      "status": "NO_BUG",
+      "compile": "OK",
+      "link": "OK",
+      "klee_time_s": 309,
+      "klee_errors": 0,
+      "crash_detail": "Ran full timeout (309s), no crashes — KLEE explored fnmatch paths successfully but found no bugs"
+    },
+    {
+      "name": "fuzz_url",
+      "path": "curl-fuzzer/fuzz_url.cc",
+      "language": "C++",
+      "status": "FP_KLEE_MODEL",
+      "compile": "OK",
+      "link": "OK",
+      "klee_time_s": 311,
+      "klee_errors": 3,
+      "crash_detail": "3 crashes: concretized symbolic size (model.err), 2x illegal instruction (exec.err) — all KLEE internal model errors"
+    }
+  ],
+  "key_findings": [
+    "All 4 curl harnesses compiled successfully with clang++ — best compilation rate of all projects",
+    "curl_fuzzer depends on curl_fuzzer_tlv.cc (TLV parsing support) which was not linked, causing immediate external call failure",
+    "fuzz_fnmatch ran for full 309s and explored paths but found no bugs — demonstrates KLEE can handle simple string matching",
+    "fuzz_url triggered KLEE model errors (concretized symbolic size, illegal instruction) — not real bugs",
+    "0 real bugs found from 4 harnesses vs SAILOR's 0 (neither approach found bugs in curl)"
+  ]
+}

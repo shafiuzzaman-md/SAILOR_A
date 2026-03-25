@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memmove.c
+Line: 21
+assembly.ll line: 174
+State: 1
+Stack: 
+	#000000174 in memmove(139744894115840, 139744894115844, 12) at runtime/Freestanding/memmove.c:21
+	#100000039 in ff_amr_set_fixed_gain(1065353216, 1065353216, 139744894115840, 0, 139727714246656) at acelp_pitch_delay.c:20
+	#200000072 in entry_func(1065353216, 1065353216, 139744894115840, 0, 139727714246656) at acelp_pitch_delay.c:32
+	#300000128 in main() at driver.c:28
+Info: 
+	address: 139744894115852
+	next: object at 139376063799296 of size 4
+		MO63[4] allocated at ff_amr_set_fixed_gain():  %6 = alloca float, align 4

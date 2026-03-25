@@ -1,0 +1,132 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runsuite.c",
+    "line": 1144,
+    "function": "xstcTestGroup",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "The variable 'path' is freed at line 1138 and then used in the test_log call at line 1144. This dereferences a freed pointer when printing \"%s\", leading to a use-after-free read and potential crash or data corruption.",
+    "abs_path": "/tmp/libxml2_upstream/runsuite.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdarg.h>\n#include <stdint.h>\n\n/* Minimal libxml2-like typedefs and macros */\ntypedef unsigned char xmlChar;\ntypedef void* xmlNodePtr;\n#define BAD_CAST (xmlChar *)\n\n/* Simple memory accounting to mimic xmlMemUsed() */\nstatic size_t g_memused = 0;\n\nstatic void* xmlMalloc(size_t size) {\n    /* store size before the returned pointer to track frees */\n    size_t total = sizeof(size_t) + size;\n    size_t *base = (size_t*)malloc(total);\n    if (!base) return NULL;\n    *base = size;\n    g_memused += size;\n    return (void*)(base + 1);\n}\n\nstatic void xmlFree(void *ptr) {\n    if (!ptr) return;\n    size_t *base = ((size_t*)ptr) - 1;\n    g_memused -= *base;\n    free(base);\n}\n\nstatic int xmlMemUsed(void) {\n    return (int)g_memused;\n}\n\nstatic xmlChar* xmlStrdup(const xmlChar *s) {\n    if (!s) return NULL;\n    size_t len = strlen((const char*)s);\n    xmlChar *p = (xmlChar*)xmlMalloc(len + 1);\n    if (!p) return NULL;\n    memcpy(p, s, len + 1);\n    return p;\n}\n\n/* Stubs matching the original environment */\nstatic long xmlGetLineNo(xmlNodePtr cur) {\n    (void)cur;\n    return 1234; /* arbitrary line number */\n}\n\nstatic void xmlResetLastError(void) {\n    /* no-op */\n}\n\n/* A tiny strlen that will be instrumented by ASan and triggers on UAF */\nstatic size_t my_strlen_asan(const char *s) {\n    size_t n = 0;\n    while (s[n] != '\\0') n++;  /* ASan will check each load here */\n    return n;\n}\n\n/* Minimal test_log that processes just \"%ld\", \"%s\", and \"%d\" used below */\nstatic void test_log(const char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n    const char *p = fmt;\n    while (*p) {\n        if (*p == '%' && *(p+1)) {\n            ++p;\n            if (*p == 'l' && *(p+1) == 'd') {\n                ++p; /* skip 'd' */\n                long v = va_arg(ap, long);\n                fprintf(stderr, \"%ld\", v);\n            } else if (*p == 'd') {\n                int v = va_arg(ap, int);\n                fprintf(stderr, \"%d\", v);\n            } else if (*p == 's') {\n                const char *s = va_arg(ap, const char*);\n                /* This read from freed memory triggers ASan */\n                size_t len = my_strlen_asan(s);\n                fwrite(s, 1, len, stderr);\n            } else {\n                /* Fallback: print specifier literally if unexpected */\n                fputc('%', stderr);\n                fputc(*p, stderr);\n            }\n        } else {\n            fputc(*p, stderr);\n        }\n        ++p;\n    }\n    va_end(ap);\n}\n\n/* Reproducer for the bug in runsuite.c:xstcTestGroup cleanup block */\nstatic int xstcTestGroup_reproducer(void) {\n    /* In the real code, 'mem' is captured earlier and compared at the end. */\n    int mem = xmlMemUsed();\n\n    /* Allocate a path string, as in the real code. */\n    xmlChar *path = xmlStrdup(BAD_CAST \"dummy.xsd\");\n    if (!path) {\n        fprintf(stderr, \"allocation failed\\n\");\n        return -1;\n    }\n\n    /* Simulate scope variables used by the log. */\n    xmlNodePtr cur = (xmlNodePtr)0x1; /* dummy node pointer */\n\n    /* --- cleanup block begins --- */\n    /* href, validity, schemas would be freed here too in the real code. */\n\n    /* Free 'path' first, exactly like line 1138 in the original code. */\n    if (path != NULL) xmlFree(path);\n\n    /* Create a deliberate leak after taking the initial 'mem' snapshot,\n       so that mem != xmlMemUsed() and the logging path is taken. */\n    static void *leak_guard; /* keep it reachable */\n    leak_guard = xmlMalloc(16); /* leaked on purpose */\n    (void)leak_guard;\n\n    xmlResetLastError();\n\n    /* This mirrors line 1142-1144 in the original code. It wrongly uses\n       the freed 'path' in the %s argument, triggering UAF. */\n    if (mem != xmlMemUsed()) {\n        test_log(\"Processing test line %ld %s leaked %d\\n\",\n                 xmlGetLineNo(cur), (const char*)path, xmlMemUsed() - mem);\n    }\n    /* --- cleanup block ends --- */\n\n    return 0;\n}\n\nint main(void) {\n    return xstcTestGroup_reproducer();\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9682750701904297,
+      "output": "Processing test line 1234 =================================================================\n==4019761==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000048 at pc 0x5f118ea52c11 bp 0x7ffe47622c20 sp 0x7ffe47622c18\nREAD of size 1 at 0x603000000048 thread T0\n    #0 0x5f118ea52c10 in my_strlen_asan /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58:12\n    #1 0x5f118ea52968 in test_log /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:80:30\n    #2 0x5f118ea51dc9 in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:127:9\n    #3 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12\n    #4 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)\n\n0x603000000048 is located 8 bytes inside of 18-byte region [0x603000000040,0x603000000052)\nfreed by thread T0 here:\n    #0 0x5f118ea15a76 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0xa4a76) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)\n    #1 0x5f118ea51efa in xmlFree /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:29:5\n    #2 0x5f118ea51d66 in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:114:23\n    #3 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12\n    #4 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)\n\npreviously allocated by thread T0 here:\n    #0 0x5f118ea15d22 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0xa4d22) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)\n    #1 0x5f118ea51f30 in xmlMalloc /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:18:29\n    #2 0x5f118ea51e3d in xmlStrdup /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:39:28\n    #3 0x5f118ea51ceb in xstcTestGroup_reproducer /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:101:21\n    #4 0x5f118ea51cc3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136:12\n    #5 0x7e19f822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7e19f822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5f118e992314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer+0x21314) (BuildId: 87a9d4cdb19fe6f1d892efff5b3ac5efee15d4c7)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58:12 in my_strlen_asan\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa fd[fd]fd fa fa fa 00 00\n  0x0c067fff8010: 00 fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:    ",
+      "error_type": "heap-use-after-free",
+      "crash_function": "my_strlen_asan",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "my_strlen_asan",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:58",
+          "12"
+        ],
+        [
+          "1",
+          "test_log",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:80",
+          "30"
+        ],
+        [
+          "2",
+          "xstcTestGroup_reproducer",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:127",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlFree",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:29",
+          "5"
+        ],
+        [
+          "2",
+          "xstcTestGroup_reproducer",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:114",
+          "23"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlMalloc",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:18",
+          "29"
+        ],
+        [
+          "2",
+          "xmlStrdup",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:39",
+          "28"
+        ],
+        [
+          "3",
+          "xstcTestGroup_reproducer",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:101",
+          "21"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runsuite_1144_use-after-free/reproducer.c:136",
+          "12"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

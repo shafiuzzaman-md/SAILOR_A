@@ -1,0 +1,120 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 27 (sink assert at 29)\nCrash: CRASH: ptr at aacenc_pred.c:27\nOriginal: aacenc_pred.c:124 \u2192 if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {\nASan: not confirmed\n\nAll crashes (1):\n  ptr at aacenc_pred.c:27 \u2192 aacenc_pred.c:124\n"
+    ]
+  ],
+  "line_map": {
+    "aacenc_pred.c": {
+      "24": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 119,
+        "code": "void ff_aac_apply_main_pred(AACEncContext *s, SingleChannelElement *sce)"
+      },
+      "25": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 120,
+        "code": "{"
+      },
+      "27": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 124,
+        "code": "if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {"
+      },
+      "30": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 134,
+        "code": "} else {"
+      },
+      "32": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 136,
+        "code": "}"
+      },
+      "33": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 137,
+        "code": "}"
+      },
+      "38": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 148,
+        "code": "return 0;"
+      },
+      "39": {
+        "orig_file": "aacenc_pred.c",
+        "orig_line": 149,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "aacenc_pred.c",
+      "original_line": 124,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "119: void ff_aac_apply_main_pred(AACEncContext *s, SingleChannelElement *sce)\n120: {\n121:     int sfb, k;\n122:     const int pmax = FFMIN(sce->ics.max_sfb, ff_aac_pred_sfb_max[s->samplerate_index]);\n123: \n124:     if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {\n125:         for (sfb = 0; sfb < pmax; sfb++) {\n126:             for (k = sce->ics.swb_offset[sfb]; k < sce->ics.swb_offset[sfb + 1]; k++) {\n127:                 predict(&sce->predictor_state[k], &sce->coeffs[k], &sce->prcoeffs[k],\n128:                         sce->ics.predictor_present && sce->ics.prediction_used[sfb]);\n129:             }"
+    },
+    "klee_crash": {
+      "harness_file": "aacenc_pred.c",
+      "harness_line": 27,
+      "original_file": "aacenc_pred.c",
+      "original_line": 124,
+      "original_code": "if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {",
+      "original_context": "    121:     int sfb, k;\n    122:     const int pmax = FFMIN(sce->ics.max_sfb, ff_aac_pred_sfb_max[s->samplerate_index]);\n    123: \n>>> 124:     if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {\n    125:         for (sfb = 0; sfb < pmax; sfb++) {\n    126:             for (k = sce->ics.swb_offset[sfb]; k < sce->ics.swb_offset[sfb + 1]; k++) {\n    127:                 predict(&sce->predictor_state[k], &sce->coeffs[k], &sce->prcoeffs[k],",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: aacenc_pred.c\nLine: 27\nassembly.ll line: 28\nState: 1\nStack: \n\t#000000028 in ff_aac_apply_main_pred(139110700965888, 139093521096704) at aacenc_pred.c:27\n\t#100000059 in harness_entry(139110700965888, 139093521096704) at aacenc_pred.c:37\n\t#200000116 in main() at driver.c:22\nInfo: \n\taddress: 139127880835076\n\tnext: object at 138814348222464 of size 4\n\t\tMO19[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "buf_val",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3926_aacenc_pred.c_124_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "aacenc_pred.c",
+        "harness_line": 27,
+        "original_file": "aacenc_pred.c",
+        "original_line": 124,
+        "error_type": "ptr",
+        "crash_function": "ff_aac_apply_main_pred",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3926_aacenc_pred.c_124_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-sh.c",
+    "line": 925,
+    "function": "sh_relax_section",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "Writes a 16-bit instruction with bfd_put_16 to contents + irel->r_vaddr - sec->vma without ensuring there are at least 2 bytes remaining in the section buffer. A crafted relocation with r_vaddr near the end of the section can cause a write past the buffer boundary.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-sh.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used by the vulnerable code path. */\ntypedef uint64_t bfd_vma;\ntypedef struct bfd { int dummy; } bfd;\n\ntypedef struct asection {\n    bfd_vma vma;\n    struct asection* output_section;\n    bfd_vma output_offset;\n} asection;\n\ntypedef struct internal_reloc {\n    bfd_vma r_vaddr;\n    int r_type;\n    int r_symndx;\n    bfd_vma r_offset;\n} internal_reloc;\n\n/* Relocation and symbol class constants (minimal). */\n#define R_SH_USES    1\n#define R_SH_PCDISP  2\n#define R_SH_COUNT   3\n#define C_EXT        2\n\n/* Simplified coff_section_data holder and accessor. */\ntypedef struct coff_secdata {\n    void *relocs;\n    unsigned char *contents;\n} coff_secdata;\n\nstatic coff_secdata global_secdata;\nstatic inline coff_secdata* coff_section_data(bfd *abfd, asection *sec) {\n    (void)abfd; (void)sec;\n    return &global_secdata;\n}\n\n/* Minimal bfd_put_16 that writes 2 bytes to the provided buffer. */\n__attribute__((noinline))\nstatic void bfd_put_16(bfd *abfd, bfd_vma val, unsigned char *addr) {\n    (void)abfd;\n    /* Write in big-endian just like BFD often does for SH; endianness is not\n       important for triggering the overflow. */\n    addr[0] = (unsigned char)((val >> 8) & 0xff);\n    addr[1] = (unsigned char)(val & 0xff);\n}\n\n/* A very small struct to hold the only symbol field we care about here. */\ntypedef struct { int n_sclass; } simple_sym;\n\n/*\n * A trimmed-down version of the vulnerable portion of sh_relax_section.\n * It executes the same write as in coff-sh.c:925 without checking that there\n * are at least 2 bytes remaining in the section buffer.\n */\n__attribute__((noinline))\nstatic void sh_relax_section(bfd *abfd,\n                             asection *sec,\n                             unsigned char *contents,\n                             internal_reloc *internal_relocs,\n                             size_t nrelocs) {\n    (void)nrelocs;\n\n    /* Set local variables to mimic context in the real function. */\n    internal_reloc *irel = &internal_relocs[0];\n    internal_reloc *irelfn = &internal_relocs[0];\n    simple_sym sym;\n    sym.n_sclass = 1; /* Not C_EXT, so we hit the first bfd_put_16 path. */\n\n    /* foff must be within [-0x1000, 0x1000). Choose values so foff == 0. */\n    bfd_vma symval = irel->r_vaddr - sec->vma + sec->output_section->vma + sec->output_offset + 4;\n    bfd_vma foff = (bfd_vma)((int64_t)symval - (int64_t)(irel->r_vaddr - sec->vma + sec->output_section->vma + sec->output_offset + 4));\n    if ((int64_t)foff < -0x1000LL || (int64_t)foff >= 0x1000LL) {\n        /* Not expected in this reproducer. */\n        return;\n    }\n\n    /* Emulate the code around lines 909-934 from coff-sh.c */\n    coff_section_data(abfd, sec)->relocs = internal_relocs;\n    coff_section_data(abfd, sec)->contents = contents;\n\n    /* Change the reloc type and sym index as in the real code. */\n    irel->r_type = R_SH_PCDISP;\n    irel->r_symndx = irelfn->r_symndx;\n\n    if (sym.n_sclass != C_EXT) {\n        /* Vulnerable write: no bounds check before writing 2 bytes. */\n        bfd_put_16(abfd, (bfd_vma)0xb000 | (((int64_t)foff >> 1) & 0xfff),\n                   contents + irel->r_vaddr - sec->vma);\n    } else {\n        bfd_put_16(abfd, (bfd_vma)0xb000, contents + irel->r_vaddr - sec->vma);\n    }\n}\n\nint main(void) {\n    /* Allocate a small section buffer on the heap. */\n    const size_t section_size = 8; /* Intentionally small. */\n    unsigned char *contents = (unsigned char*)malloc(section_size);\n    if (!contents) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memset(contents, 0xCC, section_size);\n\n    /* Set up section and output section so that sec->vma == 0. */\n    asection out_sec = {0};\n    asection sec = {0};\n    sec.vma = 0;\n    sec.output_section = &out_sec;\n    sec.output_offset = 0;\n    out_sec.vma = 0;\n\n    /* Create a single relocation entry. */\n    internal_reloc rels[1];\n    memset(rels, 0, sizeof(rels));\n\n    /* Critical part: set r_vaddr to the LAST BYTE of the buffer. */\n    rels[0].r_vaddr = (bfd_vma)(section_size - 1); /* points to byte N-1 */\n    rels[0].r_type = R_SH_USES;  /* initial type before conversion */\n    rels[0].r_symndx = 0;\n    rels[0].r_offset = 0;\n\n    bfd dummy_bfd = {0};\n\n    /* This call will perform a 16-bit write starting at contents + (N-1),\n       overflowing the heap buffer by 1 byte and triggering ASan. */\n    sh_relax_section(&dummy_bfd, &sec, contents, rels, 1);\n\n    /* If ASan didn't already abort, clean up. */\n    free(contents);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7985155582427979,
+      "output": "=================================================================\n==3605786==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000018 at pc 0x5e429f1fba41 bp 0x7ffef82a7440 sp 0x7ffef82a7438\nWRITE of size 1 at 0x602000000018 thread T0\n    #0 0x5e429f1fba40 in bfd_put_16 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:48:13\n    #1 0x5e429f1fb866 in sh_relax_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:91:9\n    #2 0x5e429f1fb083 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:130:5\n    #3 0x775da602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x775da602a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5e429f13b314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer+0x21314) (BuildId: c67070f9fa9aae15209abf11c1c25a910ec1132d)\n\n0x602000000018 is located 0 bytes to the right of 8-byte region [0x602000000010,0x602000000018)\nallocated by thread T0 here:\n    #0 0x5e429f1bed22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer+0xa4d22) (BuildId: c67070f9fa9aae15209abf11c1c25a910ec1132d)\n    #1 0x5e429f1fadfb in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:101:47\n    #2 0x775da602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x775da602a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5e429f13b314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer+0x21314) (BuildId: c67070f9fa9aae15209abf11c1c25a910ec1132d)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:48:13 in bfd_put_16\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3605786==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "bfd_put_16",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:48",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "bfd_put_16",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:48",
+          "13"
+        ],
+        [
+          "1",
+          "sh_relax_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:91",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:130",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-sh_925_heap-buffer-overflow/reproducer.c:101",
+          "47"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

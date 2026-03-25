@@ -1,0 +1,27 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+avc_sid_to_context_raw_null_sid	NO_BUG	FP			0	avc_sid_to_context_raw		3	3653		
+avc_context_to_sid_raw_nonnull_terminated_ctx	NO_BUG	FP			0	avc_context_to_sid_raw		3	3653		
+security_canonicalize_context_raw_strlcpy_oob	NO_BUG	FP			0	security_canonicalize_context_raw		3	3653		
+freeconary_missing_null_terminator	NO_BUG	FP			0	freeconary		3	3653		
+string_to_security_class_nonnull_terminated	NO_BUG	FP			0	string_to_security_class		3	3653		
+avc_open_opts_overread	NO_BUG	FP			0	avc_open		3	3653		
+avc_cache_stats_struct_overwrite	NO_BUG	FP			0	avc_cache_stats		3	3653		
+selinux_restorecon_set_exclude_list_no_terminator	NO_BUG	FP			0	selinux_restorecon_set_exclude_list		3	3653		
+security_get_boolean_names_path_build_oob	NO_BUG	FP			0	security_get_boolean_names		3	3653		
+avc_get_initial_sid_con_not_terminated	NO_BUG	FP			0	avc_get_initial_sid		3	3653		
+selabel_hash_all_partial_matches_oob	NO_BUG	FP			0	selabel_hash_all_partial_matches		3	3653		
+selabel_lookup_best_match_stack_overflow	NO_BUG	FP			0	selabel_lookup_best_match		3	3653		
+matchpathcon_index_fixedbuf_overflow	NO_BUG	FP			0	matchpathcon_index		3	3653		
+realpath_not_final_dst_overflow	NO_BUG	FP			0	realpath_not_final		3	3653		
+selinux_restorecon_set_alt_rootpath_overflow	NO_BUG	FP			0	selinux_restorecon_set_alt_rootpath		3	3653		
+selinux_status_updated_uaf	NO_BUG	FP			0	selinux_status_updated		3	3653		
+avc_destroy_double_free	NO_BUG	FP			0	avc_destroy		3	3653		
+security_set_boolean_list_off_by_one	NO_BUG	FP			0	security_set_boolean_list		3	3653		
+security_av_string_heap_overflow	NO_BUG	FP			0	security_av_string		3	3653		
+set_matchpathcon_flags_index_oob	NO_BUG	FP			0	set_matchpathcon_flags		3	3653		
+avc_netlink_check_nb_len_trust	NO_BUG	FP			0	avc_netlink_check_nb		3	3653		
+avc_sid_to_context_null	NO_BUG	FP			0	avc_sid_to_context		3	3653		
+avc_context_to_sid_str_nul	NO_BUG	FP			0	avc_context_to_sid		3	3653		
+sidtab_context_to_sid_oob	NO_BUG	FP			0	sidtab_context_to_sid		3	3653		
+sidtab_destroy_double_free	NO_BUG	FP			0	sidtab_destroy		3	3653		
+avc_netlink_open_paths	NO_BUG	FP			0	avc_netlink_open		0	3653		

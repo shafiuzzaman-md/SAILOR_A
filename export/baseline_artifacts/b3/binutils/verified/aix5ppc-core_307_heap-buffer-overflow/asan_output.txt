@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4079905==ERROR: AddressSanitizer: SEGV on unknown address 0x610fffffffdc (pc 0x7c36f1188ad2 bp 0x7fff80ebf530 sp 0x7fff80ebecf8 T0)
+==4079905==The signal is caused by a WRITE memory access.
+    #0 0x7c36f1188ad2 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:323
+    #1 0x5b2914e590d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/binutils/verified/aix5ppc-core_307_heap-buffer-overflow/reproducer+0xa40d5) (BuildId: 3fffe4f88a84b2c272064373fb5690dbdd378862)
+    #2 0x5b2914e9678a in bfd_read /app/export/baseline_artifacts/b3/binutils/verified/aix5ppc-core_307_heap-buffer-overflow/reproducer.c:26:5
+    #3 0x5b2914e96294 in xcoff64_core_file_matches_executable_p /app/export/baseline_artifacts/b3/binutils/verified/aix5ppc-core_307_heap-buffer-overflow/reproducer.c:66:13
+    #4 0x5b2914e95f99 in main /app/export/baseline_artifacts/b3/binutils/verified/aix5ppc-core_307_heap-buffer-overflow/reproducer.c:123:11
+    #5 0x7c36f102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7c36f102a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5b2914dd6304 in _start (/app/export/baseline_artifacts/b3/binutils/verified/aix5ppc-core_307_heap-buffer-overflow/reproducer+0x21304) (BuildId: 3fffe4f88a84b2c272064373fb5690dbdd378862)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:323 in __memcpy_avx_unaligned_erms
+==4079905==ABORTING

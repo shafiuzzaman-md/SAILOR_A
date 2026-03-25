@@ -1,0 +1,19 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4024066==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7d2dc5388aec bp 0x7ffe09143820 sp 0x7ffe091437d8 T0)
+==4024066==The signal is caused by a WRITE memory access.
+==4024066==Hint: address points to the zero page.
+    #0 0x7d2dc5388aec in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:344
+    #1 0x7d2dc5293eaa in __GI_memcpy libio/../string/bits/string_fortified.h:29:10
+    #2 0x7d2dc5293eaa in __GI__IO_file_xsgetn libio/./libio/fileops.c:1296:4
+    #3 0x7d2dc528649a in _IO_fread libio/./libio/iofread.c:38:16
+    #4 0x58a7a1250f33 in fread (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer+0x3cf33) (BuildId: 4f738f1d149e5c4edd29902a0c935e178ff1ce63)
+    #5 0x58a7a12f531b in trigger_htmlTokenizerTest_like_bug /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:39:13
+    #6 0x58a7a12f500c in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:96:5
+    #7 0x7d2dc522a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #8 0x7d2dc522a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #9 0x58a7a1235354 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer+0x21354) (BuildId: 4f738f1d149e5c4edd29902a0c935e178ff1ce63)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:344 in __memcpy_avx_unaligned_erms
+==4024066==ABORTING

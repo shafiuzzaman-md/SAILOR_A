@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/pds/tif_pdsdirread.c",
+    "line": 605,
+    "function": "TIFFFetchShortPair",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "Passes a 2-element stack array v[2] to TIFFFetchShortArray() without verifying dir->tdir_count == 2. For SHORT/SSHORT with count > 2, TIFFFetchShortArray() falls back to TIFFFetchData() and copies dir->tdir_count shorts into v, overflowing the 2-element buffer.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/pds/tif_pdsdirread.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal, self-contained reimplementation of the vulnerable code path\n * from contrib/pds/tif_pdsdirread.c to demonstrate the stack-buffer-overflow.\n */\n\ntypedef struct {\n    struct {\n        uint16_t tiff_magic;\n    } tif_header;\n} TIFF;\n\n/* Minimal TIFFDirEntry struct with only the needed fields */\ntypedef struct {\n    uint16_t tdir_tag;\n    uint16_t tdir_type;\n    uint32_t tdir_count;\n    uint32_t tdir_offset;\n} TIFFDirEntry;\n\n/* Endianness constants */\n#define TIFF_BIGENDIAN    0x4d4d\n#define TIFF_LITTLEENDIAN 0x4949\n\n/* TIFF data type constants used here */\n#define TIFF_BYTE   1\n#define TIFF_SHORT  3\n#define TIFF_LONG   4\n#define TIFF_RATIONAL 5\n#define TIFF_SBYTE  6\n#define TIFF_SSHORT 8\n\n/* Global buffer used by our TIFFFetchData stub to simulate file data */\nstatic uint8_t* g_data = NULL;\nstatic size_t g_data_len = 0;\n\nstatic uint32_t TIFFDataWidth(uint16_t type)\n{\n    switch (type) {\n        case TIFF_BYTE:\n        case TIFF_SBYTE:    return 1;\n        case TIFF_SHORT:\n        case TIFF_SSHORT:   return 2;\n        case TIFF_LONG:     return 4;\n        case TIFF_RATIONAL: return 8;\n        default:            return 1;\n    }\n}\n\n/* Stub for TIFFSetField: keep it static to avoid clashing with libtiff's symbol */\nstatic int TIFFSetField(TIFF* tif, uint16_t tag, uint16_t a, uint16_t b)\n{\n    (void)tif; (void)tag; (void)a; (void)b;\n    /* Do nothing; presence ensures v[0], v[1] are read to prevent optimization. */\n    return 1;\n}\n\n/* Stub for TIFFFetchData that copies dir->tdir_count * width bytes from g_data into buf. */\nstatic int TIFFFetchData(TIFF* tif, TIFFDirEntry* dir, char* buf)\n{\n    (void)tif;\n    size_t width = TIFFDataWidth(dir->tdir_type);\n    size_t n = (size_t)dir->tdir_count * width;\n    if (g_data && g_data_len >= n) {\n        /* This memcpy is what will overflow the small destination buffer in the caller */\n        memcpy(buf, g_data, n);\n    } else {\n        /* Still copy n bytes to trigger the overflow even if test data is short */\n        for (size_t i = 0; i < n; i++) buf[i] = (char)(i & 0xFF);\n    }\n    return 1;\n}\n\n/* Unused in this reproducer, but declared to satisfy the call site */\nstatic int TIFFFetchByteArray(TIFF *tif, TIFFDirEntry *dir, uint16_t *v)\n{\n    (void)tif; (void)dir; (void)v;\n    return 0;\n}\n\n/* Vulnerable helper: identical logic to the one shown in the snippet */\nstatic int TIFFFetchShortArray(TIFF *tif, TIFFDirEntry *dir, uint16_t *v)\n{\n    if (dir->tdir_count <= 2)\n    {\n        if (tif->tif_header.tiff_magic == TIFF_BIGENDIAN)\n        {\n            switch (dir->tdir_count)\n            {\n                case 2:\n                    v[1] = (uint16_t)(dir->tdir_offset & 0xffff);\n                    /* fall through */\n                case 1:\n                    v[0] = (uint16_t)(dir->tdir_offset >> 16);\n            }\n        }\n        else\n        {\n            switch (dir->tdir_count)\n            {\n                case 2:\n                    v[1] = (uint16_t)(dir->tdir_offset >> 16);\n                    /* fall through */\n                case 1:\n                    v[0] = (uint16_t)(dir->tdir_offset & 0xffff);\n            }\n        }\n        return 1;\n    }\n    else {\n        /* BUG: For count > 2, copies count shorts into v (only 2 elements) */\n        return (TIFFFetchData(tif, dir, (char *)v) != 0);\n    }\n}\n\n/* Vulnerable function from contrib/pds/tif_pdsdirread.c */\nstatic int TIFFFetchShortPair(TIFF *tif, TIFFDirEntry *dir)\n{\n    uint16_t v[2];\n    int ok = 0;\n\n    switch (dir->tdir_type)\n    {\n        case TIFF_SHORT:\n        case TIFF_SSHORT:\n            ok = TIFFFetchShortArray(tif, dir, v);\n            break;\n        case TIFF_BYTE:\n        case TIFF_SBYTE:\n            ok = TIFFFetchByteArray(tif, dir, v);\n            break;\n    }\n    if (ok)\n        TIFFSetField(tif, dir->tdir_tag, v[0], v[1]);\n    return ok;\n}\n\nint main(void)\n{\n    /* Prepare fake file data: 10 shorts = 20 bytes */\n    uint32_t count = 10; /* > 2 to hit the overflow path */\n    g_data_len = count * sizeof(uint16_t);\n    g_data = (uint8_t*)malloc(g_data_len);\n    if (!g_data) return 1;\n    for (size_t i = 0; i < g_data_len; i++) g_data[i] = (uint8_t)(0xA0 + (i & 0x0F));\n\n    TIFF tif;\n    tif.tif_header.tiff_magic = TIFF_LITTLEENDIAN;\n\n    TIFFDirEntry dir;\n    dir.tdir_tag = 65000;      /* arbitrary */\n    dir.tdir_type = TIFF_SHORT;/* triggers TIFFFetchShortArray path */\n    dir.tdir_count = count;    /* count > 2 forces TIFFFetchData into 2-element v */\n    dir.tdir_offset = 0;       /* unused by our TIFFFetchData stub */\n\n    /* This call will cause TIFFFetchShortArray to memcpy 20 bytes into v[2] (4 bytes) */\n    (void)TIFFFetchShortPair(&tif, &dir);\n\n    free(g_data);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7577180862426758,
+      "output": "=================================================================\n==3832908==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fff0bc0bbe4 at pc 0x5d283393d09e bp 0x7fff0bc0ba30 sp 0x7fff0bc0b200\nWRITE of size 20 at 0x7fff0bc0bbe4 thread T0\n    #0 0x5d283393d09d in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer+0xa409d) (BuildId: c23bc6c0ceae73d1a36987c5da289933dcee5dd5)\n    #1 0x5d283397a979 in TIFFFetchData /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:69:9\n    #2 0x5d283397a824 in TIFFFetchShortArray /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:115:17\n    #3 0x5d283397a1ff in TIFFFetchShortPair /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:129:18\n    #4 0x5d2833979ff8 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:160:11\n    #5 0x78e608e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x78e608e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5d28338ba304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer+0x21304) (BuildId: c23bc6c0ceae73d1a36987c5da289933dcee5dd5)\n\nAddress 0x7fff0bc0bbe4 is located in stack of thread T0 at offset 36 in frame\n    #0 0x5d283397a0af in TIFFFetchShortPair /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:121\n\n  This frame has 1 object(s):\n    [32, 36) 'v' (line 122) <== Memory access at offset 36 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer+0xa409d) (BuildId: c23bc6c0ceae73d1a36987c5da289933dcee5dd5) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x100061779720: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100061779730: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100061779740: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100061779750: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100061779760: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x100061779770: 00 00 00 00 00 00 00 00 f1 f1 f1 f1[04]f3 f3 f3\n  0x100061779780: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100061779790: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1\n  0x1000617797a0: 02 f2 00 04 f3 f3 f3 f3 00 00 00 00 00 00 00 00\n  0x1000617797b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000617797c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3832908==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "TIFFFetchShortPair",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c",
+      "crash_line": 121,
+      "frames": [
+        [
+          "1",
+          "TIFFFetchData",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:69",
+          "9"
+        ],
+        [
+          "2",
+          "TIFFFetchShortArray",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:115",
+          "17"
+        ],
+        [
+          "3",
+          "TIFFFetchShortPair",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:129",
+          "18"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c:160",
+          "11"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "TIFFFetchShortPair",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_605_stack-buffer-overflow/reproducer.c",
+          "121"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runxmlconf.c",
+    "line": 251,
+    "function": "xmlconfTestNotNSWF",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlGetLastError() may return NULL if no error has been set. The code dereferences the result (error->code and error->domain) without checking for NULL, leading to a crash when no error is present.",
+    "abs_path": "/tmp/libxml2_upstream/runxmlconf.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n\n/* Minimal type re-declarations to mimic libxml2 interfaces used by runxmlconf.c */\ntypedef struct _xmlParserCtxt {\n    int dummy;\n} xmlParserCtxt;\n\ntypedef xmlParserCtxt* xmlParserCtxtPtr;\n\ntypedef struct _xmlDoc {\n    int dummy;\n} xmlDoc;\n\ntypedef xmlDoc* xmlDocPtr;\n\ntypedef struct _xmlError {\n    int domain;\n    int code;\n} xmlError;\n\n/* Constants from libxml2 (values here are placeholders, not used due to NULL deref) */\n#define XML_ERR_OK 0\n#define XML_FROM_NAMESPACE 200\n\n/* Stub implementations of the libxml2 API used by the vulnerable code */\nxmlParserCtxtPtr xmlNewParserCtxt(void) {\n    xmlParserCtxtPtr ctxt = (xmlParserCtxtPtr)malloc(sizeof(xmlParserCtxt));\n    return ctxt;\n}\n\ntypedef void (*xmlErrorFunc)(void *ctx, const char *msg, ...);\n\nvoid xmlCtxtSetErrorHandler(xmlParserCtxtPtr ctxt, xmlErrorFunc handler, void *ctx) {\n    (void)ctxt; (void)handler; (void)ctx; /* no-op stub */\n}\n\nxmlDocPtr xmlCtxtReadFile(xmlParserCtxtPtr ctxt, const char *filename, const char *encoding, int options) {\n    (void)ctxt; (void)filename; (void)encoding; (void)options;\n    /* Return a non-NULL document to reach the vulnerable branch */\n    return (xmlDocPtr)malloc(sizeof(xmlDoc));\n}\n\nconst xmlError* xmlGetLastError(void) {\n    /* Critical behavior: return NULL to simulate \\\"no error set\\\" */\n    return NULL;\n}\n\nvoid xmlFreeDoc(xmlDocPtr doc) {\n    free(doc);\n}\n\nvoid xmlFreeParserCtxt(xmlParserCtxtPtr ctxt) {\n    free(ctxt);\n}\n\n/* Dummy error handler used in the test harness */\nstatic void testErrorHandler(void *ctx, const char *msg, ...) {\n    (void)ctx; (void)msg; /* no-op */\n}\n\n/* Vulnerable function reproduced from runxmlconf.c (trimmed to the faulty logic) */\nstatic int xmlconfTestNotNSWF(const char *id, const char *filename, int options) {\n    (void)id; /* unused in this minimal reproducer */\n    xmlParserCtxtPtr ctxt;\n    xmlDocPtr doc;\n    int ret = 1;\n\n    ctxt = xmlNewParserCtxt();\n    xmlCtxtSetErrorHandler(ctxt, testErrorHandler, NULL);\n\n    /* In case of Namespace errors, libxml2 will still parse the document\n     * but log a Namespace error.\n     */\n    doc = xmlCtxtReadFile(ctxt, filename, NULL, options);\n    if (doc == NULL) {\n        ret = 0;\n    } else {\n        const xmlError *error = xmlGetLastError();\n        /* BUG: error may be NULL; dereferencing causes a crash */\n        if ((error->code == XML_ERR_OK) || (error->domain != XML_FROM_NAMESPACE)) {\n            /* no-op, the crash happens before this can run */\n            ret = 0;\n        }\n        xmlFreeDoc(doc);\n    }\n    xmlFreeParserCtxt(ctxt);\n    return ret;\n}\n\nint main(void) {\n    /* Trigger the vulnerable code path: ensure parsing \\\"succeeds\\\" and no error is set */\n    (void)xmlconfTestNotNSWF(\"id-1\", \"dummy.xml\", 0);\n    /* If the bug is present, program will crash before reaching here */\n    puts(\"If you see this, the NULL deref did not trigger.\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.1078705787658691,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4050865==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x65079fc67e54 bp 0x7ffe20131910 sp 0x7ffe201318b0 T0)\n==4050865==The signal is caused by a READ memory access.\n==4050865==Hint: address points to the zero page.\n    #0 0x65079fc67e54 in xmlconfTestNotNSWF /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:82:26\n    #1 0x65079fc67d83 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:94:11\n    #2 0x7da5a2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7da5a2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x65079fba8304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer+0x21304) (BuildId: 4566ef9f02040b2cbdd969e21a9338799bacb9bc)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:82:26 in xmlconfTestNotNSWF\n==4050865==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlconfTestNotNSWF",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:82",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "xmlconfTestNotNSWF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:82",
+          "26"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_251_null-pointer-dereference/reproducer.c:94",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

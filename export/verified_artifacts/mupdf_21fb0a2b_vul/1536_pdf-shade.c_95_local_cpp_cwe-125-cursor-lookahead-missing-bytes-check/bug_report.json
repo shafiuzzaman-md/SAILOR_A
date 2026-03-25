@@ -1,0 +1,87 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-shade.c",
+        "original_line": 95,
+        "function": "pdf_load_function_based_shading",
+        "entry_point": "pdf_load_shading",
+        "spine": [
+            "pdf_load_shading",
+            "pdf_load_shading_dict",
+            "pdf_load_function_based_shading"
+        ],
+        "original_context": "90: \n91: \tshade->u.f.matrix = pdf_dict_get_matrix(ctx, dict, PDF_NAME(Matrix));\n92: \tshade->u.f.xdivs = FUNSEGS;\n93: \tshade->u.f.ydivs = FUNSEGS;\n94: \tshade->u.f.fn_vals = Memento_label(fz_malloc(ctx, (FUNSEGS+1)*(FUNSEGS+1)*n*sizeof(float)), \"shade_fn_vals\");\n95: \tshade->u.f.domain[0][0] = x0;\n96: \tshade->u.f.domain[0][1] = y0;\n97: \tshade->u.f.domain[1][0] = x1;\n98: \tshade->u.f.domain[1][1] = y1;\n99: \n100: \tp = shade->u.f.fn_vals;"
+    },
+    "klee_crash": {
+        "harness_file": "pdf-shade.c",
+        "harness_line": 51,
+        "original_file": "pdf-shade.c",
+        "original_line": 95,
+        "original_code": "shade->u.f.domain[0][0] = x0;",
+        "original_context": "    92: \tshade->u.f.xdivs = FUNSEGS;\n    93: \tshade->u.f.ydivs = FUNSEGS;\n    94: \tshade->u.f.fn_vals = Memento_label(fz_malloc(ctx, (FUNSEGS+1)*(FUNSEGS+1)*n*sizeof(float)), \"shade_fn_vals\");\n>>> 95: \tshade->u.f.domain[0][0] = x0;\n    96: \tshade->u.f.domain[0][1] = y0;\n    97: \tshade->u.f.domain[1][0] = x1;\n    98: \tshade->u.f.domain[1][1] = y1;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: pdf-shade.c\nLine: 51\nassembly.ll line: 237\nState: 1\nStack: \n\t#000000237 in pdf_load_function_based_shading(140232520327168, 139923282681856, 139906102812672) at pdf-shade.c:51\n\t#100000193 in pdf_load_shading_dict(140232520327168, 139923282681856, 139906102812672) at pdf-shade.c:16\n\t#200000264 in pdf_load_shading(140232520327168, 139923282681856, 139906102812672) at pdf-shade.c:23\n\t#300000167 in main() at driver.c:23\nInfo: \n\taddress: 34040\n\tnext: ob"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ctx",
+            "size": 4096,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "doc",
+            "size": 2048,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "dict",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_find_item",
+        "crash_file": "source/fitz/store.c",
+        "crash_line": 580,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==7896==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x52100000ecd0 at pc 0x55d5644470a1 bp 0x7ffd6931f5f0 sp 0x7ffd6931f5e0\nREAD of size 8 at 0x52100000ecd0 thread T0\n    #0 0x55d5644470a0 in fz_find_item source/fitz/store.c:580\n    #1 0x55d564359660 in pdf_load_shading source/pdf/pdf-shade.c:494\n    #2 0x55d564356750 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1536_pdf-shade.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:23\n    #3 0x7fd92c122d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fd92c122e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55d5643563b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1536_pdf-shade.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1483b4)\n\nAddress 0x52100000ecd0 is a wild pointer.\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/store.c:580 in fz_find_item\nShadow bytes around the buggy address:\n  0x0a427fff9d40: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9d50: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9d60: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9d70: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9d80: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a427fff9d90: fa fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa\n  0x0a427fff9da0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9db0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9dc0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9dd0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a427fff9de0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed he"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1536_pdf-shade.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-shade.c",
+            "harness_line": 51,
+            "original_file": "pdf-shade.c",
+            "original_line": 95,
+            "error_type": "ptr",
+            "crash_function": "pdf_load_function_based_shading",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1536_pdf-shade.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_find_item",
+            "crash_file": "source/fitz/store.c",
+            "crash_line": 580
+        }
+    ]
+}

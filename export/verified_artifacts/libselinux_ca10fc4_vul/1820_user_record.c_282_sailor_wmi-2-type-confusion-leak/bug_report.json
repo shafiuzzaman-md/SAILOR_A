@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "user_record.c",
+        "original_line": 282,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "277: \t*roles_arr = tmp_roles;\n278: \t*num_roles = user->num_roles;\n279: \treturn STATUS_SUCCESS;\n280: \n281:       omem:\n282: \tERR(handle, \"out of memory, could not \"\n283: \t    \"allocate roles array for user %s\", user->name);\n284: \tfree(tmp_roles);\n285: \treturn STATUS_ERR;\n286: }\n287: "
+    },
+    "klee_crash": {
+        "harness_file": "user_record.c",
+        "harness_line": 52,
+        "original_file": "user_record.c",
+        "original_line": 275,
+        "original_code": "tmp_roles[i] = user->roles[i];",
+        "original_context": "    272: \t\tgoto omem;\n    273: \n    274: \tfor (i = 0; i < user->num_roles; i++)\n>>> 275: \t\ttmp_roles[i] = user->roles[i];\n    276: \n    277: \t*roles_arr = tmp_roles;\n    278: \t*num_roles = user->num_roles;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: null page access\nFile: user_record.c\nLine: 52\nassembly.ll line: 164\nState: 1\nStack: \n\t#000000164 in sepol_user_get_roles(139804253917184, 139941692870656, 139446697889792, 139437034213376) at user_record.c:52\n\t#100000260 in entry_func(139804253917184, 139941692870656, 139446697889792, 139437034213376) at user_record.c:70\n\t#200000092 in main() at driver.c:38\nInfo: \n\taddress: 0\n\tnext: object at 139435960471552 of size 4\n\t\tMO142[4] allocated at sepol_user_get_roles():  %10 = al"
+    },
+    "concrete_inputs": [
+        {
+            "name": "user_name",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "sepol_user_get_roles",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+        "crash_line": 282,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4481==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000028 at pc 0x55fd494ab088 bp 0x7fff2ae07920 sp 0x7fff2ae07910\nREAD of size 8 at 0x502000000028 thread T0\n    #0 0x55fd494ab087 in sepol_user_get_roles /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:282\n    #1 0x55fd494a97ae in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1820_user_record.c_282_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:38\n    #2 0x7f480045dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f480045de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55fd494a9324 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1820_user_record.c_282_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2324)\n\n0x502000000028 is located 8 bytes to the left of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f4800814887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55fd494a9500 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1820_user_record.c_282_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:19\n    #2 0x7f480045dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:282 in sepol_user_get_roles\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa[fa]00 00 fa fa 00 00 fa fa fa fa\n  0x0a047fff8010: f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/1820_user_record.c_282_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "user_record.c",
+            "harness_line": 52,
+            "original_file": "user_record.c",
+            "original_line": 275,
+            "error_type": "ptr",
+            "crash_function": "sepol_user_get_roles",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/1820_user_record.c_282_sailor_wmi-2-type-confusion-leak/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "sepol_user_get_roles",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c",
+            "crash_line": 282
+        }
+    ]
+}

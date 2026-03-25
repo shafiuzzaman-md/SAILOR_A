@@ -1,0 +1,81 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "draw-blend.c",
+        "original_line": 571,
+        "function": "fz_blend_nonseparable",
+        "entry_point": "fz_blend_pixmap",
+        "spine": [
+            "fz_blend_pixmap",
+            "fz_blend_nonseparable"
+        ],
+        "original_context": "566: \t\t\t\t\trr = 255 - rr;\n567: \t\t\t\t\trg = 255 - rg;\n568: \t\t\t\t\trb = 255 - rb;\n569: \t\t\t\t\tbp[0] = fz_mul255(255 - sa, bp[0]) + fz_mul255(255 - ba, sp[0]) + fz_mul255(saba, rr);\n570: \t\t\t\t\tbp[1] = fz_mul255(255 - sa, bp[1]) + fz_mul255(255 - ba, sp[1]) + fz_mul255(saba, rg);\n571: \t\t\t\t\tbp[2] = fz_mul255(255 - sa, bp[2]) + fz_mul255(255 - ba, sp[2]) + fz_mul255(saba, rb);\n572: \n573: \t\t\t\t\tswitch (blendmode)\n574: \t\t\t\t\t{\n575: \t\t\t\t\tdefault:\n576: \t\t\t\t\tcase FZ_BLEND_HUE:"
+    },
+    "klee_crash": {
+        "harness_file": "draw-blend.c",
+        "harness_line": 41,
+        "original_file": "draw-blend.c",
+        "original_line": 571,
+        "original_code": "bp[2] = fz_mul255(255 - sa, bp[2]) + fz_mul255(255 - ba, sp[2]) + fz_mul255(saba, rb);",
+        "original_context": "    568: \t\t\t\t\trb = 255 - rb;\n    569: \t\t\t\t\tbp[0] = fz_mul255(255 - sa, bp[0]) + fz_mul255(255 - ba, sp[0]) + fz_mul255(saba, rr);\n    570: \t\t\t\t\tbp[1] = fz_mul255(255 - sa, bp[1]) + fz_mul255(255 - ba, sp[1]) + fz_mul255(saba, rg);\n>>> 571: \t\t\t\t\tbp[2] = fz_mul255(255 - sa, bp[2]) + fz_mul255(255 - ba, sp[2]) + fz_mul255(saba, rb);\n    572: \n    573: \t\t\t\t\tswitch (blendmode)\n    574: \t\t\t\t\t{",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: draw-blend.c\nLine: 41\nassembly.ll line: 221\nState: 1\nStack: \n\t#000000221 in fz_blend_nonseparable(139546109489152, 0, 139528929619968, 0, 3, 1, 0, 0, 0) at draw-blend.c:41\n\t#100000096 in fz_blend_pixmap(139247609262080, 139284116484096, 139281969000448, 255, 0, 0, 139286263967744) at draw-blend.c:62\n\t#200000362 in main() at driver.c:40\nInfo: \n\taddress: 139546109489154\n\tnext: object at 139245730213888 of size 4\n\t\tMO289[4] allocated at fz_blend_nonse"
+    },
+    "concrete_inputs": [
+        {
+            "name": "dst_buf",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "src_buf",
+            "size": 3,
+            "data": "b'\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "fz_blend_pixmap",
+        "crash_file": "source/fitz/draw-blend.c",
+        "crash_line": 1135,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==6528==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffe599d09a8 at pc 0x55695cce1138 bp 0x7ffe599d0780 sp 0x7ffe599d0770\nREAD of size 8 at 0x7ffe599d09a8 thread T0\n    #0 0x55695cce1137 in fz_blend_pixmap source/fitz/draw-blend.c:1135\n    #1 0x55695ccdb28b in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1438_draw-blend.c_571_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:40\n    #2 0x7f57265ead8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f57265eae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55695ccda8e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1438_draw-blend.c_571_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x108e4)\n\nAddress 0x7ffe599d09a8 is located in stack of thread T0 at offset 200 in frame\n    #0 0x55695ccda9b8 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1438_draw-blend.c_571_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:6\n\n  This frame has 4 object(s):\n    [32, 36) 'ctx_obj' (line 8)\n    [48, 96) 'dst' (line 19)\n    [128, 176) 'src' (line 25)\n    [208, 256) 'shape' (line 32) <== Memory access at offset 200 underflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow source/fitz/draw-blend.c:1135 in fz_blend_pixmap\nShadow bytes around the buggy address:\n  0x10004b3320e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004b3320f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004b332100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004b332110: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1\n  0x10004b332120: 04 f2 00 00 00 00 00 00 f2 f2 f2 f2 00 00 00 00\n=>0x10004b332130:"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1438_draw-blend.c_571_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "draw-blend.c",
+            "harness_line": 41,
+            "original_file": "draw-blend.c",
+            "original_line": 571,
+            "error_type": "ptr",
+            "crash_function": "fz_blend_nonseparable",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1438_draw-blend.c_571_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "fz_blend_pixmap",
+            "crash_file": "source/fitz/draw-blend.c",
+            "crash_line": 1135
+        }
+    ]
+}

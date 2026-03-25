@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c",
+    "line": 858,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Indexes into the string literal info_platform using argc without bounds checking; a large argc can cause an out-of-bounds read.",
+    "abs_path": "/tmp/libtiff_upstream/build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/*\n   This reproducer emulates the relevant pieces of the CMakeCCompilerId.c\n   program where it indexes several info_* strings with argc without\n   bounds checks. We construct these globals so that only info_platform\n   will be too short for the chosen argc, triggering an out-of-bounds read\n   at that access.\n*/\n\n/* Globals analogous to those in CMakeCCompilerId.c */\nconst char* info_compiler;\nconst char* info_platform;\nconst char* info_arch;\nconst char* info_version;\nconst char* info_version_internal;\nconst char* info_simulate;\nconst char* info_simulate_version;\nconst char* info_cray;\nconst char* info_language_standard_default;\nconst char* info_language_extensions_default;\n\n/* Vulnerable function logic extracted/renamed from CMakeCCompilerId.c */\nstatic int cmake_id_main(int argc, char* argv[]) {\n    int require = 0;\n    /* The following lines mirror the pattern from the original file */\n    require += info_compiler[argc];            /* in-bounds for our crafted argc */\n    require += info_platform[argc];            /* out-of-bounds read here */\n    require += info_arch[argc];\n    require += info_language_standard_default[argc];\n    require += info_language_extensions_default[argc];\n    (void)argv;\n    return require;\n}\n\nint main(void) {\n    /*\n      Prepare the globals so that:\n        - info_compiler is large enough (no OOB on first access)\n        - info_platform is very small (OOB on second access)\n        - the rest are large enough\n    */\n\n    /* Large buffer for info_compiler (size 128) */\n    char* buf_compiler = (char*)malloc(128);\n    memset(buf_compiler, 'A', 127);\n    buf_compiler[127] = '\\0';\n    info_compiler = buf_compiler;\n\n    /* Small buffer for info_platform (size 4, i.e., valid indices 0..3) */\n    char* buf_platform = (char*)malloc(4);\n    /* \"PLT\" + NUL */\n    buf_platform[0] = 'P';\n    buf_platform[1] = 'L';\n    buf_platform[2] = 'T';\n    buf_platform[3] = '\\0';\n    info_platform = buf_platform;\n\n    /* Other buffers made sufficiently large */\n    char* buf_arch = (char*)malloc(64);\n    memset(buf_arch, 'B', 63);\n    buf_arch[63] = '\\0';\n    info_arch = buf_arch;\n\n    char* buf_lang_std = (char*)malloc(64);\n    snprintf(buf_lang_std, 64, \"INFO:standard_default[99]\");\n    info_language_standard_default = buf_lang_std;\n\n    char* buf_lang_ext = (char*)malloc(64);\n    snprintf(buf_lang_ext, 64, \"INFO:extensions_default[ON]\");\n    info_language_extensions_default = buf_lang_ext;\n\n    /* Unused in our trimmed function but declare to mirror structure */\n    info_version = \"INFO:version[unused]\";\n    info_version_internal = \"INFO:version_internal[unused]\";\n    info_simulate = \"INFO:simulate[unused]\";\n    info_simulate_version = \"INFO:simulate_version[unused]\";\n    info_cray = \"INFO:cray[unused]\";\n\n    /* Choose argc to be within bounds for info_compiler but out-of-bounds for info_platform.\n       info_platform buffer size is 4, valid indices are 0..3. Using argc = 4 triggers OOB. */\n    int crafted_argc = 4;\n\n    /* Call the vulnerable logic. AddressSanitizer should report an out-of-bounds read\n       (heap-buffer-overflow) at the info_platform[argc] access. */\n    int ret = cmake_id_main(crafted_argc, NULL);\n\n    /* Prevent compiler from optimizing everything away (even though -O0 is used) */\n    fprintf(stderr, \"Returned: %d\\n\", ret);\n\n    /* Clean up (not reached if ASan aborts, but harmless) */\n    free(buf_compiler);\n    free(buf_platform);\n    free(buf_arch);\n    free(buf_lang_std);\n    free(buf_lang_ext);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9081892967224121,
+      "output": "=================================================================\n==3807647==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000014 at pc 0x5bbd6342d0b9 bp 0x7ffee86f2df0 sp 0x7ffee86f2de8\nREAD of size 1 at 0x602000000014 thread T0\n    #0 0x5bbd6342d0b8 in cmake_id_main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:30:16\n    #1 0x5bbd6342cf8d in main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:88:15\n    #2 0x7ff02722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7ff02722a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bbd6336d304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer+0x21304) (BuildId: 4ed2eb13c78c57f606339c2c8411d8c7adf27e32)\n\n0x602000000014 is located 0 bytes to the right of 4-byte region [0x602000000010,0x602000000014)\nallocated by thread T0 here:\n    #0 0x5bbd633f0d12 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 4ed2eb13c78c57f606339c2c8411d8c7adf27e32)\n    #1 0x5bbd6342cd2b in main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:53:33\n    #2 0x7ff02722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7ff02722a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bbd6336d304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer+0x21304) (BuildId: 4ed2eb13c78c57f606339c2c8411d8c7adf27e32)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:30:16 in cmake_id_main\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3807647==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "cmake_id_main",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:30",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "cmake_id_main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:30",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:88",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_858_out-of-bounds-read/reproducer.c:53",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

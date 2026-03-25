@@ -1,0 +1,79 @@
+{
+  "ivi_dsp.c": {
+    "3": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 29,
+      "code": "#include <string.h>"
+    },
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 65,
+      "code": "}"
+    },
+    "17": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 630,
+      "code": "void ff_ivi_row_slant8(const int32_t *in, int16_t *out, ptrdiff_t pitch, const uint8_t *flags)"
+    },
+    "18": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 631,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 632,
+      "code": "int     i;"
+    },
+    "20": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 633,
+      "code": "int     t0, t1, t2, t3, t4, t5, t6, t7, t8;"
+    },
+    "22": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 636,
+      "code": "for (i = 0; i < 8; i++) {"
+    },
+    "23": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 637,
+      "code": "if (!in[0] && !in[1] && !in[2] && !in[3] && !in[4] && !in[5] && !in[6] && !in[7]) {"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 638,
+      "code": "memset(out, 0, 8*sizeof(out[0]));"
+    },
+    "25": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 639,
+      "code": "} else {"
+    },
+    "28": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 643,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 644,
+      "code": "in += 8;"
+    },
+    "32": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 645,
+      "code": "out += pitch;"
+    },
+    "33": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 646,
+      "code": "}"
+    },
+    "34": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 646,
+      "code": "}"
+    }
+  }
+}

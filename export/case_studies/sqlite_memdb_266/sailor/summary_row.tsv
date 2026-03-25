@@ -1,0 +1,1 @@
+060_memdb.c_266_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	244	77017	7	1	ptr	memdb.c	266	unknown	unknown	false	no_asan	0	

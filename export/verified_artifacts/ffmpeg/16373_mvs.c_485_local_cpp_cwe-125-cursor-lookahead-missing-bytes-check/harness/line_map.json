@@ -1,0 +1,139 @@
+{
+  "mvs.c": {
+    "80": {
+      "orig_file": "mvs.c",
+      "orig_line": 45,
+      "code": "{"
+    },
+    "84": {
+      "orig_file": "mvs.c",
+      "orig_line": 59,
+      "code": "}"
+    },
+    "94": {
+      "orig_file": "mvs.c",
+      "orig_line": 482,
+      "code": "void ff_hevc_luma_mv_merge_mode(HEVCLocalContext *lc, const HEVCPPS *pps,"
+    },
+    "97": {
+      "orig_file": "mvs.c",
+      "orig_line": 485,
+      "code": "int merge_idx, MvField *mv)"
+    },
+    "98": {
+      "orig_file": "mvs.c",
+      "orig_line": 486,
+      "code": "{"
+    },
+    "99": {
+      "orig_file": "mvs.c",
+      "orig_line": 487,
+      "code": "const HEVCSPS *const  sps = pps->sps;"
+    },
+    "100": {
+      "orig_file": "mvs.c",
+      "orig_line": 488,
+      "code": "const HEVCContext *const s = lc->parent;"
+    },
+    "101": {
+      "orig_file": "mvs.c",
+      "orig_line": 489,
+      "code": "int singleMCLFlag = 0;"
+    },
+    "102": {
+      "orig_file": "mvs.c",
+      "orig_line": 490,
+      "code": "int nCS = 1 << log2_cb_size;"
+    },
+    "103": {
+      "orig_file": "mvs.c",
+      "orig_line": 491,
+      "code": "MvField mergecand_list[MRG_MAX_NUM_CANDS];"
+    },
+    "104": {
+      "orig_file": "mvs.c",
+      "orig_line": 492,
+      "code": "int nPbW2 = nPbW;"
+    },
+    "105": {
+      "orig_file": "mvs.c",
+      "orig_line": 493,
+      "code": "int nPbH2 = nPbH;"
+    },
+    "107": {
+      "orig_file": "mvs.c",
+      "orig_line": 495,
+      "code": "if (pps->log2_parallel_merge_level > 2 && nCS == 8) {"
+    },
+    "108": {
+      "orig_file": "mvs.c",
+      "orig_line": 496,
+      "code": "singleMCLFlag = 1;"
+    },
+    "109": {
+      "orig_file": "mvs.c",
+      "orig_line": 497,
+      "code": "x0 = lc->cu.x;",
+      "match_type": "fuzzy"
+    },
+    "110": {
+      "orig_file": "mvs.c",
+      "orig_line": 498,
+      "code": "y0 = lc->cu.y;",
+      "match_type": "fuzzy"
+    },
+    "111": {
+      "orig_file": "mvs.c",
+      "orig_line": 499,
+      "code": "nPbW = nCS;",
+      "match_type": "fuzzy"
+    },
+    "112": {
+      "orig_file": "mvs.c",
+      "orig_line": 500,
+      "code": "nPbH = nCS;",
+      "match_type": "fuzzy"
+    },
+    "113": {
+      "orig_file": "mvs.c",
+      "orig_line": 501,
+      "code": "part_idx = 0;",
+      "match_type": "fuzzy"
+    },
+    "114": {
+      "orig_file": "mvs.c",
+      "orig_line": 502,
+      "code": "}"
+    },
+    "116": {
+      "orig_file": "mvs.c",
+      "orig_line": 504,
+      "code": "ff_hevc_set_neighbour_available(lc, x0, y0, nPbW, nPbH, sps->log2_ctb_size);"
+    },
+    "117": {
+      "orig_file": "mvs.c",
+      "orig_line": 505,
+      "code": "derive_spatial_merge_candidates(lc, s, pps, sps, x0, y0, nPbW, nPbH, log2_cb_size,"
+    },
+    "129": {
+      "orig_file": "mvs.c",
+      "orig_line": 502,
+      "code": "}"
+    },
+    "134": {
+      "orig_file": "mvs.c",
+      "orig_line": 486,
+      "code": "{"
+    },
+    "137": {
+      "orig_file": "mvs.c",
+      "orig_line": 548,
+      "code": "return 0;"
+    },
+    "138": {
+      "orig_file": "mvs.c",
+      "orig_line": 549,
+      "code": "}"
+    }
+  }
+}

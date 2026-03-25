@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "colorspace.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_default_output_intent",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 666
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_default_output_intent",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 666,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==33868==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000060 at pc 0x55f1fb3e4d14 bp 0x7ffdb679fc30 sp 0x7ffdb679fc20\nREAD of size 8 at 0x503000000060 thread T0\n    #0 0x55f1fb3e4d13 in fz_default_output_intent source/fitz/colorspace.c:666\n    #1 0x55f1fb3dfa2d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6192_colorspace.c_666_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:26\n    #2 0x7f9a842d4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f9a842d4e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55f1fb3df8b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6192_colorspace.c_666_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x108b4)\n\n0x503000000060 is located 0 bytes to the right of 32-byte region [0x503000000040,0x503000000060)\nallocated by thread T0 here:\n    #0 0x7f9a8468ba57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55f1fb3df9a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6192_colorspace.c_666_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:14\n    #2 0x7f9a842d4d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/colorspace.c:666 in fz_default_output_intent\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00[fa]fa fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa fa fa "
+    }
+}

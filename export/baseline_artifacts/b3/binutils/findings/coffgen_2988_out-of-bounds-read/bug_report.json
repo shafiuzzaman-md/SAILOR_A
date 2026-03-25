@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coffgen.c",
+    "line": 2988,
+    "function": "_bfd_coff_gc_mark_rsec",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Uses cookie->rel->r_symndx from the input relocation to index cookie->sym_hashes without validating that r_symndx is within the symbol table bounds. A malformed relocation with a large r_symndx can index past the sym_hashes array, leading to an out-of-bounds read and potentially invalid pointer dereferences.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coffgen.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for types used by the vulnerable function. */\n\ntypedef struct asection {\n  int gc_mark;\n  void *owner;\n} asection;\n\nstruct bfd_link_info { int dummy; };\n\n/* Minimal stand-in for a coff relocation entry containing r_symndx. */\nstruct internal_reloc {\n  size_t r_symndx;\n};\n\n/* Minimal stand-in for the COFF link hash entry. We don't need real fields\n   for this reproducer because we only trigger the out-of-bounds access on\n   cookie->sym_hashes[r_symndx]. */\nstruct coff_link_hash_entry {\n  int dummy;\n};\n\n/* The relocation cookie containing the relocation and the sym_hashes array\n   that is indexed by r_symndx. */\nstruct coff_reloc_cookie {\n  struct internal_reloc *rel;\n  struct coff_link_hash_entry **sym_hashes; /* array of pointers */\n  void *symbols; /* unused in this reproducer */\n};\n\n/* Hook function type used by the real code; here it's a stub. */\ntypedef asection *(*coff_gc_mark_hook_fn)(asection *sec,\n                                          struct bfd_link_info *info,\n                                          void *rel, /* we use void* to keep it simple */\n                                          void *h,\n                                          void *syment);\n\nstatic asection *dummy_gc_mark_hook(asection *sec,\n                                    struct bfd_link_info *info,\n                                    void *rel,\n                                    void *h,\n                                    void *syment)\n{\n  (void)sec; (void)info; (void)rel; (void)h; (void)syment;\n  return NULL;\n}\n\n/* Simplified version of the vulnerable function _bfd_coff_gc_mark_rsec.\n   It preserves the core buggy access: h = cookie->sym_hashes[cookie->rel->r_symndx];\n   which lacks bounds checking on r_symndx. */\nstatic asection *\n_bfd_coff_gc_mark_rsec(struct bfd_link_info *info, asection *sec,\n                       coff_gc_mark_hook_fn gc_mark_hook,\n                       struct coff_reloc_cookie *cookie)\n{\n  (void)info; (void)sec;\n  struct coff_link_hash_entry *h;\n\n  /* Vulnerable out-of-bounds read: r_symndx not validated against\n     the number of entries in cookie->sym_hashes. */\n  h = cookie->sym_hashes[cookie->rel->r_symndx];\n\n  /* Use the value in a way that prevents the compiler from optimizing the read away. */\n  if (h) {\n    return gc_mark_hook(sec, info, (void*)cookie->rel, h, NULL);\n  } else {\n    return gc_mark_hook(sec, info, (void*)cookie->rel, NULL, NULL);\n  }\n}\n\nint main(void)\n{\n  /* Set up minimal structures to reach the vulnerable access. */\n  struct bfd_link_info info = {0};\n  asection sec = {0};\n\n  /* Create a cookie with a small sym_hashes array (size 4). */\n  struct coff_reloc_cookie cookie;\n  memset(&cookie, 0, sizeof(cookie));\n\n  size_t nsyms = 4; /* Intentionally small to trigger OOB when indexed with 5. */\n  cookie.sym_hashes = (struct coff_link_hash_entry **)malloc(nsyms * sizeof(*cookie.sym_hashes));\n  if (!cookie.sym_hashes) {\n    perror(\"malloc sym_hashes\");\n    return 1;\n  }\n  for (size_t i = 0; i < nsyms; i++) cookie.sym_hashes[i] = NULL;\n\n  cookie.rel = (struct internal_reloc *)malloc(sizeof(*cookie.rel));\n  if (!cookie.rel) {\n    perror(\"malloc rel\");\n    return 1;\n  }\n\n  /* Craft the malformed relocation: r_symndx beyond the array bounds. */\n  cookie.rel->r_symndx = 5; /* OOB: valid indices are 0..3 */\n\n  /* Call the vulnerable function: this will read past the end of sym_hashes. */\n  (void)_bfd_coff_gc_mark_rsec(&info, &sec, dummy_gc_mark_hook, &cookie);\n\n  /* Cleanup (normally unreachable if ASan aborts on OOB). */\n  free(cookie.rel);\n  free(cookie.sym_hashes);\n\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08722066879272461,
+      "output": ""
+    }
+  }
+}

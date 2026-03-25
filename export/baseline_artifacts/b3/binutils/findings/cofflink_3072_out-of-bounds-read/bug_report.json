@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/cofflink.c",
+    "line": 3072,
+    "function": "coff_relocate_section",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "For C_NT_WEAK symbols with one aux record, the code indexes the sym_hashes array using h->aux->x_sym.x_tagndx.u32 without validating that the index is within bounds. A malformed aux record can set x_tagndx to an out-of-range value, leading to an out-of-bounds read when fetching h2 from sym_hashes.",
+    "abs_path": "/tmp/binutils_upstream/bfd/cofflink.c"
+  },
+  "reproducer_code": "// Standalone reproducer for the OOB read in coff_relocate_section (bfd/cofflink.c:3072)\n// Compile with: clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n// Minimal re-declarations to model the vulnerable path\n\n#define C_NT_WEAK 0x70\n\ntypedef enum {\n  bfd_link_hash_undefined = 0,\n  bfd_link_hash_defined   = 1,\n  bfd_link_hash_defweak   = 2,\n  bfd_link_hash_undefweak = 3\n} bfd_link_hash_type;\n\nstruct bfd_section { int dummy; };\n\nstruct coff_link_hash_entry; // fwd decl\n\nstruct coff_obj_tdata {\n  struct coff_link_hash_entry **sym_hashes;\n  size_t sym_hashes_count; // for info/debug only; no bounds checks in vulnerable path\n};\n\nstruct bfd_tdata {\n  struct coff_obj_tdata *coff_obj_data;\n};\n\nstruct bfd {\n  struct bfd_tdata tdata;\n};\n\nstruct x_sym_tagndx { uint32_t u32; };\nstruct x_sym { struct x_sym_tagndx x_tagndx; };\n\nstruct auxent_mock { struct x_sym x_sym; };\n\nstruct coff_link_hash_entry_root_def {\n  struct bfd_section *section;\n  unsigned long value;\n};\n\nstruct coff_link_hash_entry_root {\n  bfd_link_hash_type type;\n  union { struct coff_link_hash_entry_root_def def; } u;\n};\n\nstruct coff_link_hash_entry {\n  struct coff_link_hash_entry_root root;\n  int symbol_class;\n  int numaux;\n  struct auxent_mock *aux;\n  struct bfd *auxbfd;\n};\n\n// Stub of the vulnerable function path. It intentionally lacks bounds checks\n// on x_tagndx when indexing sym_hashes to reproduce the OOB read.\nstatic void coff_relocate_section(struct coff_link_hash_entry *h) {\n  if (h->root.type == bfd_link_hash_undefweak) {\n    if (h->symbol_class == C_NT_WEAK && h->numaux == 1) {\n      // Vulnerable access: uses x_tagndx.u32 as an array index with no validation\n      struct coff_link_hash_entry *h2 =\n        h->auxbfd->tdata.coff_obj_data->sym_hashes[h->aux->x_sym.x_tagndx.u32];\n      // Use h2 in a benign way to avoid unused warnings (do not dereference)\n      printf(\"h2=%p\\n\", (void *)h2);\n    } else {\n      printf(\"Not the weak+aux path.\\n\");\n    }\n  } else {\n    printf(\"Not undefweak type.\\n\");\n  }\n}\n\nint main(void) {\n  // Allocate a very small sym_hashes array\n  size_t sym_count = 4;\n  struct coff_obj_tdata *coff = (struct coff_obj_tdata *)calloc(1, sizeof(*coff));\n  if (!coff) return 1;\n  coff->sym_hashes = (struct coff_link_hash_entry **)calloc(sym_count, sizeof(struct coff_link_hash_entry *));\n  if (!coff->sym_hashes) return 1;\n  coff->sym_hashes_count = sym_count;\n\n  struct bfd *abfd = (struct bfd *)calloc(1, sizeof(*abfd));\n  if (!abfd) return 1;\n  abfd->tdata.coff_obj_data = coff;\n\n  // Create an AUX record with an out-of-range x_tagndx\n  struct auxent_mock *aux = (struct auxent_mock *)calloc(1, sizeof(*aux));\n  if (!aux) return 1;\n  aux->x_sym.x_tagndx.u32 = 1000; // Deliberately out-of-bounds index\n\n  // Build a C_NT_WEAK undefweak symbol with one aux record\n  struct coff_link_hash_entry h;\n  memset(&h, 0, sizeof(h));\n  h.root.type = bfd_link_hash_undefweak;\n  h.symbol_class = C_NT_WEAK;\n  h.numaux = 1;\n  h.aux = aux;\n  h.auxbfd = abfd;\n\n  printf(\"About to trigger OOB read: index=%u, sym_hashes_count=%zu\\n\",\n         aux->x_sym.x_tagndx.u32, coff->sym_hashes_count);\n\n  // Triggers the out-of-bounds read\n  coff_relocate_section(&h);\n\n  // Cleanup (may not be reached if ASan aborts on OOB)\n  free(coff->sym_hashes);\n  free(coff);\n  free(aux);\n  free(abfd);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6519105434417725,
+      "output": "=================================================================\n==3632650==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000001f80 at pc 0x5aa421e17525 bp 0x7ffc3019f960 sp 0x7ffc3019f958\nREAD of size 8 at 0x603000001f80 thread T0\n    #0 0x5aa421e17524 in coff_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:67:9\n    #1 0x5aa421e1721b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:109:3\n    #2 0x7e8e2e62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7e8e2e62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5aa421d57304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer+0x21304) (BuildId: ef6d2a51af193ba95eff638629b9b8dc342b281b)\n\nAddress 0x603000001f80 is a wild pointer inside of access range of size 0x000000000008.\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:67:9 in coff_relocate_section\nShadow bytes around the buggy address:\n  0x0c067fff83a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff83e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0c067fff83f0:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8410: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8420: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8430: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8440: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3632650==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "coff_relocate_section",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:67",
+      "crash_line": 9,
+      "frames": [
+        [
+          "0",
+          "coff_relocate_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:67",
+          "9"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3072_out-of-bounds-read/reproducer.c:109",
+          "3"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

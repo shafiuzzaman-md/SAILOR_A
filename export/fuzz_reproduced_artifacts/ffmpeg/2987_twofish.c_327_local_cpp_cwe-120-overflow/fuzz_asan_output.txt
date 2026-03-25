@@ -1,0 +1,77 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3330160773
+INFO: Loaded 1 modules   (11 inline 8-bit counters): 11 [0x56f31bc58ec0, 0x56f31bc58ecb), 
+INFO: Loaded 1 PC tables (11 PCs): 11 [0x56f31bc58ed0,0x56f31bc58f80), 
+INFO:        1 files found in artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+=================================================================
+==118308==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000078 at pc 0x56f31bbdb6be bp 0x7ffecfea7800 sp 0x7ffecfea6fd0
+WRITE of size 16 at 0x602000000078 thread T0
+    #0 0x56f31bbdb6bd in __asan_memcpy (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0xe06bd) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #1 0x56f31bc18559 in av_twofish_crypt /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/twofish.c:27:17
+    #2 0x56f31bc1863e in entry_func /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/twofish.c:39:5
+    #3 0x56f31bc18424 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_harness.c:49:5
+    #4 0x56f31bb3e80a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x4380a) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #5 0x56f31bb3ded5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x42ed5) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #6 0x56f31bb3fad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x44ad8) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #7 0x56f31bb3ff56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x44f56) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #8 0x56f31bb2d542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x32542) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #9 0x56f31bb589e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x5d9e6) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #10 0x77f769a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x77f769a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x56f31bb21974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x26974) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+
+0x602000000078 is located 0 bytes to the right of 8-byte region [0x602000000070,0x602000000078)
+allocated by thread T0 here:
+    #0 0x56f31bbdc332 in malloc (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0xe1332) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #1 0x56f31bc183b8 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_harness.c:35:29
+    #2 0x56f31bb3e80a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x4380a) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #3 0x56f31bb3ded5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x42ed5) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #4 0x56f31bb3fad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x44ad8) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #5 0x56f31bb3ff56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x44f56) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #6 0x56f31bb2d542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x32542) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #7 0x56f31bb589e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x5d9e6) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+    #8 0x77f769a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x77f769a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x56f31bb21974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0x26974) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/2987_twofish.c_327_local_cpp_cwe-120-overflow/fuzz_bin+0xe06bd) (BuildId: 7c94bf8714125307ea91cc92963bd732a0e22877) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa 00 00 fa fa 00 00 fa fa 00[fa]
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==118308==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

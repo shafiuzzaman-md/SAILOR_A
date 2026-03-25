@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: vp9recon.c
+Line: 46
+assembly.ll line: 177
+State: 1
+Stack: 
+	#000000177 in inter_recon(139298586247168) at vp9recon.c:46
+	#100000110 in ff_vp9_inter_recon_8bpp(139298586247168) at vp9recon.c:35
+	#200000090 in main() at driver.c:32

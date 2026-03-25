@@ -1,0 +1,18 @@
+Triggering NULL pointer dereference in list_keymanagers...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4141121==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56b2b6668074 bp 0x7fff46f6e360 sp 0x7fff46f6e290 T0)
+==4141121==The signal is caused by a READ memory access.
+==4141121==Hint: address points to the zero page.
+    #0 0x56b2b6668074 in sk_EVP_KEYMGMT_push /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54:13
+    #1 0x56b2b6667f08 in collect_keymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:110:12
+    #2 0x56b2b6667e4b in EVP_KEYMGMT_do_all_provided /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:92:5
+    #3 0x56b2b6667d2f in list_keymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:120:5
+    #4 0x56b2b6667cef in main /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:129:5
+    #5 0x70b63182a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x70b63182a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x56b2b65a8304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer+0x21304) (BuildId: fec2062f5e9b4c7e7823937b7118ea9bd1a9db44)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54:13 in sk_EVP_KEYMGMT_push
+==4141121==ABORTING

@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: cbs.c
+Line: 46
+assembly.ll line: 90
+State: 1
+Stack: 
+	#000000090 in ff_cbs_delete_unit(139234938720256, symbolic) at cbs.c:46
+	#100000122 in entry_func(139234938720256, symbolic) at cbs.c:52
+	#200000180 in main() at driver.c:33

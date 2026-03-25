@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: half2float.c
+Line: 28
+assembly.ll line: 57
+State: 1
+Stack: 
+	#000000057 in ff_init_half2float_tables(139460728360960) at half2float.c:28
+	#100000044 in entry_func(139460728360960) at half2float.c:17
+	#200000026 in main() at driver.c:10

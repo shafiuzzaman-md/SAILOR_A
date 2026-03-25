@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 2269,
+    "function": "libxml_doc",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "cur is obtained via PyxmlNode_Get(obj) and used immediately (cur->type) without a NULL check. Passing an invalid object causing PyxmlNode_Get to return NULL leads to a NULL pointer dereference.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for NULL pointer dereference in libxml_doc\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer \\\n//          -I/tmp/libxml2_upstream -L/tmp/libxml2_upstream/build/.libs -ltiff -lm\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <stdint.h>\n\n// Minimal stubs and type definitions to mimic the environment expected by python/libxml.c\n\ntypedef struct { int dummy; } PyObject;\n\ntypedef unsigned char xmlChar;\n\ntypedef enum {\n    XML_ELEMENT_NODE = 1,\n    XML_ATTRIBUTE_NODE = 2,\n    XML_DOCUMENT_NODE = 9,\n    XML_HTML_DOCUMENT_NODE = 13,\n    XML_NAMESPACE_DECL = 18\n} xmlElementType;\n\nstruct _xmlDoc { int dummy; };\nstruct _xmlNode {\n    xmlElementType type;\n    struct _xmlDoc *doc;\n    const xmlChar *name;\n};\nstruct _xmlAttr {\n    xmlElementType type;\n    struct _xmlDoc *doc;\n    const xmlChar *name;\n};\nstruct _xmlNs {\n    xmlElementType type;\n    const xmlChar *prefix;\n};\n\ntypedef struct _xmlNode* xmlNodePtr;\ntypedef struct _xmlDoc*  xmlDocPtr;\ntypedef struct _xmlAttr* xmlAttrPtr;\ntypedef struct _xmlNs*   xmlNsPtr;\n\n// Stub for PyArg_ParseTuple that simulates extracting a single PyObject (format \"O:doc\")\n// It deliberately sets the extracted object to a non-NULL invalid value to emulate an\n// invalid Python object, which will cause PyxmlNode_Get to return NULL.\nint PyArg_ParseTuple(PyObject *args, const char *fmt, ...) {\n    (void)args; // unused in this stub\n    (void)fmt;  // we don't parse the real format string here\n    va_list ap;\n    va_start(ap, fmt);\n    PyObject **objp = va_arg(ap, PyObject **);\n    // Provide an invalid but non-NULL object pointer to emulate a bad Python object.\n    *objp = (PyObject *)((uintptr_t)0x1);\n    va_end(ap);\n    return 1; // indicate success so the function continues to the vulnerable path\n}\n\n// Stub: converts xmlDocPtr to a PyObject* (never reached if crash occurs first)\nPyObject *libxml_xmlDocPtrWrap(xmlDocPtr doc) {\n    (void)doc;\n    // Return a dummy PyObject to satisfy signature if ever reached\n    PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n    return o;\n}\n\n// Stub: returns NULL to simulate failure to get an xmlNode from an invalid Python object\nxmlNodePtr PyxmlNode_Get(PyObject *obj) {\n    (void)obj; // In real code, this would check type and possibly extract the node.\n    return NULL; // Simulate invalid object => no node\n}\n\n// Vulnerable function re-implemented as in python/libxml.c (simplified)\nPyObject *libxml_doc(PyObject *self, PyObject *args) {\n    (void)self; // ATTRIBUTE_UNUSED in original code\n    PyObject *resultobj, *obj;\n    xmlNodePtr cur;\n    xmlDocPtr res;\n\n    if (!PyArg_ParseTuple(args, \"O:doc\", &obj))\n        return NULL;\n    cur = PyxmlNode_Get(obj);\n\n    // Vulnerable NULL dereference: cur is used without a NULL check\n    switch (cur->type) {\n        case XML_DOCUMENT_NODE:\n        case XML_HTML_DOCUMENT_NODE:\n            res = NULL;\n            break;\n        case XML_ATTRIBUTE_NODE: {\n            xmlAttrPtr attr = (xmlAttrPtr)cur;\n            res = attr->doc;\n            break;\n        }\n        case XML_NAMESPACE_DECL:\n            res = NULL;\n            break;\n        default:\n            res = cur->doc;\n            break;\n    }\n    resultobj = libxml_xmlDocPtrWrap(res);\n    return resultobj;\n}\n\nint main(void) {\n    // Create dummy self/args; our PyArg_ParseTuple stub ignores their contents\n    PyObject self = {0};\n    PyObject args = {0};\n\n    // This call will reach the vulnerable switch with cur == NULL and crash\n    PyObject *ret = libxml_doc(&self, &args);\n    (void)ret;\n\n    // If the bug does not trigger (it should), print a message\n    printf(\"Unexpectedly returned from libxml_doc\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6546630859375,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4011319==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x59d41fe771b5 bp 0x7ffe75ad2330 sp 0x7ffe75ad2220 T0)\n==4011319==The signal is caused by a READ memory access.\n==4011319==Hint: address points to the zero page.\n    #0 0x59d41fe771b5 in libxml_doc /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:87:18\n    #1 0x59d41fe77405 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:114:21\n    #2 0x7f21c142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7f21c142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x59d41fdb7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer+0x21304) (BuildId: b5c41e51964a3ae077bc7175aa3b47e85b6aa894)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:87:18 in libxml_doc\n==4011319==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "libxml_doc",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:87",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "libxml_doc",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:87",
+          "18"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2269_null-pointer-dereference/reproducer.c:114",
+          "21"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_mmi_inline_assembly.c",
+    "line": 122,
+    "function": "png_read_filter_row_sub4_mmi",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "Each iteration loads/stores 4 bytes at row+4 while only decrementing istop by 4. When only 4 bytes remain (e.g., width=1 pixel, 4 bytes/pixel), it still accesses row+4 and stores there, writing 4 bytes past the end of row.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_mmi_inline_assembly.c"
+  },
+  "reproducer_code": "// Standalone reproducer for heap-buffer-overflow in png_read_filter_row_sub4_mmi\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n// Minimal type definitions to match the vulnerable function's signature\ntypedef unsigned char png_byte;\ntypedef struct png_row_info_s {\n    size_t width;\n    size_t rowbytes;\n} png_row_info;\n\n// Reimplementation of the vulnerable function logic in portable C.\n// It mirrors the MIPS inline assembly loop that:\n// - Processes 4 bytes per iteration\n// - Loads from row and row+4\n// - Stores 4 bytes back to row+4\n// This causes an out-of-bounds access when only 4 bytes remain (istop == 4).\nvoid png_read_filter_row_sub4_mmi(png_row_info *row_info, png_byte *row, const png_byte *prev)\n{\n    int istop = (int)row_info->rowbytes;\n\n    // Emulate the assembly loop. Each iteration touches 8 bytes starting at `row`.\n    // When rowbytes == 4, the very first iteration performs an OOB read/write at row+4.\n    while (istop > 0) {\n        uint32_t pp = 0, rp = 0;\n        // Load 4 bytes at row (in-bounds when istop >= 4)\n        memcpy(&pp, row + 0, sizeof(pp));\n        // Load 4 bytes at row+4 (OOB when istop == 4)\n        memcpy(&rp, row + 4, sizeof(rp));\n        // Dummy operation analogous to paddb in the asm (not important for triggering)\n        rp = rp + pp;\n        // Store 4 bytes at row+4 (OOB when istop == 4)\n        memcpy(row + 4, &rp, sizeof(rp));\n\n        row   += 4;   // daddiu %[row], %[row], 0x04\n        istop -= 4;   // daddiu %[istop], %[istop], -0x04\n    }\n\n    (void)prev; // Unused in this path\n}\n\nint main(void)\n{\n    // One pixel, 4 bytes per pixel (e.g., RGBA). This makes rowbytes == 4,\n    // which triggers the bug on the first loop iteration.\n    const size_t rowbytes = 4;\n\n    png_row_info info;\n    info.width = 1;      // 1 pixel\n    info.rowbytes = rowbytes; // 4 bytes total in the row buffer\n\n    // Allocate exactly 4 bytes on the heap so that any access at row+4 overflows.\n    png_byte *row = (png_byte *)malloc(rowbytes);\n    if (!row) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    // Initialize the valid 4-byte row buffer\n    for (size_t i = 0; i < rowbytes; ++i) row[i] = (png_byte)i;\n\n    // Call the vulnerable function: this will attempt to access row+4\n    // (read then write), overflowing the 4-byte allocation.\n    png_read_filter_row_sub4_mmi(&info, row, NULL);\n\n    // Cleanup (won't be reached if ASan aborts on detected overflow)\n    free(row);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.666344404220581,
+      "output": "=================================================================\n==3734457==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000014 at pc 0x5c4706da7ffb bp 0x7fff32b54b10 sp 0x7fff32b542e0\nREAD of size 4 at 0x602000000014 thread T0\n    #0 0x5c4706da7ffa in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer+0xa3ffa) (BuildId: 94d4ca1ab3bfbcca17a19cd6a4ce6b5542f65b3e)\n    #1 0x5c4706de4e7a in png_read_filter_row_sub4_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:31:9\n    #2 0x5c4706de5162 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:66:5\n    #3 0x7d07c0a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7d07c0a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5c4706d25314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer+0x21314) (BuildId: 94d4ca1ab3bfbcca17a19cd6a4ce6b5542f65b3e)\n\n0x602000000014 is located 0 bytes to the right of 4-byte region [0x602000000010,0x602000000014)\nallocated by thread T0 here:\n    #0 0x5c4706da8d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer+0xa4d22) (BuildId: 94d4ca1ab3bfbcca17a19cd6a4ce6b5542f65b3e)\n    #1 0x5c4706de507f in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:55:33\n    #2 0x7d07c0a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d07c0a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c4706d25314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer+0x21314) (BuildId: 94d4ca1ab3bfbcca17a19cd6a4ce6b5542f65b3e)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer+0xa3ffa) (BuildId: 94d4ca1ab3bfbcca17a19cd6a4ce6b5542f65b3e) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3734457==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_read_filter_row_sub4_mmi",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:31",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:66",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_122_heap-buffer-overflow/reproducer.c:55",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

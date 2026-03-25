@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memset.c
+Line: 15
+assembly.ll line: 137
+State: 1
+Stack: 
+	#000000137 in memset(138898477666304, 0, 128) at runtime/Freestanding/memset.c:15
+	#100000067 in ff_vp3dsp_idct10_add(138915657535488, symbolic, 138898477666304) at vp3dsp.c:17
+	#200000110 in entry_func(138915657535488, symbolic, 138898477666304) at vp3dsp.c:24
+	#300000038 in main() at driver.c:26
+Info: 
+	address: 138898477666368
+	next: object at 138413146361856 of size 4
+		MO23[4] allocated at main():  %1 = alloca i32, align 4

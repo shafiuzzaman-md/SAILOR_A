@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jfdctint.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_fdct_9x9",
+            "crash_file": "thirdparty/libjpeg/jfdctint.c",
+            "crash_line": 984
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_fdct_9x9",
+        "crash_file": "thirdparty/libjpeg/jfdctint.c",
+        "crash_line": 984,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==26234==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000028 at pc 0x56325d76208d bp 0x7fff707b8570 sp 0x7fff707b8560\nWRITE of size 4 at 0x502000000028 thread T0\n    #0 0x56325d76208c in jpeg_fdct_9x9 thirdparty/libjpeg/jfdctint.c:984\n    #1 0x56325d75f430 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4693_jfdctint.c_1006_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:25\n    #2 0x7f79ec736d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f79ec736e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56325d75f2a4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4693_jfdctint.c_1006_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12a4)\n\n0x502000000028 is located 8 bytes to the left of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7f79ecaeda57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x56325d75f3a0 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4693_jfdctint.c_1006_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:12\n    #2 0x7f79ec736d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jfdctint.c:984 in jpeg_fdct_9x9\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa[fa]00 fa fa fa 00 01 fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa"
+    }
+}

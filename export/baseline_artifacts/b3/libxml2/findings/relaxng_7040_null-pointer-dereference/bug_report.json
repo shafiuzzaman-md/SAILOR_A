@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "relaxng.c",
+    "line": 7040,
+    "function": "xmlRelaxNGCleanupTree",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If creating the <name> node/text fails (xmlNewChild/xmlNewDocNode/xmlNewDocText return NULL), 'text' remains NULL. When the original node has no 'ns' attribute and is an 'attribute' element, the code unconditionally calls xmlSetProp(text, ...). This dereferences a NULL 'text' pointer, leading to a crash. The path is: name = xmlGetProp(...) succeeds; node creation fails \u2192 text == NULL; ns == NULL; cur->name == 'attribute' \u2192 xmlSetProp(text, ...).",
+    "abs_path": "/tmp/libxml2_upstream/relaxng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stubs/types to simulate libxml2 environment */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (xmlChar *)\n\ntypedef struct _xmlAttr {\n    xmlChar *name;\n    xmlChar *value;\n    struct _xmlAttr *next;\n} xmlAttr, *xmlAttrPtr;\n\ntypedef struct _xmlNode {\n    xmlChar *name;            /* element name */\n    struct _xmlNode *children;\n    struct _xmlNode *parent;\n    void *doc;\n    void *ns;\n    xmlAttrPtr properties;    /* attributes */\n} xmlNode, *xmlNodePtr;\n\n/* Helpers */\nstatic xmlChar *xmlStrdupInternal(const xmlChar *s) {\n    if (!s) return NULL;\n    size_t len = strlen((const char *)s) + 1;\n    xmlChar *p = (xmlChar *)malloc(len);\n    if (p) memcpy(p, s, len);\n    return p;\n}\n\nstatic int xmlStrEqual(const xmlChar *a, const xmlChar *b) {\n    if (a == b) return 1;\n    if (a == NULL || b == NULL) return 0;\n    return strcmp((const char *)a, (const char *)b) == 0;\n}\n\nstatic xmlChar *xmlGetProp(xmlNodePtr node, const xmlChar *name) {\n    if (!node || !name) return NULL;\n    for (xmlAttrPtr p = node->properties; p; p = p->next) {\n        if (xmlStrEqual(p->name, name)) {\n            return xmlStrdupInternal(p->value); /* libxml2 returns a copy */\n        }\n    }\n    return NULL;\n}\n\nstatic void xmlUnsetProp(xmlNodePtr node, const xmlChar *name) {\n    if (!node || !name) return;\n    xmlAttrPtr prev = NULL, cur = node->properties;\n    while (cur) {\n        if (xmlStrEqual(cur->name, name)) {\n            if (prev) prev->next = cur->next; else node->properties = cur->next;\n            free(cur->name);\n            free(cur->value);\n            free(cur);\n            return;\n        }\n        prev = cur;\n        cur = cur->next;\n    }\n}\n\nstatic xmlAttrPtr xmlSetProp(xmlNodePtr node, const xmlChar *name, const xmlChar *value) {\n    /* Intentionally no NULL check on node to reflect libxml2's expectation */\n    /* This will dereference node when node == NULL, reproducing the crash path */\n    xmlAttrPtr p = node->properties; /* crash here when node == NULL */\n    while (p) {\n        if (xmlStrEqual(p->name, name)) {\n            free(p->value);\n            p->value = xmlStrdupInternal(value);\n            return p;\n        }\n        p = p->next;\n    }\n    xmlAttrPtr na = (xmlAttrPtr)calloc(1, sizeof(xmlAttr));\n    na->name = xmlStrdupInternal(name);\n    na->value = xmlStrdupInternal(value);\n    na->next = node->properties;\n    node->properties = na;\n    return na;\n}\n\nstatic void xmlFree(void *ptr) {\n    free(ptr);\n}\n\n/* The following creation/manipulation stubs mimic failures to hit the bug path */\nstatic xmlNodePtr xmlNewChild(xmlNodePtr parent, void *ns, const xmlChar *name, const xmlChar *content) {\n    (void)parent; (void)ns; (void)name; (void)content;\n    /* Simulate allocation/creation failure to keep 'text' NULL */\n    return NULL;\n}\n\nstatic xmlNodePtr xmlNewDocNode(void *doc, void *ns, const xmlChar *name, const xmlChar *content) {\n    (void)doc; (void)ns; (void)name; (void)content;\n    /* Not used in this reproducer path (cur->children == NULL), return NULL */\n    return NULL;\n}\n\nstatic xmlNodePtr xmlNewDocText(void *doc, const xmlChar *content) {\n    (void)doc; (void)content;\n    return NULL;\n}\n\nstatic void xmlAddPrevSibling(xmlNodePtr cur, xmlNodePtr elem) {\n    (void)cur; (void)elem;\n}\n\nstatic void xmlAddChild(xmlNodePtr parent, xmlNodePtr cur) {\n    (void)parent; (void)cur;\n}\n\n/* Error reporting stub */\nstatic void xmlRngPErr(void *ctxt, xmlNodePtr cur, int code, const char *msg, const xmlChar *str1, const xmlChar *str2) {\n    (void)ctxt; (void)cur; (void)code; (void)str2;\n    fprintf(stderr, msg, (const char *)str1);\n}\n\n/* Simplified version of the vulnerable function containing the buggy logic */\nstatic void xmlRelaxNGCleanupTree(void *ctxt, xmlNodePtr tree) {\n    xmlNodePtr cur = tree;\n    if (cur == NULL) return;\n\n    if (xmlStrEqual(cur->name, BAD_CAST \"element\") || xmlStrEqual(cur->name, BAD_CAST \"attribute\")) {\n        xmlChar *name;\n        xmlChar *ns;\n        xmlNodePtr text = NULL;\n\n        /* 4.8: name attribute of element and attribute elements */\n        name = xmlGetProp(cur, BAD_CAST \"name\");\n        if (name != NULL) {\n            if (cur->children == NULL) {\n                text = xmlNewChild(cur, cur->ns, BAD_CAST \"name\", name);\n            } else {\n                xmlNodePtr node;\n                node = xmlNewDocNode(cur->doc, cur->ns, BAD_CAST \"name\", NULL);\n                if (node != NULL) {\n                    xmlAddPrevSibling(cur->children, node);\n                    text = xmlNewDocText(node->doc, name);\n                    xmlAddChild(node, text);\n                    text = node;\n                }\n            }\n            if (text == NULL) {\n                xmlRngPErr(ctxt, cur, 0, \"Failed to create a name %s element\\n\", name, NULL);\n            }\n            xmlUnsetProp(cur, BAD_CAST \"name\");\n            xmlFree(name);\n            ns = xmlGetProp(cur, BAD_CAST \"ns\");\n            if (ns != NULL) {\n                if (text != NULL) {\n                    xmlSetProp(text, BAD_CAST \"ns\", ns);\n                }\n                xmlFree(ns);\n            } else if (xmlStrEqual(cur->name, BAD_CAST \"attribute\")) {\n                /* Vulnerable call: text may be NULL here */\n                xmlSetProp(text, BAD_CAST \"ns\", BAD_CAST \"\");\n            }\n        }\n    }\n}\n\n/* Utility to set an attribute on a node safely during setup */\nstatic void add_setup_prop(xmlNodePtr node, const char *name, const char *value) {\n    xmlAttrPtr a = (xmlAttrPtr)calloc(1, sizeof(xmlAttr));\n    a->name = xmlStrdupInternal((const xmlChar *)name);\n    a->value = xmlStrdupInternal((const xmlChar *)value);\n    a->next = node->properties;\n    node->properties = a;\n}\n\nint main(void) {\n    /* Build a minimal node: <attribute name=\"foo\"> with no children and no ns prop */\n    xmlNodePtr attr = (xmlNodePtr)calloc(1, sizeof(xmlNode));\n    attr->name = xmlStrdupInternal(BAD_CAST \"attribute\");\n    attr->children = NULL; /* ensures xmlNewChild path is taken */\n    attr->ns = NULL;\n    attr->doc = NULL;\n    attr->parent = NULL;\n    attr->properties = NULL;\n\n    /* Add name attribute so xmlGetProp(\"name\") succeeds */\n    add_setup_prop(attr, \"name\", \"foo\");\n    /* Intentionally do NOT add an \"ns\" attribute so ns == NULL */\n\n    /* Call the vulnerable function: this will attempt to create a <name> child,\n       fail (text == NULL), then since cur->name == \"attribute\" and ns == NULL,\n       it will call xmlSetProp(text, ... ) with text == NULL and crash. */\n    xmlRelaxNGCleanupTree(NULL, attr);\n\n    /* Should not reach here */\n    fprintf(stderr, \"If you see this, the bug did not trigger as expected.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7446811199188232,
+      "output": "Failed to create a name foo element\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4016931==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000028 (pc 0x578b1c11c8f1 bp 0x7fff6b7236d0 sp 0x7fff6b723620 T0)\n==4016931==The signal is caused by a READ memory access.\n==4016931==Hint: address points to the zero page.\n    #0 0x578b1c11c8f1 in xmlSetProp /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68:26\n    #1 0x578b1c11c36f in xmlRelaxNGCleanupTree /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:159:17\n    #2 0x578b1c11be17 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:191:5\n    #3 0x7f21ae02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7f21ae02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x578b1c05c304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer+0x21304) (BuildId: f86db42949640eecd10aa4050ca0bc112f2a522c)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68:26 in xmlSetProp\n==4016931==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlSetProp",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "xmlSetProp",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:68",
+          "26"
+        ],
+        [
+          "1",
+          "xmlRelaxNGCleanupTree",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:159",
+          "17"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/relaxng_7040_null-pointer-dereference/reproducer.c:191",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

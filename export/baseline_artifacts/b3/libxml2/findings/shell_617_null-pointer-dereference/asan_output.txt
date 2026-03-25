@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4064810==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x650fd6ce6ddb bp 0x7ffd6a31e3f0 sp 0x7ffd6a31e2e0 T0)
+==4064810==The signal is caused by a READ memory access.
+==4064810==Hint: address points to the zero page.
+    #0 0x650fd6ce6ddb in xmlRelaxNGSetParserErrors /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_617_null-pointer-dereference/reproducer.c:53:34
+    #1 0x650fd6ce71de in xmllintShellRNGValidate /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_617_null-pointer-dereference/reproducer.c:108:5
+    #2 0x650fd6ce70ea in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_617_null-pointer-dereference/reproducer.c:142:11
+    #3 0x767cffe2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x767cffe2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x650fd6c27304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_617_null-pointer-dereference/reproducer+0x21304) (BuildId: 96fec7eef7f4c720fbe388aaabdae9bcef591806)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_617_null-pointer-dereference/reproducer.c:53:34 in xmlRelaxNGSetParserErrors
+==4064810==ABORTING

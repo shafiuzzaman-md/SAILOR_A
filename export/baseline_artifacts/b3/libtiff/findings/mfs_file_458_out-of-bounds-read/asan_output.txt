@@ -1,0 +1,44 @@
+=================================================================
+==3827064==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5d7d41b5e5b4 at pc 0x5d7d411d4cfe bp 0x7ffcfeb5fb70 sp 0x7ffcfeb5fb68
+READ of size 4 at 0x5d7d41b5e5b4 thread T0
+    #0 0x5d7d411d4cfd in mfs_map /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17:9
+    #1 0x5d7d411d4f9b in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:52:15
+    #2 0x7d8314c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d8314c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5d7d41115304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer+0x21304) (BuildId: b4e3a50c0ae7ca9017008d5696e5a1315fbab363)
+
+0x5d7d41b5e5b4 is located 12 bytes to the left of global variable 'buf' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:8:14' (0x5d7d41b5e5c0) of size 32
+0x5d7d41b5e5b4 is located 4 bytes to the right of global variable 'fds' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:7:12' (0x5d7d41b5e5a0) of size 16
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17:9 in mfs_map
+Shadow bytes around the buggy address:
+  0x0bb028363c60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363c70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363c90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363ca0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0bb028363cb0: 00 00 00 00 00 00[f9]f9 00 00 00 00 f9 f9 f9 f9
+  0x0bb028363cc0: 00 00 00 00 f9 f9 f9 f9 00 00 00 00 00 00 00 00
+  0x0bb028363cd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363ce0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363cf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bb028363d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3827064==ABORTING

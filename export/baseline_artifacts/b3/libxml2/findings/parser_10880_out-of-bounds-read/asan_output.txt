@@ -1,0 +1,47 @@
+=================================================================
+==3999858==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5c00b468b485 at pc 0x5c00b4678676 bp 0x7ffe1b34cdd0 sp 0x7ffe1b34cdc8
+READ of size 1 at 0x5c00b468b485 thread T0
+    #0 0x5c00b4678675 in xmlParseTryOrFinish /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:78:14
+    #1 0x5c00b4677fdb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:111:11
+    #2 0x7abe4542a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7abe4542a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5c00b45b8304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer+0x21304) (BuildId: f74a350b1b49f618576712e7e108b9a6b0f4c236)
+
+0x5c00b468b485 is located 59 bytes to the left of global variable '<string literal>' defined in '/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:72:61' (0x5c00b468b4c0) of size 3
+  '<string literal>' is ascii string '?>'
+0x5c00b468b485 is located 27 bytes to the left of global variable '<string literal>' defined in '/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:115:10' (0x5c00b468b4a0) of size 5
+  '<string literal>' is ascii string 'Done'
+0x5c00b468b485 is located 0 bytes to the right of global variable 'buf' defined in '/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:94:26' (0x5c00b468b480) of size 5
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_10880_out-of-bounds-read/reproducer.c:78:14 in xmlParseTryOrFinish
+Shadow bytes around the buggy address:
+  0x0b80968c9640: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c9650: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c9660: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c9670: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c9680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0b80968c9690:[05]f9 f9 f9 05 f9 f9 f9 03 f9 f9 f9 04 f9 f9 f9
+  0x0b80968c96a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c96b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c96c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c96d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b80968c96e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3999858==ABORTING

@@ -1,0 +1,59 @@
+{
+  "jrevdct.c": {
+    "1": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 66,
+      "code": "#include <stdint.h>"
+    },
+    "5": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 950,
+      "code": "#define DCTSIZE 4"
+    },
+    "6": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 179,
+      "code": "#endif"
+    },
+    "9": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 179,
+      "code": "#endif"
+    },
+    "11": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 76,
+      "code": "#define DCTSIZE2 64"
+    },
+    "12": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 92,
+      "code": "#endif"
+    },
+    "17": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 1140,
+      "code": "void ff_j_rev_dct2(DCTBLOCK data){"
+    },
+    "18": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 1141,
+      "code": "int d00, d01, d10, d11;"
+    },
+    "22": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 1143,
+      "code": "data[0] += 4;"
+    },
+    "25": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 1138,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "jrevdct.c",
+      "orig_line": 1138,
+      "code": "}"
+    }
+  }
+}

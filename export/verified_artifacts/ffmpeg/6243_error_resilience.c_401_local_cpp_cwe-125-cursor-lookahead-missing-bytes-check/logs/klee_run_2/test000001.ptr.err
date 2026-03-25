@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: error_resilience.c
+Line: 58
+assembly.ll line: 176
+State: 1
+Stack: 
+	#000000176 in ff_er_frame_end(140037764653056, 139831606222848) at error_resilience.c:58
+	#100000110 in entry_func(140037764653056, 139831606222848) at error_resilience.c:36
+	#200000081 in main() at driver.c:44
+Info: 
+	address: 139969045176576
+	next: object at 139457944068096 of size 1
+		MO65[1] allocated at ff_er_frame_end():  %10 = alloca i8, align 1

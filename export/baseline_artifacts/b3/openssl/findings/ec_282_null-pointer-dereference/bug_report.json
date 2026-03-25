@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/ec.c",
+    "line": 282,
+    "function": "ec_main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "The result of OSSL_ENCODER_CTX_new_for_pkey() (ectx at line 269) is not checked for NULL before being passed to OSSL_ENCODER_to_bio() at line 282. If ectx is NULL (e.g., due to allocation failure), this may lead to a NULL dereference inside the OpenSSL library.",
+    "abs_path": "/tmp/openssl_upstream/apps/ec.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <assert.h>\n#include <stddef.h>\n\n/* Minimal stub type definitions to mimic OpenSSL structures */\ntypedef struct evp_pkey_st { int dummy; } EVP_PKEY;\ntypedef struct evp_cipher_st { int dummy; } EVP_CIPHER;\ntypedef struct bio_st { FILE *fp; } BIO;\ntypedef struct ossl_encoder_ctx_st { int dummy; } OSSL_ENCODER_CTX;\n\nenum {\n    OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS = 0x0001,\n    OSSL_KEYMGMT_SELECT_PUBLIC_KEY        = 0x0002,\n    OSSL_KEYMGMT_SELECT_ALL               = 0xFFFF\n};\n\n/* Stubs for the OpenSSL APIs referenced by apps/ec.c */\nOSSL_ENCODER_CTX *OSSL_ENCODER_CTX_new_for_pkey(EVP_PKEY *pkey, int selection,\n                                                const char *output_type,\n                                                const char *output_structure,\n                                                const char *propq)\n{\n    (void)pkey; (void)selection; (void)output_type; (void)output_structure; (void)propq;\n    /* Simulate allocation/creation failure -> returns NULL */\n    return NULL;\n}\n\nstatic volatile int g_sink;\nint OSSL_ENCODER_to_bio(OSSL_ENCODER_CTX *ctx, BIO *out)\n{\n    /* Vulnerable library side: assume ctx is non-NULL and dereference it */\n    (void)out;\n    /* This will crash (NULL deref) when ctx == NULL, as in the reported bug */\n    g_sink = ctx->dummy; /* Intentional NULL dereference to simulate library behavior */\n    return 1;\n}\n\nint OSSL_ENCODER_CTX_set_cipher(OSSL_ENCODER_CTX *ctx, const char *name, const char *props)\n{ (void)ctx; (void)name; (void)props; return 1; }\nint OSSL_ENCODER_CTX_set_passphrase_ui(OSSL_ENCODER_CTX *ctx, const void *ui, void *data)\n{ (void)ctx; (void)ui; (void)data; return 1; }\nint OSSL_ENCODER_CTX_set_passphrase(OSSL_ENCODER_CTX *ctx, const unsigned char *pass, size_t len)\n{ (void)ctx; (void)pass; (void)len; return 1; }\nconst char *EVP_CIPHER_get0_name(const EVP_CIPHER *ciph)\n{ (void)ciph; return \"AES-256-CBC\"; }\n\n/* BIO printf stub used by ec_main */\nint BIO_printf(BIO *b, const char *fmt, ...)\n{\n    va_list ap;\n    va_start(ap, fmt);\n    int r = vfprintf(b && b->fp ? b->fp : stdout, fmt, ap);\n    va_end(ap);\n    return r;\n}\n\nint main(void)\n{\n    /* Set up minimal state similar to the vulnerable block in apps/ec.c */\n    EVP_PKEY *eckey = (EVP_PKEY *)malloc(sizeof(*eckey));\n    if (!eckey) return 1;\n\n    BIO out_bio = { stdout };\n    BIO *out = &out_bio;\n\n    int noout = 0;\n    int param_out = 0;\n    int pubin = 0;\n    int pubout = 0;\n    int private_key_expected = 1; /* matches assert(private) in original code */\n    EVP_CIPHER *enc = NULL;       /* Keep NULL to skip cipher/passphrase block */\n\n    if (!noout) {\n        int selection;\n        const char *output_type = \"PEM\";            /* outformat != ASN1 -> PEM */\n        const char *output_structure = \"type-specific\";\n\n        BIO_printf(out, \"writing EC key\\n\");\n        if (param_out) {\n            selection = OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS;\n        } else if (pubin || pubout) {\n            selection = OSSL_KEYMGMT_SELECT_DOMAIN_PARAMETERS | OSSL_KEYMGMT_SELECT_PUBLIC_KEY;\n            output_structure = \"SubjectPublicKeyInfo\";\n        } else {\n            selection = OSSL_KEYMGMT_SELECT_ALL;\n            assert(private_key_expected);\n        }\n\n        /* This will return NULL by design (simulating failure) */\n        OSSL_ENCODER_CTX *ectx = OSSL_ENCODER_CTX_new_for_pkey(eckey, selection,\n                                                               output_type, output_structure,\n                                                               NULL);\n        /* enc == NULL, so skip the block that would set cipher/passphrase */\n\n        /* Vulnerable call: ectx is NULL, passed into OSSL_ENCODER_to_bio -> NULL deref */\n        if (!OSSL_ENCODER_to_bio(ectx, out)) {\n            BIO_printf(out, \"unable to write EC key\\n\");\n        }\n    }\n\n    free(eckey);\n    return 0; /* We expect the program to crash before this due to NULL deref */\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9181005954742432,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4126439==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56738092cd21 bp 0x7fffb2dbe550 sp 0x7fffb2dbe530 T0)\n==4126439==The signal is caused by a READ memory access.\n==4126439==Hint: address points to the zero page.\n    #0 0x56738092cd21 in OSSL_ENCODER_to_bio /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37:19\n    #1 0x56738092d2e2 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:99:14\n    #2 0x71d0c4a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x71d0c4a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x56738086d314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer+0x21314) (BuildId: 94f916c078d4c5de115a4de6d590d7cb724eda60)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37:19 in OSSL_ENCODER_to_bio\n==4126439==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "OSSL_ENCODER_to_bio",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37",
+      "crash_line": 19,
+      "frames": [
+        [
+          "0",
+          "OSSL_ENCODER_to_bio",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37",
+          "19"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:99",
+          "14"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

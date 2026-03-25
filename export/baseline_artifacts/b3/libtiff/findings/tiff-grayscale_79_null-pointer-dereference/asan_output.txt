@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3814174==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64e6fc06bd39 bp 0x7ffc246ae660 sp 0x7ffc246ae630 T0)
+==3814174==The signal is caused by a WRITE memory access.
+==3814174==Hint: address points to the zero page.
+    #0 0x64e6fc06bd39 in trigger_vuln_like_path /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36:13
+    #1 0x64e6fc06bcb3 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:41:5
+    #2 0x7c06a022a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7c06a022a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64e6fbfac304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer+0x20304) (BuildId: 206d7c9e575b829bc6afdae3172f8107ce76936f)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36:13 in trigger_vuln_like_path
+==3814174==ABORTING

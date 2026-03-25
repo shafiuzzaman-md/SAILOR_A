@@ -1,0 +1,76 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3099567477
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x593cb241b2b0, 0x593cb241b2b6), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x593cb241b2b8,0x593cb241b318), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 8b max: 8b total: 8b rss: 29Mb
+=================================================================
+==102290==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000098 at pc 0x593cb232a058 bp 0x7ffc292864b0 sp 0x7ffc29285c78
+READ of size 9 at 0x602000000098 thread T0
+    #0 0x593cb232a057 in __interceptor_memcpy (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x7a057) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #1 0x593cb23d250d in sepol_node_get_addr_bytes /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/node_record.c:385:2
+    #2 0x593cb23cf587 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_harness.c:40:5
+    #3 0x593cb22f582a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x4582a) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #4 0x593cb22f4ef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x44ef5) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #5 0x593cb22f6af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x46af8) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #6 0x593cb22f6f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x46f76) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #7 0x593cb22e4562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x34562) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #8 0x593cb230fa06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x5fa06) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #9 0x7e0ad562a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x7e0ad562a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x593cb22d8994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x28994) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+
+0x602000000098 is located 0 bytes to the right of 8-byte region [0x602000000090,0x602000000098)
+allocated by thread T0 here:
+    #0 0x593cb2393352 in malloc (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0xe3352) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #1 0x593cb23cf431 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_harness.c:25:25
+    #2 0x593cb22f582a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x4582a) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #3 0x593cb22f4ef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x44ef5) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #4 0x593cb22f6af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x46af8) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #5 0x593cb22f6f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x46f76) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #6 0x593cb22e4562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x34562) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #7 0x593cb230fa06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x5fa06) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+    #8 0x7e0ad562a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7e0ad562a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x593cb22d8994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x28994) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/048_node_record.c_385_local_cpp_cwe-120-overflow/fuzz_bin+0x7a057) (BuildId: 2257ec37e013fdc0679eff2193a5973dd39586c2) in __interceptor_memcpy
+Shadow bytes around the buggy address:
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 00 fa fa fa 00 fa fa fa 00 00
+=>0x0c047fff8010: fa fa 00[fa]fa fa 00 01 fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==102290==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-05fe405753166f125559e7c9ac558654f107c7e9
+Base64: AAAAAAAAAAA=

@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: jrevdct.c
+Line: 22
+assembly.ll line: 72
+State: 1
+Stack: 
+	#000000072 in ff_j_rev_dct2(139037565341698) at jrevdct.c:22
+	#100000090 in entry_point(139037565341698) at jrevdct.c:29
+	#200000037 in main() at driver.c:19
+Info: 
+	address: 139037565341698
+	next: object at 138737991372800 of size 4
+		MO37[4] allocated at ff_j_rev_dct2():  %5 = alloca i32, align 4

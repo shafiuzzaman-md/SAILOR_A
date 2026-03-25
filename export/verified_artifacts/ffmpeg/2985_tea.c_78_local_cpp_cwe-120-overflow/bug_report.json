@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "tea.c",
+    "original_line": 78,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "73:             sum -= delta;\n74:         }\n75:         if (iv) {\n76:             v0 ^= AV_RB32(iv);\n77:             v1 ^= AV_RB32(iv + 4);\n78:             memcpy(iv, src, 8);\n79:         }\n80:     } else {\n81:         int i;\n82:         uint32_t sum = 0, delta = 0x9E3779B9U;\n83: "
+  },
+  "klee_crash": {
+    "harness_file": "tea.c",
+    "harness_line": 42,
+    "original_file": "tea.c",
+    "original_line": 78,
+    "original_code": "memcpy(iv, src, 8);",
+    "original_context": "    75:         if (iv) {\n    76:             v0 ^= AV_RB32(iv);\n    77:             v1 ^= AV_RB32(iv + 4);\n>>> 78:             memcpy(iv, src, 8);\n    79:         }\n    80:     } else {\n    81:         int i;",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 255\nState: 1\nStack: \n\t#000000255 in memcpy(138918626615296, 138884266876928, 8) at runtime/Freestanding/memcpy.c:17\n\t#100000108 in tea_crypt_block(139038885699584, 138901446746112, 138884266876928, 138918626615296, 1) at tea.c:42\n\t#200000226 in av_tea_crypt(139038885699584, 138901446746112, 138884266876928, 138918626615296, 1) at tea.c:56\n\t#300000050 in main() at driver.c:24\nInfo: \n\taddress: "
+  },
+  "concrete_inputs": [
+    {
+      "name": "dst_bytes",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "src_bytes",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "iv_bytes",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2985_tea.c_78_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "tea.c",
+      "harness_line": 42,
+      "original_file": "tea.c",
+      "original_line": 78,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2985_tea.c_78_local_cpp_cwe-120-overflow/logs/klee_run_3/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

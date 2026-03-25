@@ -1,0 +1,13 @@
+repro:  computing radial background...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3714137==ERROR: AddressSanitizer: FPE on unknown address 0x5c3f5c3b56b6 (pc 0x5c3f5c3b56b6 bp 0x7ffe6ae36f10 sp 0x7ffe6ae36cc0 T0)
+    #0 0x5c3f5c3b56b6 in rpng2_win_load_bg_image /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1016_divide-by-zero/reproducer.c:84:51
+    #1 0x5c3f5c3b4da6 in main /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1016_divide-by-zero/reproducer.c:143:5
+    #2 0x79d47b02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x79d47b02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5c3f5c2f5334 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1016_divide-by-zero/reproducer+0x21334) (BuildId: 672b011d363af3f98f67dd4861343f72b2a6b6b7)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1016_divide-by-zero/reproducer.c:84:51 in rpng2_win_load_bg_image
+==3714137==ABORTING

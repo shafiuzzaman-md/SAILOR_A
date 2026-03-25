@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: ivi_dsp.c
+Line: 10
+assembly.ll line: 58
+State: 1
+Stack: 
+	#000000058 in ff_ivi_put_dc_pixel_8x8(139206293618688, 138927120744448, 0, 0) at ivi_dsp.c:10
+	#100000088 in entry_func(139206293618688, 138927120744448) at ivi_dsp.c:17
+	#200000030 in main() at driver.c:20
+Info: 
+	address: 139206293618688
+	next: object at 138907793391616 of size 4
+		MO34[4] allocated at entry_func():  %6 = alloca i32, align 4

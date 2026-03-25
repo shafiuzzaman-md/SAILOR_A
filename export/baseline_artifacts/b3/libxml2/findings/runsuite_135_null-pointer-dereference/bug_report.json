@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runsuite.c",
+    "line": 135,
+    "function": "initializeLibxml2",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlXPathNewContext(NULL) can fail and return NULL on allocation failure, but the result is dereferenced immediately without a NULL check (ctxtXPath->cache). This leads to a NULL pointer dereference if allocation fails. Subsequent calls using ctxtXPath (e.g., xmlXPathRegisterNs) would also dereference NULL.",
+    "abs_path": "/tmp/libxml2_upstream/runsuite.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n\n/* Minimal type and API stubs to mimic the libxml2 interfaces used */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (xmlChar *)\n\ntypedef void (*xmlFreeFunc)(void *);\ntypedef void *(*xmlMallocFunc)(size_t);\ntypedef void *(*xmlReallocFunc)(void *, size_t);\ntypedef char *(*xmlStrdupFunc)(const char *);\n\ntypedef struct _xmlXPathContext {\n    void *doc;\n    void *node;\n    void *cache;\n} xmlXPathContext;\ntypedef xmlXPathContext* xmlXPathContextPtr;\n\n/* libxml2 memory API stubs */\nint xmlMemSetup(xmlFreeFunc freeFunc, xmlMallocFunc mallocFunc,\n                xmlReallocFunc reallocFunc, xmlStrdupFunc strdupFunc) {\n    (void)freeFunc; (void)mallocFunc; (void)reallocFunc; (void)strdupFunc;\n    return 0;\n}\nvoid xmlMemFree(void *p) { free(p); }\nvoid *xmlMemMalloc(size_t s) { return malloc(s); }\nvoid *xmlMemRealloc(void *p, size_t s) { return realloc(p, s); }\nchar *xmlMemoryStrdup(const char *s) {\n    if (!s) return NULL;\n    size_t n = strlen(s) + 1;\n    char *d = (char *)malloc(n);\n    if (d) memcpy(d, s, n);\n    return d;\n}\n\n/* Other libxml2 API stubs used by initializeLibxml2 */\nvoid xmlInitParser(void) {}\n\n/* Intentionally simulate allocation failure -> return NULL */\nxmlXPathContextPtr xmlXPathNewContext(void *node) {\n    (void)node;\n    return NULL;\n}\n\nvoid xmlXPathContextSetCache(xmlXPathContextPtr ctxt, int active, int value, int options) {\n    (void)ctxt; (void)active; (void)value; (void)options;\n}\n\nint xmlXPathRegisterNs(xmlXPathContextPtr ctxt, const xmlChar *prefix, const xmlChar *href) {\n    (void)ctxt; (void)prefix; (void)href;\n    return 0;\n}\n\ntypedef void (*xmlGenericErrorFunc)(void *ctx, const char *msg, ...);\nvoid xmlSetGenericErrorFunc(void *ctx, xmlGenericErrorFunc handler) {\n    (void)ctx; (void)handler;\n}\n\nstatic void testErrorHandler(void *ctx, const char *msg, ...) {\n    (void)ctx; (void)msg;\n    va_list ap;\n    va_start(ap, msg);\n    va_end(ap);\n}\n\n/* Global context like in runsuite.c */\nstatic xmlXPathContextPtr ctxtXPath = NULL;\n\n/* Reimplementation of the vulnerable function from runsuite.c */\nstatic void initializeLibxml2(void) {\n    xmlMemSetup(xmlMemFree, xmlMemMalloc, xmlMemRealloc, xmlMemoryStrdup);\n    xmlInitParser();\n    ctxtXPath = xmlXPathNewContext(NULL);\n    /* Vulnerable dereference: ctxtXPath may be NULL if allocation failed */\n    if (ctxtXPath->cache != NULL)\n        xmlXPathContextSetCache(ctxtXPath, 0, -1, 0);\n    /* Subsequent uses would also dereference NULL, but we already crash above */\n    xmlXPathRegisterNs(ctxtXPath, BAD_CAST \"ts\", BAD_CAST \"TestSuite\");\n    xmlXPathRegisterNs(ctxtXPath, BAD_CAST \"xlink\", BAD_CAST \"http://www.w3.org/1999/xlink\");\n    xmlSetGenericErrorFunc(NULL, testErrorHandler);\n}\n\nint main(void) {\n    /* Triggers the NULL pointer dereference */\n    initializeLibxml2();\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08971762657165527,
+      "output": ""
+    }
+  }
+}

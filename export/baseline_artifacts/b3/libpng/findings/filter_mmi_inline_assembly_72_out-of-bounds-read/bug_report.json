@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_mmi_inline_assembly.c",
+    "line": 72,
+    "function": "png_read_filter_row_sub3_mmi",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The function advances row by 12 bytes per iteration but reads up to 16 bytes from row (gsldrc1/gsldlc1 at 0x00 and 0x08). For rowbytes not divisible by 12 (common for 3 bytes/pixel), the final iteration overreads up to 4 bytes past the end of row.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_mmi_inline_assembly.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for OOB read in png_read_filter_row_sub3_mmi\n#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Minimal typedefs/structs to match the vulnerable function signature\ntypedef unsigned char png_byte;\ntypedef struct png_row_info {\n    size_t rowbytes;\n} png_row_info;\n\n// Global sink to ensure loads are not optimized out\nvolatile uint64_t g_sink = 0;\n\n// C approximation of the MMI routine that exhibits the same OOB read behavior:\n// - Advances row by 12 bytes per iteration\n// - Reads 16 bytes per iteration (two 8-byte loads at offsets 0 and 8)\n// This will overread the tail when rowbytes is not a multiple of 12.\nvoid png_read_filter_row_sub3_mmi(png_row_info *row_info, png_byte *row, const png_byte *prev) {\n    (void)prev; // not used in this path\n    int istop = (int)row_info->rowbytes;\n\n    while (istop > 0) {\n        // Emulate two 64-bit loads from row+0 and row+8 as in the MMI asm\n        // This causes a 16-byte read per 12-byte step, leading to tail overread.\n        volatile uint64_t rp = *(const uint64_t*)(row + 0);\n        volatile uint64_t pp = *(const uint64_t*)(row + 8);\n        g_sink ^= rp ^ pp; // use the values so the compiler keeps the loads\n\n        row   += 12;\n        istop -= 12;\n    }\n}\n\nint main(void) {\n    // Choose a row size not divisible by 12 to trigger the tail overread.\n    // 27 = 12*2 + 3 ensures the first full iteration is in-bounds and the\n    // final iteration performs the overread (matching the described bug).\n    const size_t rowbytes = 27;\n\n    png_row_info info;\n    info.rowbytes = rowbytes;\n\n    png_byte *row = (png_byte*)malloc(rowbytes);\n    if (!row) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    // Fill the buffer so ASan reports an OOB READ when we overrun past the end\n    memset(row, 0xA5, rowbytes);\n\n    // prev is unused in this path; provide a dummy pointer\n    png_byte *prev = (png_byte*)malloc(rowbytes);\n    if (!prev) {\n        perror(\"malloc prev\");\n        free(row);\n        return 1;\n    }\n    memset(prev, 0, rowbytes);\n\n    // This call will perform 16-byte reads per 12-byte step.\n    // For rowbytes=27, the second iteration reads at offsets 12..27, overreading by 1 byte.\n    png_read_filter_row_sub3_mmi(&info, row, prev);\n\n    // Prevent optimizing away\n    printf(\"sink=%llu\\n\", (unsigned long long)g_sink);\n\n    free(prev);\n    free(row);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7209796905517578,
+      "output": "=================================================================\n==3733943==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000000058 at pc 0x5bae09f45ded bp 0x7ffe84ac77d0 sp 0x7ffe84ac77c8\nREAD of size 8 at 0x603000000058 thread T0\n    #0 0x5bae09f45dec in png_read_filter_row_sub3_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:27:32\n    #1 0x5bae09f460f6 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:65:5\n    #2 0x7acf8be2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7acf8be2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bae09e86314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer+0x21314) (BuildId: 48b8f06c24a22bb2066e882417f29620d7f50fdd)\n\n0x60300000005b is located 0 bytes to the right of 27-byte region [0x603000000040,0x60300000005b)\nallocated by thread T0 here:\n    #0 0x5bae09f09d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 48b8f06c24a22bb2066e882417f29620d7f50fdd)\n    #1 0x5bae09f4604d in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:45:32\n    #2 0x7acf8be2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7acf8be2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bae09e86314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer+0x21314) (BuildId: 48b8f06c24a22bb2066e882417f29620d7f50fdd)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:27:32 in png_read_filter_row_sub3_mmi\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00[03]fa fa 00 00\n  0x0c067fff8010: 00 03 fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3733943==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_read_filter_row_sub3_mmi",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:27",
+      "crash_line": 32,
+      "frames": [
+        [
+          "0",
+          "png_read_filter_row_sub3_mmi",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:27",
+          "32"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:65",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_72_out-of-bounds-read/reproducer.c:45",
+          "32"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

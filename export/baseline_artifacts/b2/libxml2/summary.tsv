@@ -1,0 +1,29 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+utf8_to_html_overflow	BUILD_ERROR	FP			0	htmlUTF8ToHtml		0	3213		
+encode_entities_overflow	BUILD_ERROR	FP			0	htmlEncodeEntities		0	3213		
+create_memory_parser_ctxt_copy_overflow	BUILD_ERROR	FP			0	htmlCreateMemoryParserCtxt		0	3213		
+parse_document_size_trust_read_oob	BUILD_ERROR	FP			0	htmlParseDocument		0	3213		
+doc_dump_memory_off_by_one_write	BUILD_ERROR	FP			0	htmlDocDumpMemory		0	3213		
+read_memory_missing_terminator_oob	BUILD_ERROR	FP			0	htmlReadMemory		0	3213		
+c14n_dump_memory_null_deref	BUILD_ERROR	FP			0	xmlC14NDocDumpMemory		0	3213		
+sax2_get_column_number_null_deref	BUILD_ERROR	FP			0	xmlSAX2GetColumnNumber		0	3213		
+html_node_dump_buffer_overflow	BUILD_ERROR	FP			0	htmlNodeDump		0	3213		
+read_io_callback_misuse_stack_overflow	BUILD_ERROR	FP			0	htmlReadIO		0	3213		
+create_push_parser_ctxt_copy_overflow	BUILD_ERROR	FP			0	htmlCreatePushParserCtxt		0	3213		
+html_parse_chunk_neg_size	BUILD_ERROR	FP			0	htmlParseChunk		0	3213		
+html_tag_lookup_stack_overflow	BUILD_ERROR	FP			0	htmlTagLookup		0	3213		
+html_entity_lookup_overflow	BUILD_ERROR	FP			0	htmlEntityLookup		0	3213		
+html_entity_value_lookup_oob	BUILD_ERROR	FP			0	htmlEntityValueLookup		0	3213		
+html_ctxt_reset_double_free	BUILD_ERROR	FP			0	htmlCtxtReset/htmlFreeParserCtxt		0	3213		
+html_ctxt_set_options_oob_write	BUILD_ERROR	FP			0	htmlCtxtSetOptions		0	3213		
+xmlSAX2StartElementNs_attr_count_overflow	BUILD_ERROR	FP			0	xmlSAX2StartElementNs		0	3213		
+xmlC14NDocSaveTo_buffer_overflow	BUILD_ERROR	FP			0	xmlC14NDocSaveTo		0	3213		
+htmlSetMetaEncoding_uaf	BUILD_ERROR	FP			0	htmlSetMetaEncoding		0	3213		
+buf_create_mem_bounds	BUILD_ERROR	FP			0	xmlBufCreateMem		0	3213		
+html_parse_content_type_scan	BUILD_ERROR	FP			0	htmlParseContentType		0	3213		
+sax2_get_line_number_ctx	BUILD_ERROR	FP			0	xmlSAX2GetLineNumber		0	3213		
+sax2_get_system_id_ctx	BUILD_ERROR	FP			0	xmlSAX2GetSystemId		0	3213		
+html_find_meta_encoding_attr_attrs	SE_DETECTED	TP	ptr	harness.c	55	htmlFindMetaEncodingAttr		4	3213	BUG-001	
+html_parse_meta_encoding_strlen	SE_DETECTED	TP	ptr	strlen.c	22	htmlParseMetaEncoding		314	3213	BUG-002	
+buf_detach_content_copy	BUILD_ERROR	FP			0	xmlBufDetach		0	3213		
+sax2_is_standalone_ctx	BUILD_ERROR	FP			0	xmlSAX2IsStandalone		0	3213		

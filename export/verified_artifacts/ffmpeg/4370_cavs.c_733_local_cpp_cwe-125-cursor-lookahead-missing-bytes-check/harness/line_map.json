@@ -1,0 +1,29 @@
+{
+  "cavs.c": {
+    "17": {
+      "orig_file": "cavs.c",
+      "orig_line": 722,
+      "code": "int ff_cavs_init_pic(AVSContext *h)"
+    },
+    "18": {
+      "orig_file": "cavs.c",
+      "orig_line": 723,
+      "code": "{"
+    },
+    "20": {
+      "orig_file": "cavs.c",
+      "orig_line": 733,
+      "code": "h->pred_mode_Y[3] = h->pred_mode_Y[6] = NOT_AVAIL;"
+    },
+    "23": {
+      "orig_file": "cavs.c",
+      "orig_line": 744,
+      "code": "return 0;"
+    },
+    "24": {
+      "orig_file": "cavs.c",
+      "orig_line": 745,
+      "code": "}"
+    }
+  }
+}

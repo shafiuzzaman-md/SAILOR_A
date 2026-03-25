@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-rs6000.c",
+    "line": 2160,
+    "function": "xcoff_write_armap_big",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the 32-bit offsets loop, the inner while (map[i].abfd == iterator.current.member) lacks a bound check on i. If i reaches orl_count, the subsequent evaluation accesses map[orl_count], causing an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-rs6000.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <string.h>\n\n/* Minimal type re-declarations and stubs to exercise the vulnerable loop. */\ntypedef unsigned long long bfd_vma;\n\nstruct bfd {\n  struct bfd *archive_head;\n  struct bfd *archive_next;\n};\n\nstruct xcoff_ar_hdr_big {\n  char size[20];\n  char nextoff[20];\n  char prevoff[20];\n  char date[12];\n  char uid[12];\n  char gid[12];\n  char mode[12];\n  char namlen[4];\n};\n\n/* No-op macros for header printing used by the real code. */\n#define PRINT20(field, value) do { (void)(field); (void)(value); } while (0)\n#define PRINT12(field, value) do { (void)(field); (void)(value); } while (0)\n#define PRINT4(field, value)  do { (void)(field); (void)(value); } while (0)\n\n#define SIZEOF_AR_HDR_BIG (sizeof(struct xcoff_ar_hdr_big))\nstatic const char XCOFFARFMAG[] = \"ARFMAG\";  /* Arbitrary content */\n#define SXCOFFARFMAG (sizeof(XCOFFARFMAG) - 1)\n\nstatic void *bfd_zmalloc(size_t sz) { return calloc(1, sz); }\nstatic void bfd_h_put_64(struct bfd *abfd, uint64_t val, void *dst) {\n  (void)abfd;\n  memcpy(dst, &val, 8);\n}\n\nstruct arch_info { int bits_per_address; };\nstatic struct arch_info arch32 = { 32 };\nstatic struct arch_info *bfd_get_arch_info(struct bfd *abfd) {\n  (void)abfd;\n  return &arch32;\n}\n\nstruct archive_iterator {\n  struct { struct bfd *member; uint64_t offset; } current;\n  int idx;\n};\n\nstatic struct bfd global_member_bfd_instance;\nstatic struct bfd *global_member_bfd = &global_member_bfd_instance;\n\nstatic void archive_iterator_begin(struct archive_iterator *it, struct bfd *abfd) {\n  (void)abfd;\n  it->idx = 0;\n  it->current.member = NULL;\n  it->current.offset = 0;\n}\n\nstatic int archive_iterator_next(struct archive_iterator *it) {\n  /* Return one member repeatedly; the bug triggers in the first iteration. */\n  if (it->idx == 0) {\n    it->current.member = global_member_bfd;\n    it->current.offset = 0x1234ULL;\n    it->idx++;\n    return 1;\n  }\n  return 0;\n}\n\nstatic size_t bfd_write(const void *buf, size_t n, struct bfd *abfd) {\n  (void)buf; (void)abfd;\n  return n; /* Pretend write succeeds. */\n}\n\nstruct orl_map_entry {\n  struct bfd *abfd;\n  const char **name;\n};\n\n/* Vulnerable function body distilled to the relevant part. */\nstatic bool xcoff_write_armap_big(struct bfd *abfd, struct orl_map_entry *map, size_t orl_count) {\n  size_t sym_32 = orl_count;\n  size_t sym_64 = 0;\n  size_t str_32 = 0;\n  bfd_vma nextoff = 0, prevoff = 0;\n\n  size_t symbol_table_size = SIZEOF_AR_HDR_BIG + SXCOFFARFMAG + 8 + 8 * sym_32 + str_32 + (str_32 & 1);\n  char *symbol_table = (char *)bfd_zmalloc(symbol_table_size);\n  if (!symbol_table) return false;\n\n  struct xcoff_ar_hdr_big *hdr = (struct xcoff_ar_hdr_big *)symbol_table;\n  PRINT20(hdr->size, 8 + 8 * sym_32 + str_32 + (str_32 & 1));\n  if (sym_64)\n    PRINT20(hdr->nextoff, nextoff + symbol_table_size);\n  else\n    PRINT20(hdr->nextoff, 0);\n  PRINT20(hdr->prevoff, prevoff);\n  PRINT12(hdr->date, 0);\n  PRINT12(hdr->uid, 0);\n  PRINT12(hdr->gid, 0);\n  PRINT12(hdr->mode, 0);\n  PRINT4(hdr->namlen, 0);\n\n  char *st = symbol_table + SIZEOF_AR_HDR_BIG;\n  memcpy(st, XCOFFARFMAG, SXCOFFARFMAG);\n  st += SXCOFFARFMAG;\n  bfd_h_put_64(abfd, sym_32, st);\n  st += 8;\n\n  /* Vulnerable region: missing bound check in inner while. */\n  size_t i = 0;\n  struct archive_iterator iterator;\n  archive_iterator_begin(&iterator, abfd);\n  while (i < orl_count && archive_iterator_next(&iterator)) {\n    struct arch_info *arch_info = bfd_get_arch_info(iterator.current.member);\n    while (map[i].abfd == iterator.current.member) { /* No i < orl_count check here -> OOB read when i == orl_count */\n      if (arch_info->bits_per_address == 32) {\n        bfd_h_put_64(abfd, iterator.current.offset, st);\n        st += 8;\n      }\n      i++;\n    }\n  }\n\n  /* Not reached if ASan trips as intended. */\n  if (bfd_write(symbol_table, symbol_table_size, abfd) != symbol_table_size) {\n    free(symbol_table);\n    return false;\n  }\n  free(symbol_table);\n  return true;\n}\n\nint main(void) {\n  /* Set up a map with orl_count entries, all pointing to the same member. */\n  const size_t orl_count = 8; /* Any positive number works. */\n  struct orl_map_entry *map = (struct orl_map_entry *)malloc(orl_count * sizeof(*map));\n  if (!map) {\n    perror(\"malloc\");\n    return 1;\n  }\n  for (size_t i = 0; i < orl_count; i++) {\n    map[i].abfd = global_member_bfd;  /* All equal to iterator.current.member. */\n    map[i].name = NULL;               /* Not used before the bug triggers. */\n  }\n\n  struct bfd archive = {0};\n  /* Call the vulnerable function; the inner while will increment i to orl_count\n     and then re-evaluate map[i] with i == orl_count, causing an OOB read. */\n  (void)xcoff_write_armap_big(&archive, map, orl_count);\n\n  free(map);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.754307746887207,
+      "output": "=================================================================\n==3598496==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60c0000000c0 at pc 0x5c1135fb725f bp 0x7fff44cfab10 sp 0x7fff44cfab08\nREAD of size 8 at 0x60c0000000c0 thread T0\n    #0 0x5c1135fb725e in xcoff_write_armap_big /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:120:19\n    #1 0x5c1135fb6eb7 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:154:9\n    #2 0x73f0d4a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x73f0d4a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c1135ef7314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer+0x21314) (BuildId: 327eb602c782f0135bfa7ba19a2f93075d2e7842)\n\n0x60c0000000c0 is located 0 bytes to the right of 128-byte region [0x60c000000040,0x60c0000000c0)\nallocated by thread T0 here:\n    #0 0x5c1135f7ad22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 327eb602c782f0135bfa7ba19a2f93075d2e7842)\n    #1 0x5c1135fb6d84 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:141:55\n    #2 0x73f0d4a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x73f0d4a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5c1135ef7314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer+0x21314) (BuildId: 327eb602c782f0135bfa7ba19a2f93075d2e7842)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:120:19 in xcoff_write_armap_big\nShadow bytes around the buggy address:\n  0x0c187fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c187fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c187fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c187fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c187fff8000: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00\n=>0x0c187fff8010: 00 00 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa\n  0x0c187fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c187fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c187fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c187fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c187fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3598496==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "xcoff_write_armap_big",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:120",
+      "crash_line": 19,
+      "frames": [
+        [
+          "0",
+          "xcoff_write_armap_big",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:120",
+          "19"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:154",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-rs6000_2160_out-of-bounds-read/reproducer.c:141",
+          "55"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

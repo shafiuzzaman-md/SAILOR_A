@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cil",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "cil_list_item_destroy",
+            "crash_file": "../cil/src/cil_list.c",
+            "crash_line": 93
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "cil_list_item_destroy",
+        "crash_file": "../cil/src/cil_list.c",
+        "crash_line": 93,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3583==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000048 at pc 0x55836adb4dae bp 0x7ffef6473080 sp 0x7ffef6473070\nREAD of size 4 at 0x503000000048 thread T0\n    #0 0x55836adb4dad in cil_list_item_destroy ../cil/src/cil_list.c:93\n    #1 0x55836adb45ec in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:30\n    #2 0x7f6a40d6fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f6a40d6fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55836adb4344 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2344)\n\n0x503000000048 is located 8 bytes inside of 24-byte region [0x503000000040,0x503000000058)\nfreed by thread T0 here:\n    #0 0x7f6a41126537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x55836adb4599 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:22\n    #2 0x7f6a40d6fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7f6a41126887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55836adb44ae in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:12\n    #2 0x7f6a40d6fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free ../cil/src/cil_list.c:93 in cil_list_item_destroy\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 "
+    }
+}

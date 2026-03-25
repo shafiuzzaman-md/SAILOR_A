@@ -1,0 +1,179 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 3,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 189119,
+    "tokens_prompt": 167905,
+    "tokens_completion": 21214,
+    "turns": 17,
+    "klee_runs": 2
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "mvs.c",
+    "line": 59,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow.json",
+  "vul_file": "mvs.c",
+  "vul_line": "1913",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 0,
+      "secondary_bugs": 3
+    },
+    "vulnerability": {
+      "original_file": "mvs.c",
+      "original_line": 1913,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": ""
+    },
+    "klee_crash": {
+      "harness_file": "mvs.c",
+      "harness_line": 55,
+      "original_file": "mvs.c",
+      "original_line": 59,
+      "original_code": "}",
+      "original_context": "    56:             lc->na.cand_up_right_sap\n    57:                      && (x0 + nPbW) < lc->end_of_tiles_x;\n    58:     lc->na.cand_bottom_left = ((y0 + nPbH) >= lc->end_of_tiles_y) ? 0 : lc->na.cand_left;\n>>> 59: }\n    60: \n    61: /*\n    62:  * 6.4.1 Derivation process for z-scan order block availability",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memmove.c\nLine: 26\nassembly.ll line: 330\nState: 2\nStack: \n\t#000000330 in memmove(139223423143940, 139223423143936, symbolic) at runtime/Freestanding/memmove.c:26\n\t#100000204 in update_hmvp(139223423143936, 139223423143968, 138965725106176) at mvs.c:55\n\t#200000153 in ff_vvc_update_hmvp(139085984190464, 138931365367808) at mvs.c:68\n\t#300000115 in main() at driver.c:71\nInfo: \n\taddress: (Add w64 139223423143935\n          (Mul w64 4"
+    },
+    "concrete_inputs": [
+      {
+        "name": "src_mvf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "hmvp_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "num_hmvp",
+        "size": 4,
+        "data": "b'\\x13\\x00\\x00\\x00'"
+      },
+      {
+        "name": "src_mvf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "hmvp_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "num_hmvp",
+        "size": 4,
+        "data": "b'\\x12\\x00\\x00\\x00'"
+      },
+      {
+        "name": "src_mvf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "hmvp_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "num_hmvp",
+        "size": 4,
+        "data": "b'\\x08\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "mvs.c",
+        "harness_line": 55,
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "ptr",
+        "crash_function": "memmove",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      },
+      {
+        "harness_file": "mvs.c",
+        "harness_line": 55,
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "ptr",
+        "crash_function": "memmove",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000002.ktest"
+      },
+      {
+        "harness_file": "mvs.c",
+        "harness_line": 57,
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "assert",
+        "crash_function": "update_hmvp",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000003.ktest"
+      }
+    ],
+    "all_asan_crashes": [],
+    "secondary_bugs": [
+      {
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "ptr",
+        "crash_function": "memmove",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      },
+      {
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "ptr",
+        "crash_function": "memmove",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000002.ktest"
+      },
+      {
+        "original_file": "mvs.c",
+        "original_line": 59,
+        "error_type": "assert",
+        "crash_function": "update_hmvp",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1600_mvs.c_1913_local_cpp_cwe-120-overflow/logs/klee_run_2/test000003.ktest"
+      }
+    ]
+  }
+}

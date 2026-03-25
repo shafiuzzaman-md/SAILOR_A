@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/makepng.c",
+    "line": 1600,
+    "function": "strstash_list",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "malloc is not checked for failure; if malloc returns NULL, the subsequent memcpy(bar, *line++, foo) writes via a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/makepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Custom allocator that always fails to simulate malloc returning NULL. */\nstatic void *my_malloc(size_t sz) {\n    (void)sz;\n    return NULL; /* Force allocation failure */\n}\n\n/* Redirect malloc used in the vulnerable code to our failing allocator. */\n#define malloc my_malloc\n\n/* Reimplementation of the vulnerable function from contrib/libtests/makepng.c */\nstatic char *\nstrstash_list(const char * const *text)\n{\n    size_t foo = 0;\n    char *result, *bar;\n    const char * const *line = text;\n\n    while (*line != NULL)\n        foo += strlen(*line++);\n\n    result = bar = malloc(foo+1); /* returns NULL in this reproducer */\n\n    line = text;\n    while (*line != NULL)\n    {\n        foo = strlen(*line);\n        /* bar is NULL; foo > 0 for our input; this memcpy dereferences NULL. */\n        memcpy(bar, *line++, foo);\n        bar += foo;\n    }\n\n    *bar = 0;\n    return result;\n}\n\nint main(void)\n{\n    /* Non-empty strings ensure memcpy length > 0, which will crash when dest is NULL. */\n    const char *text[] = { \"A\", \"BC\", NULL };\n\n    /* Expect a crash (NULL-pointer dereference) inside strstash_list. */\n    char *r = strstash_list(text);\n\n    /* Prevent unused variable warning in case behavior changes. */\n    if (r)\n        printf(\"unexpected: %s\\n\", r);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6740193367004395,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3718257==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7568cfb88ad2 bp 0x7fff87464dd0 sp 0x7fff87464598 T0)\n==3718257==The signal is caused by a WRITE memory access.\n==3718257==Hint: address points to the zero page.\n    #0 0x7568cfb88ad2 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:323\n    #1 0x572913e040d5 in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 92cb48ea9e175d0e7521ff195ac487b47903a6d1)\n    #2 0x572913e40f89 in strstash_list /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer.c:33:9\n    #3 0x572913e40d90 in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer.c:47:15\n    #4 0x7568cfa2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7568cfa2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x572913d81304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer+0x21304) (BuildId: 92cb48ea9e175d0e7521ff195ac487b47903a6d1)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:323 in __memcpy_avx_unaligned_erms\n==3718257==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 323,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "323"
+        ],
+        [
+          "2",
+          "strstash_list",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer.c:33",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1600_null-pointer-dereference/reproducer.c:47",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

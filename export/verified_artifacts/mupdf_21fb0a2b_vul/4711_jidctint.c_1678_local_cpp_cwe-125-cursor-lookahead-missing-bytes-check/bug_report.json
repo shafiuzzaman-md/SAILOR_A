@@ -1,0 +1,90 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 1678,
+        "function": "jpeg_idct_11x11",
+        "entry_point": "jpeg_idct_11x11",
+        "spine": [
+            "jpeg_idct_11x11"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "jidctint.c",
+        "harness_line": 63,
+        "original_file": "jidctint.c",
+        "original_line": 1678,
+        "original_code": "outptr[8]  = range_limit[(int) RIGHT_SHIFT(tmp22 - tmp12,",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jidctint.c\nLine: 63\nassembly.ll line: 159\nState: 1\nStack: \n\t#000000159 in jpeg_idct_11x11(139650888552448, 139668068421632, 139908586590208, 139676658356224, 0) at jidctint.c:63\n\t#100000085 in main() at driver.c:55\nInfo: \n\taddress: 139625118748680\n\tnext: object at 139351314583552 of size 4\n\t\tMO79[4] allocated at jpeg_idct_11x11():  %11 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "range_limit",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "dct_table",
+            "size": 256,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "coef_block",
+            "size": 128,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "out_row0",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_idct_11x11",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 1524,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==26188==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000001a8 at pc 0x56334c3421ec bp 0x7ffde3ae3d10 sp 0x7ffde3ae3d00\nREAD of size 8 at 0x5020000001a8 thread T0\n    #0 0x56334c3421eb in jpeg_idct_11x11 thirdparty/libjpeg/jidctint.c:1524\n    #1 0x56334c33a8a7 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4711_jidctint.c_1678_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:56\n    #2 0x7f0c3e249d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f0c3e249e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56334c33a2e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4711_jidctint.c_1678_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12e4)\n\n0x5020000001a8 is located 272 bytes to the right of 8-byte region [0x502000000090,0x502000000098)\nallocated by thread T0 here:\n    #0 0x7f0c3e600887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x56334c33a852 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4711_jidctint.c_1678_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:50\n    #2 0x7f0c3e249d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jidctint.c:1524 in jpeg_idct_11x11\nShadow bytes around the buggy address:\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 00 fa fa fa 01 fa fa fa 00 fa fa fa 00 fa\n  0x0a047fff8010: fa fa 00 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff8030: fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8050: fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4711_jidctint.c_1678_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jidctint.c",
+            "harness_line": 63,
+            "original_file": "jidctint.c",
+            "original_line": 1678,
+            "error_type": "ptr",
+            "crash_function": "jpeg_idct_11x11",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4711_jidctint.c_1678_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_idct_11x11",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 1524
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+About to trigger out-of-bounds read via wrapped bounds check...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080869==ERROR: AddressSanitizer: SEGV on unknown address 0x619100000070 (pc 0x750c45788a8d bp 0x7ffcbd278aa0 sp 0x7ffcbd278268 T0)
+==4080869==The signal is caused by a READ memory access.
+    #0 0x750c45788a8d in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:265
+    #1 0x592527eb40d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirread_400_out-of-bounds-read/reproducer+0xa40d5) (BuildId: 55fba4ef315b6e6426af676cb3945853e8a41f64)
+    #2 0x592527ef1a44 in _TIFFmemcpy /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:59:66
+    #3 0x592527ef14d5 in TIFFFetchData /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:93:9
+    #4 0x592527ef1110 in main /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:153:11
+    #5 0x750c4562a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x750c4562a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x592527e31304 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirread_400_out-of-bounds-read/reproducer+0x21304) (BuildId: 55fba4ef315b6e6426af676cb3945853e8a41f64)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:265 in __memcpy_avx_unaligned_erms
+==4080869==ABORTING

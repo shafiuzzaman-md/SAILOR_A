@@ -1,0 +1,82 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "colorspace.c",
+        "original_line": 840,
+        "function": "fz_find_icc_link",
+        "entry_point": "fz_find_color_converter",
+        "spine": [
+            "fz_find_color_converter",
+            "fz_init_process_color_converter",
+            "fz_find_icc_link"
+        ],
+        "original_context": "835: \tfz_var(link);\n836: \n837: \t/* Check the storable to see if we have a copy. */\n838: \tkey.refs = 1;\n839: \tmemcpy(&key.src_md5, src->u.icc.md5, 16);\n840: \tmemcpy(&key.dst_md5, dst->u.icc.md5, 16);\n841: \tkey.rend = rend;\n842: \tkey.src_extras = src_extras;\n843: \tkey.dst_extras = dst_extras;\n844: \tkey.copy_spots = copy_spots;\n845: \tkey.format = (format & 1) | (premult*2);"
+    },
+    "klee_crash": {
+        "harness_file": "colorspace.c",
+        "harness_line": 57,
+        "original_file": "colorspace.c",
+        "original_line": 840,
+        "original_code": "memcpy(&key.dst_md5, dst->u.icc.md5, 16);",
+        "original_context": "    837: \t/* Check the storable to see if we have a copy. */\n    838: \tkey.refs = 1;\n    839: \tmemcpy(&key.src_md5, src->u.icc.md5, 16);\n>>> 840: \tmemcpy(&key.dst_md5, dst->u.icc.md5, 16);\n    841: \tkey.rend = rend;\n    842: \tkey.src_extras = src_extras;\n    843: \tkey.dst_extras = dst_extras;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: null page access\nFile: colorspace.c\nLine: 57\nassembly.ll line: 64\nState: 1\nStack: \n\t#000000064 in fz_find_icc_link(138467352973312) at colorspace.c:57\n\t#100000099 in fz_init_process_color_converter(138467352973312, 138471647940608, 138486680326144, 138484532842496, 138488827809792, symbolic) at colorspace.c:67\n\t#200000129 in fz_find_color_converter(138467352973312, 138471647940608, 138486680326144, 138484532842496, 138488827809792, symbolic) at colorspace.c:75\n\t#300000199 in"
+    },
+    "concrete_inputs": [
+        {
+            "name": "dst_md5",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "params",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "fz_find_color_converter",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 992,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==10632==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fff4c1ad9c0 at pc 0x555bf383c5aa bp 0x7fff4c1ad900 sp 0x7fff4c1ad8f0\nWRITE of size 8 at 0x7fff4c1ad9c0 thread T0\n    #0 0x555bf383c5a9 in fz_find_color_converter source/fitz/colorspace.c:992\n    #1 0x555bf3835c8f in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/208_colorspace.c_840_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:53\n    #2 0x7fc954a79d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fc954a79e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x555bf3835894 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/208_colorspace.c_840_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10894)\n\nAddress 0x7fff4c1ad9c0 is located in stack of thread T0 at offset 80 in frame\n    #0 0x555bf3835968 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/208_colorspace.c_840_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:28\n\n  This frame has 6 object(s):\n    [48, 52) 'ctx_obj' (line 30)\n    [64, 68) 'cc_obj' (line 31)\n    [80, 84) 'params' (line 49) <== Memory access at offset 80 partially overflows this variable\n    [96, 112) 'ss_obj' (line 32)\n    [128, 144) 'ds_obj' (line 33)\n    [160, 176) 'is_obj' (line 34)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow source/fitz/colorspace.c:992 in fz_find_color_converter\nShadow bytes around the buggy address:\n  0x10006982dae0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10006982daf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10006982db00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10006982db10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10006982db20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1\n=>0x100"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/208_colorspace.c_840_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 57,
+            "original_file": "colorspace.c",
+            "original_line": 840,
+            "error_type": "ptr",
+            "crash_function": "fz_find_icc_link",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/208_colorspace.c_840_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "fz_find_color_converter",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 992
+        }
+    ]
+}

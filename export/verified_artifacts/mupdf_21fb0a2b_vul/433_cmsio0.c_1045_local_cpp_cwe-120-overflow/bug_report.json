@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsio0.c",
+        "original_line": 1045,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "1040: \n1041: void CMSEXPORT cmsGetHeaderProfileID(cmsContext ContextID, cmsHPROFILE hProfile, cmsUInt8Number* ProfileID)\n1042: {\n1043:     _cmsICCPROFILE*  Icc = (_cmsICCPROFILE*) hProfile;\n1044:     cmsUNUSED_PARAMETER(ContextID);\n1045:     memmove(ProfileID, Icc ->ProfileID.ID8, 16);\n1046: }\n1047: \n1048: void CMSEXPORT cmsSetHeaderProfileID(cmsContext ContextID, cmsHPROFILE hProfile, cmsUInt8Number* ProfileID)\n1049: {\n1050:     _cmsICCPROFILE*  Icc = (_cmsICCPROFILE*) hProfile;"
+    },
+    "klee_crash": {
+        "harness_file": "cmsio0.c",
+        "harness_line": 28,
+        "original_file": "cmsio0.c",
+        "original_line": 1045,
+        "original_code": "memmove(ProfileID, Icc ->ProfileID.ID8, 16);",
+        "original_context": "    1042: {\n    1043:     _cmsICCPROFILE*  Icc = (_cmsICCPROFILE*) hProfile;\n    1044:     cmsUNUSED_PARAMETER(ContextID);\n>>> 1045:     memmove(ProfileID, Icc ->ProfileID.ID8, 16);\n    1046: }\n    1047: \n    1048: void CMSEXPORT cmsSetHeaderProfileID(cmsContext ContextID, cmsHPROFILE hProfile, cmsUInt8Number* ProfileID)",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memmove.c\nLine: 21\nassembly.ll line: 143\nState: 1\nStack: \n\t#000000143 in memmove(139084139118592, 139442768887808, 16) at runtime/Freestanding/memmove.c:21\n\t#100000036 in cmsGetHeaderProfileID(0, 139442768887808, 139084139118592) at cmsio0.c:28\n\t#200000061 in entry_func(0, 139442768887808, 139084139118592) at cmsio0.c:36\n\t#300000094 in main() at driver.c:19\nInfo: \n\taddress: 139084139118600\n\tnext: object at 139077696667648 of si"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ID8",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dest",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cmsGetHeaderProfileID",
+        "crash_file": "thirdparty/lcms2/src/cmsio0.c",
+        "crash_line": 1046,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==25042==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000007c at pc 0x55685b6e718c bp 0x7ffe593ec350 sp 0x7ffe593ec340\nREAD of size 16 at 0x50200000007c thread T0\n    #0 0x55685b6e718b in cmsGetHeaderProfileID thirdparty/lcms2/src/cmsio0.c:1046\n    #1 0x55685b6e3120 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/433_cmsio0.c_1045_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:19\n    #2 0x7f0586483d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f0586483e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55685b6e2ed4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/433_cmsio0.c_1045_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xaed4)\n\n0x50200000007c is located 92 bytes to the right of 16-byte region [0x502000000010,0x502000000020)\nallocated by thread T0 here:\n    #0 0x7f058683aa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55685b6e302e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/433_cmsio0.c_1045_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:8\n    #2 0x7f0586483d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmsio0.c:1046 in cmsGetHeaderProfileID\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa fa fa fa fa fa fa fa fa fa fa[fa]\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/433_cmsio0.c_1045_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsio0.c",
+            "harness_line": 28,
+            "original_file": "cmsio0.c",
+            "original_line": 1045,
+            "error_type": "ptr",
+            "crash_function": "memmove",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/433_cmsio0.c_1045_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cmsGetHeaderProfileID",
+            "crash_file": "thirdparty/lcms2/src/cmsio0.c",
+            "crash_line": 1046
+        }
+    ]
+}

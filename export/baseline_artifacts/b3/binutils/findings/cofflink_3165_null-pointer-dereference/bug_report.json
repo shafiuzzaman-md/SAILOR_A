@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/cofflink.c",
+    "line": 3165,
+    "function": "coff_relocate_section",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "In the bfd_reloc_overflow case, the code unconditionally dereferences sym (sym->n_sclass and passes sym to bfd_coff_classify_symbol) without checking that sym is non-NULL. Elsewhere in this function sym is treated as potentially NULL (e.g., at line 3114). If the relocation overflows on a relocation that references an external symbol (where sym can be NULL), this path will dereference a NULL pointer.",
+    "abs_path": "/tmp/binutils_upstream/bfd/cofflink.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <inttypes.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD/COFF types used by the vulnerable code path */\ntypedef unsigned long long bfd_vma;\n\ntypedef struct bfd { int dummy; } bfd;\n\ntypedef struct asection {\n  bfd_vma vma;\n  struct asection *output_section;\n} asection;\n\n/* Relocation status types */\ntypedef enum {\n  bfd_reloc_ok = 0,\n  bfd_reloc_outofrange = 1,\n  bfd_reloc_overflow = 2\n} bfd_reloc_status_type;\n\n/* Howto stub */\ntypedef struct reloc_howto_type {\n  const char *name;\n} reloc_howto_type;\n\n/* Minimal COFF symbol representation with only the used field */\nstruct coff_symbol {\n  int n_sclass; /* storage class */\n};\n\n/* Constants used in the condition */\n#ifndef SYMNMLEN\n#define SYMNMLEN 8\n#endif\n\n#ifndef C_NT_WEAK\n#define C_NT_WEAK 105 /* Value doesn't matter for triggering the bug */\n#endif\n\n#ifndef COFF_SYMBOL_UNDEFINED\n#define COFF_SYMBOL_UNDEFINED 0\n#endif\n\n/* Linker info and callbacks stubs */\nstruct bfd_link_callbacks {\n  void (*reloc_overflow)(void *info,\n                         void *hroot,\n                         const char *name,\n                         const char *howto_name,\n                         bfd_vma addend,\n                         bfd *input_bfd,\n                         asection *input_section,\n                         bfd_vma offset);\n};\n\nstruct bfd_link_info {\n  struct bfd_link_callbacks *callbacks;\n  void *base_file; /* Unused here */\n};\n\n/* Internal relocation entry stub */\nstruct internal_reloc {\n  bfd_vma r_vaddr;\n};\n\n/* ------- Stubs for functions referenced by the vulnerable code ------- */\nstatic int bfd_coff_classify_symbol(bfd *output_bfd, struct coff_symbol *sym) {\n  /* Not reached if we crash first; return something deterministic */\n  (void)output_bfd; (void)sym;\n  return COFF_SYMBOL_UNDEFINED;\n}\n\nstatic const char *_bfd_coff_internal_syment_name(bfd *input_bfd,\n                                                  struct coff_symbol *sym,\n                                                  char *buf) {\n  (void)input_bfd; (void)sym; (void)buf;\n  return \"dummy\";\n}\n\nstatic void dummy_reloc_overflow_cb(void *info, void *hroot, const char *name,\n                                    const char *howto_name, bfd_vma addend,\n                                    bfd *input_bfd, asection *input_section,\n                                    bfd_vma offset) {\n  (void)info; (void)hroot; (void)name; (void)howto_name;\n  (void)addend; (void)input_bfd; (void)input_section; (void)offset;\n}\n\n/* -------------------------------------------------------------------- */\n/* This function contains the vulnerable pattern from coff_relocate_section */\nstatic bool coff_relocate_section_reproducer(bfd *output_bfd,\n                                             struct bfd_link_info *info,\n                                             bfd *input_bfd,\n                                             asection *input_section,\n                                             unsigned char *contents,\n                                             struct internal_reloc *rel,\n                                             reloc_howto_type *howto,\n                                             long val,\n                                             long addend,\n                                             struct coff_symbol *sym,\n                                             void *h,\n                                             int symndx) {\n  (void)info; (void)input_bfd; (void)contents; (void)h; (void)symndx;\n\n  /* Force the relocation status to overflow to reach the buggy branch. */\n  bfd_reloc_status_type rstat = bfd_reloc_overflow;\n\n  switch (rstat) {\n    default:\n      abort();\n    case bfd_reloc_ok:\n      break;\n    case bfd_reloc_outofrange:\n      fprintf(stderr, \"out of range relocs not handled in reproducer\\n\");\n      return false;\n    case bfd_reloc_overflow: {\n      /* This replicates the vulnerable condition:\n       * If val == 0 and (addend + 4) == 0, the code unconditionally\n       * dereferences sym->n_sclass without checking sym for NULL.\n       * Passing sym == NULL here will crash. */\n      if (val == 0\n          && (addend + 4) == 0\n          /* Vulnerable deref: sym is NULL in our crafted input */\n          && sym->n_sclass == C_NT_WEAK\n          && bfd_coff_classify_symbol(output_bfd, sym) == COFF_SYMBOL_UNDEFINED)\n      {\n        break;\n      }\n\n      const char *name;\n      char buf[SYMNMLEN + 1];\n\n      if (symndx == -1)\n        name = \"*ABS*\";\n      else if (h != NULL)\n        name = NULL;\n      else {\n        name = _bfd_coff_internal_syment_name(input_bfd, sym, buf);\n        if (name == NULL)\n          return false;\n      }\n\n      if (info && info->callbacks && info->callbacks->reloc_overflow) {\n        info->callbacks->reloc_overflow(info, (h ? h : NULL), name,\n                                        howto ? howto->name : \"HOWTO\",\n                                        (bfd_vma)0, input_bfd, input_section,\n                                        rel->r_vaddr - input_section->vma);\n      }\n    }\n  }\n\n  return true;\n}\n\nint main(void) {\n  /* Set up minimal structures to reach the vulnerable branch. */\n  bfd output_bfd_obj = {0};\n  bfd input_bfd_obj = {0};\n\n  asection in_sec = {0};\n  in_sec.vma = 0;\n  in_sec.output_section = &in_sec;\n\n  struct internal_reloc reloc = {0};\n  reloc.r_vaddr = 0;\n\n  reloc_howto_type howto = { .name = \"TEST_RELOC\" };\n\n  struct bfd_link_callbacks cbs = { .reloc_overflow = dummy_reloc_overflow_cb };\n  struct bfd_link_info info = { .callbacks = &cbs, .base_file = NULL };\n\n  unsigned char contents[1] = {0};\n\n  /* Craft inputs to trigger the vulnerable dereference:\n   * - rstat forced to bfd_reloc_overflow inside function\n   * - val == 0 and addend == -4 so that (addend + 4) == 0\n   * - sym == NULL, causing sym->n_sclass to dereference a NULL pointer */\n  long val = 0;\n  long addend = -4;\n  struct coff_symbol *sym = NULL; /* NULL to trigger the crash */\n\n  /* Call the function containing the vulnerable logic. */\n  (void)coff_relocate_section_reproducer(&output_bfd_obj, &info, &input_bfd_obj,\n                                         &in_sec, contents, &reloc, &howto,\n                                         val, addend, sym, NULL, 0);\n\n  /* If we got here without crashing, the reproduction failed. */\n  fprintf(stderr, \"Reproducer did not trigger the bug as expected.\\n\");\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7970244884490967,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3631631==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b896c921377 bp 0x7fffa374e440 sp 0x7fffa374e280 T0)\n==3631631==The signal is caused by a READ memory access.\n==3631631==Hint: address points to the zero page.\n    #0 0x5b896c921377 in coff_relocate_section_reproducer /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:127:28\n    #1 0x5b896c92100e in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:186:9\n    #2 0x79fc4082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x79fc4082a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b896c861304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer+0x21304) (BuildId: 558691f9100d87c1e1b2c628dc36b68a0c23c948)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:127:28 in coff_relocate_section_reproducer\n==3631631==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "coff_relocate_section_reproducer",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:127",
+      "crash_line": 28,
+      "frames": [
+        [
+          "0",
+          "coff_relocate_section_reproducer",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:127",
+          "28"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3165_null-pointer-dereference/reproducer.c:186",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

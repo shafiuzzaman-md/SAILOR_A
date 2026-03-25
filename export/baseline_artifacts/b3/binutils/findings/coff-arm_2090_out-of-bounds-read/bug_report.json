@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-arm.c",
+    "line": 2090,
+    "function": "bfd_arm_process_before_allocation",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Uses obj_coff_sym_hashes(abfd)[symndx] without validating that symndx is non-negative. Values < -1 (malformed reloc r_symndx) bypass the -1 check and lead to indexing the array with a negative index, causing an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-arm.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for out-of-bounds-read in bfd_arm_process_before_allocation\n// Vulnerability: negative symndx (< -1) used to index obj_coff_sym_hashes(abfd)\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stdbool.h>\n\n// Minimal type stubs to mimic BFD structures\nstruct coff_link_hash_entry {\n    int symbol_class;\n};\n\nstruct asection {\n    size_t reloc_count;\n    struct asection *next;\n};\n\ntypedef struct bfd {\n    struct asection *sections;\n    size_t sym_hashes_size; // size of the symbol hash table\n    struct coff_link_hash_entry **sym_hashes; // symbol hash table\n} bfd;\n\nstruct bfd_link_info { int dummy; };\n\nstruct internal_reloc {\n    long r_symndx;          // The (possibly negative) symbol index\n    unsigned short r_type;  // Relocation type\n};\n\n// Macros/stubs mirroring the original code expectations\n#define BFD_ASSERT(x) do { (void)(x); } while (0)\n#define obj_conv_table_size(abfd) ((abfd)->sym_hashes_size)\n#define obj_coff_sym_hashes(abfd) ((abfd)->sym_hashes)\n\n// Symbol classes and relocation type constants (minimal)\n#define C_THUMBEXTFUNC 1\n#define C_EXT 2\n#define C_STAT 3\n#define C_LABEL 4\n#define ARM_26 1\n#define ARM_THUMB23 2\n\n// Stub error handler\nstatic void _bfd_error_handler(const char *fmt, bfd *abfd, long symndx) {\n    (void)abfd;\n    fprintf(stderr, fmt, (void*)abfd, symndx);\n    fputc('\\n', stderr);\n}\n\n// Stub glue recorders\nstatic void record_arm_to_thumb_glue(struct bfd_link_info *info, struct coff_link_hash_entry *h) {\n    (void)info; (void)h;\n}\nstatic void record_thumb_to_arm_glue(struct bfd_link_info *info, struct coff_link_hash_entry *h) {\n    (void)info; (void)h;\n}\n\n// Stub that returns relocations. We craft r_symndx = -2 to trigger the bug.\nstatic struct internal_reloc *\nbfd_coff_read_internal_relocs(bfd *abfd, struct asection *sec, bool unused1, void *unused2, bool unused3, void *unused4)\n{\n    (void)abfd; (void)sec; (void)unused1; (void)unused2; (void)unused3; (void)unused4;\n    size_t n = sec->reloc_count;\n    struct internal_reloc *rels = (struct internal_reloc *)malloc(n * sizeof(*rels));\n    if (!rels) {\n        perror(\"malloc rels\");\n        exit(1);\n    }\n    // One relocation with a malformed symbol index < -1\n    rels[0].r_symndx = -2;  // This bypasses the (symndx == -1) check but is negative\n    rels[0].r_type = 0;     // Type doesn't matter for triggering OOB\n    return rels;\n}\n\n// Vulnerable function (trimmed to the relevant parts)\nbool bfd_arm_process_before_allocation(bfd *abfd, struct bfd_link_info *info)\n{\n    (void)info; // Not needed for trigger\n    struct asection *sec = abfd->sections;\n\n    if (sec == NULL)\n        return true;\n\n    for (; sec != NULL; sec = sec->next) {\n        struct internal_reloc *i;\n        struct internal_reloc *rel;\n\n        if (sec->reloc_count == 0)\n            continue;\n\n        // Load the relocs\n        i = bfd_coff_read_internal_relocs(abfd, sec, true, NULL, false, NULL);\n        BFD_ASSERT(i != 0);\n\n        for (rel = i; rel < i + sec->reloc_count; ++rel) {\n            unsigned short r_type = rel->r_type;\n            long symndx;\n            struct coff_link_hash_entry *h;\n\n            symndx = rel->r_symndx;\n\n            // If the relocation is not against a symbol it cannot concern us.\n            if (symndx == -1)\n                continue;\n\n            // Range check only checks upper bound; negative values pass through.\n            if (symndx >= (long)obj_conv_table_size(abfd)) {\n                _bfd_error_handler(\"%pB: illegal symbol index in reloc: %ld\", abfd, symndx);\n                continue;\n            }\n\n            // BUG: Negative symndx indexes before the start of the array\n            h = obj_coff_sym_hashes(abfd)[symndx]; // Out-of-bounds read when symndx < 0\n\n            // The rest is irrelevant for the trigger, but keep minimal logic.\n            if (h == NULL)\n                continue;\n\n            switch (r_type) {\n                case ARM_26:\n                    if (h->symbol_class == C_THUMBEXTFUNC)\n                        record_arm_to_thumb_glue(info, h);\n                    break;\n                case ARM_THUMB23:\n                    switch (h->symbol_class) {\n                        case C_EXT:\n                        case C_STAT:\n                        case C_LABEL:\n                            record_thumb_to_arm_glue(info, h);\n                            break;\n                        default:\n                            ;\n                    }\n                    break;\n                default:\n                    ;\n            }\n        }\n        // Intentionally leak i for simplicity (mirrors FIXME in original comment)\n    }\n\n    return true;\n}\n\nint main(void)\n{\n    // Prepare a minimal bfd with one section and a tiny symbol hash table\n    bfd *ab = (bfd *)calloc(1, sizeof(*ab));\n    if (!ab) { perror(\"calloc bfd\"); return 1; }\n\n    struct asection *sec = (struct asection *)calloc(1, sizeof(*sec));\n    if (!sec) { perror(\"calloc section\"); return 1; }\n    sec->reloc_count = 1; // One relocation entry\n    sec->next = NULL;\n\n    ab->sections = sec;\n\n    // Allocate a very small symbol hash table to make OOB easy to hit with ASan\n    ab->sym_hashes_size = 1;\n    ab->sym_hashes = (struct coff_link_hash_entry **)malloc(ab->sym_hashes_size * sizeof(*ab->sym_hashes));\n    if (!ab->sym_hashes) { perror(\"malloc sym_hashes\"); return 1; }\n    ab->sym_hashes[0] = NULL; // Contents don't matter; access itself should fault under ASan\n\n    struct bfd_link_info info = {0};\n\n    // This call triggers the out-of-bounds read when indexing with symndx = -2\n    (void)bfd_arm_process_before_allocation(ab, &info);\n\n    // Cleanup (not reached if ASan aborts on OOB)\n    free(ab->sym_hashes);\n    free(sec);\n    free(ab);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.541501760482788,
+      "output": "=================================================================\n==3588459==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000020 at pc 0x5bdb5ec7af6e bp 0x7ffe11ba0fa0 sp 0x7ffe11ba0f98\nREAD of size 8 at 0x602000000020 thread T0\n    #0 0x5bdb5ec7af6d in bfd_arm_process_before_allocation /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:115:17\n    #1 0x5bdb5ec7b6d0 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:169:11\n    #2 0x7f455142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7f455142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bdb5ebbb334 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer+0x21334) (BuildId: c5cb78d11ee3f4a45b4eead4a36d990b71a757db)\n\n0x602000000020 is located 0 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x5bdb5ec3ef2c in __interceptor_calloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer+0xa4f2c) (BuildId: c5cb78d11ee3f4a45b4eead4a36d990b71a757db)\n    #1 0x5bdb5ec7b472 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:153:47\n    #2 0x7f455142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7f455142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bdb5ebbb334 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer+0x21334) (BuildId: c5cb78d11ee3f4a45b4eead4a36d990b71a757db)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:115:17 in bfd_arm_process_before_allocation\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00[fa]fa 00 fa fa fa 00 00 fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3588459==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "bfd_arm_process_before_allocation",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:115",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "bfd_arm_process_before_allocation",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:115",
+          "17"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:169",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_2090_out-of-bounds-read/reproducer.c:153",
+          "47"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

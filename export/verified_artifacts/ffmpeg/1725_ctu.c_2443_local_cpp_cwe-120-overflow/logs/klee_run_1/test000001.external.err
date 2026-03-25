@@ -1,0 +1,7 @@
+Error: failed external call: unknown
+File: driver.c
+Line: 14
+assembly.ll line: 10
+State: 1
+Stack: 
+	#000000010 in main() at driver.c:14

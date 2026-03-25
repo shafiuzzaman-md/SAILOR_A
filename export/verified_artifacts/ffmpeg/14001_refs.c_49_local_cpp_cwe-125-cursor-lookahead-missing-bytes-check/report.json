@@ -1,0 +1,157 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 35 (sink assert at 36)\nCrash: CRASH: ptr at refs.c:35\nOriginal: refs.c:60 \u2192 int ctb_addr_ts  = ref->pps->ctb_addr_rs_to_ts[y_cb * pic_width_cb + x_cb];\nASan: not confirmed\n\nAll crashes (2):\n  ptr at refs.c:35 \u2192 refs.c:60\n  assert at refs.c:36 \u2192 refs.c:60\n"
+    ]
+  ],
+  "line_map": {
+    "refs.c": {
+      "29": {
+        "orig_file": "refs.c",
+        "orig_line": 54,
+        "code": "const RefPicList *ff_hevc_get_ref_list(const HEVCFrame *ref, int x0, int y0)"
+      },
+      "30": {
+        "orig_file": "refs.c",
+        "orig_line": 55,
+        "code": "{"
+      },
+      "32": {
+        "orig_file": "refs.c",
+        "orig_line": 57,
+        "code": "int x_cb = x0 >> sps->log2_ctb_size;",
+        "match_type": "fuzzy"
+      },
+      "33": {
+        "orig_file": "refs.c",
+        "orig_line": 58,
+        "code": "int y_cb = y0 >> sps->log2_ctb_size;",
+        "match_type": "fuzzy"
+      },
+      "34": {
+        "orig_file": "refs.c",
+        "orig_line": 59,
+        "code": "int pic_width_cb = sps->ctb_width;"
+      },
+      "35": {
+        "orig_file": "refs.c",
+        "orig_line": 60,
+        "code": "int ctb_addr_ts  = ref->pps->ctb_addr_rs_to_ts[y_cb * pic_width_cb + x_cb];"
+      },
+      "37": {
+        "orig_file": "refs.c",
+        "orig_line": 61,
+        "code": "return &ref->rpl_tab[ctb_addr_ts]->refPicList[0];"
+      },
+      "38": {
+        "orig_file": "refs.c",
+        "orig_line": 62,
+        "code": "}"
+      },
+      "43": {
+        "orig_file": "refs.c",
+        "orig_line": 213,
+        "code": "return 0;"
+      },
+      "44": {
+        "orig_file": "refs.c",
+        "orig_line": 214,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 2,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "refs.c",
+      "original_line": 49,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "44: \n45:         ff_refstruct_unref(&frame->rpl);\n46:         frame->nb_rpl_elems = 0;\n47:         ff_refstruct_unref(&frame->rpl_tab);\n48:         frame->refPicList = NULL;\n49: \n50:         ff_refstruct_unref(&frame->hwaccel_picture_private);\n51:     }\n52: }\n53: \n54: const RefPicList *ff_hevc_get_ref_list(const HEVCFrame *ref, int x0, int y0)"
+    },
+    "klee_crash": {
+      "harness_file": "refs.c",
+      "harness_line": 35,
+      "original_file": "refs.c",
+      "original_line": 60,
+      "original_code": "int ctb_addr_ts  = ref->pps->ctb_addr_rs_to_ts[y_cb * pic_width_cb + x_cb];",
+      "original_context": "    57:     int x_cb         = x0 >> sps->log2_ctb_size;\n    58:     int y_cb         = y0 >> sps->log2_ctb_size;\n    59:     int pic_width_cb = sps->ctb_width;\n>>> 60:     int ctb_addr_ts  = ref->pps->ctb_addr_rs_to_ts[y_cb * pic_width_cb + x_cb];\n    61:     return &ref->rpl_tab[ctb_addr_ts]->refPicList[0];\n    62: }\n    63: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: refs.c\nLine: 35\nassembly.ll line: 194\nState: 2\nStack: \n\t#000000194 in ff_hevc_get_ref_list(139358457085952, symbolic, symbolic) at refs.c:35\n\t#100000217 in entry_func(139358457085952, symbolic, symbolic) at refs.c:42\n\t#200000120 in main() at driver.c:42\nInfo: \n\taddress: (Add w64 139427176562688\n          (Mul w64 4\n                   (SExt w64 (Add w32 (Mul w32 2\n                                               (AShr w32 (ReadLSB w32 0 y0)\n          "
+    },
+    "concrete_inputs": [
+      {
+        "name": "x0",
+        "size": 4,
+        "data": "b'\\xd2\\x00\\x00\\x00'"
+      },
+      {
+        "name": "y0",
+        "size": 4,
+        "data": "b'\\xf9\\x07\\x00\\x00'"
+      },
+      {
+        "name": "x0",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "y0",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/14001_refs.c_49_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "refs.c",
+        "harness_line": 35,
+        "original_file": "refs.c",
+        "original_line": 60,
+        "error_type": "ptr",
+        "crash_function": "ff_hevc_get_ref_list",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/14001_refs.c_49_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      },
+      {
+        "harness_file": "refs.c",
+        "harness_line": 36,
+        "original_file": "refs.c",
+        "original_line": 60,
+        "error_type": "assert",
+        "crash_function": "ff_hevc_get_ref_list",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/14001_refs.c_49_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000002.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "baseline": "B5",
+  "project": "curl_2eebc58_vul",
+  "targets": 26,
+  "timeout_per_target": 600,
+  "jobs": 16,
+  "total_findings_reported": 0,
+  "total_validated": 7,
+  "confirmed": 0,
+  "unique": 0,
+  "elapsed": 4.719636678695679
+}

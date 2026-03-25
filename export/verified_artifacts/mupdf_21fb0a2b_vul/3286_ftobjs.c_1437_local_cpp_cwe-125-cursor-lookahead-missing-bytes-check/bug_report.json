@@ -1,0 +1,160 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "ftobjs.c",
+        "original_line": 1437,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "1432:     /* Do the loop again and search for UCS-2 charmaps. */\n1433:     cur = first + face->num_charmaps;\n1434: \n1435:     for ( ; --cur >= first; )\n1436:     {\n1437:       if ( cur[0]->encoding == FT_ENCODING_UNICODE )\n1438:       {\n1439:         face->charmap = cur[0];\n1440:         return FT_Err_Ok;\n1441:       }\n1442:     }"
+    },
+    "klee_crash": {
+        "harness_file": "ftobjs.c",
+        "harness_line": 53,
+        "original_file": "ftobjs.c",
+        "original_line": 1416,
+        "original_code": "if ( cur[0]->encoding == FT_ENCODING_UNICODE )",
+        "original_context": "    1413: \n    1414:     for ( ; --cur >= first; )\n    1415:     {\n>>> 1416:       if ( cur[0]->encoding == FT_ENCODING_UNICODE )\n    1417:       {\n    1418:         /* XXX If some new encodings to represent UCS-4 are added, */\n    1419:         /*     they should be added here.                          */",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: ftobjs.c\nLine: 53\nassembly.ll line: 178\nState: 2\nStack: \n\t#000000178 in find_unicode_charmap(139745407930368) at ftobjs.c:53\n\t#100000148 in FT_Select_Charmap(139745407930368, symbolic) at ftobjs.c:68\n\t#200000124 in main() at driver.c:52\nInfo: \n\taddress: (Add w64 139676688453624\n          (Mul w64 8\n                   (SExt w64 (ReadLSB w32 0 num_charmaps))))\n\texample: 139676688453624\n\trange: [139676688453624, 139676688453624]\n\tnext: object at 13930"
+    },
+    "concrete_inputs": [
+        {
+            "name": "map1_encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "num_charmaps",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "map1_encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "map1_eid",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "num_charmaps",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        },
+        {
+            "name": "encoding",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "FT_Select_Charmap",
+        "crash_file": "thirdparty/freetype/src/base/ftobjs.c",
+        "crash_line": 3720,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==18664==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000088 at pc 0x564cb2bff026 bp 0x7ffc43024350 sp 0x7ffc43024340\nREAD of size 4 at 0x503000000088 thread T0\n    #0 0x564cb2bff025 in FT_Select_Charmap thirdparty/freetype/src/base/ftobjs.c:3720\n    #1 0x564cb2bf6c22 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:52\n    #2 0x7fab06c8dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fab06c8de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x564cb2bf6694 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x2694)\n\n0x503000000088 is located 48 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7fab07044a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x564cb2bf680f in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:11\n    #2 0x7fab06c8dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/freetype/src/base/ftobjs.c:3720 in FT_Select_Charmap\nShadow bytes around the buggy address:\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa fa fa\n=>0x0a067fff8010: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "ftobjs.c",
+            "harness_line": 53,
+            "original_file": "ftobjs.c",
+            "original_line": 1416,
+            "error_type": "ptr",
+            "crash_function": "find_unicode_charmap",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        },
+        {
+            "harness_file": "ftobjs.c",
+            "harness_line": 60,
+            "original_file": "ftobjs.c",
+            "original_line": 1426,
+            "error_type": "assert",
+            "crash_function": "find_unicode_charmap",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/3286_ftobjs.c_1437_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "FT_Select_Charmap",
+            "crash_file": "thirdparty/freetype/src/base/ftobjs.c",
+            "crash_line": 3720
+        }
+    ]
+}

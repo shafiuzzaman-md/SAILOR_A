@@ -1,0 +1,53 @@
+=================================================================
+==3625460==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000059 at pc 0x5cf4e5b00988 bp 0x7fff24517740 sp 0x7fff24517738
+READ of size 1 at 0x602000000059 thread T0
+    #0 0x5cf4e5b00987 in get_name /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:54:12
+    #1 0x5cf4e5b004c2 in process_embedded_commands /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:92:17
+    #2 0x5cf4e5b0008f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:137:11
+    #3 0x708be9a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x708be9a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5cf4e5a40304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer+0x21304) (BuildId: 8f42fe789e35877dd3870640f469f8a7b0f9a27a)
+
+0x602000000059 is located 0 bytes to the right of 9-byte region [0x602000000050,0x602000000059)
+allocated by thread T0 here:
+    #0 0x5cf4e5ac3d12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 8f42fe789e35877dd3870640f469f8a7b0f9a27a)
+    #1 0x5cf4e5b00787 in bfd_malloc_and_get_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:42:32
+    #2 0x5cf4e5b00322 in process_embedded_commands /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:74:10
+    #3 0x5cf4e5b0008f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:137:11
+    #4 0x708be9a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x708be9a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5cf4e5a40304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer+0x21304) (BuildId: 8f42fe789e35877dd3870640f469f8a7b0f9a27a)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1259_heap-buffer-overflow/reproducer.c:54:12 in get_name
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 00 fa fa fa 00 01 fa fa 00[01]fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3625460==ABORTING

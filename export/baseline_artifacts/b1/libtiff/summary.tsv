@@ -1,0 +1,3 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+tiff_read_rgba_fuzzer_tiff_read_rgba_fuzzer.cc_62_external	FP_EXTERNAL_CALL	FP	external	tiff_read_rgba_fuzzer.cc	62			3	0		true
+tiff_read_rgba_fuzzer_char_traits.h_358_ptr	FP_CPP_RUNTIME	FP	ptr	char_traits.h	358			3	0		true

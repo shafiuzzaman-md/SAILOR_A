@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3633731==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5734d179cced bp 0x7ffd4a9ce3b0 sp 0x7ffd4a9ce390 T0)
+==3633731==The signal is caused by a READ memory access.
+==3633731==Hint: address points to the zero page.
+    #0 0x5734d179cced in bfd_core_file_failing_command /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25:20
+    #1 0x5734d179cd5f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:39:21
+    #2 0x75b73862a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x75b73862a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5734d16dd304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer+0x21304) (BuildId: b798a1d3faebc1dfff7f6c8e0b05ebdbfcb4c63d)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25:20 in bfd_core_file_failing_command
+==3633731==ABORTING

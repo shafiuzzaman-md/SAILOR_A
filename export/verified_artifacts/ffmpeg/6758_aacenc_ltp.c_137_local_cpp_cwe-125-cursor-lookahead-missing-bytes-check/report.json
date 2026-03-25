@@ -1,0 +1,140 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 46 (sink assert at 52)\nCrash: CRASH: ptr at aacenc_ltp.c:46\nOriginal: aacenc_ltp.c:137 \u2192 sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||\nASan: not confirmed\n\nAll crashes (1):\n  ptr at aacenc_ltp.c:46 \u2192 aacenc_ltp.c:137\n"
+    ]
+  ],
+  "line_map": {
+    "aacenc_ltp.c": {
+      "40": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 130,
+        "code": "void ff_aac_adjust_common_ltp(AACEncContext *s, ChannelElement *cpe)"
+      },
+      "41": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 131,
+        "code": "{"
+      },
+      "42": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 133,
+        "code": "SingleChannelElement *sce0 = &cpe->ch[0];"
+      },
+      "43": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 134,
+        "code": "SingleChannelElement *sce1 = &cpe->ch[1];"
+      },
+      "45": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 136,
+        "code": "if (!cpe->common_window ||"
+      },
+      "46": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 137,
+        "code": "sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||"
+      },
+      "47": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 138,
+        "code": "sce1->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE) {"
+      },
+      "48": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 139,
+        "code": "sce0->ics.ltp.present = 0;"
+      },
+      "49": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 140,
+        "code": "return;"
+      },
+      "50": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 141,
+        "code": "}"
+      },
+      "53": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 141,
+        "code": "}"
+      },
+      "59": {
+        "orig_file": "aacenc_ltp.c",
+        "orig_line": 141,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "aacenc_ltp.c",
+      "original_line": 137,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "132:     int sfb, count = 0;\n133:     SingleChannelElement *sce0 = &cpe->ch[0];\n134:     SingleChannelElement *sce1 = &cpe->ch[1];\n135: \n136:     if (!cpe->common_window ||\n137:         sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||\n138:         sce1->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE) {\n139:         sce0->ics.ltp.present = 0;\n140:         return;\n141:     }\n142: "
+    },
+    "klee_crash": {
+      "harness_file": "aacenc_ltp.c",
+      "harness_line": 46,
+      "original_file": "aacenc_ltp.c",
+      "original_line": 137,
+      "original_code": "sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||",
+      "original_context": "    134:     SingleChannelElement *sce1 = &cpe->ch[1];\n    135: \n    136:     if (!cpe->common_window ||\n>>> 137:         sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||\n    138:         sce1->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE) {\n    139:         sce0->ics.ltp.present = 0;\n    140:         return;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: null page access\nFile: aacenc_ltp.c\nLine: 46\nassembly.ll line: 49\nState: 1\nStack: \n\t#000000049 in ff_aac_adjust_common_ltp(139526203338752, 140179038355456) at aacenc_ltp.c:46\n\t#100000097 in entry_func(139526203338752, 140179038355456) at aacenc_ltp.c:57\n\t#200000155 in main() at driver.c:32\nInfo: \n\taddress: 0\n\tnext: object at 139229850595328 of size 4\n\t\tMO19[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "sce1_window_seq",
+        "size": 1,
+        "data": "b'\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6758_aacenc_ltp.c_137_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "aacenc_ltp.c",
+        "harness_line": 46,
+        "original_file": "aacenc_ltp.c",
+        "original_line": 137,
+        "error_type": "ptr",
+        "crash_function": "ff_aac_adjust_common_ltp",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6758_aacenc_ltp.c_137_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

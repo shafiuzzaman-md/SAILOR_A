@@ -1,0 +1,75 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2042383647
+INFO: Loaded 1 modules   (15 inline 8-bit counters): 15 [0x58c7e23ecf00, 0x58c7e23ecf0f), 
+INFO: Loaded 1 PC tables (15 PCs): 15 [0x58c7e23ecf10,0x58c7e23ed000), 
+INFO:        1 files found in artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+=================================================================
+==117798==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6060000000c0 at pc 0x58c7e236e60b bp 0x7ffc157b2b50 sp 0x7ffc157b2320
+READ of size 256 at 0x6060000000c0 thread T0
+    #0 0x58c7e236e60a in __asan_memcpy (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0xe060a) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #1 0x58c7e23ab4e1 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_harness.c:37:5
+    #2 0x58c7e22d180a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x4380a) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #3 0x58c7e22d0ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x42ed5) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #4 0x58c7e22d2ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x44ad8) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #5 0x58c7e22d2f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x44f56) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #6 0x58c7e22c0542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x32542) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #7 0x58c7e22eb9e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x5d9e6) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #8 0x7b4eebe2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7b4eebe2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x58c7e22b4974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x26974) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+
+0x6060000000c0 is located 0 bytes to the right of 64-byte region [0x606000000080,0x6060000000c0)
+allocated by thread T0 here:
+    #0 0x58c7e236f332 in malloc (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0xe1332) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #1 0x7b4eec2bb903 in operator new(unsigned long) (/lib/x86_64-linux-gnu/libstdc++.so.6+0xbb903) (BuildId: 753c6c8608b61d4e67be8f0c890e03e0aa046b8b)
+    #2 0x58c7e22d1719 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x43719) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #3 0x58c7e22d0ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x42ed5) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #4 0x58c7e22d2ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x44ad8) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #5 0x58c7e22d2f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x44f56) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #6 0x58c7e22c0542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x32542) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #7 0x58c7e22eb9e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x5d9e6) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+    #8 0x7b4eebe2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7b4eebe2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x58c7e22b4974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0x26974) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/fuzz_bin+0xe060a) (BuildId: 1844a178f2f36f97c879ed61ed8c4045cfa1f354) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff8000: fa fa fa fa 00 00 00 00 00 00 00 00 fa fa fa fa
+=>0x0c0c7fff8010: 00 00 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa
+  0x0c0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==117798==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

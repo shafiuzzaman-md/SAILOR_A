@@ -1,0 +1,220 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 31 (sink assert at 35)\nCrash: CRASH: ptr at tea.c:31\nOriginal: tea.c:111 \u2192 dst[i] = src[i] ^ iv[i];\nASan: not confirmed\n\nAll crashes (1):\n  ptr at tea.c:31 \u2192 tea.c:111\n"
+    ]
+  ],
+  "line_map": {
+    "tea.c": {
+      "2": {
+        "orig_file": "tea.c",
+        "orig_line": 25,
+        "code": "#include <string.h>"
+      },
+      "6": {
+        "orig_file": "tea.c",
+        "orig_line": 30,
+        "code": "typedef struct AVTEA {"
+      },
+      "7": {
+        "orig_file": "tea.c",
+        "orig_line": 31,
+        "code": "uint32_t key[16];"
+      },
+      "8": {
+        "orig_file": "tea.c",
+        "orig_line": 32,
+        "code": "int rounds;"
+      },
+      "9": {
+        "orig_file": "tea.c",
+        "orig_line": 33,
+        "code": "} AVTEA;"
+      },
+      "12": {
+        "orig_file": "tea.c",
+        "orig_line": 52,
+        "code": "static void tea_crypt_ecb(AVTEA *ctx, uint8_t *dst, const uint8_t *src,"
+      },
+      "13": {
+        "orig_file": "tea.c",
+        "orig_line": 53,
+        "code": "int decrypt, uint8_t *iv)"
+      },
+      "14": {
+        "orig_file": "tea.c",
+        "orig_line": 54,
+        "code": "{"
+      },
+      "19": {
+        "orig_file": "tea.c",
+        "orig_line": 50,
+        "code": "}"
+      },
+      "22": {
+        "orig_file": "tea.c",
+        "orig_line": 95,
+        "code": "void av_tea_crypt(AVTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+      },
+      "23": {
+        "orig_file": "tea.c",
+        "orig_line": 96,
+        "code": "uint8_t *iv, int decrypt)"
+      },
+      "24": {
+        "orig_file": "tea.c",
+        "orig_line": 97,
+        "code": "{"
+      },
+      "25": {
+        "orig_file": "tea.c",
+        "orig_line": 98,
+        "code": "int i;"
+      },
+      "28": {
+        "orig_file": "tea.c",
+        "orig_line": 101,
+        "code": "while (count--) {"
+      },
+      "29": {
+        "orig_file": "tea.c",
+        "orig_line": 109,
+        "code": "if (iv) {"
+      },
+      "30": {
+        "orig_file": "tea.c",
+        "orig_line": 110,
+        "code": "for (i = 0; i < 8; i++)"
+      },
+      "31": {
+        "orig_file": "tea.c",
+        "orig_line": 111,
+        "code": "dst[i] = src[i] ^ iv[i];"
+      },
+      "32": {
+        "orig_file": "tea.c",
+        "orig_line": 112,
+        "code": "tea_crypt_ecb(ctx, dst, dst, decrypt, NULL);"
+      },
+      "33": {
+        "orig_file": "tea.c",
+        "orig_line": 113,
+        "code": "memcpy(iv, dst, 8);"
+      },
+      "36": {
+        "orig_file": "tea.c",
+        "orig_line": 114,
+        "code": "} else {"
+      },
+      "37": {
+        "orig_file": "tea.c",
+        "orig_line": 115,
+        "code": "tea_crypt_ecb(ctx, dst, src, decrypt, NULL);"
+      },
+      "38": {
+        "orig_file": "tea.c",
+        "orig_line": 116,
+        "code": "}"
+      },
+      "39": {
+        "orig_file": "tea.c",
+        "orig_line": 117,
+        "code": "src   += 8;"
+      },
+      "40": {
+        "orig_file": "tea.c",
+        "orig_line": 118,
+        "code": "dst   += 8;"
+      },
+      "41": {
+        "orig_file": "tea.c",
+        "orig_line": 119,
+        "code": "}"
+      },
+      "42": {
+        "orig_file": "tea.c",
+        "orig_line": 120,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "tea.c",
+      "original_line": 113,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "108:         while (count--) {\n109:             if (iv) {\n110:                 for (i = 0; i < 8; i++)\n111:                     dst[i] = src[i] ^ iv[i];\n112:                 tea_crypt_ecb(ctx, dst, dst, decrypt, NULL);\n113:                 memcpy(iv, dst, 8);\n114:             } else {\n115:                 tea_crypt_ecb(ctx, dst, src, decrypt, NULL);\n116:             }\n117:             src   += 8;\n118:             dst   += 8;"
+    },
+    "klee_crash": {
+      "harness_file": "tea.c",
+      "harness_line": 31,
+      "original_file": "tea.c",
+      "original_line": 111,
+      "original_code": "dst[i] = src[i] ^ iv[i];",
+      "original_context": "    108:         while (count--) {\n    109:             if (iv) {\n    110:                 for (i = 0; i < 8; i++)\n>>> 111:                     dst[i] = src[i] ^ iv[i];\n    112:                 tea_crypt_ecb(ctx, dst, dst, decrypt, NULL);\n    113:                 memcpy(iv, dst, 8);\n    114:             } else {",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: tea.c\nLine: 31\nassembly.ll line: 125\nState: 1\nStack: \n\t#000000125 in av_tea_crypt(139893658619904, 139670320320512, 139687500189696, 1, 139618780712960, 0) at tea.c:31\n\t#100000054 in main() at driver.c:35\nInfo: \n\taddress: 139618780712964\n\tnext: object at 139319206744064 of size 4\n\t\tMO59[4] allocated at av_tea_crypt():  %10 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "src",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "dst",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "iv",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2954_tea.c_113_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "tea.c",
+        "harness_line": 31,
+        "original_file": "tea.c",
+        "original_line": 111,
+        "error_type": "ptr",
+        "crash_function": "av_tea_crypt",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2954_tea.c_113_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

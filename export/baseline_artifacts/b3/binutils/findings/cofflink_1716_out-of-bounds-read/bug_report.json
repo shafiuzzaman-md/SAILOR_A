@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/cofflink.c",
+    "line": 1716,
+    "function": "coff_renumber_symbols",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "When an element reports n_numaux >= 1, the code unconditionally reads an aux entry at esl + isymesz without checking that at least one aux entry remains within bounds (neither against eslend nor the overall symbol table). If the last element claims an aux or the counts are malformed, this read goes past the allocated symbol array.",
+    "abs_path": "/tmp/binutils_upstream/bfd/cofflink.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types and helpers. */\ntypedef unsigned char bfd_byte;\nstruct bfd { int dummy; };\n\n#define SYMNMLEN 8\n#define T_NULL 0\n#define C_EOS 0\n\n/* Internal COFF symbol and aux structures (only fields we need). */\nstruct internal_syment {\n  unsigned char n_type;\n  unsigned char n_sclass;\n  unsigned char n_numaux;\n};\n\nunion internal_auxent {\n  struct {\n    struct { uint32_t u32; } x_tagndx; /* We only care about this field. */\n  } x_sym;\n};\n\n/* Minimal merge element structure to satisfy assignments. */\nstruct coff_debug_merge_element {\n  char *name;\n  int type;\n  long tagndx;\n  struct coff_debug_merge_element *next;\n};\n\n/* Global external symbol table buffer to mimic obj_coff_external_syms. */\nstatic bfd_byte *g_external_syms = NULL;\n\n/* Stubs mimicking the BFD helpers used in the vulnerable snippet. */\nstatic bfd_byte *obj_coff_external_syms(struct bfd *abfd) {\n  (void)abfd;\n  return g_external_syms;\n}\n\nstatic void *bfd_alloc(struct bfd *abfd, size_t amt) {\n  (void)abfd;\n  return malloc(amt);\n}\n\nstatic void bfd_release(struct bfd *abfd, void *p) {\n  (void)abfd;\n  free(p);\n}\n\nstatic void bfd_coff_swap_sym_in(struct bfd *abfd, const bfd_byte *ext, struct internal_syment *in) {\n  (void)abfd;\n  /* Encode fields in the first bytes of the external entry. */\n  in->n_type   = ext[0];\n  in->n_sclass = ext[1];\n  in->n_numaux = ext[2];\n}\n\nstatic const char *_bfd_coff_internal_syment_name(struct bfd *abfd, const struct internal_syment *in, char *buf) {\n  (void)abfd; (void)in; (void)buf;\n  return \"ELEM\"; /* constant, avoids extra I/O */\n}\n\nstatic void bfd_coff_swap_aux_in(struct bfd *abfd,\n                                 const bfd_byte *ext, /* This will be esl + isymesz */\n                                 int n_type, int n_sclass, int indx, int naux,\n                                 union internal_auxent *dst) {\n  (void)abfd; (void)n_type; (void)n_sclass; (void)indx; (void)naux;\n  /* Intentionally copy 4 bytes from the provided pointer to trigger ASan\n     when ext points one entry past the allocated symbol array. */\n  uint32_t tmp = 0;\n  memcpy(&tmp, ext, sizeof(tmp)); /* OOB read happens here. */\n  dst->x_sym.x_tagndx.u32 = tmp;\n}\n\nstatic void trigger_vuln(void) {\n  /* Choose a COFF external symbol size. Any non-zero size works for ASan. */\n  const size_t isymesz = 16;            /* size of one external symbol entry */\n  const size_t count   = 3;             /* total entries in external table  */\n\n  struct bfd abfd = {0};\n  struct internal_syment isyms[count];  /* internal symbols (only index 2 used) */\n\n  bfd_byte *esym   = obj_coff_external_syms(&abfd);\n  bfd_byte *esl    = esym + 2 * isymesz;          /* start at 3rd entry */\n  bfd_byte *eslend = esym + count * isymesz;      /* end of table */\n  struct internal_syment *islp = &isyms[2];       /* internal for 3rd entry */\n\n  struct coff_debug_merge_element *list = NULL;\n  struct coff_debug_merge_element **epp = &list;\n\n  while (esl < eslend) {\n    const char *elename;\n    char elebuf[SYMNMLEN + 1];\n    char *name_copy;\n\n    bfd_coff_swap_sym_in(&abfd, esl, islp);\n\n    *epp = (struct coff_debug_merge_element *) bfd_alloc(&abfd, sizeof(**epp));\n    if (*epp == NULL) {\n      fprintf(stderr, \"alloc failed\\n\");\n      exit(1);\n    }\n\n    elename = _bfd_coff_internal_syment_name(&abfd, islp, elebuf);\n    name_copy = (char *) bfd_alloc(&abfd, strlen(elename) + 1);\n    if (name_copy == NULL) {\n      fprintf(stderr, \"alloc failed\\n\");\n      exit(1);\n    }\n    strcpy(name_copy, elename);\n\n    (*epp)->name = name_copy;\n    (*epp)->type = islp->n_type;\n    (*epp)->tagndx = 0;\n\n    /* Vulnerable condition: claims at least 1 aux, not T_NULL, not C_EOS. */\n    if (islp->n_numaux >= 1 && islp->n_type != T_NULL && islp->n_sclass != C_EOS) {\n      union internal_auxent eleaux;\n      long indx;\n      /* esl points at last valid symbol; esl + isymesz is one past the end. */\n      bfd_coff_swap_aux_in(&abfd, (esl + isymesz), islp->n_type, islp->n_sclass, 0,\n                           islp->n_numaux, &eleaux);\n      indx = (long) eleaux.x_sym.x_tagndx.u32;\n      /* keep indx use so the read isn't optimized away */\n      if (indx == -1) puts(\"unreachable\");\n    }\n\n    epp = &(*epp)->next;\n    *epp = NULL;\n\n    esl  += (islp->n_numaux + 1) * isymesz;\n    islp +=  islp->n_numaux + 1;\n  }\n\n  /* Clean up allocated list nodes and names (avoid leaks in ASan output). */\n  struct coff_debug_merge_element *cur = list;\n  while (cur) {\n    struct coff_debug_merge_element *next = cur->next;\n    free(cur->name);\n    free(cur);\n    cur = next;\n  }\n}\n\nint main(void) {\n  const size_t isymesz = 16;\n  const size_t count   = 3; /* exactly 3 symbols in the table */\n\n  g_external_syms = (bfd_byte *) malloc(count * isymesz);\n  if (!g_external_syms) {\n    fprintf(stderr, \"malloc failed\\n\");\n    return 1;\n  }\n  memset(g_external_syms, 0, count * isymesz);\n\n  /* Craft the last symbol (index 2) to claim it has 1 aux entry, but we\n     do not provide any aux data in the buffer (table ends right after it).\n     Our bfd_coff_swap_sym_in decodes:\n       byte 0: n_type, byte 1: n_sclass, byte 2: n_numaux. */\n  bfd_byte *last = g_external_syms + 2 * isymesz; /* 3rd entry */\n  last[0] = 1; /* n_type != T_NULL */\n  last[1] = 1; /* n_sclass != C_EOS */\n  last[2] = 1; /* n_numaux >= 1  --> will trigger OOB read of aux */\n\n  /* Trigger the vulnerable pattern. */\n  trigger_vuln();\n\n  free(g_external_syms);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9412863254547119,
+      "output": "=================================================================\n==3629258==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x604000000040 at pc 0x593f313dfffb bp 0x7fffb26630d0 sp 0x7fffb26628a0\nREAD of size 4 at 0x604000000040 thread T0\n    #0 0x593f313dfffa in __asan_memcpy (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: aaa6622b7ef17161b49340ae05cf82f753a41be1)\n    #1 0x593f3141dcb6 in bfd_coff_swap_aux_in /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:75:3\n    #2 0x593f3141d636 in trigger_vuln /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:125:7\n    #3 0x593f3141ce2b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:170:3\n    #4 0x7c2e6ce2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7c2e6ce2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x593f3135d314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer+0x21314) (BuildId: aaa6622b7ef17161b49340ae05cf82f753a41be1)\n\n0x604000000040 is located 0 bytes to the right of 48-byte region [0x604000000010,0x604000000040)\nallocated by thread T0 here:\n    #0 0x593f313e0d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer+0xa4d22) (BuildId: aaa6622b7ef17161b49340ae05cf82f753a41be1)\n    #1 0x593f3141ccd8 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:153:34\n    #2 0x7c2e6ce2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c2e6ce2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x593f3135d314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer+0x21314) (BuildId: aaa6622b7ef17161b49340ae05cf82f753a41be1)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: aaa6622b7ef17161b49340ae05cf82f753a41be1) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c087fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c087fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c087fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c087fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c087fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c087fff8000: fa fa 00 00 00 00 00 00[fa]fa fa fa fa fa fa fa\n  0x0c087fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c087fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c087fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c087fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c087fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3629258==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "bfd_coff_swap_aux_in",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:75",
+          "3"
+        ],
+        [
+          "2",
+          "trigger_vuln",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:125",
+          "7"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:170",
+          "3"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1716_out-of-bounds-read/reproducer.c:153",
+          "34"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "acelp_pitch_delay.c": {
+    "8": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 85,
+      "code": "float *prediction_error, float energy_mean,"
+    },
+    "11": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 84,
+      "code": "float ff_amr_set_fixed_gain(float fixed_gain_factor, float fixed_mean_energy,"
+    },
+    "12": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 85,
+      "code": "float *prediction_error, float energy_mean,"
+    },
+    "13": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 86,
+      "code": "const float *pred_table)"
+    },
+    "14": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 87,
+      "code": "{"
+    },
+    "20": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 98,
+      "code": "memmove(&prediction_error[0], &prediction_error[1],"
+    },
+    "21": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 99,
+      "code": "3 * sizeof(prediction_error[0]));"
+    },
+    "26": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 102,
+      "code": "return val;"
+    },
+    "27": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 103,
+      "code": "}"
+    },
+    "30": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 85,
+      "code": "float *prediction_error, float energy_mean,"
+    },
+    "35": {
+      "orig_file": "acelp_pitch_delay.c",
+      "orig_line": 82,
+      "code": "}"
+    }
+  }
+}

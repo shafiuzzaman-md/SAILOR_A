@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/list.c",
+    "line": 653,
+    "function": "collect_keymanagers",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "sk_EVP_KEYMGMT_new() in list_keymanagers() (line 660) is not checked for NULL. If allocation fails, list_keymanagers() passes a NULL stack to EVP_KEYMGMT_do_all_provided(), which then calls collect_keymanagers() with this NULL pointer. collect_keymanagers() calls sk_EVP_KEYMGMT_push(km_stack, km) on the NULL pointer, causing a NULL dereference. list_keymanagers() also later calls sk_EVP_KEYMGMT_sort(km_stack) unconditionally, which can likewise crash.",
+    "abs_path": "/tmp/openssl_upstream/apps/list.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for NULL pointer dereference in collect_keymanagers/list_keymanagers\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Minimal stand-ins for OpenSSL types/APIs used by the vulnerable code\n\ntypedef struct evp_keymgmt_st {\n    int refcnt;\n} EVP_KEYMGMT;\n\n// Emulate OpenSSL's STACK_OF(EVP_KEYMGMT) machinery just enough for this repro\n#define STACK_OF(x) STACK_OF_##x\n\ntypedef struct {\n    int num;\n    int cap;\n    EVP_KEYMGMT **items;\n    int (*cmp)(const EVP_KEYMGMT *const *, const EVP_KEYMGMT *const *);\n} STACK_OF_EVP_KEYMGMT;\n\n// Stub: always says the keymgmt is fetchable\nstatic int is_keymgmt_fetchable(EVP_KEYMGMT *km) {\n    (void)km;\n    return 1;\n}\n\n// Stub: always succeeds up_ref\nstatic int EVP_KEYMGMT_up_ref(EVP_KEYMGMT *km) {\n    if (km) km->refcnt++;\n    return 1;\n}\n\nstatic void EVP_KEYMGMT_free(EVP_KEYMGMT *km) {\n    (void)km;\n}\n\n// Stub: returns NULL to simulate allocation failure in sk_EVP_KEYMGMT_new\nstatic STACK_OF(EVP_KEYMGMT) *sk_EVP_KEYMGMT_new(\n    int (*cmp)(const EVP_KEYMGMT *const *, const EVP_KEYMGMT *const *))\n{\n    (void)cmp;\n    // Simulate OOM: return NULL so downstream code mishandles it\n    return NULL;\n}\n\n// This function will be called with a NULL 'sk' due to the bug in list_keymanagers\n// and will therefore dereference a NULL pointer, triggering the crash.\nstatic int sk_EVP_KEYMGMT_push(STACK_OF(EVP_KEYMGMT) *sk, EVP_KEYMGMT *val) {\n    // Intentional: this will dereference 'sk' even if it's NULL (as in the buggy path)\n    if (sk->num >= sk->cap) {  // NULL deref happens here\n        int newcap = sk->cap == 0 ? 4 : sk->cap * 2;\n        EVP_KEYMGMT **newitems = (EVP_KEYMGMT **)realloc(sk->items, newcap * sizeof(*newitems));\n        if (!newitems) return 0;\n        sk->items = newitems;\n        sk->cap = newcap;\n    }\n    sk->items[sk->num++] = val;\n    return 1;\n}\n\n// Also dereferences the stack (and would crash) if reached with NULL\nstatic void sk_EVP_KEYMGMT_sort(STACK_OF(EVP_KEYMGMT) *sk) {\n    // Touch sk->num to ensure a NULL deref if this is reached\n    if (sk->num > 1) {\n        // no-op sort stub\n    }\n}\n\nstatic int sk_EVP_KEYMGMT_num(const STACK_OF(EVP_KEYMGMT) *sk) {\n    return sk ? sk->num : 0;\n}\n\nstatic EVP_KEYMGMT *sk_EVP_KEYMGMT_value(const STACK_OF(EVP_KEYMGMT) *sk, int idx) {\n    if (!sk || idx < 0 || idx >= sk->num) return NULL;\n    return sk->items[idx];\n}\n\n// Stub: application libctx accessor\nstatic void *app_get0_libctx(void) { return NULL; }\n\n// Stub: walk all provided keymanagers; here we just call the callback once\nstatic void EVP_KEYMGMT_do_all_provided(void *libctx,\n                                        void (*cb)(EVP_KEYMGMT *km, void *arg),\n                                        void *arg)\n{\n    (void)libctx;\n    EVP_KEYMGMT dummy = { .refcnt = 1 };\n    cb(&dummy, arg);\n}\n\n// Comparator with the expected signature; content doesn't matter for the repro\nstatic int keymanager_cmp(const EVP_KEYMGMT *const *a,\n                          const EVP_KEYMGMT *const *b)\n{\n    (void)a; (void)b;\n    return 0;\n}\n\n// Vulnerable helper: receives a NULL stack in the buggy path and calls sk_EVP_KEYMGMT_push\nstatic void collect_keymanagers(EVP_KEYMGMT *km, void *stack)\n{\n    STACK_OF(EVP_KEYMGMT) *km_stack = (STACK_OF(EVP_KEYMGMT) *)stack;\n\n    if (is_keymgmt_fetchable(km)\n        && EVP_KEYMGMT_up_ref(km)\n        && sk_EVP_KEYMGMT_push(km_stack, km) <= 0)\n        EVP_KEYMGMT_free(km); /* up-ref successful but push to stack failed */\n}\n\n// Vulnerable function under test: fails to check sk_EVP_KEYMGMT_new() for NULL\nstatic void list_keymanagers(void)\n{\n    STACK_OF(EVP_KEYMGMT) *km_stack = sk_EVP_KEYMGMT_new(keymanager_cmp);\n\n    // km_stack is NULL here due to our stub; following calls misuse it\n    EVP_KEYMGMT_do_all_provided(app_get0_libctx(), collect_keymanagers, km_stack);\n    // Even if the above didn't crash, this unconditional sort on NULL would\n    sk_EVP_KEYMGMT_sort(km_stack);\n}\n\nint main(void)\n{\n    fprintf(stderr, \"Triggering NULL pointer dereference in list_keymanagers...\\n\");\n    // This call will crash inside collect_keymanagers -> sk_EVP_KEYMGMT_push(NULL, ...)\n    list_keymanagers();\n    // Not reached\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6992988586425781,
+      "output": "Triggering NULL pointer dereference in list_keymanagers...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4141121==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56b2b6668074 bp 0x7fff46f6e360 sp 0x7fff46f6e290 T0)\n==4141121==The signal is caused by a READ memory access.\n==4141121==Hint: address points to the zero page.\n    #0 0x56b2b6668074 in sk_EVP_KEYMGMT_push /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54:13\n    #1 0x56b2b6667f08 in collect_keymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:110:12\n    #2 0x56b2b6667e4b in EVP_KEYMGMT_do_all_provided /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:92:5\n    #3 0x56b2b6667d2f in list_keymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:120:5\n    #4 0x56b2b6667cef in main /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:129:5\n    #5 0x70b63182a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x70b63182a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x56b2b65a8304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer+0x21304) (BuildId: fec2062f5e9b4c7e7823937b7118ea9bd1a9db44)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54:13 in sk_EVP_KEYMGMT_push\n==4141121==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "sk_EVP_KEYMGMT_push",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "sk_EVP_KEYMGMT_push",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:54",
+          "13"
+        ],
+        [
+          "1",
+          "collect_keymanagers",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:110",
+          "12"
+        ],
+        [
+          "2",
+          "EVP_KEYMGMT_do_all_provided",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:92",
+          "5"
+        ],
+        [
+          "3",
+          "list_keymanagers",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:120",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_653_null-pointer-dereference/reproducer.c:129",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,56 @@
+
+=================================================================
+==3356194==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000058 at pc 0x559e3219e890 bp 0x7ffe980da380 sp 0x7ffe980da370
+READ of size 8 at 0x503000000058 thread T0
+    #0 0x559e3219e88f in _bfd_cache_close_unlocked /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:598
+    #1 0x559e3219e920 in bfd_cache_close /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:630
+    #2 0x559e3219d33c in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/reproducer.c:43
+    #3 0x7ff28066bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7ff28066be3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x559e3219d094 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/reproducer_bin+0x9b094)
+
+0x503000000058 is located 0 bytes to the right of 24-byte region [0x503000000040,0x503000000058)
+freed by thread T0 here:
+    #0 0x7ff280a22537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127
+    #1 0x559e3219d32d in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/reproducer.c:40
+    #2 0x7ff28066bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+previously allocated by thread T0 here:
+    #0 0x7ff280a22a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x559e3219d1ee in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/reproducer.c:21
+    #2 0x7ff28066bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:598 in _bfd_cache_close_unlocked
+Shadow bytes around the buggy address:
+  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0a067fff8000: fa fa 00 00 00 fa fa fa fd fd fd[fa]fa fa fa fa
+  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==3356194==ABORTING

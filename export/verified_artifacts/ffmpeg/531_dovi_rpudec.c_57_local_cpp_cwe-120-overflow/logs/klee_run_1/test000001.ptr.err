@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 149
+State: 1
+Stack: 
+	#000000149 in memcpy(139143953563648, 139620694933504, symbolic) at runtime/Freestanding/memcpy.c:17
+	#100000037 in ff_dovi_rpu_parse(139689414410240, 139620694933504, symbolic, symbolic) at dovi_rpudec.c:35
+	#200000066 in dovi_entry(139689414410240, 139620694933504, symbolic, symbolic) at dovi_rpudec.c:44
+	#300000110 in main() at driver.c:32
+Info: 
+	address: 139143953563680
+	next: object at 139114962534400 of size 4
+		MO64[4] allocated at ff_dovi_rpu_parse():  %8 = alloca i32, align 4

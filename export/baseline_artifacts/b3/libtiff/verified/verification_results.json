@@ -1,0 +1,73 @@
+[
+  {
+    "spec": "tif_overview_848_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 488,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "xtiff_999_double-free",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "xtiff.c",
+    "original_bug_func": "CreateXImage"
+  },
+  {
+    "spec": "iptcutil_175_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "iptcutil.c",
+    "original_bug_func": "convertHTMLcodes"
+  },
+  {
+    "spec": "mfs_file_342_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "mfs_file_386_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "mfs_file.c",
+    "original_bug_func": "mfs_write"
+  },
+  {
+    "spec": "mfs_file_401_heap-buffer-overflow",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "tif_pdsdirread_400_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 265,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "tif_pdsdirwrite_220_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 333,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "ras2tif_95_buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 333,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  }
+]

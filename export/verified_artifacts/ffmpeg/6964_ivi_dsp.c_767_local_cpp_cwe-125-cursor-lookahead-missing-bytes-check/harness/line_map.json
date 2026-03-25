@@ -1,0 +1,34 @@
+{
+  "ivi_dsp.c": {
+    "6": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 762,
+      "code": "void ff_ivi_put_dc_pixel_8x8(const int32_t *in, int16_t *out, ptrdiff_t pitch,"
+    },
+    "7": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 763,
+      "code": "int blk_size)"
+    },
+    "8": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 764,
+      "code": "{"
+    },
+    "10": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 767,
+      "code": "out[0] = in[0];"
+    },
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 773,
+      "code": "}"
+    },
+    "19": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 773,
+      "code": "}"
+    }
+  }
+}

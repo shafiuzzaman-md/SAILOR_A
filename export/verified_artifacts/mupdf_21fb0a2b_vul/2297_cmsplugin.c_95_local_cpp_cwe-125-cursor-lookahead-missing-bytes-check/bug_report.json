@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsplugin.c",
+        "original_line": 95,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "90:     pOut[5] = pIn[2];\n91:     pOut[4] = pIn[3];\n92:     pOut[3] = pIn[4];\n93:     pOut[2] = pIn[5];\n94:     pOut[1] = pIn[6];\n95:     pOut[0] = pIn[7];\n96: \n97: #else\n98:     _cmsAssert(Result != NULL);\n99: \n100: #  ifdef CMS_DONT_USE_INT64"
+    },
+    "klee_crash": {
+        "harness_file": "cmsplugin.c",
+        "harness_line": 31,
+        "original_file": "cmsplugin.c",
+        "original_line": 95,
+        "original_code": "pOut[0] = pIn[7];",
+        "original_context": "    92:     pOut[3] = pIn[4];\n    93:     pOut[2] = pIn[5];\n    94:     pOut[1] = pIn[6];\n>>> 95:     pOut[0] = pIn[7];\n    96: \n    97: #else\n    98:     _cmsAssert(Result != NULL);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cmsplugin.c\nLine: 31\nassembly.ll line: 82\nState: 1\nStack: \n\t#000000082 in _cmsAdjustEndianess64(139081250148352, 139064070279168) at cmsplugin.c:31\n\t#100000106 in entry_func(139081250148352, 139064070279168) at cmsplugin.c:46\n\t#200000146 in main() at driver.c:16\nInfo: \n\taddress: 139064070279175\n\tnext: object at 138784897404928 of size 4\n\t\tMO18[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "inbuf",
+            "size": 7,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "_cmsAdjustEndianess64",
+        "crash_file": "thirdparty/lcms2/src/cmsplugin.c",
+        "crash_line": 95,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==11894==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000037 at pc 0x5632c4273659 bp 0x7ffff7f9e360 sp 0x7ffff7f9e350\nREAD of size 1 at 0x502000000037 thread T0\n    #0 0x5632c4273658 in _cmsAdjustEndianess64 thirdparty/lcms2/src/cmsplugin.c:95\n    #1 0x5632c4273061 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:17\n    #2 0x7fcdbbbcbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fcdbbbcbe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5632c4272eb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xaeb4)\n\n0x502000000037 is located 0 bytes to the right of 7-byte region [0x502000000030,0x502000000037)\nallocated by thread T0 here:\n    #0 0x7fcdbbf82887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5632c4272fad in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:13\n    #2 0x7fcdbbbcbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmsplugin.c:95 in _cmsAdjustEndianess64\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa[07]fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsplugin.c",
+            "harness_line": 31,
+            "original_file": "cmsplugin.c",
+            "original_line": 95,
+            "error_type": "ptr",
+            "crash_function": "_cmsAdjustEndianess64",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "_cmsAdjustEndianess64",
+            "crash_file": "thirdparty/lcms2/src/cmsplugin.c",
+            "crash_line": 95
+        }
+    ]
+}

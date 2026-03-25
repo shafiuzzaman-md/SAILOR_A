@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080810==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000020 (pc 0x7315ea188c37 bp 0x7ffd9d227a50 sp 0x7ffd9d227218 T0)
+==4080810==The signal is caused by a WRITE memory access.
+==4080810==Hint: address points to the zero page.
+    #0 0x7315ea188c37 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:488
+    #1 0x5f0903ddb0d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/libtiff/verified/tif_overview_848_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 7a022bd97007b801b252a992e585fea353e834e3)
+    #2 0x5f0903e1829d in TIFFBuildOverviews_repro /app/export/baseline_artifacts/b3/libtiff/verified/tif_overview_848_null-pointer-dereference/reproducer.c:102:9
+    #3 0x5f0903e17edc in main /app/export/baseline_artifacts/b3/libtiff/verified/tif_overview_848_null-pointer-dereference/reproducer.c:127:11
+    #4 0x7315ea02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7315ea02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5f0903d58304 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/tif_overview_848_null-pointer-dereference/reproducer+0x21304) (BuildId: 7a022bd97007b801b252a992e585fea353e834e3)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:488 in __memcpy_avx_unaligned_erms
+==4080810==ABORTING

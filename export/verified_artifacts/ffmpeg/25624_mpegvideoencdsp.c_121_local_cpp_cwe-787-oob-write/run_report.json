@@ -1,0 +1,103 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 1,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 94025,
+    "tokens_prompt": 80722,
+    "tokens_completion": 13303,
+    "turns": 9,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "mpegvideoencdsp.c",
+    "line": 77,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/25624_mpegvideoencdsp.c_121_local_cpp_cwe-787-oob-write.json",
+  "vul_file": "mpegvideoencdsp.c",
+  "vul_line": "121",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 0,
+      "secondary_bugs": 1
+    },
+    "vulnerability": {
+      "original_file": "mpegvideoencdsp.c",
+      "original_line": 121,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "116:                 call_ref(dst0, linesize, width, height, edge, edge, EDGE_BOTTOM | EDGE_TOP);\n117:                 call_new(dst1, linesize, width, height, edge, edge, EDGE_BOTTOM | EDGE_TOP);\n118:                 if (memcmp(buf0, buf1, BUFSIZE))\n119:                     fail();\n120:                 bench_new(dst1, linesize, width, height, edge, edge, EDGE_BOTTOM | EDGE_TOP);\n121:             }\n122:         }\n123:     }\n124: }\n125: \n126: #undef NUM_LINES"
+    },
+    "klee_crash": {
+      "harness_file": "mpegvideoencdsp.c",
+      "harness_line": 23,
+      "original_file": "mpegvideoencdsp.c",
+      "original_line": 77,
+      "original_code": "}",
+      "original_context": "    74:             bench_new(pix, line_size);\n    75:         }\n    76:     }\n>>> 77: }\n    78: \n    79: #define NUM_LINES 4\n    80: #define MAX_LINE_SIZE 1920",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: mpegvideoencdsp.c\nLine: 23\nassembly.ll line: 136\nState: 1\nStack: \n\t#000000136 in draw_edges_impl(139628002525184, 64, 64, 100, 16, 16, 15) at mpegvideoencdsp.c:23\n\t#100000180 in entry_func(138687404691456, 139628002525184, 64, 64, 100, 16, 16, 15) at mpegvideoencdsp.c:36\n\t#200000071 in main() at driver.c:27\nInfo: \n\taddress: 139628002531584\n\tnext: object at 138674788225024 of size 4\n\t\tMO102[4] allocated at draw_edges_impl():  %14 = alloca i32, align"
+    },
+    "concrete_inputs": [
+      {
+        "name": "buf_bytes",
+        "size": 6400,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/25624_mpegvideoencdsp.c_121_local_cpp_cwe-787-oob-write/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "mpegvideoencdsp.c",
+        "harness_line": 23,
+        "original_file": "mpegvideoencdsp.c",
+        "original_line": 77,
+        "error_type": "ptr",
+        "crash_function": "draw_edges_impl",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/25624_mpegvideoencdsp.c_121_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": [],
+    "secondary_bugs": [
+      {
+        "original_file": "mpegvideoencdsp.c",
+        "original_line": 77,
+        "error_type": "ptr",
+        "crash_function": "draw_edges_impl",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/25624_mpegvideoencdsp.c_121_local_cpp_cwe-787-oob-write/logs/klee_run_1/test000001.ktest"
+      }
+    ]
+  }
+}

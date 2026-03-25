@@ -1,0 +1,41 @@
+[
+  {
+    "spec": "cmp_mock_srv_346_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "opt_76_out-of-bounds-read",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "opt_1217_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "strlen-avx2.S",
+    "crash_line": 76,
+    "crash_func": "__strlen_avx2",
+    "original_bug_file": "strlen-avx2.S",
+    "original_bug_func": "__strlen_avx2"
+  },
+  {
+    "spec": "list_1125_null-pointer-dereference",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "list.c",
+    "original_bug_func": "list_objects"
+  },
+  {
+    "spec": "mac_125_use-after-free",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "mac.c",
+    "original_bug_func": "mac_main"
+  },
+  {
+    "spec": "ocsp_476_double-free",
+    "verdict": "NOT_REPRODUCIBLE"
+  }
+]

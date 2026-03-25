@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-z80.c",
+    "line": 344,
+    "function": "extra_case",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "If an input COFF file contains an unsupported/unknown relocation type, rtype2howto() sets the arelent->howto field to NULL (lines 261-270). Later, extra_case() unconditionally uses reloc->howto, first passing it to bfd_get_reloc_size() at line 344 and then switching on reloc->howto->type (line 357), causing a NULL pointer dereference. An attacker can trigger this by supplying a COFF object with an unrecognized relocation type.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-z80.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <stdarg.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal type re-declarations to model the relevant BFD structures. */\ntypedef uint8_t bfd_byte;\n\ntypedef struct bfd {\n  int dummy;\n} bfd;\n\ntypedef struct asection {\n  bfd *owner;\n  unsigned long vma;\n} asection;\n\n/* Modeled after reloc_howto_type in BFD. */\ntypedef struct reloc_howto_type {\n  int type;\n  int partial_inplace;\n  unsigned long src_mask;\n  const char *name;\n} reloc_howto_type;\n\ntypedef struct asymbol {\n  const char *name;\n} asymbol;\n\ntypedef struct arelent {\n  unsigned long address;\n  long addend;\n  reloc_howto_type *howto; /* This will be NULL to trigger the bug. */\n  asymbol **sym_ptr_ptr;\n} arelent;\n\n/* Callback interface (very simplified). */\nstruct bfd_link_callbacks {\n  void (*einfo)(const char *fmt, ...);\n  void (*reloc_overflow)(void *link_info,\n                         void *reloc_entry,\n                         const char *sym_name,\n                         const char *howto_name,\n                         long addend,\n                         void *owner_bfd,\n                         void *section,\n                         unsigned long address);\n};\n\nstruct bfd_link_info {\n  struct bfd_link_callbacks *callbacks;\n};\n\nstruct bfd_link_order_indirect {\n  asection *section;\n};\n\nstruct bfd_link_order {\n  union {\n    struct bfd_link_order_indirect indirect;\n  } u;\n};\n\n/* Fake relocation type values used in the switch. */\nenum {\n  R_OFF8 = 1,\n  R_BYTE3 = 2,\n  R_BYTE2 = 3\n};\n\n/* Stubs for BFD helper functions used by extra_case. */\nstatic unsigned long bfd_get_section_limit_octets(bfd *abfd, asection *sec) {\n  (void)abfd; (void)sec;\n  return 64; /* Arbitrary small limit to pass range checks. */\n}\n\nstatic unsigned long bfd_get_reloc_size(const reloc_howto_type *howto) {\n  /* IMPORTANT: Do not dereference howto here to mirror the bug behavior where\n     extra_case first passes a NULL howto to this function. */\n  (void)howto;\n  return 1; /* minimal relocation size */\n}\n\nstatic int bfd_coff_reloc16_get_value(arelent *reloc, struct bfd_link_info *info, asection *sec) {\n  (void)reloc; (void)info; (void)sec;\n  return 0; /* Value is irrelevant for this reproducer. */\n}\n\nstatic unsigned char bfd_get_8(bfd *abfd, const void *p) {\n  (void)abfd; return *(const unsigned char *)p;\n}\n\nstatic void bfd_put_8(bfd *abfd, unsigned char val, void *p) {\n  (void)abfd; *(unsigned char *)p = val;\n}\n\n/* Simple printf-like callback implementations. */\nstatic void cb_einfo(const char *fmt, ...) {\n  va_list ap; va_start(ap, fmt); vfprintf(stderr, fmt, ap); va_end(ap);\n}\n\nstatic void cb_reloc_overflow(void *link_info,\n                              void *reloc_entry,\n                              const char *sym_name,\n                              const char *howto_name,\n                              long addend,\n                              void *owner_bfd,\n                              void *section,\n                              unsigned long address) {\n  (void)link_info; (void)reloc_entry; (void)sym_name; (void)howto_name;\n  (void)addend; (void)owner_bfd; (void)section; (void)address;\n  fprintf(stderr, \"reloc_overflow callback invoked\\n\");\n}\n\n/* Simplified reimplementation of the vulnerable function from coff-z80.c. */\nstatic bool extra_case(bfd *in_abfd,\n                       struct bfd_link_info *link_info,\n                       struct bfd_link_order *link_order,\n                       arelent *reloc,\n                       bfd_byte *data,\n                       size_t *src_ptr,\n                       size_t *dst_ptr)\n{\n  asection *input_section = link_order->u.indirect.section;\n  unsigned long end = bfd_get_section_limit_octets(in_abfd, input_section);\n  unsigned long reloc_size = bfd_get_reloc_size(reloc->howto); /* reloc->howto is NULL */\n\n  if (*src_ptr > end || reloc_size > end - *src_ptr) {\n    link_info->callbacks->einfo(\"relocation goes out of range\\n\");\n    return false;\n  }\n\n  int val = bfd_coff_reloc16_get_value(reloc, link_info, input_section);\n\n  /* BUG: Unconditional dereference of reloc->howto follows. */\n  switch (reloc->howto->type) { /* NULL dereference here */\n    case R_OFF8:\n      if (reloc->howto->partial_inplace)\n        val += (signed char)(bfd_get_8(in_abfd, data + *src_ptr) & reloc->howto->src_mask);\n      if (val > 127 || val < -128) {\n        link_info->callbacks->reloc_overflow(link_info, NULL, \"sym\", \"HOWTO\", reloc->addend,\n                                             input_section->owner, input_section, reloc->address);\n        return false;\n      }\n      bfd_put_8(in_abfd, (unsigned char)val, data + *dst_ptr);\n      *dst_ptr += 1;\n      *src_ptr += 1;\n      break;\n    case R_BYTE3:\n      bfd_put_8(in_abfd, (unsigned char)(val >> 24), data + *dst_ptr);\n      *dst_ptr += 1;\n      *src_ptr += 1;\n      break;\n    case R_BYTE2:\n      bfd_put_8(in_abfd, (unsigned char)(val >> 16), data + *dst_ptr);\n      *dst_ptr += 1;\n      *src_ptr += 1;\n      break;\n    default:\n      break;\n  }\n\n  return true;\n}\n\nint main(void) {\n  /* Set up minimal objects needed to reach the vulnerable path. */\n  bfd in_bfd = {0};\n  asection sec = { .owner = &in_bfd, .vma = 0 };\n\n  struct bfd_link_order order;\n  order.u.indirect.section = &sec;\n\n  struct bfd_link_callbacks cbs = { cb_einfo, cb_reloc_overflow };\n  struct bfd_link_info info = { .callbacks = &cbs };\n\n  /* Construct a relocation entry with howto = NULL to simulate unknown type. */\n  asymbol sym = { .name = \"sym\" };\n  asymbol *sym_ptr = &sym;\n\n  arelent rel;\n  memset(&rel, 0, sizeof(rel));\n  rel.howto = NULL;           /* Critical: simulate rtype2howto() failure */\n  rel.sym_ptr_ptr = &sym_ptr; /* Not used here but filled for completeness */\n  rel.addend = 0;\n  rel.address = 0;\n\n  uint8_t data[64] = {0};\n  size_t src = 0, dst = 0;\n\n  /* This call should crash with ASan due to NULL dereference of reloc->howto. */\n  (void)extra_case(&in_bfd, &info, &order, &rel, data, &src, &dst);\n\n  /* If the program reaches here, something went wrong. */\n  printf(\"Unexpectedly survived the NULL dereference.\\n\");\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7515556812286377,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3610847==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b6b2d32270f bp 0x7ffe05adcd20 sp 0x7ffe05adcb30 T0)\n==3610847==The signal is caused by a READ memory access.\n==3610847==Hint: address points to the zero page.\n    #0 0x5b6b2d32270f in extra_case /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138:25\n    #1 0x5b6b2d322181 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:194:9\n    #2 0x7c196e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c196e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b6b2d262304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer+0x21304) (BuildId: f66f731ad99efe2f5179751da011f62a4ba97f6e)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138:25 in extra_case\n==3610847==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "extra_case",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138",
+      "crash_line": 25,
+      "frames": [
+        [
+          "0",
+          "extra_case",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138",
+          "25"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:194",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,15 @@
+About to call libxml_xpathCallbacksInitialize (xmlMalloc forced to return NULL) ...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4009875==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56e8c6fe8dd2 bp 0x7ffc86411490 sp 0x7ffc86411460 T0)
+==4009875==The signal is caused by a WRITE memory access.
+==4009875==Hint: address points to the zero page.
+    #0 0x56e8c6fe8dd2 in libxml_xpathCallbacksInitialize /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41:41
+    #1 0x56e8c6fe8cff in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:52:5
+    #2 0x7d5f9aa2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d5f9aa2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x56e8c6f29304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer+0x21304) (BuildId: d04b75a31c28814f8298e57c2164e94c368bba8e)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2120_null-pointer-dereference/reproducer.c:41:41 in libxml_xpathCallbacksInitialize
+==4009875==ABORTING

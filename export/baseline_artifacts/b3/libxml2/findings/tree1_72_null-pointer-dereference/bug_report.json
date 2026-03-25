@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "example/tree1.c",
+    "line": 72,
+    "function": "main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If xmlReadFile fails, doc is NULL (lines 65-69). The code still calls xmlDocGetRootElement(doc) at line 72, which will dereference the NULL pointer inside libxml2, causing a crash.",
+    "abs_path": "/tmp/libxml2_upstream/example/tree1.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <libxml/parser.h>\n#include <libxml/tree.h>\n\nint main(void) {\n    xmlDocPtr doc = NULL;\n    xmlNodePtr root = NULL;\n\n    /* Initialize libxml2 and check for ABI mismatches */\n    LIBXML_TEST_VERSION\n\n    /* Intentionally parse a non-existent file to force xmlReadFile to fail */\n    const char *path = \"/no/such/file.xml\";\n    doc = xmlReadFile(path, NULL, 0);\n    if (doc == NULL) {\n        fprintf(stderr, \"error: could not parse file %s\\n\", path);\n    }\n\n    /* Vulnerable call: pass NULL doc to xmlDocGetRootElement, which will\n       dereference the NULL pointer in vulnerable versions of libxml2 */\n    root = xmlDocGetRootElement(doc);\n\n    /* If the library didn't crash (e.g., if it defensively returns NULL),\n       clean up and exit. */\n    if (doc)\n        xmlFreeDoc(doc);\n    xmlCleanupParser();\n\n    if (root)\n        printf(\"Root element: %s\\n\", (const char*)root->name);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "/usr/bin/ld: /tmp/reproducer-436bbd.o: in function `main':\n/app/se_runs/b3/libxml2_e334a9d_vul/findings/tree1_72_null-pointer-dereference/reproducer.c:10:(.text+0x25): undefined reference to `xmlCheckVersion'\n/usr/bin/ld: /app/se_runs/b3/libxml2_e334a9d_vul/findings/tree1_72_null-pointer-dereference/reproducer.c:14:(.text+0x3f): undefined reference to `xmlReadFile'\n/usr/bin/ld: /app/se_runs/b3/libxml2_e334a9d_vul/findings/tree1_72_null-pointer-dereference/reproducer.c:21:(.text+0x97): undefined reference to `xmlDocGetRootElement'\n/usr/bin/ld: /app/se_runs/b3/libxml2_e334a9d_vul/findings/tree1_72_null-pointer-dereference/reproducer.c:26:(.text+0xaf): undefined reference to `xmlFreeDoc'\n/usr/bin/ld: /app/se_runs/b3/libxml2_e334a9d_vul/findings/tree1_72_null-pointer-dereference/reproducer.c:27:(.text+0xb4): undefined reference to `xmlCleanupParser'\nclang: error: linker command failed with exit code 1 (use -v to see invocation)\n"
+  }
+}

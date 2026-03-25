@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/engine.c",
+    "line": 402,
+    "function": "engine_main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "The BIO pointer 'out' is obtained at line 318 via dup_bio_out(FORMAT_TEXT) without checking for failure. If dup_bio_out returns NULL (e.g., due to allocation failure), the subsequent use at line 402 in BIO_printf(out, ...) will dereference a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/openssl_upstream/apps/engine.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdarg.h>\n\n/* Minimal stub of OpenSSL BIO */\ntypedef struct bio_st {\n    int dummy;\n} BIO;\n\n/* Stub: dup_bio_out(FORMAT_TEXT) can fail and return NULL */\n#define FORMAT_TEXT 1\nstatic BIO *dup_bio_out(int format) {\n    (void)format;\n    /* Simulate allocation/open failure: return NULL */\n    return NULL;\n}\n\n/* Stub of BIO_printf that dereferences the BIO pointer like OpenSSL would */\nint BIO_printf(BIO *b, const char *fmt, ...) {\n    /* Force a null-pointer dereference when b == NULL, mimicking OpenSSL's BIO use */\n    int crash = b->dummy; /* This will segfault if b is NULL */\n    (void)crash;\n\n    va_list ap;\n    va_start(ap, fmt);\n    va_end(ap);\n    return 0;\n}\n\n/* Minimal ENGINE stubs */\ntypedef struct engine_st {\n    const char *id;\n    const char *name;\n} ENGINE;\n\nstatic ENGINE global_engine;\n\nENGINE *ENGINE_by_id(const char *id) {\n    global_engine.id = id;\n    global_engine.name = \"Stub Engine\";\n    return &global_engine;\n}\n\nconst char *ENGINE_get_name(ENGINE *e) { return e ? e->name : \"\"; }\nconst char *ENGINE_get_id(ENGINE *e)   { return e ? e->id   : \"\"; }\n\n/* Vulnerable function modeled after apps/engine.c: engine_main */\nint engine_main(int argc, char **argv) {\n    (void)argc;\n    /* In the real code, 'out' is obtained via dup_bio_out(FORMAT_TEXT) without checking */\n    BIO *out = dup_bio_out(FORMAT_TEXT); /* returns NULL -> bug precondition */\n\n    /* Simulate having parsed one engine id from argv or defaults */\n    const char *id = (argv && argv[1]) ? argv[1] : \"test\";\n\n    ENGINE *e = ENGINE_by_id(id);\n    const char *name = ENGINE_get_name(e);\n\n    /* Line analogous to engine.c:402 -> dereferences NULL 'out' */\n    BIO_printf(out, \"(%s) %s\\n\", id, name);\n\n    return 0;\n}\n\nint main(int argc, char **argv) {\n    /* Directly invoke the vulnerable path */\n    return engine_main(argc, argv);\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7923386096954346,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4126755==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55aaea976e15 bp 0x7fffc4813a10 sp 0x7fffc4813860 T0)\n==4126755==The signal is caused by a READ memory access.\n==4126755==Hint: address points to the zero page.\n    #0 0x55aaea976e15 in BIO_printf /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22:20\n    #1 0x55aaea97709d in engine_main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:61:5\n    #2 0x55aaea9770e1 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:68:12\n    #3 0x70b8d6c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x70b8d6c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x55aaea8b7304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer+0x21304) (BuildId: 55542e3eab8fd220b63c274dda76780f22c77e65)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22:20 in BIO_printf\n==4126755==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "BIO_printf",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "BIO_printf",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:22",
+          "20"
+        ],
+        [
+          "1",
+          "engine_main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:61",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_402_null-pointer-dereference/reproducer.c:68",
+          "12"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

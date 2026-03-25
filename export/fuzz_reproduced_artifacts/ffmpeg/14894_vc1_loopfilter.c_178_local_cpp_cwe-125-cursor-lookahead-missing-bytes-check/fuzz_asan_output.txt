@@ -1,0 +1,76 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 544692733
+INFO: Loaded 1 modules   (13 inline 8-bit counters): 13 [0x5ccd7a137ec0, 0x5ccd7a137ecd), 
+INFO: Loaded 1 PC tables (13 PCs): 13 [0x5ccd7a137ed0,0x5ccd7a137fa0), 
+INFO:        1 files found in artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+=================================================================
+==116903==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000004f at pc 0x5ccd7a0f78ae bp 0x7ffe8e445560 sp 0x7ffe8e445558
+READ of size 1 at 0x60200000004f thread T0
+    #0 0x5ccd7a0f78ad in ff_vc1_p_overlap_filter /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/vc1_loopfilter.c:31:45
+    #1 0x5ccd7a0f7984 in harness_entry /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/vc1_loopfilter.c:40:5
+    #2 0x5ccd7a0f75cf in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:41:15
+    #3 0x5ccd7a01d80a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #4 0x5ccd7a01ced5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #5 0x5ccd7a01ead8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #6 0x5ccd7a01ef56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #7 0x5ccd7a00c542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #8 0x5ccd7a0379e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #9 0x76fa0682a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x76fa0682a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5ccd7a000974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+
+0x60200000004f is located 1 bytes to the left of 4-byte region [0x602000000050,0x602000000054)
+allocated by thread T0 here:
+    #0 0x5ccd7a0bb332 in malloc (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe1332) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #1 0x5ccd7a0f7457 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:34:32
+    #2 0x5ccd7a01d80a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #3 0x5ccd7a01ced5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #4 0x5ccd7a01ead8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #5 0x5ccd7a01ef56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #6 0x5ccd7a00c542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #7 0x5ccd7a0379e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+    #8 0x76fa0682a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x76fa0682a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5ccd7a000974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: cf9e84093b34675c913ed3163f5896012318c790)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/14894_vc1_loopfilter.c_178_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/vc1_loopfilter.c:31:45 in ff_vc1_p_overlap_filter
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa 04 fa fa[fa]04 fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==116903==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

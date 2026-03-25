@@ -1,0 +1,57 @@
+#include <stdint.h>
+#include <stddef.h>
+// Combined reproducer for 3758_acelp_filters.c_130_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check
+// Original harness: driver.c + smart_stubs.c + sliced source
+
+// === smart_stubs.c ===
+/* Smart stubs — auto-generated from path + vulnerability analysis */
+/* Symbolic stubs model the environment: KLEE explores return values */
+/* that both REACH the sink AND TRIGGER the vulnerability */
+#include <stdlib.h>
+#include <string.h>
+/* PROACTIVE: function (auto-detected external) */
+int function() { return 0; }
+
+// === driver.c ===
+// NO_HARNESS_TYPES
+#include <stdlib.h>
+#include <string.h>
+
+// Prototype from harness
+int entry_func(float *out, const float *in,
+               const float zero_coeffs[2],
+               const float pole_coeffs[2],
+               float gain, float mem[2], int n);
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 64) return 0;
+    // Bound for iterations
+    int n;
+    memcpy(&n, fuzz_data + (0), sizeof(n));
+    
+    
+
+    // Allocate concrete buffers (sizes must be concrete numbers)
+    float *out = (float *)malloc(sizeof(float) * 8);
+    float *in  = (float *)malloc(sizeof(float) * 8);
+    float *zero_coeffs = (float *)malloc(sizeof(float) * 2);
+    float *mem = (float *)malloc(sizeof(float) * 2);
+
+    // Intentionally under-allocate pole_coeffs to 1 float to trigger OOB read at pole_coeffs[1]
+    float *pole_coeffs = (float *)malloc(sizeof(float) * 1);
+
+    // Make contents symbolic
+    memcpy(out, fuzz_data + (sizeof(n)), sizeof(float) * 8);
+    memcpy(in, fuzz_data + (sizeof(n) + sizeof(float) * 8), sizeof(float) * 8);
+    memcpy(zero_coeffs, fuzz_data + (sizeof(n) + sizeof(float) * 8 + sizeof(float) * 8), sizeof(float) * 2);
+    memcpy(mem, fuzz_data + (sizeof(n) + sizeof(float) * 8 + sizeof(float) * 8 + sizeof(float) * 2), sizeof(float) * 2);
+    memcpy(pole_coeffs, fuzz_data + (sizeof(n) + sizeof(float) * 8 + sizeof(float) * 8 + sizeof(float) * 2 + sizeof(float) * 2), sizeof(float) * 1);
+
+    float gain;
+    memcpy(&gain, fuzz_data + (sizeof(n) + sizeof(float) * 8 + sizeof(float) * 8 + sizeof(float) * 2 + sizeof(float) * 2 + sizeof(float) * 1), sizeof(gain));
+
+    // Call entry (direct pass-through to vulnerable function)
+    entry_func(out, in, zero_coeffs, pole_coeffs, gain, mem, n);
+
+    return 0;
+}

@@ -1,0 +1,94 @@
+{
+  "acelp_filters.c": {
+    "2": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 23,
+      "code": "#include <stddef.h>"
+    },
+    "5": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 121,
+      "code": "void ff_acelp_apply_order_2_transfer_function(float *out, const float *in,"
+    },
+    "6": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 122,
+      "code": "const float zero_coeffs[2],"
+    },
+    "7": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 123,
+      "code": "const float pole_coeffs[2],"
+    },
+    "8": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 124,
+      "code": "float gain, float mem[2], int n)"
+    },
+    "9": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 125,
+      "code": "{"
+    },
+    "10": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 126,
+      "code": "int i;"
+    },
+    "11": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 127,
+      "code": "float tmp;"
+    },
+    "13": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 129,
+      "code": "for (i = 0; i < n; i++) {"
+    },
+    "14": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 130,
+      "code": "tmp = gain * in[i] - pole_coeffs[0] * mem[0] - pole_coeffs[1] * mem[1];"
+    },
+    "16": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 131,
+      "code": "out[i] =       tmp + zero_coeffs[0] * mem[0] + zero_coeffs[1] * mem[1];"
+    },
+    "18": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 133,
+      "code": "mem[1] = mem[0];"
+    },
+    "19": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 134,
+      "code": "mem[0] = tmp;"
+    },
+    "20": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 135,
+      "code": "}"
+    },
+    "21": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 136,
+      "code": "}"
+    },
+    "25": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 122,
+      "code": "const float zero_coeffs[2],"
+    },
+    "26": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 123,
+      "code": "const float pole_coeffs[2],"
+    },
+    "30": {
+      "orig_file": "acelp_filters.c",
+      "orig_line": 119,
+      "code": "}"
+    }
+  }
+}

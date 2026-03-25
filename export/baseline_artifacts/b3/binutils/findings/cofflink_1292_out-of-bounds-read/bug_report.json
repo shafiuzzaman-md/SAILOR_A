@@ -1,0 +1,87 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/cofflink.c",
+    "line": 1292,
+    "function": "process_embedded_commands",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "Checks for prefixes with startswith(s, \"-attr\") while only ensuring s < e. Typical startswith implementations compare a fixed number of bytes (e.g., strncmp), which will read past the end of the [copy, e) buffer if s is within the last few bytes of the section and not NUL-terminated. Similar issues occur at the other startswith calls in this function.",
+    "abs_path": "/tmp/binutils_upstream/bfd/cofflink.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stub types and flags to mirror BFD structures used by the vulnerable code. */\ntypedef unsigned char bfd_byte;\n\ntypedef struct asection {\n    const char *name;\n    unsigned int flags;\n    size_t size;\n    bfd_byte *contents;\n} asection;\n\ntypedef struct bfd {\n    asection *sec; /* single-section stub */\n} bfd;\n\nstruct bfd_link_info { int dummy; };\n\n#define SEC_HAS_CONTENTS 0x1\n#define SEC_CODE         0x2\n#define SEC_READONLY     0x4\n\n/* Vulnerable helper: mimics libiberty startswith implementation. */\nstatic int startswith(const char *s, const char *prefix) {\n    /* This intentionally compares strlen(prefix) bytes unconditionally,\n       which will read past the end of s if there are fewer bytes left. */\n    return strncmp(s, prefix, strlen(prefix)) == 0;\n}\n\n/* Helper from the source context (unchanged). */\nstatic char *get_name(char *ptr, char **dst) {\n    while (*ptr == ' ')\n        ptr++;\n    *dst = ptr;\n    while (*ptr && *ptr != ' ')\n        ptr++;\n    *ptr = 0;\n    return ptr + 1;\n}\n\n/* Stubs for the subset of BFD API used by the function. */\nstatic asection *bfd_get_section_by_name(bfd *abfd, const char *name) {\n    if (abfd && abfd->sec && abfd->sec->name && strcmp(abfd->sec->name, name) == 0)\n        return abfd->sec;\n    return NULL;\n}\n\nstatic int bfd_malloc_and_get_section(bfd *abfd, asection *sec, bfd_byte **out_copy) {\n    (void)abfd;\n    if (!sec || !out_copy) return 0;\n    *out_copy = (bfd_byte *)malloc(sec->size);\n    if (!*out_copy) return 0;\n    memcpy(*out_copy, sec->contents, sec->size);\n    return 1;\n}\n\n/* The vulnerable function, adapted minimally to call startswith on s without\n   ensuring enough bytes remain in [s, e). */\nstatic int process_embedded_commands(bfd *output_bfd,\n                                    struct bfd_link_info *info /* ATTRIBUTE_UNUSED */,\n                                    bfd *abfd) {\n    (void)output_bfd;\n    (void)info;\n\n    asection *sec = bfd_get_section_by_name(abfd, \".drectve\");\n    char *s;\n    char *e;\n    bfd_byte *copy;\n\n    if (sec == NULL || (sec->flags & SEC_HAS_CONTENTS) == 0)\n        return 1;\n\n    if (!bfd_malloc_and_get_section(abfd, sec, &copy)) {\n        free(copy);\n        return 0;\n    }\n    e = (char *)copy + sec->size;\n\n    for (s = (char *)copy; s < e; ) {\n        if (s[0] != '-') {\n            s++;\n            continue;\n        }\n        /* BUG: This may read 5 bytes from s even if fewer remain before e. */\n        if (startswith(s, \"-attr\")) {\n            char *name;\n            char *attribs;\n            asection *asec;\n            int loop = 1;\n            int had_write = 0;\n            int had_exec = 0;\n\n            s += 5;\n            s = get_name(s, &name);\n            s = get_name(s, &attribs);\n\n            while (loop) {\n                switch (*attribs++) {\n                case 'W': had_write = 1; break;\n                case 'R': break;\n                case 'S': break;\n                case 'X': had_exec = 1; break;\n                default: loop = 0; break;\n                }\n            }\n            asec = bfd_get_section_by_name(abfd, name);\n            if (asec) {\n                if (had_exec) asec->flags |= SEC_CODE;\n                if (!had_write) asec->flags |= SEC_READONLY;\n            }\n        } else if (startswith(s, \"-heap\")) {\n            /* Not reached in this reproducer; included to mirror structure. */\n            s++;\n        } else {\n            s++;\n        }\n    }\n\n    /* Intentional leak of copy, matching original code path that doesn't free here. */\n    return 1;\n}\n\nint main(void) {\n    /* Create a .drectve section whose last (and only) byte is '-' so that\n       s points to '-' with fewer than 5 bytes remaining, triggering OOB read\n       in startswith(s, \"-attr\"). */\n    static bfd_byte drectve_contents[1] = {'-'}; /* Only 1 byte available */\n\n    asection drectve = {\n        .name = \".drectve\",\n        .flags = SEC_HAS_CONTENTS,\n        .size = sizeof(drectve_contents),\n        .contents = drectve_contents\n    };\n\n    bfd abfd = { .sec = &drectve };\n\n    /* Call the vulnerable function. ASan should report an OOB read. */\n    process_embedded_commands(NULL, NULL, &abfd);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.70340895652771,
+      "output": "=================================================================\n==3626368==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x5b7937b7982d bp 0x7ffd492afee0 sp 0x7ffd492af688\nREAD of size 2 at 0x602000000011 thread T0\n    #0 0x5b7937b7982c in strncmp (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer+0x3882c) (BuildId: 8b564a72aa9bc426ce69a507fca20015ab7e9f40)\n    #1 0x5b7937c22808 in startswith /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:30:12\n    #2 0x5b7937c2218b in process_embedded_commands /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:88:13\n    #3 0x5b7937c21dd6 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:142:5\n    #4 0x73582422a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73582422a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5b7937b62304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer+0x21304) (BuildId: 8b564a72aa9bc426ce69a507fca20015ab7e9f40)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5b7937be5d12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 8b564a72aa9bc426ce69a507fca20015ab7e9f40)\n    #1 0x5b7937c226b7 in bfd_malloc_and_get_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:54:29\n    #2 0x5b7937c2202e in process_embedded_commands /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:76:10\n    #3 0x5b7937c21dd6 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:142:5\n    #4 0x73582422a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x73582422a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5b7937b62304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer+0x21304) (BuildId: 8b564a72aa9bc426ce69a507fca20015ab7e9f40)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer+0x3882c) (BuildId: 8b564a72aa9bc426ce69a507fca20015ab7e9f40) in strncmp\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3626368==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "startswith",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:30",
+          "12"
+        ],
+        [
+          "2",
+          "process_embedded_commands",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:88",
+          "13"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:142",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "bfd_malloc_and_get_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:54",
+          "29"
+        ],
+        [
+          "2",
+          "process_embedded_commands",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:76",
+          "10"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1292_out-of-bounds-read/reproducer.c:142",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

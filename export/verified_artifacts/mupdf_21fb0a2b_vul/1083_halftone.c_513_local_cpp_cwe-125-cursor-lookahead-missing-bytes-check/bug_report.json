@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "halftone.c",
+        "original_line": 513,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "508: \t\tint h = 0;\n509: \t\tif (pixmap[0] >= ht_line[0])\n510: \t\t\th |= 0x80;\n511: \t\tif (pixmap[1] >= ht_line[1])\n512: \t\t\th |= 0x40;\n513: \t\tif (pixmap[2] >= ht_line[2])\n514: \t\t\th |= 0x20;\n515: \t\tif (pixmap[3] >= ht_line[3])\n516: \t\t\th |= 0x10;\n517: \t\t*out = h;\n518: \t}"
+    },
+    "klee_crash": {
+        "harness_file": "halftone.c",
+        "harness_line": 50,
+        "original_file": "halftone.c",
+        "original_line": 513,
+        "original_code": "if (pixmap[2] >= ht_line[2])",
+        "original_context": "    510: \t\t\th |= 0x80;\n    511: \t\tif (pixmap[1] >= ht_line[1])\n    512: \t\t\th |= 0x40;\n>>> 513: \t\tif (pixmap[2] >= ht_line[2])\n    514: \t\t\th |= 0x20;\n    515: \t\tif (pixmap[3] >= ht_line[3])\n    516: \t\t\th |= 0x10;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: halftone.c\nLine: 50\nassembly.ll line: 192\nState: 3\nStack: \n\t#000000192 in fz_new_bitmap_from_pixmap_band(139350200365056, 139487639318528, 139418919841792) at halftone.c:50\n\t#100000091 in fz_new_bitmap_from_pixmap(139350200365056, 139487639318528, 139418919841792) at halftone.c:30\n\t#200000059 in main() at driver.c:28\nInfo: \n\taddress: 139367380234242\n\tnext: object at 139051700137984 of size 4\n\t\tMO67[4] allocated at fz_new_bitmap_from_pixmap_band(): "
+    },
+    "concrete_inputs": [
+        {
+            "name": "pixbuf",
+            "size": 4,
+            "data": "b'>>>>'"
+        },
+        {
+            "name": "htbuf",
+            "size": 2,
+            "data": "b'@@'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_new_bitmap_from_pixmap_band",
+        "crash_file": "source/fitz/halftone.c",
+        "crash_line": 571,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4355==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000068 at pc 0x55cc04941b81 bp 0x7ffe0c4ee4a0 sp 0x7ffe0c4ee490\nREAD of size 1 at 0x503000000068 thread T0\n    #0 0x55cc04941b80 in fz_new_bitmap_from_pixmap_band source/fitz/halftone.c:571\n    #1 0x55cc0493fbe9 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1083_halftone.c_513_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:28\n    #2 0x7f12948c0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f12948c0e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55cc0493f954 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1083_halftone.c_513_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x10954)\n\n0x503000000068 is located 16 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7f1294c77a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55cc0493fa46 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1083_halftone.c_513_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:10\n    #2 0x7f12948c0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/halftone.c:571 in fz_new_bitmap_from_pixmap_band\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa[fa]fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1083_halftone.c_513_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "halftone.c",
+            "harness_line": 50,
+            "original_file": "halftone.c",
+            "original_line": 513,
+            "error_type": "ptr",
+            "crash_function": "fz_new_bitmap_from_pixmap_band",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1083_halftone.c_513_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_new_bitmap_from_pixmap_band",
+            "crash_file": "source/fitz/halftone.c",
+            "crash_line": 571
+        }
+    ]
+}

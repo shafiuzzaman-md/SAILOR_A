@@ -1,0 +1,20 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+tiff_readscanline_oobw	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	13	TIFFReadScanline		0	5566		
+tiff_writescanline_uaf_oobw	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	12	TIFFWriteScanline		0	5566		
+tiff_readrgbaimage_oobw	SE_DETECTED	TP	ptr	harness.c	22	TIFFReadRGBAImage		0	5566	BUG-002	
+tiff_readrgbaimage_oriented_neg_index	SE_DETECTED	TP	ptr	harness.c	24	TIFFReadRGBAImageOriented		2	5566	BUG-004	
+tiff_printdirectory_strcpy_overflow	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	10	TIFFPrintDirectory		0	5566		
+getopt_arg_copy_overflow	SE_DETECTED	TP	ptr	strcpy.c	27	getopt		0	5566	BUG-006	
+ovrrow_16bits_zero_width_strip	NO_BUG	FP			0	TIFFWriteOvrRow		7	5566		
+ovrrow_32bits_zero_width_strip	NO_BUG	FP			0	TIFFWriteOvrRow		7	5566		
+ovrrow_16bits_zero_width_tile	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	stubs.c	53	TIFFWriteOvrRow		0	5566		
+ovrrow_32bits_zero_width_tile	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	stubs.c	56	TIFFWriteOvrRow		0	5566		
+getsamples_uint8_oob_read	SE_DETECTED	TP	ptr	harness.c	23	TIFF_GetSourceSamples		0	5566	BUG-003	
+getsamples_uint16_oob_read	SE_DETECTED	TP	ptr	harness.c	21	TIFF_GetSourceSamples		0	5566	BUG-001	
+getsamples_float32_oob_read	SE_DETECTED	TP	ptr	memcpy.c	29	TIFF_GetSourceSamples		0	5566	BUG-005	
+create_ovr_cache_tiled_path	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	driver.c	13	TIFFCreateOvrCache		0	5566		
+create_ovr_cache_stripped_path	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	driver.c	10	TIFFCreateOvrCache		0	5566		
+build_overviews_divzero_basic	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	10	TIFFBuildOverviews		0	5566		
+build_overviews_divzero_ycbcr	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	10	TIFFBuildOverviews		0	5566		
+create_ovr_cache_zero_width	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	driver.c	13	TIFFCreateOvrCache		0	5566		
+write_overview_tiled_vs_stripped	BUILD_ERROR	FP			0	TIFF_WriteOverview		0	5566		

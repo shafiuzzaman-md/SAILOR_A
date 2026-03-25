@@ -1,0 +1,98 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 120818,
+    "tokens_prompt": 110731,
+    "tokens_completion": 10087,
+    "turns": 11,
+    "klee_runs": 2
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "ivi_dsp.c",
+    "line": 767,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/6964_ivi_dsp.c_767_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "ivi_dsp.c",
+  "vul_line": "767",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ivi_dsp.c",
+      "original_line": 767,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "762: void ff_ivi_put_dc_pixel_8x8(const int32_t *in, int16_t *out, ptrdiff_t pitch,\n763:                              int blk_size)\n764: {\n765:     int     y;\n766: \n767:     out[0] = in[0];\n768:     memset(out + 1, 0, 7*sizeof(out[0]));\n769:     out += pitch;\n770: \n771:     for (y = 1; y < 8; out += pitch, y++)\n772:         memset(out, 0, 8*sizeof(out[0]));"
+    },
+    "klee_crash": {
+      "harness_file": "ivi_dsp.c",
+      "harness_line": 10,
+      "original_file": "ivi_dsp.c",
+      "original_line": 767,
+      "original_code": "out[0] = in[0];",
+      "original_context": "    764: {\n    765:     int     y;\n    766: \n>>> 767:     out[0] = in[0];\n    768:     memset(out + 1, 0, 7*sizeof(out[0]));\n    769:     out += pitch;\n    770: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: ivi_dsp.c\nLine: 10\nassembly.ll line: 58\nState: 1\nStack: \n\t#000000058 in ff_ivi_put_dc_pixel_8x8(139206293618688, 138927120744448, 0, 0) at ivi_dsp.c:10\n\t#100000088 in entry_func(139206293618688, 138927120744448) at ivi_dsp.c:17\n\t#200000030 in main() at driver.c:20\nInfo: \n\taddress: 139206293618688\n\tnext: object at 138907793391616 of size 4\n\t\tMO34[4] allocated at entry_func():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "in_raw",
+        "size": 1,
+        "data": "b'\\x00'"
+      },
+      {
+        "name": "outbuf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6964_ivi_dsp.c_767_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ivi_dsp.c",
+        "harness_line": 10,
+        "original_file": "ivi_dsp.c",
+        "original_line": 767,
+        "error_type": "ptr",
+        "crash_function": "ff_ivi_put_dc_pixel_8x8",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6964_ivi_dsp.c_767_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_huffman.c",
+        "original_line": 652,
+        "function": "jbig2_table",
+        "entry_point": "jbig2_table",
+        "spine": [
+            "jbig2_table"
+        ],
+        "original_context": "647:                 goto error_exit;\n648:             }\n649:             line = new_line;\n650:         }\n651:         params->HTOOB = HTOOB;\n652:         params->n_lines = NTEMP;\n653:         params->lines = line;\n654:         segment->result = params;\n655: \n656: #ifdef JBIG2_DEBUG\n657:         {"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_huffman.c",
+        "harness_line": 58,
+        "original_file": "jbig2_huffman.c",
+        "original_line": 651,
+        "original_code": "params->HTOOB = HTOOB;",
+        "original_context": "    648:             }\n    649:             line = new_line;\n    650:         }\n>>> 651:         params->HTOOB = HTOOB;\n    652:         params->n_lines = NTEMP;\n    653:         params->lines = line;\n    654:         segment->result = params;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: use after free\nFile: jbig2_huffman.c\nLine: 58\nassembly.ll line: 223\nState: 1\nStack: \n\t#000000223 in jbig2_table(139144285138944, 139281724092416, 139350443569152) at jbig2_huffman.c:58\n\t#100000075 in main() at driver.c:23\nInfo: \n\taddress: 139264544223232\n\tnext: object at 138844711170048 of size 4\n\t\tMO61[4] allocated at jbig2_table():  %9 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "segment_data",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "NTEMP",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_table",
+        "crash_file": "thirdparty/jbig2dec/jbig2_huffman.c",
+        "crash_line": 544,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==31669==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000070 at pc 0x56430cffe6ee bp 0x7fff109243b0 sp 0x7fff109243a0\nWRITE of size 8 at 0x503000000070 thread T0\n    #0 0x56430cffe6ed in jbig2_table thirdparty/jbig2dec/jbig2_huffman.c:544\n    #1 0x56430cffbb99 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:23\n    #2 0x7fae741a1d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fae741a1e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56430cffb994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_bin+0xa994)\n\n0x503000000070 is located 24 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7fae74558a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x56430cffba86 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:11\n    #2 0x7fae741a1d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2_huffman.c:544 in jbig2_table\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa[fa]fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_huffman.c",
+            "harness_line": 58,
+            "original_file": "jbig2_huffman.c",
+            "original_line": 651,
+            "error_type": "ptr",
+            "crash_function": "jbig2_table",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_table",
+            "crash_file": "thirdparty/jbig2dec/jbig2_huffman.c",
+            "crash_line": 544
+        }
+    ]
+}

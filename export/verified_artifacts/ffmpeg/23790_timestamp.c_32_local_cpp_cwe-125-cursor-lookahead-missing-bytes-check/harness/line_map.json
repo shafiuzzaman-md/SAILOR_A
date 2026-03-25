@@ -1,0 +1,94 @@
+{
+  "timestamp.c": {
+    "28": {
+      "orig_file": "timestamp.c",
+      "orig_line": 34,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "timestamp.c",
+      "orig_line": 21,
+      "code": "char *av_ts_make_time_string2(char *buf, int64_t ts, AVRational tb)"
+    },
+    "32": {
+      "orig_file": "timestamp.c",
+      "orig_line": 22,
+      "code": "{"
+    },
+    "33": {
+      "orig_file": "timestamp.c",
+      "orig_line": 23,
+      "code": "if (ts == AV_NOPTS_VALUE) {"
+    },
+    "34": {
+      "orig_file": "timestamp.c",
+      "orig_line": 24,
+      "code": "snprintf(buf, AV_TS_MAX_STRING_SIZE, \"NOPTS\");"
+    },
+    "35": {
+      "orig_file": "timestamp.c",
+      "orig_line": 25,
+      "code": "} else {"
+    },
+    "36": {
+      "orig_file": "timestamp.c",
+      "orig_line": 26,
+      "code": "double val = av_q2d(tb) * ts;"
+    },
+    "37": {
+      "orig_file": "timestamp.c",
+      "orig_line": 27,
+      "code": "double log = (fpclassify(val) == FP_ZERO ? -INFINITY : floor(log10(fabs(val))));"
+    },
+    "38": {
+      "orig_file": "timestamp.c",
+      "orig_line": 28,
+      "code": "int precision = (isfinite(log) && log < 0) ? -log + 5 : 6;"
+    },
+    "39": {
+      "orig_file": "timestamp.c",
+      "orig_line": 29,
+      "code": "int last = snprintf(buf, AV_TS_MAX_STRING_SIZE, \"%.*f\", precision, val);"
+    },
+    "40": {
+      "orig_file": "timestamp.c",
+      "orig_line": 30,
+      "code": "last = FFMIN(last, AV_TS_MAX_STRING_SIZE - 1) - 1;"
+    },
+    "41": {
+      "orig_file": "timestamp.c",
+      "orig_line": 31,
+      "code": "for (; last && buf[last] == '0'; last--);"
+    },
+    "42": {
+      "orig_file": "timestamp.c",
+      "orig_line": 32,
+      "code": "for (; last && buf[last] != 'f' && (buf[last] < '0' || buf[0] > '9'); last--);"
+    },
+    "44": {
+      "orig_file": "timestamp.c",
+      "orig_line": 33,
+      "code": "buf[last + 1] = '\\0';"
+    },
+    "45": {
+      "orig_file": "timestamp.c",
+      "orig_line": 34,
+      "code": "}"
+    },
+    "46": {
+      "orig_file": "timestamp.c",
+      "orig_line": 35,
+      "code": "return buf;"
+    },
+    "47": {
+      "orig_file": "timestamp.c",
+      "orig_line": 36,
+      "code": "}"
+    },
+    "53": {
+      "orig_file": "timestamp.c",
+      "orig_line": 36,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,76 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1581546352
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x64423cf4df20, 0x64423cf4df23), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x64423cf4df28,0x64423cf4df58), 
+INFO:        0 files found in /tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/corpus
+INFO:        1 files found in /tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/seed_corpus
+INFO: seed corpus: files: 1 min: 93b max: 93b total: 93b rss: 33Mb
+=================================================================
+==3115053==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000108 at pc 0x64423cc0dddb bp 0x7ffda7c3eac0 sp 0x7ffda7c3eab8
+READ of size 4 at 0x602000000108 thread T0
+    #0 0x64423cc0ddda in xmlInitSAXParserCtxt /tmp/libxml2_upstream/parserInternals.c:2791:9
+    #1 0x64423cc100a7 in xmlNewSAXParserCtxt /tmp/libxml2_upstream/parserInternals.c:3063:9
+    #2 0x64423cbfd840 in xmlIOParseDTD /tmp/libxml2_upstream/parser.c:11556:12
+    #3 0x64423cbab4bf in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_harness.c:41:19
+    #4 0x64423cad198a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x9698a) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #5 0x64423cad1055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x96055) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #6 0x64423cad2c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x97c58) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #7 0x64423cad30d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x980d6) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #8 0x64423cac06c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x856c2) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #9 0x64423caebb66 in main (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0xb0b66) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #10 0x71177542a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x71177542a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x64423cab4af4 in _start (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x79af4) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+
+0x602000000108 is located 180 bytes to the right of 4-byte region [0x602000000050,0x602000000054)
+allocated by thread T0 here:
+    #0 0x64423cb6f69c in __interceptor_calloc (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x13469c) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #1 0x64423cbab48b in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_harness.c:33:58
+    #2 0x64423cad198a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x9698a) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #3 0x64423cad1055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x96055) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #4 0x64423cad2c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x97c58) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #5 0x64423cad30d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x980d6) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #6 0x64423cac06c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x856c2) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #7 0x64423caebb66 in main (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0xb0b66) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+    #8 0x71177542a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x71177542a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x64423cab4af4 in _start (/tmp/libxml2_fuzz_verify/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x79af4) (BuildId: f92cd916c264c2a09b1e382230c64eb8872663d3)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/parserInternals.c:2791:9 in xmlInitSAXParserCtxt
+Shadow bytes around the buggy address:
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 04 fa fa fa 04 fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c047fff8020: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3115053==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x65,0x6e,0x63,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x34,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"enc\",\012    \"offset\": 0,\012    \"size\": 4,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-d153933fb4e10adbbbbec99d72124e815a03ca4b
+Base64: WwogIHsKICAgICJuYW1lIjogImVuYyIsCiAgICAib2Zmc2V0IjogMCwKICAgICJzaXplIjogNCwKICAgICJzb3VyY2UiOiAiY29uY3JldGVfYmxvY2siCiAgfQpd

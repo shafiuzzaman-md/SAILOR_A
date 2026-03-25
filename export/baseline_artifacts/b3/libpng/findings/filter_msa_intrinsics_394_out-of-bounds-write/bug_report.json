@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_msa_intrinsics.c",
+    "line": 394,
+    "function": "png_read_filter_row_up_msa",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Tail handling writes 64 bytes with ST_UB4 when only 49\u201363 bytes remain (istop&0x20, istop&0x10, and (istop&0xF) set), overflowing the row buffer by up to 15 bytes.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_msa_intrinsics.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal libpng-like types */\ntypedef unsigned char png_byte;\ntypedef struct {\n    size_t rowbytes;\n} png_row_info;\n\n/* Minimal MSA-like vector and intrinsics stubs */\ntypedef struct { unsigned char v[16]; } v16u8;\n\nstatic inline v16u8 vec_zero(void) {\n    v16u8 z; memset(z.v, 0, sizeof(z.v)); return z; }\n\n/* Stub loads: do NOT actually read from memory to avoid OOB reads masking the write */\n#define LD_UB4(p, stride, a, b, c, d) do { \\\n    (a) = vec_zero(); (b) = vec_zero(); (c) = vec_zero(); (d) = vec_zero(); \\\n} while (0)\n#define LD_UB2(p, stride, a, b) do { \\\n    (a) = vec_zero(); (b) = vec_zero(); \\\n} while (0)\nstatic inline v16u8 LD_UB(const png_byte *p) { (void)p; return vec_zero(); }\n\n/* Adds: element-wise add with wrap-around */\nstatic inline v16u8 add2(v16u8 x, v16u8 y) {\n    v16u8 r; for (int i = 0; i < 16; i++) r.v[i] = (png_byte)(x.v[i] + y.v[i]); return r;\n}\n#define ADD4(a0,b0,a1,b1,a2,b2,a3,b3,o0,o1,o2,o3) do { \\\n    (o0) = add2((a0),(b0)); \\\n    (o1) = add2((a1),(b1)); \\\n    (o2) = add2((a2),(b2)); \\\n    (o3) = add2((a3),(b3)); \\\n} while (0)\n#define ADD3(a0,b0,a1,b1,a2,b2,o0,o1,o2) do { \\\n    (o0) = add2((a0),(b0)); \\\n    (o1) = add2((a1),(b1)); \\\n    (o2) = add2((a2),(b2)); \\\n} while (0)\n#define ADD2(a0,b0,a1,b1,o0,o1) do { \\\n    (o0) = add2((a0),(b0)); \\\n    (o1) = add2((a1),(b1)); \\\n} while (0)\n\n/* Stores: actually write to memory to surface the OOB write */\n#define ST_UB4(a,b,c,d,p,stride) do { \\\n    memcpy((p) + 0*(stride), (a).v, 16); \\\n    memcpy((p) + 1*(stride), (b).v, 16); \\\n    memcpy((p) + 2*(stride), (c).v, 16); \\\n    memcpy((p) + 3*(stride), (d).v, 16); \\\n} while (0)\n#define ST_UB2(a,b,p,stride) do { \\\n    memcpy((p) + 0*(stride), (a).v, 16); \\\n    memcpy((p) + 1*(stride), (b).v, 16); \\\n} while (0)\n#define ST_UB(a,p) do { \\\n    memcpy((p), (a).v, 16); \\\n} while (0)\n\n/* Buggy function extracted and minimally adapted from mips/filter_msa_intrinsics.c */\nstatic void png_read_filter_row_up_msa(png_row_info *row_info, png_byte *row, const png_byte *prev_row)\n{\n    size_t i, cnt, cnt16, cnt32;\n    size_t istop = row_info->rowbytes;\n    png_byte *rp = row;\n    const png_byte *pp = prev_row;\n    v16u8 src0, src1, src2, src3, src4, src5, src6, src7;\n\n    for (i = 0; i < (istop >> 6); i++)\n    {\n        LD_UB4(rp, 16, src0, src1, src2, src3);\n        LD_UB4(pp, 16, src4, src5, src6, src7);\n        pp += 64;\n\n        ADD4(src0, src4, src1, src5, src2, src6, src3, src7,\n             src0, src1, src2, src3);\n\n        ST_UB4(src0, src1, src2, src3, rp, 16);\n        rp += 64;\n    }\n\n    if (istop & 0x3F)\n    {\n        cnt32 = istop & 0x20;\n        cnt16 = istop & 0x10;\n        cnt = istop & 0xF;\n\n        if (cnt32)\n        {\n            if (cnt16 && cnt)\n            {\n                /* This path is buggy: it writes 64 bytes even when only 49-63 remain */\n                LD_UB4(rp, 16, src0, src1, src2, src3);\n                LD_UB4(pp, 16, src4, src5, src6, src7);\n\n                ADD4(src0, src4, src1, src5, src2, src6, src3, src7,\n                     src0, src1, src2, src3);\n\n                ST_UB4(src0, src1, src2, src3, rp, 16); /* OOB write when remainder < 64 */\n                rp += 64;\n            }\n            else if (cnt16 || cnt)\n            {\n                LD_UB2(rp, 16, src0, src1);\n                LD_UB2(pp, 16, src4, src5);\n                pp += 32;\n                src2 = LD_UB(rp + 32);\n                src6 = LD_UB(pp);\n\n                ADD3(src0, src4, src1, src5, src2, src6, src0, src1, src2);\n\n                ST_UB2(src0, src1, rp, 16);\n                rp += 32;\n                ST_UB(src2, rp);\n                rp += 16;\n            }\n            else\n            {\n                LD_UB2(rp, 16, src0, src1);\n                LD_UB2(pp, 16, src4, src5);\n\n                ADD2(src0, src4, src1, src5, src0, src1);\n\n                ST_UB2(src0, src1, rp, 16);\n                rp += 32;\n            }\n        }\n        else if (cnt16 && cnt)\n        {\n            LD_UB2(rp, 16, src0, src1);\n            LD_UB2(pp, 16, src4, src5);\n\n            ADD2(src0, src4, src1, src5, src0, src1);\n\n            ST_UB2(src0, src1, rp, 16);\n            rp += 32;\n        }\n        else if (cnt16 || cnt)\n        {\n            /* Not taken in our triggering case; left as no-op-ish to compile */\n            src0 = LD_UB(rp);\n            src1 = LD_UB(pp);\n            ADD2(src0, src1, src0, src1, src0, src1);\n            ST_UB(src0, rp);\n        }\n    }\n}\n\nint main(void)\n{\n    /* Choose a row size that satisfies: (istop & 0x20) && (istop & 0x10) && (istop & 0xF) */\n    /* 49 = 32 + 16 + 1, so remainder is 49 bytes but code will write 64 bytes (overflow by 15). */\n    const size_t rowbytes = 49;\n\n    png_row_info info;\n    info.rowbytes = rowbytes;\n\n    /* Allocate only rowbytes for the destination to make the OOB write detectable. */\n    png_byte *row = (png_byte *)malloc(rowbytes);\n    if (!row) { perror(\"malloc row\"); return 1; }\n    memset(row, 0xA5, rowbytes);\n\n    /* prev_row can be any buffer; allocate 64 to be safe though loads are stubbed. */\n    png_byte *prev = (png_byte *)malloc(64);\n    if (!prev) { perror(\"malloc prev\"); return 1; }\n    memset(prev, 0x5A, 64);\n\n    /* Trigger the buggy tail path */\n    png_read_filter_row_up_msa(&info, row, prev);\n\n    /* If ASan didn't abort (it should), clean up. */\n    free(prev);\n    free(row);\n\n    printf(\"Done (if you see this without ASan abort, the repro didn't trigger).\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8232884407043457,
+      "output": "=================================================================\n==3737077==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x606000000051 at pc 0x5dff383800ae bp 0x7ffd08833690 sp 0x7ffd08832e60\nWRITE of size 16 at 0x606000000051 thread T0\n    #0 0x5dff383800ad in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer+0xa40ad) (BuildId: 16a00da3e04c25f04a901b89879b1289741c4a41)\n    #1 0x5dff383c17b5 in png_read_filter_row_up_msa /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:101:17\n    #2 0x5dff383bce50 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:171:5\n    #3 0x704378c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x704378c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5dff382fd314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer+0x21314) (BuildId: 16a00da3e04c25f04a901b89879b1289741c4a41)\n\n0x606000000051 is located 0 bytes to the right of 49-byte region [0x606000000020,0x606000000051)\nallocated by thread T0 here:\n    #0 0x5dff38380d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer+0xa4d22) (BuildId: 16a00da3e04c25f04a901b89879b1289741c4a41)\n    #1 0x5dff383bcdad in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:161:33\n    #2 0x704378c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x704378c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5dff382fd314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer+0x21314) (BuildId: 16a00da3e04c25f04a901b89879b1289741c4a41)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer+0xa40ad) (BuildId: 16a00da3e04c25f04a901b89879b1289741c4a41) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c0c7fff8000: fa fa fa fa 00 00 00 00 00 00[01]fa fa fa fa fa\n  0x0c0c7fff8010: 00 00 00 00 00 00 00 00 fa fa fa fa fa fa fa fa\n  0x0c0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3737077==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_read_filter_row_up_msa",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:101",
+          "17"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:171",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_394_out-of-bounds-write/reproducer.c:161",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

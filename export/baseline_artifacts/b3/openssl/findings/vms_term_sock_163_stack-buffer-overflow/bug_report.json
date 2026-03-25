@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/vms_term_sock.c",
+    "line": 163,
+    "function": "main",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "After recv, the code writes a NUL terminator at TermBuff[len] without validating len. If recv returns -1 (error), this writes before the buffer; if it returns sizeof(TermBuff) (80), it writes one byte past the end, causing a stack-based out-of-bounds write.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/vms_term_sock.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for stack-buffer-overflow in vms_term_sock.c main\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <strings.h>\n#include <unistd.h>\n#include <errno.h>\n#include <sys/types.h>\n#include <sys/socket.h>\n#include <sys/un.h>\n\n// ---- Stubs and definitions to mimic the original environment ----\n#define TERM_SOCK_CREATE 1\n#define TERM_SOCK_DELETE 2\n#define TERM_SOCK_SUCCESS 1\n#define TERM_SOCK_FAILURE 0\n\nstatic int TerminalSocketPair[2] = { -1, -1 };\n\nstatic void LogMessage(const char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n    vfprintf(stderr, fmt, ap);\n    fprintf(stderr, \"\\n\");\n    va_end(ap);\n}\n\nstatic int OPENSSL_strcasecmp(const char *a, const char *b) {\n    return strcasecmp(a, b);\n}\n\n// Create a socket pair and pre-send exactly 80 bytes so recv() returns 80\nstatic int CreateSocketPair(int domain, int type, int protocol, int sv[2]) {\n    (void)domain; (void)protocol; // unused in this stub\n    // Use AF_UNIX datagram sockets to preserve message boundaries\n    if (socketpair(AF_UNIX, SOCK_DGRAM, 0, sv) == -1) {\n        return -1;\n    }\n    return 0;\n}\n\nint TerminalSocket(int FunctionCode, int *ReturnSocket) {\n    int status;\n\n    switch (FunctionCode) {\n    case TERM_SOCK_CREATE: {\n        status = CreateSocketPair(AF_UNIX, SOCK_DGRAM, 0, TerminalSocketPair);\n        if (status == -1) {\n            LogMessage(\"TerminalSocket: CreateSocketPair() failed: %s\", strerror(errno));\n            if (TerminalSocketPair[0] != -1) close(TerminalSocketPair[0]);\n            if (TerminalSocketPair[1] != -1) close(TerminalSocketPair[1]);\n            TerminalSocketPair[0] = TerminalSocketPair[1] = -1;\n            return TERM_SOCK_FAILURE;\n        }\n\n        // Pre-send exactly 80 bytes so that recv() returns 80\n        char payload[80];\n        memset(payload, 'A', sizeof(payload));\n        ssize_t sent = send(TerminalSocketPair[1], payload, sizeof(payload), 0);\n        if (sent != (ssize_t)sizeof(payload)) {\n            LogMessage(\"Failed to send 80 bytes on socketpair: sent=%zd errno=%s\", sent, strerror(errno));\n        }\n\n        // Return the receiving end\n        *ReturnSocket = TerminalSocketPair[0];\n        return TERM_SOCK_SUCCESS;\n    }\n    case TERM_SOCK_DELETE:\n        if (TerminalSocketPair[0] != -1) close(TerminalSocketPair[0]);\n        if (TerminalSocketPair[1] != -1) close(TerminalSocketPair[1]);\n        TerminalSocketPair[0] = TerminalSocketPair[1] = -1;\n        if (ReturnSocket) *ReturnSocket = -1;\n        return TERM_SOCK_SUCCESS;\n    default:\n        return TERM_SOCK_FAILURE;\n    }\n}\n\n// ---- Vulnerable logic reproduced from apps/lib/vms_term_sock.c (TERM_SOCK_TEST main) ----\nint main(int argc, char *argv[]) {\n    (void)argc; (void)argv;\n    char TermBuff[80];\n    int TermSock, status, len;\n\n    // Initialize to non-\"Q\" so the loop runs once\n    TermBuff[0] = 'X';\n    TermBuff[1] = '\\0';\n\n    LogMessage(\"Enter 'q' or 'Q' to quit ...\");\n    while (OPENSSL_strcasecmp(TermBuff, \"Q\")) {\n        // Create the terminal socket (our stub pre-sends 80 bytes)\n        status = TerminalSocket(TERM_SOCK_CREATE, &TermSock);\n        if (status != TERM_SOCK_SUCCESS)\n            exit(1);\n\n        LogMessage(\"Waiting on terminal I/O ...\");\n        // This recv will return exactly 80, filling TermBuff completely\n        len = recv(TermSock, TermBuff, sizeof(TermBuff), 0);\n\n        // VULNERABILITY: No validation of len. If len == 80, this writes 1 past end\n        TermBuff[len] = '\\0';\n\n        LogMessage(\"Received terminal I/O [%s]\", TermBuff);\n\n        status = TerminalSocket(TERM_SOCK_DELETE, &TermSock);\n        if (status != TERM_SOCK_SUCCESS)\n            exit(1);\n\n        // Not reached if ASan aborts on overflow; otherwise exit cleanly\n        break;\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6213974952697754,
+      "output": "Enter 'q' or 'Q' to quit ...\nWaiting on terminal I/O ...\n=================================================================\n==4140242==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffed38aebb0 at pc 0x5b4a5ec78692 bp 0x7ffed38aeb30 sp 0x7ffed38aeb28\nWRITE of size 1 at 0x7ffed38aebb0 thread T0\n    #0 0x5b4a5ec78691 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102:23\n    #1 0x77273fe2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #2 0x77273fe2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #3 0x5b4a5ebb8334 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer+0x21334) (BuildId: c211f84cfebacab749e3a4a9d185c2fc0542abb8)\n\nAddress 0x7ffed38aebb0 is located in stack of thread T0 at offset 112 in frame\n    #0 0x5b4a5ec7840f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:81\n\n  This frame has 2 object(s):\n    [32, 112) 'TermBuff' (line 83) <== Memory access at offset 112 overflows this variable\n    [144, 148) 'TermSock' (line 84)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102:23 in main\nShadow bytes around the buggy address:\n  0x10005a70dd20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dd30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dd40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dd50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dd60: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00\n=>0x10005a70dd70: 00 00 00 00 00 00[f2]f2 f2 f2 04 f3 00 00 00 00\n  0x10005a70dd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dd90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70dda0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70ddb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10005a70ddc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4140242==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102",
+      "crash_line": 23,
+      "frames": [
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102",
+          "23"
+        ],
+        [
+          "1",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "2",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c",
+          "81"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

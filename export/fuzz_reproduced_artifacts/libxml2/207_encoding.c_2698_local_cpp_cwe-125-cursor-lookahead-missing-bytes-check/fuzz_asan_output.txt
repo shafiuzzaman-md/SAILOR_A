@@ -1,0 +1,74 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 541838588
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x5c3a0d5dbf20, 0x5c3a0d5dbf24), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x5c3a0d5dbf28,0x5c3a0d5dbf68), 
+INFO:        0 files found in /tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/corpus
+INFO:        1 files found in /tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: seed corpus: files: 1 min: 196b max: 196b total: 196b rss: 33Mb
+=================================================================
+==3115347==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000031 at pc 0x5c3a0d24227c bp 0x7ffcfdf5ba60 sp 0x7ffcfdf5ba58
+READ of size 1 at 0x602000000031 thread T0
+    #0 0x5c3a0d24227b in UTF16BEToUTF8 /tmp/libxml2_upstream/encoding.c:2698:30
+    #1 0x5c3a0d2395c4 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:37:11
+    #2 0x5c3a0d15f98a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x9698a) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #3 0x5c3a0d15f055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x96055) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #4 0x5c3a0d160c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x97c58) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #5 0x5c3a0d1610d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x980d6) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #6 0x5c3a0d14e6c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x856c2) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #7 0x5c3a0d179b66 in main (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xb0b66) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #8 0x705e7b22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x705e7b22a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5c3a0d142af4 in _start (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x79af4) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+
+0x602000000031 is located 0 bytes to the right of 1-byte region [0x602000000030,0x602000000031)
+allocated by thread T0 here:
+    #0 0x5c3a0d1fd4b2 in malloc (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1344b2) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #1 0x5c3a0d2394f7 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:26:42
+    #2 0x5c3a0d15f98a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x9698a) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #3 0x5c3a0d15f055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x96055) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #4 0x5c3a0d160c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x97c58) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #5 0x5c3a0d1610d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x980d6) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #6 0x5c3a0d14e6c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x856c2) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #7 0x5c3a0d179b66 in main (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xb0b66) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+    #8 0x705e7b22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x705e7b22a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5c3a0d142af4 in _start (/tmp/libxml2_fuzz_verify/207_encoding.c_2698_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x79af4) (BuildId: c996afbd3663afd45ee239aa89eaa1e1af320c5f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/encoding.c:2698:30 in UTF16BEToUTF8
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa[01]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3115347==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x69,0x6e,0x5f,0x62,0x79,0x74,0x65,0x73,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x31,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0x2c,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x6f,0x75,0x74,0x5f,0x62,0x79,0x74,0x65,0x73,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x31,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x31,0x36,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"in_bytes\",\012    \"offset\": 0,\012    \"size\": 1,\012    \"source\": \"concrete_block\"\012  },\012  {\012    \"name\": \"out_bytes\",\012    \"offset\": 1,\012    \"size\": 16,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-d0016333ae5d2e4fe46a4ecba2b235a62a0c128b
+Base64: WwogIHsKICAgICJuYW1lIjogImluX2J5dGVzIiwKICAgICJvZmZzZXQiOiAwLAogICAgInNpemUiOiAxLAogICAgInNvdXJjZSI6ICJjb25jcmV0ZV9ibG9jayIKICB9LAogIHsKICAgICJuYW1lIjogIm91dF9ieXRlcyIsCiAgICAib2Zmc2V0IjogMSwKICAgICJzaXplIjogMTYsCiAgICAic291cmNlIjogImNvbmNyZXRlX2Jsb2NrIgogIH0KXQ==

@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-arm.c",
+    "line": 1810,
+    "function": "bfd_arm_allocate_interworking_sections",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "The result of bfd_alloc(...) is not checked for NULL before assigning to s->contents. If allocation fails, s->contents remains NULL but later code writes into s->contents (e.g., bfd_put_16/32 at lines 1505-1510 and 1526-1529), leading to a NULL pointer dereference.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-arm.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdbool.h>\n#include <assert.h>\n\n/* Minimal stand-ins for BFD types */\ntypedef unsigned char bfd_byte;\ntypedef uintptr_t bfd_vma;\n\ntypedef struct asection asection;\ntypedef struct bfd bfd;\n\nstruct asection {\n    const char *name;\n    bfd_byte *contents;\n    size_t size;\n    int alloced;\n    bfd_vma vma;\n    asection *next;\n    bfd *owner;\n};\n\nstruct bfd {\n    asection *sections;\n};\n\nstruct coff_arm_link_hash_table {\n    size_t arm_glue_size;\n    size_t thumb_glue_size;\n    bfd *bfd_of_glue_owner;\n};\n\nstruct bfd_link_info {\n    void *callbacks; /* unused here */\n    void *hash;      /* we store our coff_arm_link_hash_table* here */\n};\n\n/* Names used by coff-arm.c for interworking glue sections */\n#define ARM2THUMB_GLUE_SECTION_NAME \".glue_7\"\n#define THUMB2ARM_GLUE_SECTION_NAME \".glue_7t\"\n\n/* Emulate BFD_ASSERT */\n#define BFD_ASSERT(x) assert(x)\n\n/* Minimal helpers mimicking BFD API used by the vulnerable function */\nstatic asection *\nbfd_get_section_by_name(bfd *abfd, const char *name)\n{\n    for (asection *s = abfd->sections; s; s = s->next) {\n        if (s->name && strcmp(s->name, name) == 0) return s;\n    }\n    return NULL;\n}\n\n/* Stub bfd_alloc that simulates allocation failure by returning NULL */\nstatic bfd_byte *\nbfd_alloc(bfd *abfd, size_t size)\n{\n    (void)abfd; (void)size;\n    return NULL; /* Force failure to trigger the bug */\n}\n\n/* coff_arm_hash_table accessor used by bfd_arm_allocate_interworking_sections */\nstatic struct coff_arm_link_hash_table *\ncoff_arm_hash_table(struct bfd_link_info *info)\n{\n    return (struct coff_arm_link_hash_table *)info->hash;\n}\n\n/* Vulnerable function copied/abstracted from bfd/coff-arm.c */\nbool bfd_arm_allocate_interworking_sections(struct bfd_link_info *info)\n{\n    asection *s;\n    bfd_byte *foo;\n    struct coff_arm_link_hash_table *globals;\n\n    globals = coff_arm_hash_table(info);\n    BFD_ASSERT(globals != NULL);\n\n    if (globals->arm_glue_size != 0) {\n        BFD_ASSERT(globals->bfd_of_glue_owner != NULL);\n        s = bfd_get_section_by_name(globals->bfd_of_glue_owner, ARM2THUMB_GLUE_SECTION_NAME);\n        BFD_ASSERT(s != NULL);\n        foo = bfd_alloc(globals->bfd_of_glue_owner, globals->arm_glue_size); /* May return NULL */\n        s->size = globals->arm_glue_size;\n        s->contents = foo; /* Assigned without NULL check */\n        s->alloced = 1;\n    }\n\n    if (globals->thumb_glue_size != 0) {\n        BFD_ASSERT(globals->bfd_of_glue_owner != NULL);\n        s = bfd_get_section_by_name(globals->bfd_of_glue_owner, THUMB2ARM_GLUE_SECTION_NAME);\n        BFD_ASSERT(s != NULL);\n        foo = bfd_alloc(globals->bfd_of_glue_owner, globals->thumb_glue_size);\n        s->size = globals->thumb_glue_size;\n        s->contents = foo;\n        s->alloced = 1;\n    }\n\n    return true;\n}\n\n/* Minimal bfd_put_32 that writes into target buffer (will NULL-deref if buffer is NULL) */\nstatic inline void bfd_put_32(bfd *abfd, uint32_t v, bfd_byte *where)\n{\n    (void)abfd;\n    /* Little-endian write as used by typical ARM targets */\n    where[0] = (bfd_byte)(v & 0xFF);\n    where[1] = (bfd_byte)((v >> 8) & 0xFF);\n    where[2] = (bfd_byte)((v >> 16) & 0xFF);\n    where[3] = (bfd_byte)((v >> 24) & 0xFF);\n}\n\n/* Simulate later code paths in coff-arm.c that write into s->contents */\nstatic void simulate_glue_emission(bfd *abfd)\n{\n    asection *s = bfd_get_section_by_name(abfd, ARM2THUMB_GLUE_SECTION_NAME);\n    BFD_ASSERT(s != NULL);\n    /* This mimics the glue emission using bfd_put_16/32 in coff-arm.c */\n    bfd_put_32(abfd, 0xE12FFF1E, s->contents); /* Will NULL-deref if contents is NULL */\n}\n\nint main(void)\n{\n    /* Build a fake BFD with the expected glue sections present */\n    bfd *owner = (bfd *)calloc(1, sizeof(bfd));\n    if (!owner) return 1;\n\n    asection *arm2thumb = (asection *)calloc(1, sizeof(asection));\n    if (!arm2thumb) return 1;\n    arm2thumb->name = ARM2THUMB_GLUE_SECTION_NAME;\n    arm2thumb->owner = owner;\n    arm2thumb->next = NULL;\n    owner->sections = arm2thumb;\n\n    /* Prepare the globals/hash table with a non-zero glue size */\n    struct coff_arm_link_hash_table globals;\n    memset(&globals, 0, sizeof(globals));\n    globals.arm_glue_size = 16;   /* Non-zero to enter allocation path */\n    globals.thumb_glue_size = 0;  /* Not used in this reproducer */\n    globals.bfd_of_glue_owner = owner;\n\n    /* Link info pointing to our globals */\n    struct bfd_link_info info;\n    memset(&info, 0, sizeof(info));\n    info.hash = &globals;\n\n    /* This will set s->contents = NULL due to our failing bfd_alloc */\n    (void)bfd_arm_allocate_interworking_sections(&info);\n\n    /* Later code writes into s->contents, causing a NULL pointer dereference */\n    simulate_glue_emission(owner);\n\n    /* Should not reach here */\n    printf(\"If you see this, the bug did not trigger.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7963929176330566,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3587273==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x650935d5a8ee bp 0x7fff0e307940 sp 0x7fff0e3078e0 T0)\n==3587273==The signal is caused by a WRITE memory access.\n==3587273==Hint: address points to the zero page.\n    #0 0x650935d5a8ee in bfd_put_32 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110:14\n    #1 0x650935d5a886 in simulate_glue_emission /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:122:5\n    #2 0x650935d5a72f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:154:5\n    #3 0x7d2a40e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7d2a40e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x650935c9a314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer+0x21314) (BuildId: 353d5629678059fba5cd2174d8afa618ddccdb83)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110:14 in bfd_put_32\n==3587273==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "bfd_put_32",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110",
+      "crash_line": 14,
+      "frames": [
+        [
+          "0",
+          "bfd_put_32",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:110",
+          "14"
+        ],
+        [
+          "1",
+          "simulate_glue_emission",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:122",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1810_null-pointer-dereference/reproducer.c:154",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

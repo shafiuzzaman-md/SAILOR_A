@@ -1,0 +1,94 @@
+{
+  "xtea.c": {
+    "2": {
+      "orig_file": "xtea.c",
+      "orig_line": 31,
+      "code": "#include <string.h>"
+    },
+    "11": {
+      "orig_file": "xtea.c",
+      "orig_line": 214,
+      "code": "static void xtea_crypt(AVXTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+    },
+    "12": {
+      "orig_file": "xtea.c",
+      "orig_line": 215,
+      "code": "uint8_t *iv, int decrypt,"
+    },
+    "13": {
+      "orig_file": "xtea.c",
+      "orig_line": 216,
+      "code": "void (*crypt)(AVXTEA *, uint8_t *, const uint8_t *, int, uint8_t *))"
+    },
+    "14": {
+      "orig_file": "xtea.c",
+      "orig_line": 217,
+      "code": "{"
+    },
+    "15": {
+      "orig_file": "xtea.c",
+      "orig_line": 218,
+      "code": "int i;"
+    },
+    "17": {
+      "orig_file": "xtea.c",
+      "orig_line": 221,
+      "code": "while (count--) {"
+    },
+    "18": {
+      "orig_file": "xtea.c",
+      "orig_line": 229,
+      "code": "if (iv) {"
+    },
+    "19": {
+      "orig_file": "xtea.c",
+      "orig_line": 230,
+      "code": "for (i = 0; i < 8; i++)"
+    },
+    "20": {
+      "orig_file": "xtea.c",
+      "orig_line": 231,
+      "code": "dst[i] = src[i] ^ iv[i];"
+    },
+    "25": {
+      "orig_file": "xtea.c",
+      "orig_line": 234,
+      "code": "} else {"
+    },
+    "28": {
+      "orig_file": "xtea.c",
+      "orig_line": 236,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "xtea.c",
+      "orig_line": 236,
+      "code": "}"
+    },
+    "32": {
+      "orig_file": "xtea.c",
+      "orig_line": 236,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "xtea.c",
+      "orig_line": 243,
+      "code": "void av_xtea_crypt(AVXTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+    },
+    "36": {
+      "orig_file": "xtea.c",
+      "orig_line": 244,
+      "code": "uint8_t *iv, int decrypt)"
+    },
+    "37": {
+      "orig_file": "xtea.c",
+      "orig_line": 245,
+      "code": "{"
+    },
+    "39": {
+      "orig_file": "xtea.c",
+      "orig_line": 247,
+      "code": "}"
+    }
+  }
+}

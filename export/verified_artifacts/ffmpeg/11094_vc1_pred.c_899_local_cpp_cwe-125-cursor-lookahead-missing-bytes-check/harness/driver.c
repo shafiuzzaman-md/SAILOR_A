@@ -1,0 +1,41 @@
+#include "harness_types.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <klee/klee.h>
+
+int main() {
+    VC1Context *v = (VC1Context *)calloc(1, sizeof(VC1Context));
+    if (!v) return 0;
+
+    // Wire up picture pointers to internal storage arrays
+    v->s.cur_pic.motion_val[0] = v->s.cur_mv0;
+    v->s.cur_pic.motion_val[1] = v->s.cur_mv1;
+    v->s.next_pic.motion_val[0] = v->s.next_mv0;
+    v->s.next_pic.motion_val[1] = v->s.next_mv1;
+    v->s.cur_pic.mb_type = v->s.mb_type_storage;
+    v->s.next_pic.mb_type = v->s.mb_type_storage;
+
+    // Set other innocuous fields
+    v->s.quarter_sample = 0;
+    v->bfraction = 0;
+
+    // Make indices symbolic to let KLEE explore OOB on motion_val[1]
+    int idx0, off;
+    klee_make_symbolic(&idx0, sizeof(idx0), "block_index0");
+    klee_make_symbolic(&off, sizeof(off), "blocks_off");
+
+    // Optionally bound them to a small neighborhood to help exploration
+    klee_assume(idx0 >= -4 & idx0 <= 12);
+    klee_assume(off >= -4 & off <= 12);
+
+    v->s.block_index[0] = idx0;
+    v->blocks_off = off;
+
+    // Encourage the OOB path so KLEE hits the vulnerable read
+    int sum = idx0 + off;
+    klee_assume(sum < 0 || sum >= MV_SIZE);
+
+    // Call entry — pass-through to vulnerable function
+    entry_func(v, 0, NULL, NULL, 0, NULL);
+    return 0;
+}

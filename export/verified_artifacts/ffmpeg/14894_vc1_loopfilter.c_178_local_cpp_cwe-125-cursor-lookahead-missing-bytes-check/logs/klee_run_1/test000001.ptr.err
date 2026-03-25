@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: vc1_loopfilter.c
+Line: 31
+assembly.ll line: 150
+State: 1
+Stack: 
+	#000000150 in ff_vc1_p_overlap_filter(139040716910592) at vc1_loopfilter.c:31
+	#100000172 in harness_entry(139040716910592) at vc1_loopfilter.c:40
+	#200000085 in main() at driver.c:28
+Info: 
+	address: 138748659134463
+	next: object at 138467338776576 of size 4
+		MO22[4] allocated at main():  %4 = alloca i32, align 4

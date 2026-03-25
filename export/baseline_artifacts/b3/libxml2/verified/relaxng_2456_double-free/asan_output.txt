@@ -1,0 +1,27 @@
+=================================================================
+==4080449==ERROR: AddressSanitizer: attempting double-free on 0x602000000010 in thread T0:
+    #0 0x5992bf7d1a76 in free (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+    #1 0x5992bf80de3e in main /app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer.c:166:5
+    #2 0x75a42222a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x75a42222a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5992bf74e314 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+
+0x602000000010 is located 0 bytes inside of 16-byte region [0x602000000010,0x602000000020)
+freed by thread T0 here:
+    #0 0x5992bf7d1a76 in free (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+    #1 0x5992bf80e711 in xmlSchemaFreeFacet /app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer.c:55:9
+    #2 0x5992bf80e5a2 in xmlRelaxNGSchemaFacetCheck /app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer.c:134:5
+    #3 0x5992bf80de21 in main /app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer.c:157:15
+    #4 0x75a42222a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x75a42222a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5992bf74e314 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+
+previously allocated by thread T0 here:
+    #0 0x5992bf7d1d22 in __interceptor_malloc (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0xa4d22) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+    #1 0x5992bf80dd79 in main /app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer.c:143:38
+    #2 0x75a42222a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x75a42222a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5992bf74e314 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0x21314) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93)
+
+SUMMARY: AddressSanitizer: double-free (/app/export/baseline_artifacts/b3/libxml2/verified/relaxng_2456_double-free/reproducer+0xa4a76) (BuildId: 20e301b2ad00f33ddab142861f77334e8e2dbb93) in free
+==4080449==ABORTING

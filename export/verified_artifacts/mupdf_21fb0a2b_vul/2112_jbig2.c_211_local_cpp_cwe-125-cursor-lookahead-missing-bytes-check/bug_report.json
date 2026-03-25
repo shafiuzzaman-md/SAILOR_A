@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2.c",
+        "original_line": 211,
+        "function": "jbig2_get_uint32",
+        "entry_point": "jbig2_data_in",
+        "spine": [
+            "jbig2_data_in",
+            "jbig2_get_uint32"
+        ],
+        "original_context": "206: /* coverity[ -tainted_data_return ] */\n207: /* coverity[ -tainted_data_argument : arg-0 ] */\n208: uint32_t\n209: jbig2_get_uint32(const byte *bptr)\n210: {\n211:     return ((uint32_t) get_uint16(bptr) << 16) | get_uint16(bptr + 2);\n212: }\n213: \n214: static size_t\n215: jbig2_find_buffer_size(size_t desired)\n216: {"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2.c",
+        "harness_line": 18,
+        "original_file": "jbig2.c",
+        "original_line": 211,
+        "original_code": "return ((uint32_t) get_uint16(bptr) << 16) | get_uint16(bptr + 2);",
+        "original_context": "    208: uint32_t\n    209: jbig2_get_uint32(const byte *bptr)\n    210: {\n>>> 211:     return ((uint32_t) get_uint16(bptr) << 16) | get_uint16(bptr + 2);\n    212: }\n    213: \n    214: static size_t",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jbig2.c\nLine: 18\nassembly.ll line: 73\nState: 1\nStack: \n\t#000000073 in jbig2_get_uint32(139687864987648) at jbig2.c:18\n\t#100000097 in jbig2_data_in(139705044856832, 139687864987648) at jbig2.c:27\n\t#200000032 in main() at driver.c:21\nInfo: \n\taddress: 139687864987651\n\tnext: object at 139408692113408 of size 4\n\t\tMO18[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "data_bytes",
+            "size": 3,
+            "data": "b'\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_data_in",
+        "crash_file": "thirdparty/jbig2dec/jbig2.c",
+        "crash_line": 245,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==10736==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000038 at pc 0x557b9f4250d1 bp 0x7ffc4db14290 sp 0x7ffc4db14280\nREAD of size 8 at 0x502000000038 thread T0\n    #0 0x557b9f4250d0 in jbig2_data_in thirdparty/jbig2dec/jbig2.c:245\n    #1 0x557b9f422acc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2112_jbig2.c_211_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:22\n    #2 0x7f1641f85d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f1641f85e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x557b9f422994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2112_jbig2.c_211_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xa994)\n\n0x502000000038 is located 5 bytes to the right of 3-byte region [0x502000000030,0x502000000033)\nallocated by thread T0 here:\n    #0 0x7f164233c887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x557b9f422a8b in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2112_jbig2.c_211_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:16\n    #2 0x7f1641f85d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2.c:245 in jbig2_data_in\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 03[fa]fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2112_jbig2.c_211_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2.c",
+            "harness_line": 18,
+            "original_file": "jbig2.c",
+            "original_line": 211,
+            "error_type": "ptr",
+            "crash_function": "jbig2_get_uint32",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2112_jbig2.c_211_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_data_in",
+            "crash_file": "thirdparty/jbig2dec/jbig2.c",
+            "crash_line": 245
+        }
+    ]
+}

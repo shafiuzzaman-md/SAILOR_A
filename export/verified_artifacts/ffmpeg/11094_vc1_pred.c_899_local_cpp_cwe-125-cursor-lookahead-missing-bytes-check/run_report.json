@@ -1,0 +1,123 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 90682,
+    "tokens_prompt": 78565,
+    "tokens_completion": 12117,
+    "turns": 9,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "vc1_pred.c",
+    "line": 899,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/11094_vc1_pred.c_899_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "vc1_pred.c",
+  "vul_line": "899",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 2,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "vc1_pred.c",
+      "original_line": 899,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "894:     int mb_pos = s->mb_x + s->mb_y * s->mb_stride;\n895: \n896:     if (v->bmvtype == BMV_TYPE_DIRECT) {\n897:         int total_opp, k, f;\n898:         if (s->next_pic.mb_type[mb_pos + v->mb_off] != MB_TYPE_INTRA) {\n899:             s->mv[0][0][0] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][0],\n900:                                       v->bfraction, 0, s->quarter_sample);\n901:             s->mv[0][0][1] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][1],\n902:                                       v->bfraction, 0, s->quarter_sample);\n903:             s->mv[1][0][0] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][0],\n904:                                       v->bfraction, 1, s->quarter_sample);"
+    },
+    "klee_crash": {
+      "harness_file": "vc1_pred.c",
+      "harness_line": 64,
+      "original_file": "vc1_pred.c",
+      "original_line": 899,
+      "original_code": "s->mv[0][0][0] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][0],",
+      "original_context": "    896:     if (v->bmvtype == BMV_TYPE_DIRECT) {\n    897:         int total_opp, k, f;\n    898:         if (s->next_pic.mb_type[mb_pos + v->mb_off] != MB_TYPE_INTRA) {\n>>> 899:             s->mv[0][0][0] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][0],\n    900:                                       v->bfraction, 0, s->quarter_sample);\n    901:             s->mv[0][0][1] = scale_mv(s->next_pic.motion_val[1][s->block_index[0] + v->blocks_off][1],\n    902:                                       v->bfraction, 0, s->quarter_sample);",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: vc1_pred.c\nLine: 64\nassembly.ll line: 216\nState: 3\nStack: \n\t#000000216 in ff_vc1_pred_b_mv_intfi(139773905047552, 0, 0, 0, 0, 0) at vc1_pred.c:64\n\t#100000287 in entry_func(139773905047552, 0, 0, 0, 0, 0) at vc1_pred.c:73\n\t#200000157 in main() at driver.c:39\nInfo: \n\taddress: (Add w64 139773905047736\n          (Mul w64 4\n                   (SExt w64 (Add w32 (ReadLSB w32 0 block_index0)\n                                      (ReadLSB w32 0 blocks_off)"
+    },
+    "concrete_inputs": [
+      {
+        "name": "block_index0",
+        "size": 4,
+        "data": "b'\\x0c\\x00\\x00\\x00'"
+      },
+      {
+        "name": "blocks_off",
+        "size": 4,
+        "data": "b'\\x0c\\x00\\x00\\x00'"
+      },
+      {
+        "name": "block_index0",
+        "size": 4,
+        "data": "b'\\x0c\\x00\\x00\\x00'"
+      },
+      {
+        "name": "blocks_off",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "scale_mv_ret",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11094_vc1_pred.c_899_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "vc1_pred.c",
+        "harness_line": 64,
+        "original_file": "vc1_pred.c",
+        "original_line": 899,
+        "error_type": "ptr",
+        "crash_function": "ff_vc1_pred_b_mv_intfi",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11094_vc1_pred.c_899_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      },
+      {
+        "harness_file": "vc1_pred.c",
+        "harness_line": 67,
+        "original_file": "vc1_pred.c",
+        "original_line": 887,
+        "error_type": "assert",
+        "crash_function": "ff_vc1_pred_b_mv_intfi",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11094_vc1_pred.c_899_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

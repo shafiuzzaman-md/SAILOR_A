@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 116,
+    "function": "TIFFXYZToRGB",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "Index i is computed by dividing by cielab->gstep. If gstep is 0 (e.g., when display parameters yield zero step), this is a floating-point divide-by-zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE 1\n#include <stdio.h>\n#include <stdint.h>\n#include <string.h>\n#include <math.h>\n#include <fenv.h>\n\n/* Use libtiff's internal color conversion API */\n#include \"libtiff/tif_color.h\"\n\n/* Prototypes (normally provided by tif_color.h, but redeclare to be explicit) */\nextern int TIFFCIELabToRGBInit(TIFFCIELabToRGB *cielab, const TIFFDisplay *display, float *refWhite);\nextern void TIFFXYZToRGB(TIFFCIELabToRGB *cielab, float X, float Y, float Z, uint32_t *r, uint32_t *g, uint32_t *b);\n\nint main(void)\n{\n    /* Enable floating-point divide-by-zero exceptions so the bug is observable as SIGFPE */\n#ifdef FE_DIVBYZERO\n    feenableexcept(FE_DIVBYZERO);\n#endif\n\n    TIFFDisplay display;\n    memset(&display, 0, sizeof(display));\n\n    /* Identity matrix: pass XYZ through */\n    display.d_mat[0][0] = 1.0f; display.d_mat[0][1] = 0.0f; display.d_mat[0][2] = 0.0f;\n    display.d_mat[1][0] = 0.0f; display.d_mat[1][1] = 1.0f; display.d_mat[1][2] = 0.0f;\n    display.d_mat[2][0] = 0.0f; display.d_mat[2][1] = 0.0f; display.d_mat[2][2] = 1.0f;\n\n    /* Set ranges so that:\n     *  - Red has a non-zero step (to get past the first division)\n     *  - Green has zero step: d_YCG == d_Y0G -> gstep = (d_YCG - d_Y0G)/range = 0\n     *  - Blue has a non-zero step (not strictly needed)\n     */\n    display.d_Y0R = 0.0f; display.d_YCR = 1.0f;  /* rstep > 0 */\n    display.d_Y0G = 0.0f; display.d_YCG = 0.0f;  /* gstep == 0 triggers divide-by-zero */\n    display.d_Y0B = 0.0f; display.d_YCB = 1.0f;  /* bstep > 0 */\n\n    /* Output value ranges (clip limits) */\n    display.d_Vrwr = 255u; display.d_Vrwg = 255u; display.d_Vrwb = 255u;\n\n    /* Gammas must be non-zero to avoid earlier division-by-zero in init */\n    display.d_gammaR = 1.0f;\n    display.d_gammaG = 1.0f;\n    display.d_gammaB = 1.0f;\n\n    TIFFCIELabToRGB state;\n    float refWhite[3] = { 1.0f, 1.0f, 1.0f };\n\n    if (TIFFCIELabToRGBInit(&state, &display, refWhite) != 0) {\n        fprintf(stderr, \"Init OK. Triggering TIFFXYZToRGB...\\n\");\n    } else {\n        fprintf(stderr, \"Init failed (unexpected)\\n\");\n        return 1;\n    }\n\n    uint32_t r = 0, g = 0, b = 0;\n\n    /* Any inputs are fine; division by zero occurs when computing green index */\n    float X = 0.5f, Y = 0.5f, Z = 0.5f;\n\n    /* This call will perform: i = (Yg - d_Y0G) / gstep; with gstep == 0 -> FP divide-by-zero */\n    TIFFXYZToRGB(&state, X, Y, Z, &r, &g, &b);\n\n    /* If we reached here (e.g., FP exceptions masked), print results */\n    printf(\"RGB: %u %u %u\\n\", r, g, b);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_116_divide-by-zero/reproducer.c:9:10: fatal error: 'libtiff/tif_color.h' file not found\n#include \"libtiff/tif_color.h\"\n         ^~~~~~~~~~~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

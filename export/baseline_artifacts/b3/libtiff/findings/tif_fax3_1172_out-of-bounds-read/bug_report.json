@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_fax3.c",
+    "line": 1172,
+    "function": "Fax3Encode2DRow",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "finddiff2(rp, b1, bits, PIXEL(rp, b1)) evaluates PIXEL(rp, b1) unconditionally due to the macro definition, even when b1 == bits. This causes PIXEL to read rp[b1 >> 3], which is one byte past the end of the row buffer when bits is a multiple of 8. b1 can legitimately equal bits (e.g., a reference line of uniform color makes finddiff return bits), leading to an OOB read.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_fax3.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <tiffio.h>\n\nint main(void) {\n    /* Create a minimal 1-bit image whose width is a multiple of 8 so that\n     * b1 can legitimately become equal to bits. */\n    const uint32_t width = 8;   /* multiple of 8 to hit the rp[b1 >> 3] + 1 byte */\n    const uint32_t height = 1;  /* single row is enough for Group 4 (2D for all rows) */\n\n    TIFF *tif = TIFFOpen(\"repro_fax4.tif\", \"w\");\n    if (!tif) {\n        fprintf(stderr, \"Failed to open output TIFF file\\n\");\n        return 1;\n    }\n\n    /* Set up a CCITT Group 4 (T.6) encoder. Group 4 always uses 2D encoding,\n     * so the first encoded row will use a reference line (rp) that is all white. */\n    if (!TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width) ||\n        !TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height) ||\n        !TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 1) ||\n        !TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1) ||\n        !TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_CCITTFAX4) ||\n        !TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISWHITE) ||\n        !TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, 1) ||\n        !TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG) ||\n        !TIFFSetField(tif, TIFFTAG_FILLORDER, FILLORDER_MSB2LSB)) {\n        fprintf(stderr, \"Failed to set required TIFF tags\\n\");\n        TIFFClose(tif);\n        return 1;\n    }\n\n    const tsize_t scanlineSize = TIFFScanlineSize(tif);\n    unsigned char *row = (unsigned char *)malloc((size_t)scanlineSize);\n    if (!row) {\n        fprintf(stderr, \"malloc failed\\n\");\n        TIFFClose(tif);\n        return 1;\n    }\n\n    /* All-white scanline: MINISWHITE means 0-bit is white. The reference line (rp)\n     * used by the encoder for the first row is also all white. With width == 8,\n     * finddiff(rp, 0, bits, 0) returns bits (8), so b1 == bits. */\n    memset(row, 0x00, (size_t)scanlineSize);\n\n    /* This call triggers the vulnerable path inside Fax3Encode2DRow() used by\n     * the Group 4 encoder. */\n    if (TIFFWriteScanline(tif, row, 0, 0) < 0) {\n        fprintf(stderr, \"TIFFWriteScanline failed\\n\");\n    }\n\n    free(row);\n    TIFFClose(tif);\n\n    fprintf(stderr, \"Wrote repro_fax4.tif. If linked against a vulnerable libtiff,\\n\");\n    fprintf(stderr, \"this should trigger an ASan out-of-bounds read in Fax3Encode2DRow.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_fax3_1172_out-of-bounds-read/reproducer.c:4:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

@@ -1,0 +1,85 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2197120484
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x55ef20979e00, 0x55ef20979e03), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x55ef20979e08,0x55ef20979e38), 
+INFO:        4 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 4 min: 8b max: 202b total: 234b rss: 32Mb
+=================================================================
+==3358235==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000000238 at pc 0x55ef2053b0a0 bp 0x7ffc161d2360 sp 0x7ffc161d2358
+READ of size 8 at 0x603000000238 thread T0
+    #0 0x55ef2053b09f in _bfd_cache_close_unlocked /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:598:11
+    #1 0x55ef2053b130 in bfd_cache_close /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:630:17
+    #2 0x55ef20539b42 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:39:11
+    #3 0x55ef20462523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd5523) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #4 0x55ef20461c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd4c79) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #5 0x55ef204638e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd68e8) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #6 0x55ef20463dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #7 0x55ef20452122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xc5122) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #8 0x55ef2047be12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xeee12) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #9 0x7fce67bdcd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x7fce67bdce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #11 0x55ef20446b64 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xb9b64) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+
+0x603000000238 is located 0 bytes to the right of 24-byte region [0x603000000220,0x603000000238)
+freed by thread T0 here:
+    #0 0x55ef204fe8f2 in __interceptor_free (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x1718f2) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #1 0x55ef20539b36 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:36:5
+    #2 0x55ef20462523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd5523) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #3 0x55ef20461c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd4c79) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #4 0x55ef204638e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd68e8) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #5 0x55ef20463dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #6 0x55ef20452122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xc5122) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #7 0x55ef2047be12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xeee12) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #8 0x7fce67bdcd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+previously allocated by thread T0 here:
+    #0 0x55ef204fed88 in __interceptor_calloc (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x171d88) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #1 0x55ef20539a3e in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:23:24
+    #2 0x55ef20462523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd5523) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #3 0x55ef20461c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd4c79) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #4 0x55ef204638e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd68e8) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #5 0x55ef20463dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #6 0x55ef20452122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xc5122) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #7 0x55ef2047be12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/4190_cache.c_597_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xeee12) (BuildId: d431a3b830bcd2ba4403ac5ceee50681e2003a3d)
+    #8 0x7fce67bdcd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/cache.c:598:11 in _bfd_cache_close_unlocked
+Shadow bytes around the buggy address:
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+  0x0c067fff8010: 03 fa fa fa 00 00 00 00 fa fa 00 00 00 fa fa fa
+  0x0c067fff8020: 00 00 00 00 fa fa 00 00 00 00 fa fa fd fd fd fd
+  0x0c067fff8030: fa fa fd fd fd fd fa fa fd fd fd fa fa fa 00 00
+=>0x0c067fff8040: 00 fa fa fa fd fd fd[fa]fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3358235==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-e129f27c5103bc5cc44bcdf0a15e160d445066ff
+Base64: AAAAAAAAAAAAAAAAAAAAAA==

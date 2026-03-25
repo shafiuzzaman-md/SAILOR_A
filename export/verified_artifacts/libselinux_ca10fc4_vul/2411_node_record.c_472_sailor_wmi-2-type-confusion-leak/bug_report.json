@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "node",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "sepol_node_get_mask_bytes",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+            "crash_line": 464
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "sepol_node_get_mask_bytes",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+        "crash_line": 464,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==5368==ERROR: AddressSanitizer: heap-use-after-free on address 0x504000000028 at pc 0x56232af0541b bp 0x7ffcdce29ab0 sp 0x7ffcdce29aa0\nREAD of size 8 at 0x504000000028 thread T0\n    #0 0x56232af0541a in sepol_node_get_mask_bytes /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:464\n    #1 0x56232af0193e in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2411_node_record.c_472_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:46\n    #2 0x7f13b0885d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f13b0885e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56232af01484 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2411_node_record.c_472_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x3484)\n\n0x504000000028 is located 24 bytes inside of 48-byte region [0x504000000010,0x504000000040)\nfreed by thread T0 here:\n    #0 0x7f13b0c3c537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x56232af017e8 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2411_node_record.c_472_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:29\n    #2 0x7f13b0885d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7f13b0c3c887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x56232af015fa in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2411_node_record.c_472_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:10\n    #2 0x7f13b0885d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:464 in sepol_node_get_mask_bytes\nShadow bytes around the buggy address:\n  0x0a087fff7fb0: 00 00 00"
+    }
+}

@@ -1,0 +1,44 @@
+{
+  "atrac3plusdsp.c": {
+    "36": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 600,
+      "code": "void ff_atrac3p_ipqf(AVTXContext *dct_ctx, av_tx_fn dct_fn,"
+    },
+    "37": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 601,
+      "code": "Atrac3pIPQFChannelCtx *hist, const float *in, float *out)"
+    },
+    "38": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 602,
+      "code": "{"
+    },
+    "40": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 607,
+      "code": "memset(out, 0, ATRAC3P_FRAME_SAMPLES * sizeof(*out));"
+    },
+    "44": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 621,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 601,
+      "code": "Atrac3pIPQFChannelCtx *hist, const float *in, float *out)"
+    },
+    "49": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 602,
+      "code": "{"
+    },
+    "52": {
+      "orig_file": "atrac3plusdsp.c",
+      "orig_line": 621,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+clang -fsanitize=address -g -O0 export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer.c -I /tmp/libxml2_upstream/include -I /tmp/libxml2_upstream /tmp/libxml2_upstream/.libs/libxml2.a -lm -lz -lpthread -ldl -lm -ldl -lpthread -lz -o export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer

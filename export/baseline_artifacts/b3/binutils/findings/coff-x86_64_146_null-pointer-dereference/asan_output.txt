@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3609780==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x557cf06abf16 bp 0x7ffcf036d860 sp 0x7ffcf036d7b0 T0)
+==3609780==The signal is caused by a WRITE memory access.
+==3609780==Hint: address points to the zero page.
+    #0 0x557cf06abf16 in coff_amd64_reloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-x86_64_146_null-pointer-dereference/reproducer.c:127:26
+    #1 0x557cf06ac342 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-x86_64_146_null-pointer-dereference/reproducer.c:158:30
+    #2 0x76c74802a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x76c74802a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x557cf05ec304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-x86_64_146_null-pointer-dereference/reproducer+0x21304) (BuildId: 31d48aaf1a824704403b729788f783d1e7ad3765)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-x86_64_146_null-pointer-dereference/reproducer.c:127:26 in coff_amd64_reloc
+==3609780==ABORTING

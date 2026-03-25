@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "pngrutil.c",
+    "line": 4911,
+    "function": "png_read_reinit",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "After updating png_ptr->width/height and recomputing png_ptr->rowbytes for the next APNG frame, the code zeroes png_ptr->prev_row with length png_ptr->rowbytes + 1 without ensuring that the previously allocated prev_row buffer is large enough for the new frame. If next_frame_width (and thus rowbytes) is larger than the allocation made for the prior frame, this memset writes past the end of the heap buffer.",
+    "abs_path": "/tmp/libpng_upstream/pngrutil.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-in types/macros to mimic the relevant libpng fields/behavior */\ntypedef struct png_struct_def {\n    size_t width;\n    size_t height;\n    size_t rowbytes;\n    size_t info_rowbytes;\n    unsigned int pixel_depth; /* bits per pixel */\n    unsigned char *prev_row;\n} png_struct;\n\ntypedef struct png_info_def {\n    size_t next_frame_width;\n    size_t next_frame_height;\n    size_t rowbytes;\n    unsigned int pixel_depth; /* bits per pixel */\n} png_info;\n\n/* As in libpng: number of bytes needed to hold 'width' pixels at 'bits' bpp */\n#define PNG_ROWBYTES(bits, width) (((size_t)(bits) * (size_t)(width) + 7) >> 3)\n\n/* Vulnerable function (reduced to the relevant logic) */\nvoid png_read_reinit(png_struct *png_ptr, png_info *info_ptr)\n{\n    png_ptr->width = info_ptr->next_frame_width;\n    png_ptr->height = info_ptr->next_frame_height;\n    png_ptr->rowbytes = PNG_ROWBYTES(png_ptr->pixel_depth, png_ptr->width);\n    if (png_ptr->info_rowbytes != 0)\n        png_ptr->info_rowbytes = info_ptr->rowbytes =\n            PNG_ROWBYTES(info_ptr->pixel_depth, png_ptr->width);\n    if (png_ptr->prev_row)\n        /* Heap-buffer-overflow when new rowbytes > originally allocated prev_row */\n        memset(png_ptr->prev_row, 0, png_ptr->rowbytes + 1);\n}\n\nint main(void)\n{\n    png_struct png;\n    png_info info;\n    memset(&png, 0, sizeof(png));\n    memset(&info, 0, sizeof(info));\n\n    /* Set an initial small frame and allocate prev_row for that small size */\n    png.pixel_depth = 32; /* 32 bits/pixel typical RGBA */\n    size_t old_width = 1; /* tiny first frame */\n    size_t old_rowbytes = PNG_ROWBYTES(png.pixel_depth, old_width); /* 4 bytes */\n    png.prev_row = (unsigned char*)malloc(old_rowbytes + 1); /* 5 bytes total */\n    if (!png.prev_row) {\n        fprintf(stderr, \"malloc failed\\n\");\n        return 1;\n    }\n    memset(png.prev_row, 0xAA, old_rowbytes + 1);\n\n    /* Prepare next frame with a much larger width so rowbytes grows a lot */\n    info.next_frame_width = 1024;   /* large enough to exceed previous alloc */\n    info.next_frame_height = 1;     /* height doesn't matter for this overflow */\n    info.pixel_depth = png.pixel_depth; /* typical propagation */\n\n    /* Trigger: png_read_reinit will recompute rowbytes (4096 for 1024x32bpp)\n       and then memset(prev_row, 0, rowbytes+1) which overflows the 5-byte alloc */\n    png_read_reinit(&png, &info);\n\n    /* If we got here without ASan aborting, print something (unlikely) */\n    printf(\"Completed without ASan abort (unexpected)\\n\");\n\n    free(png.prev_row);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6947829723358154,
+      "output": "=================================================================\n==3753716==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000015 at pc 0x6551aea8a300 bp 0x7ffc06ed7010 sp 0x7ffc06ed67e0\nWRITE of size 4097 at 0x602000000015 thread T0\n    #0 0x6551aea8a2ff in __asan_memset (/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer+0xa42ff) (BuildId: c99cee2f600459bf3b9caf89a001a02dc175fb9e)\n    #1 0x6551aeac7037 in png_read_reinit /app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:37:9\n    #2 0x6551aeac7493 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:65:5\n    #3 0x780425c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x780425c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x6551aea07304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer+0x21304) (BuildId: c99cee2f600459bf3b9caf89a001a02dc175fb9e)\n\n0x602000000015 is located 0 bytes to the right of 5-byte region [0x602000000010,0x602000000015)\nallocated by thread T0 here:\n    #0 0x6551aea8ad12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: c99cee2f600459bf3b9caf89a001a02dc175fb9e)\n    #1 0x6551aeac727b in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:51:36\n    #2 0x780425c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x780425c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x6551aea07304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer+0x21304) (BuildId: c99cee2f600459bf3b9caf89a001a02dc175fb9e)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer+0xa42ff) (BuildId: c99cee2f600459bf3b9caf89a001a02dc175fb9e) in __asan_memset\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[05]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3753716==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_read_reinit",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:37",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:65",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngrutil_4911_heap-buffer-overflow/reproducer.c:51",
+          "36"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

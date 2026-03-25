@@ -1,0 +1,5 @@
+Project,BugID,SourceFile,SourceLine,BugType,CrashFunction,CrashFile,CrashLine
+libxml2,B3-001,HTMLparser.c,2486,heap-buffer-overflow,htmlFindEntityPrefix,HTMLparser.c,68
+libxml2,B3-002,HTMLparser.c,4419,heap-buffer-overflow,xmlStrncmp,HTMLparser.c,39
+libxml2,B3-003,buf.c,1125,SEGV,xmlStrchr,buf.c,21
+libxml2,B3-004,relaxng.c,2456,double-free,main,relaxng.c,166

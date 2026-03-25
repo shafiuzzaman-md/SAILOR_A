@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3624224==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x57c794d03d20 bp 0x7ffce68d3440 sp 0x7ffce68d33e0 T0)
+==3624224==The signal is caused by a READ memory access.
+==3624224==Hint: address points to the zero page.
+    #0 0x57c794d03d20 in coff_link_add_symbols /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_433_null-pointer-dereference/reproducer.c:73:43
+    #1 0x57c794d03f28 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_433_null-pointer-dereference/reproducer.c:94:9
+    #2 0x7c21fb02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7c21fb02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x57c794c44304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_433_null-pointer-dereference/reproducer+0x21304) (BuildId: c2d876cc6277ed1b8770342e62cc95736a644a15)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_433_null-pointer-dereference/reproducer.c:73:43 in coff_link_add_symbols
+==3624224==ABORTING

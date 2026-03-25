@@ -1,0 +1,15 @@
+Spec	Verdict	OrigBugFile	OrigBugFunc	CrashFile	CrashFunc	CrashLine
+HTMLparser_2486_out-of-bounds-read	CONFIRMED_IN_A	HTMLparser.c	htmlFindEntityPrefix			0
+HTMLparser_4419_out-of-bounds-read	CONFIRMED_IN_A	HTMLparser.c	htmlParseDocument			0
+SAX2_639_null-pointer-dereference	NOT_REPRODUCIBLE					
+buf_1125_null-pointer-dereference	CONFIRMED_IN_A	strchr-avx2.S	__strchr_avx2	strchr-avx2.S	__strchr_avx2	67
+libxml_1285_null-pointer-dereference	CONFIRMED_IN_A	strlen-avx2.S	__strlen_avx2	strlen-avx2.S	__strlen_avx2	76
+relaxng_2456_double-free	CONFIRMED_IN_A	relaxng.c	xmlRelaxNGSchemaFacetCheck			0
+runtest_519_integer-overflow	CONFIRMED_IN_A	runtest.c	loadMem			0
+runtest_1753_null-pointer-dereference	NOT_REPRODUCIBLE					
+runtest_2699_null-pointer-dereference	CONFIRMED_IN_A	iofclose.c:48	fclose	iofclose.c:48	fclose	9
+testchar_840_null-pointer-dereference	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	321
+testdict_404_null-pointer-dereference	CONFIRMED_IN_A	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	328
+testdict_406_null-pointer-dereference	CONFIRMED_IN_A	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	244
+testdict_410_null-pointer-dereference	CONFIRMED_IN_A	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	244
+testdict_506_null-pointer-dereference	CONFIRMED_IN_A	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	memset-vec-unaligned-erms.S	__memset_avx2_unaligned_erms	244

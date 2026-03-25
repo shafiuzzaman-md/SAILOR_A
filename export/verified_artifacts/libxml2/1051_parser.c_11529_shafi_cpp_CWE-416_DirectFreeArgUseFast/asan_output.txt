@@ -1,0 +1,52 @@
+=================================================================
+==2608958==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000e8 at pc 0x63e723e037ec bp 0x7fff1d0683b0 sp 0x7fff1d0683a0
+READ of size 4 at 0x5020000000e8 thread T0
+    #0 0x63e723e037eb in xmlInitSAXParserCtxt /tmp/libxml2_upstream/parserInternals.c:2791
+    #1 0x63e723e05ab8 in xmlNewSAXParserCtxt /tmp/libxml2_upstream/parserInternals.c:3063
+    #2 0x63e723df3251 in xmlIOParseDTD /tmp/libxml2_upstream/parser.c:11556
+    #3 0x63e723da0ea2 in main /tmp/libxml2_upstream_verify_v5/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/driver.c:41
+    #4 0x780d6962a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #5 0x780d6962a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #6 0x63e723da0cd4 in _start (/tmp/libxml2_upstream_verify_v5/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/bin+0x55cd4) (BuildId: ad20293d7b97308360de9ef4473dcadca931a409)
+
+0x5020000000e8 is located 180 bytes after 4-byte region [0x502000000030,0x502000000034)
+allocated by thread T0 here:
+    #0 0x780d69afd340 in calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:77
+    #1 0x63e723da0e44 in main /tmp/libxml2_upstream_verify_v5/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/driver.c:30
+    #2 0x780d6962a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x780d6962a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x63e723da0cd4 in _start (/tmp/libxml2_upstream_verify_v5/1051_parser.c_11529_sailor_cpp_CWE-416_DirectFreeArgUseFast/bin+0x55cd4) (BuildId: ad20293d7b97308360de9ef4473dcadca931a409)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/parserInternals.c:2791 in xmlInitSAXParserCtxt
+Shadow bytes around the buggy address:
+  0x501ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x502000000000: fa fa 04 fa fa fa 04 fa fa fa fa fa fa fa fa fa
+=>0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]fa fa
+  0x502000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2608958==ABORTING

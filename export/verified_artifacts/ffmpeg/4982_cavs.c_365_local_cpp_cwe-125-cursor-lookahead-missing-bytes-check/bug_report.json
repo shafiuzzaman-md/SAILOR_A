@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "cavs.c",
+    "original_line": 365,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "360: }\n361: \n362: void ff_cavs_modify_mb_i(AVSContext *h, int *pred_mode_uv)\n363: {\n364:     /* save pred modes before they get modified */\n365:     h->pred_mode_Y[3]             = h->pred_mode_Y[5];\n366:     h->pred_mode_Y[6]             = h->pred_mode_Y[8];\n367:     h->top_pred_Y[h->mbx * 2 + 0] = h->pred_mode_Y[7];\n368:     h->top_pred_Y[h->mbx * 2 + 1] = h->pred_mode_Y[8];\n369: \n370:     /* modify pred modes according to availability of neighbour samples */"
+  },
+  "klee_crash": {
+    "harness_file": "cavs.c",
+    "harness_line": 18,
+    "original_file": "cavs.c",
+    "original_line": 365,
+    "original_code": "h->pred_mode_Y[3]             = h->pred_mode_Y[5];",
+    "original_context": "    362: void ff_cavs_modify_mb_i(AVSContext *h, int *pred_mode_uv)\n    363: {\n    364:     /* save pred modes before they get modified */\n>>> 365:     h->pred_mode_Y[3]             = h->pred_mode_Y[5];\n    366:     h->pred_mode_Y[6]             = h->pred_mode_Y[8];\n    367:     h->top_pred_Y[h->mbx * 2 + 0] = h->pred_mode_Y[7];\n    368:     h->top_pred_Y[h->mbx * 2 + 1] = h->pred_mode_Y[8];",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: cavs.c\nLine: 18\nassembly.ll line: 26\nState: 1\nStack: \n\t#000000026 in ff_cavs_modify_mb_i(138894249967616, 138739631144960) at cavs.c:18\n\t#100000052 in cavs_entry(138894249967616, 138739631144960) at cavs.c:25\n\t#200000105 in main() at driver.c:32\nInfo: \n\taddress: 138877070098452\n\tnext: object at 138460458270720 of size 4\n\t\tMO20[4] allocated at main():  %1 = alloca i32, align 4\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "pred_mode_Y_buf",
+      "size": 20,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "pred_mode_uv",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4982_cavs.c_365_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "cavs.c",
+      "harness_line": 18,
+      "original_file": "cavs.c",
+      "original_line": 365,
+      "error_type": "ptr",
+      "crash_function": "ff_cavs_modify_mb_i",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4982_cavs.c_365_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

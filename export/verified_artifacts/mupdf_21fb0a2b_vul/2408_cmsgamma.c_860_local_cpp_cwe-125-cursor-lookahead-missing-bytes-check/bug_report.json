@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsgamma.c",
+        "original_line": 860,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "855:     Seg[2].x1 = PLUS_INF;\n856:     Seg[2].Type = 6;\n857: \n858:     Seg[2].Params[0] = 1;\n859:     Seg[2].Params[1] = 0;\n860:     Seg[2].Params[2] = 0;\n861:     Seg[2].Params[3] = values[nEntries-1];\n862:     Seg[2].Params[4] = 0;\n863: \n864: \n865:     return cmsBuildSegmentedToneCurve(ContextID, 3, Seg);"
+    },
+    "klee_crash": {
+        "harness_file": "cmsgamma.c",
+        "harness_line": 47,
+        "original_file": "cmsgamma.c",
+        "original_line": 861,
+        "original_code": "Seg[2].Params[3] = values[nEntries-1];",
+        "original_context": "    858:     Seg[2].Params[0] = 1;\n    859:     Seg[2].Params[1] = 0;\n    860:     Seg[2].Params[2] = 0;\n>>> 861:     Seg[2].Params[3] = values[nEntries-1];\n    862:     Seg[2].Params[4] = 0;\n    863: \n    864: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cmsgamma.c\nLine: 47\nassembly.ll line: 58\nState: 1\nStack: \n\t#000000058 in cmsBuildTabulatedToneCurveFloat(0, symbolic, 139582841057280) at cmsgamma.c:47\n\t#100000084 in entry_func(0, symbolic, 139582841057280) at cmsgamma.c:56\n\t#200000124 in main() at driver.c:27\nInfo: \n\taddress: (Add w64 139582841057280\n          (Mul w64 4\n                   (SExt w64 (Add w32 4294967295\n                                      (ReadLSB w32 0 nEntries)))))\n\texample: 1"
+    },
+    "concrete_inputs": [
+        {
+            "name": "values_buf",
+            "size": 32768,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "nEntries",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "cmsBuildTabulatedToneCurveFloat",
+        "crash_file": "thirdparty/lcms2/src/cmsgamma.c",
+        "crash_line": 861,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==12647==ERROR: AddressSanitizer: SEGV on unknown address 0x52d4000003fc (pc 0x55e87757736a bp 0x7ffe2c3024c0 sp 0x7ffe2c3022b0 T0)\n==12647==The signal is caused by a READ memory access.\n    #0 0x55e87757736a in cmsBuildTabulatedToneCurveFloat thirdparty/lcms2/src/cmsgamma.c:861\n    #1 0x55e877574151 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2408_cmsgamma.c_860_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:28\n    #2 0x7fafa57c8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fafa57c8e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55e877573eb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2408_cmsgamma.c_860_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xaeb4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/lcms2/src/cmsgamma.c:861 in cmsBuildTabulatedToneCurveFloat\n==12647==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2408_cmsgamma.c_860_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsgamma.c",
+            "harness_line": 47,
+            "original_file": "cmsgamma.c",
+            "original_line": 861,
+            "error_type": "ptr",
+            "crash_function": "cmsBuildTabulatedToneCurveFloat",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2408_cmsgamma.c_860_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "cmsBuildTabulatedToneCurveFloat",
+            "crash_file": "thirdparty/lcms2/src/cmsgamma.c",
+            "crash_line": 861
+        }
+    ]
+}

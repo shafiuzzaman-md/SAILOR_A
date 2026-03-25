@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: mvs.c
+Line: 57
+assembly.ll line: 205
+State: 1
+Stack: 
+	#000000205 in update_hmvp(139223423143936, 139223423143968, 138965725106176) at mvs.c:57
+	#100000153 in ff_vvc_update_hmvp(139085984190464, 138931365367808) at mvs.c:68
+	#200000115 in main() at driver.c:71

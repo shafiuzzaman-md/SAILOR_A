@@ -1,0 +1,53 @@
+
+=================================================================
+==3357032==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000002dc at pc 0x565423b10074 bp 0x7ffe7995b2f0 sp 0x7ffe7995b2e0
+WRITE of size 4 at 0x5020000002dc thread T0
+    #0 0x565423b10073 in ctf_set_typed_errno ctf-inlines.h:105
+    #1 0x565423b139f8 in ctf_type_resolve /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-types.c:568
+    #2 0x565423b109d0 in ctf_member_next /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-types.c:115
+    #3 0x565423b107d9 in ctf_member_iter /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-types.c:79
+    #4 0x565423b0fe5f in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16143_ctf-types.c_123_sailor_wmi-2-type-confusion-leak/reproducer.c:43
+    #5 0x7faac24efd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #6 0x7faac24efe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #7 0x565423b0fa84 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16143_ctf-types.c_123_sailor_wmi-2-type-confusion-leak/reproducer_bin+0xba84)
+
+0x5020000002dc is located 668 bytes to the right of 16-byte region [0x502000000030,0x502000000040)
+allocated by thread T0 here:
+    #0 0x7faac28a6887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x565423b0fd64 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16143_ctf-types.c_123_sailor_wmi-2-type-confusion-leak/reproducer.c:36
+    #2 0x7faac24efd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow ctf-inlines.h:105 in ctf_set_typed_errno
+Shadow bytes around the buggy address:
+  0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa fa fa fa fa fa fa fa
+  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa
+  0x0a047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==3357032==ABORTING

@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4126439==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x56738092cd21 bp 0x7fffb2dbe550 sp 0x7fffb2dbe530 T0)
+==4126439==The signal is caused by a READ memory access.
+==4126439==Hint: address points to the zero page.
+    #0 0x56738092cd21 in OSSL_ENCODER_to_bio /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37:19
+    #1 0x56738092d2e2 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:99:14
+    #2 0x71d0c4a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x71d0c4a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x56738086d314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer+0x21314) (BuildId: 94f916c078d4c5de115a4de6d590d7cb724eda60)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/ec_282_null-pointer-dereference/reproducer.c:37:19 in OSSL_ENCODER_to_bio
+==4126439==ABORTING

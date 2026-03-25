@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "pattern.c",
+    "line": 477,
+    "function": "xmlPatMatch",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "In the XML_OP_ROOT case, the code sets node = node->parent and then immediately dereferences node->type without checking for NULL. If xmlPatMatch is called with a detached node (parent == NULL) and a pattern that includes a root step, this leads to a NULL pointer dereference.",
+    "abs_path": "/tmp/libxml2_upstream/pattern.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal libxml2-like type definitions to reproduce the bug */\ntypedef unsigned char xmlChar;\n\ntypedef enum {\n    XML_ELEMENT_NODE = 1,\n    XML_DOCUMENT_NODE = 9,\n    XML_HTML_DOCUMENT_NODE = 13,\n    XML_NAMESPACE_DECL = 18\n} xmlElementType;\n\ntypedef struct _xmlNs {\n    const xmlChar *href;\n} xmlNs, *xmlNsPtr;\n\ntypedef struct _xmlNode {\n    void *_private;\n    xmlElementType type;\n    const xmlChar *name;\n    struct _xmlNode *children;\n    struct _xmlNode *last;\n    struct _xmlNode *parent;\n    struct _xmlNode *next;\n    struct _xmlNode *prev;\n    xmlNsPtr ns;\n} xmlNode, *xmlNodePtr;\n\ntypedef enum {\n    XML_OP_END = 0,\n    XML_OP_ROOT = 1,\n    XML_OP_ELEM = 2,\n    XML_OP_CHILD = 3\n} xmlStepOpType;\n\ntypedef struct _xmlStepOp {\n    int op;\n    const xmlChar *value;\n    const xmlChar *value2;\n} xmlStepOp, *xmlStepOpPtr;\n\ntypedef struct _xmlPattern {\n    int nbStep;\n    xmlStepOp *steps;\n} xmlPattern, *xmlPatternPtr;\n\n/* Stub for xmlStrEqual to satisfy references if needed elsewhere */\nstatic int xmlStrEqual(const xmlChar *a, const xmlChar *b) {\n    if (a == b) return 1;\n    if (a == NULL || b == NULL) return 0;\n    const unsigned char *pa = a, *pb = b;\n    while (*pa && *pb) {\n        if (*pa != *pb) return 0;\n        pa++; pb++;\n    }\n    return (*pa == 0 && *pb == 0);\n}\n\n/* Vulnerable function reimplemented to mirror the problematic logic */\nstatic int xmlPatMatch(xmlPatternPtr comp, xmlNodePtr node) {\n    if ((comp == NULL) || (node == NULL)) return -1;\n\n    for (int i = 0; i < comp->nbStep; i++) {\n        xmlStepOpPtr step = &comp->steps[i];\n        switch (step->op) {\n            case XML_OP_ROOT:\n                /* First checks current node type */\n                if (node->type == XML_NAMESPACE_DECL)\n                    return 0; /* would be rollback in real code */\n                /* Move to parent (which may be NULL for a detached node) */\n                node = node->parent;\n                /* BUG: node may now be NULL, but code dereferences node->type */\n                if ((node->type == XML_DOCUMENT_NODE) ||\n                    (node->type == XML_HTML_DOCUMENT_NODE))\n                    continue;\n                return 0; /* rollback */\n            default:\n                /* Not needed for this reproducer */\n                break;\n        }\n    }\n    return 0;\n}\n\nint main(void) {\n    /* Create a detached element node (parent == NULL) */\n    xmlNodePtr leaf = (xmlNodePtr)calloc(1, sizeof(xmlNode));\n    if (!leaf) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n    leaf->type = XML_ELEMENT_NODE;\n    leaf->parent = NULL; /* Detached node triggers the bug on ROOT step */\n\n    /* Create a compiled pattern with a single ROOT step */\n    xmlPatternPtr pat = (xmlPatternPtr)calloc(1, sizeof(xmlPattern));\n    if (!pat) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n    pat->nbStep = 1;\n    pat->steps = (xmlStepOp *)calloc(1, sizeof(xmlStepOp));\n    if (!pat->steps) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n    pat->steps[0].op = XML_OP_ROOT;\n    pat->steps[0].value = NULL;\n    pat->steps[0].value2 = NULL;\n\n    /* This call will NULL-dereference inside XML_OP_ROOT handling */\n    /* Specifically at: if ((node->type == XML_DOCUMENT_NODE) || ...) */\n    int ret = xmlPatMatch(pat, leaf);\n\n    /* Should not reach here if ASan catches the crash */\n    printf(\"xmlPatMatch returned %d\\n\", ret);\n\n    free(pat->steps);\n    free(pat);\n    free(leaf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6346554756164551,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4001391==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x5bee7aa822de bp 0x7ffea22c0420 sp 0x7ffea22c0380 T0)\n==4001391==The signal is caused by a READ memory access.\n==4001391==Hint: address points to the zero page.\n    #0 0x5bee7aa822de in xmlPatMatch /app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:75:33\n    #1 0x5bee7aa82061 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:115:15\n    #2 0x7b49d1a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7b49d1a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bee7a9c2304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer+0x21304) (BuildId: 20972ee0127b776e0cf94992f4e789b75ab3e7b2)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:75:33 in xmlPatMatch\n==4001391==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlPatMatch",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:75",
+      "crash_line": 33,
+      "frames": [
+        [
+          "0",
+          "xmlPatMatch",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:75",
+          "33"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/pattern_477_null-pointer-dereference/reproducer.c:115",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

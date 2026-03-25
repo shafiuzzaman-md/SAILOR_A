@@ -1,0 +1,114 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/cmp_mock_srv.c",
+    "line": 593,
+    "function": "process_genm",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "medium",
+    "explanation": "On the error path when handling a single ITAV (rsp == NULL or push fails), the code frees *out with sk_OSSL_CMP_ITAV_free(*out) but does not set *out to NULL before returning 0. This leaves a dangling pointer visible to the caller. If the caller attempts cleanup by using or freeing *out after the function returns failure, it can lead to use-after-free or double free. This path is reachable if process_genm_itav() returns NULL or if sk_OSSL_CMP_ITAV_push() fails (e.g., under memory pressure).",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/cmp_mock_srv.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Minimal re-declarations of types/macros used in the vulnerable code path\n#define STACK_OF(TYPE) struct stack_##TYPE\n\ntypedef struct mock_srv_ctx {\n    int sendError;\n} mock_srv_ctx;\n\ntypedef struct {\n    mock_srv_ctx *custom_ctx;\n} OSSL_CMP_SRV_CTX;\n\nstatic mock_srv_ctx *OSSL_CMP_SRV_CTX_get0_custom_ctx(OSSL_CMP_SRV_CTX *srv_ctx) {\n    return srv_ctx ? srv_ctx->custom_ctx : NULL;\n}\n\ntypedef struct {\n    int bodytype;\n} OSSL_CMP_MSG;\n\nstatic int OSSL_CMP_MSG_get_bodytype(const OSSL_CMP_MSG *msg) {\n    return msg ? msg->bodytype : 0;\n}\n\ntypedef struct asn1_object_st {\n    int nid;\n} ASN1_OBJECT;\n\nstatic int OBJ_obj2nid(const ASN1_OBJECT *obj) {\n    return obj ? obj->nid : 0;\n}\n\n// Dummy ITAV object\ntypedef struct itav_st {\n    int dummy;\n    ASN1_OBJECT obj;\n} OSSL_CMP_ITAV;\n\nstatic ASN1_OBJECT *OSSL_CMP_ITAV_get0_type(OSSL_CMP_ITAV *itav) {\n    return itav ? &itav->obj : NULL;\n}\n\n// Minimal stack implementation for OSSL_CMP_ITAV\nstruct stack_OSSL_CMP_ITAV {\n    size_t num;\n    size_t cap;\n    OSSL_CMP_ITAV **data;\n};\n\ntypedef STACK_OF(OSSL_CMP_ITAV) ITAV_STACK;\n\nstatic STACK_OF(OSSL_CMP_ITAV) *sk_OSSL_CMP_ITAV_new_reserve(void *cmp, int n) {\n    (void)cmp;\n    if (n < 0) return NULL;\n    ITAV_STACK *st = (ITAV_STACK *)malloc(sizeof(*st));\n    if (!st) return NULL;\n    st->num = 0;\n    st->cap = (size_t)n;\n    st->data = (OSSL_CMP_ITAV **)calloc((size_t)n > 0 ? (size_t)n : 1, sizeof(OSSL_CMP_ITAV *));\n    if (!st->data) {\n        free(st);\n        return NULL;\n    }\n    return st;\n}\n\nstatic int sk_OSSL_CMP_ITAV_push(STACK_OF(OSSL_CMP_ITAV) *st, OSSL_CMP_ITAV *val) {\n    if (!st) return 0;\n    if (st->num == st->cap) {\n        size_t newcap = st->cap ? st->cap * 2 : 1;\n        OSSL_CMP_ITAV **nd = (OSSL_CMP_ITAV **)realloc(st->data, newcap * sizeof(*nd));\n        if (!nd) return 0;\n        st->data = nd;\n        st->cap = newcap;\n    }\n    st->data[st->num++] = val;\n    return 1;\n}\n\nstatic int sk_OSSL_CMP_ITAV_num(const STACK_OF(OSSL_CMP_ITAV) *st) {\n    return st ? (int)st->num : 0;\n}\n\nstatic OSSL_CMP_ITAV *sk_OSSL_CMP_ITAV_value(const STACK_OF(OSSL_CMP_ITAV) *st, int idx) {\n    if (!st || idx < 0 || (size_t)idx >= st->num) return NULL;\n    return st->data[idx];\n}\n\nstatic void sk_OSSL_CMP_ITAV_free(STACK_OF(OSSL_CMP_ITAV) *st) {\n    if (!st) return;\n    // Free only the container, not the elements (matches how out is used in the snippet)\n    free(st->data);\n    free(st);\n}\n\n// Stubs to satisfy references in the original code\n#define ERR_LIB_CMP 0\n#define CMP_R_NULL_ARGUMENT 1\n#define CMP_R_ERROR_PROCESSING_MESSAGE 2\nstatic void ERR_raise(int lib, int reason) {\n    (void)lib; (void)reason; // no-op stub\n}\n\n// process_genm_itav will simulate a failure by returning NULL to hit the error path\nstatic OSSL_CMP_ITAV *process_genm_itav(mock_srv_ctx *ctx, int nid, OSSL_CMP_ITAV *req) {\n    (void)ctx; (void)nid; (void)req;\n    return NULL; // Force the rsp == NULL path\n}\n\n// Vulnerable function replicated from the source context (reduced to essentials)\nstatic int process_genm(OSSL_CMP_SRV_CTX *srv_ctx,\n                        const OSSL_CMP_MSG *genm,\n                        const STACK_OF(OSSL_CMP_ITAV) *in,\n                        STACK_OF(OSSL_CMP_ITAV) **out)\n{\n    mock_srv_ctx *ctx = OSSL_CMP_SRV_CTX_get0_custom_ctx(srv_ctx);\n\n    if (ctx == NULL || genm == NULL || in == NULL || out == NULL) {\n        ERR_raise(ERR_LIB_CMP, CMP_R_NULL_ARGUMENT);\n        return 0;\n    }\n    if (ctx->sendError == 1\n        || ctx->sendError == OSSL_CMP_MSG_get_bodytype(genm)\n        || sk_OSSL_CMP_ITAV_num(in) > 1) {\n        ERR_raise(ERR_LIB_CMP, CMP_R_ERROR_PROCESSING_MESSAGE);\n        return 0;\n    }\n    if (sk_OSSL_CMP_ITAV_num(in) == 1) {\n        OSSL_CMP_ITAV *req = sk_OSSL_CMP_ITAV_value(in, 0), *rsp;\n        ASN1_OBJECT *obj = OSSL_CMP_ITAV_get0_type(req);\n\n        if ((*out = sk_OSSL_CMP_ITAV_new_reserve(NULL, 1)) == NULL)\n            return 0;\n        rsp = process_genm_itav(ctx, OBJ_obj2nid(obj), req);\n        if (rsp != NULL && sk_OSSL_CMP_ITAV_push(*out, rsp))\n            return 1;\n        // Bug: frees *out but does not set *out = NULL\n        sk_OSSL_CMP_ITAV_free(*out);\n        return 0;\n    }\n\n    // Not taken in this reproducer\n    // *out = sk_OSSL_CMP_ITAV_deep_copy(in, OSSL_CMP_ITAV_dup, OSSL_CMP_ITAV_free);\n    // return *out != NULL;\n    return 0;\n}\n\nint main(void) {\n    // Set up server and context\n    mock_srv_ctx mctx;\n    mctx.sendError = 0; // ensure we don't bail out early\n\n    OSSL_CMP_SRV_CTX srv;\n    srv.custom_ctx = &mctx;\n\n    // Prepare a genm message with arbitrary bodytype not equal to sendError\n    OSSL_CMP_MSG genm;\n    genm.bodytype = 42;\n\n    // Prepare input stack with exactly one ITAV to take the single-ITAV branch\n    STACK_OF(OSSL_CMP_ITAV) *in = sk_OSSL_CMP_ITAV_new_reserve(NULL, 1);\n    if (!in) {\n        fprintf(stderr, \"Failed to allocate input stack\\n\");\n        return 1;\n    }\n    OSSL_CMP_ITAV *one = (OSSL_CMP_ITAV *)malloc(sizeof(*one));\n    if (!one) {\n        fprintf(stderr, \"Failed to allocate ITAV\\n\");\n        return 1;\n    }\n    memset(one, 0, sizeof(*one));\n    one->obj.nid = 1234; // arbitrary\n    if (!sk_OSSL_CMP_ITAV_push(in, one)) {\n        fprintf(stderr, \"Failed to push ITAV\\n\");\n        return 1;\n    }\n\n    // Output pointer as expected by process_genm\n    STACK_OF(OSSL_CMP_ITAV) *out = NULL;\n\n    // Call the vulnerable function; it will allocate *out, then free it on error and return 0, leaving a dangling pointer in out\n    int rc = process_genm(&srv, &genm, in, &out);\n    printf(\"process_genm returned: %d\\n\", rc);\n\n    // Typical caller cleanup on failure: free(out) if non-NULL. This uses the dangling pointer, causing use-after-free / double free.\n    // ASan should report a heap-use-after-free or double-free here.\n    if (out != NULL) {\n        printf(\"Freeing out after failure (should trigger ASan due to UAF/double free)\\n\");\n        sk_OSSL_CMP_ITAV_free(out);\n    }\n\n    // Clean up input stack and elements\n    if (in) {\n        // Free the single element added to 'in'\n        if (sk_OSSL_CMP_ITAV_num(in) == 1) {\n            OSSL_CMP_ITAV *elem = sk_OSSL_CMP_ITAV_value(in, 0);\n            free(elem);\n        }\n        sk_OSSL_CMP_ITAV_free(in);\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.5980620384216309,
+      "output": "=================================================================\n==4134405==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000080 at pc 0x5cfa5fd91962 bp 0x7fffb9a724b0 sp 0x7fffb9a724a8\nREAD of size 8 at 0x603000000080 thread T0\n    #0 0x5cfa5fd91961 in sk_OSSL_CMP_ITAV_free /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:95:14\n    #1 0x5cfa5fd910d7 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:192:9\n    #2 0x774fd9e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x774fd9e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5cfa5fcd1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer+0x21304) (BuildId: a5aa429112b105b5d5cf7ddcd719748f0d883a9e)\n\n0x603000000080 is located 16 bytes inside of 24-byte region [0x603000000070,0x603000000088)\nfreed by thread T0 here:\n    #0 0x5cfa5fd54a66 in free (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer+0xa4a66) (BuildId: a5aa429112b105b5d5cf7ddcd719748f0d883a9e)\n    #1 0x5cfa5fd91976 in sk_OSSL_CMP_ITAV_free /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:96:5\n    #2 0x5cfa5fd918ec in process_genm /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:141:9\n    #3 0x5cfa5fd91059 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:185:14\n    #4 0x774fd9e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x774fd9e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5cfa5fcd1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer+0x21304) (BuildId: a5aa429112b105b5d5cf7ddcd719748f0d883a9e)\n\npreviously allocated by thread T0 here:\n    #0 0x5cfa5fd54d12 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer+0xa4d12) (BuildId: a5aa429112b105b5d5cf7ddcd719748f0d883a9e)\n    #1 0x5cfa5fd911ff in sk_OSSL_CMP_ITAV_new_reserve /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:58:36\n    #2 0x5cfa5fd917d5 in process_genm /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:135:21\n    #3 0x5cfa5fd91059 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:185:14\n    #4 0x774fd9e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x774fd9e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5cfa5fcd1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer+0x21304) (BuildId: a5aa429112b105b5d5cf7ddcd719748f0d883a9e)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:95:14 in sk_OSSL_CMP_ITAV_free\nShadow bytes around the buggy address:\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa fd fd\n=>0x0c067fff8010:[fd]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4134405==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "crash_function": "sk_OSSL_CMP_ITAV_free",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:95",
+      "crash_line": 14,
+      "frames": [
+        [
+          "0",
+          "sk_OSSL_CMP_ITAV_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:95",
+          "14"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:192",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "sk_OSSL_CMP_ITAV_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:96",
+          "5"
+        ],
+        [
+          "2",
+          "process_genm",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:141",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:185",
+          "14"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "sk_OSSL_CMP_ITAV_new_reserve",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:58",
+          "36"
+        ],
+        [
+          "2",
+          "process_genm",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:135",
+          "21"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_593_use-after-free/reproducer.c:185",
+          "14"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

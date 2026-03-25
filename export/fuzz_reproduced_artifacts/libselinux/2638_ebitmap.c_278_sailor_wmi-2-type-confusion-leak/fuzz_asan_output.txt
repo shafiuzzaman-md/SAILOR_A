@@ -1,0 +1,88 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2735148588
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x5eaa477cd980, 0x5eaa477cd986), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x5eaa477cd988,0x5eaa477cd9e8), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 16b max: 16b total: 16b rss: 30Mb
+=================================================================
+==104013==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000090 at pc 0x5eaa476d703a bp 0x7ffce794b970 sp 0x7ffce794b968
+READ of size 8 at 0x602000000090 thread T0
+    #0 0x5eaa476d7039 in ebitmap_cpy /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/ebitmap.c:277:4
+    #1 0x5eaa476d541b in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:28:5
+    #2 0x5eaa475fb84a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5384a) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #3 0x5eaa475faf15 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x52f15) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #4 0x5eaa475fcb18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54b18) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #5 0x5eaa475fcf96 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54f96) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #6 0x5eaa475ea582 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42582) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #7 0x5eaa47615a26 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x6da26) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #8 0x7ac93ec2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7ac93ec2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5eaa475de9b4 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x369b4) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+
+0x602000000090 is located 0 bytes inside of 16-byte region [0x602000000090,0x6020000000a0)
+freed by thread T0 here:
+    #0 0x5eaa476990c6 in __interceptor_free (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xf10c6) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #1 0x5eaa476d540e in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:25:5
+    #2 0x5eaa475fb84a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5384a) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #3 0x5eaa475faf15 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x52f15) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #4 0x5eaa475fcb18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54b18) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #5 0x5eaa475fcf96 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54f96) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #6 0x5eaa475ea582 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42582) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #7 0x5eaa47615a26 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x6da26) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #8 0x7ac93ec2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7ac93ec2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5eaa475de9b4 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x369b4) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+
+previously allocated by thread T0 here:
+    #0 0x5eaa47699372 in malloc (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xf1372) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #1 0x5eaa476d53b5 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:18:35
+    #2 0x5eaa475fb84a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5384a) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #3 0x5eaa475faf15 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x52f15) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #4 0x5eaa475fcb18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54b18) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #5 0x5eaa475fcf96 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x54f96) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #6 0x5eaa475ea582 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42582) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #7 0x5eaa47615a26 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x6da26) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+    #8 0x7ac93ec2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7ac93ec2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5eaa475de9b4 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2638_ebitmap.c_278_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x369b4) (BuildId: cc0c951fdab5c5f858255bbc9bd150cfe73ee00c)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/ebitmap.c:277:4 in ebitmap_cpy
+Shadow bytes around the buggy address:
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 00 00 fa fa 00 00 fa fa 00 00
+=>0x0c047fff8010: fa fa[fd]fd fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==104013==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-e129f27c5103bc5cc44bcdf0a15e160d445066ff
+Base64: AAAAAAAAAAAAAAAAAAAAAA==

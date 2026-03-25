@@ -1,0 +1,51 @@
+
+KLEE: NOTE: Using POSIX model: /home/user/tools/klee/build/runtime/lib/libkleeRuntimePOSIX64_Debug+Asserts.bca
+KLEE: NOTE: Using klee-uclibc : /home/user/tools/klee/build/runtime/lib/klee-uclibc.bca
+KLEE: output directory is "/app/se_runs/b1/curl_run/fuzz_url/klee_out"
+KLEE: Using Z3 solver backend
+KLEE: Deterministic allocator: Using quarantine queue size 8
+KLEE: Deterministic allocator: globals (start-address=0x7cd046200000 size=10 GiB)
+KLEE: Deterministic allocator: constants (start-address=0x7ccdc6200000 size=10 GiB)
+KLEE: Deterministic allocator: heap (start-address=0x7bcdc6200000 size=1024 GiB)
+KLEE: Deterministic allocator: stack (start-address=0x7badc6200000 size=128 GiB)
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.or.v8i8
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.or.v4i8
+KLEE: WARNING ONCE: unsupported intrinsic llvm.load.relative.i64
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.add.v2i64
+KLEE: WARNING ONCE: unsupported intrinsic llvm.x86.sse2.pause
+KLEE: WARNING: undefined reference to function: accept4
+KLEE: WARNING: undefined reference to function: arc4random
+KLEE: WARNING: undefined reference to function: bcmp
+KLEE: WARNING: undefined reference to function: eventfd
+KLEE: WARNING: undefined reference to function: freeifaddrs
+KLEE: WARNING: undefined reference to function: getifaddrs
+KLEE: WARNING: undefined reference to function: inflate
+KLEE: WARNING: undefined reference to function: inflateEnd
+KLEE: WARNING: undefined reference to function: inflateInit2_
+KLEE: WARNING: undefined reference to function: inflateInit_
+KLEE: WARNING: undefined reference to function: inflateReset2
+KLEE: WARNING: undefined reference to function: poll
+KLEE: WARNING: undefined reference to function: pthread_create
+KLEE: WARNING: undefined reference to function: pthread_detach
+KLEE: WARNING: undefined reference to function: pthread_join
+KLEE: WARNING: undefined reference to function: pthread_mutex_destroy
+KLEE: WARNING: undefined reference to function: pthread_mutex_init
+KLEE: WARNING: undefined reference to function: pthread_mutex_lock
+KLEE: WARNING: undefined reference to function: pthread_mutex_unlock
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 136031380701184) at runtime/POSIX/fd.c:997 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: Alignment of memory from call "calloc" is not modelled. Using alignment of 8.
+KLEE: ERROR: se_runs/b1/curl_run/fuzz_url/harness/fuzz_url.cc:42: concretized symbolic size
+KLEE: NOTE: now ignoring this error at this location
+KLEE: ERROR: (location information missing) illegal instruction
+KLEE: NOTE: now ignoring this error at this location
+KLEE: WARNING ONCE: Alignment of memory from call "realloc" is not modelled. Using alignment of 8.
+KLEE: ERROR: (location information missing) illegal instruction
+KLEE: NOTE: now ignoring this error at this location
+KLEE: HaltTimer invoked
+KLEE: halting execution, dumping remaining states
+
+KLEE: done: total instructions = 2340834
+KLEE: done: completed paths = 1740
+KLEE: done: partially completed paths = 2774
+KLEE: done: generated tests = 71

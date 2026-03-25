@@ -1,0 +1,98 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 116252,
+    "tokens_prompt": 102435,
+    "tokens_completion": 13817,
+    "turns": 9,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "ffv1.c",
+    "line": 196,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/281_ffv1.c_196_local_cpp_cwe-120-overflow.json",
+  "vul_file": "ffv1.c",
+  "vul_line": "196",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ffv1.c",
+      "original_line": 196,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "191:     for (i = 0; i < f->plane_count; i++) {\n192:         PlaneContext *p = &sc->plane[i];\n193: \n194:         if (f->ac != AC_GOLOMB_RICE) {\n195:             if (f->initial_states[p->quant_table_index]) {\n196:                 memcpy(p->state, f->initial_states[p->quant_table_index],\n197:                        CONTEXT_SIZE * p->context_count);\n198:             } else\n199:                 memset(p->state, 128, CONTEXT_SIZE * p->context_count);\n200:         } else {\n201:             for (j = 0; j < p->context_count; j++) {"
+    },
+    "klee_crash": {
+      "harness_file": "ffv1.c",
+      "harness_line": 51,
+      "original_file": "ffv1.c",
+      "original_line": 196,
+      "original_code": "memcpy(p->state, f->initial_states[p->quant_table_index],",
+      "original_context": "    193: \n    194:         if (f->ac != AC_GOLOMB_RICE) {\n    195:             if (f->initial_states[p->quant_table_index]) {\n>>> 196:                 memcpy(p->state, f->initial_states[p->quant_table_index],\n    197:                        CONTEXT_SIZE * p->context_count);\n    198:             } else\n    199:                 memset(p->state, 128, CONTEXT_SIZE * p->context_count);",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 253\nState: 1\nStack: \n\t#000000253 in memcpy(139756915081216, 139894354034688, 64) at runtime/Freestanding/memcpy.c:17\n\t#100000190 in ff_ffv1_clear_slice_state(139963073511424, 139688195604480) at ffv1.c:51\n\t#200000120 in ffv1_entry(139963073511424, 139688195604480) at ffv1.c:37\n\t#300000095 in main() at driver.c:49\nInfo: \n\taddress: 139756915081232\n\tnext: object at 139389695377408 of size 4\n\t\tMO"
+    },
+    "concrete_inputs": [
+      {
+        "name": "initial_states_src",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "plane_state_dst",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/281_ffv1.c_196_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ffv1.c",
+        "harness_line": 51,
+        "original_file": "ffv1.c",
+        "original_line": 196,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/281_ffv1.c_196_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

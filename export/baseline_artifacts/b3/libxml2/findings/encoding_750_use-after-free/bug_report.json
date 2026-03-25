@@ -1,0 +1,114 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "encoding.c",
+    "line": 750,
+    "function": "xmlNewCharEncodingHandler",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "xmlNewCharEncodingHandler calls xmlRegisterCharEncodingHandler(handler) and then unconditionally returns 'handler'. However, xmlRegisterCharEncodingHandler may free the passed handler on failure paths (e.g., allocation failure for globalHandlers or when MAX_ENCODING_HANDLERS is exceeded; see lines 885-891). In those cases, xmlNewCharEncodingHandler returns a pointer to freed memory, leading to a use-after-free (and potential double free if the caller later frees the returned pointer).",
+    "abs_path": "/tmp/libxml2_upstream/encoding.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n#include <stdint.h>\n\n/*\n * Self-contained minimal reproduction of the libxml2 bug:\n * xmlNewCharEncodingHandler returns a pointer even if xmlRegisterCharEncodingHandler\n * frees it on failure (e.g., when MAX_ENCODING_HANDLERS is exceeded), leading to\n * a use-after-free when the caller uses the returned pointer.\n */\n\n/* Simplified handler flags from libxml2 */\n#define XML_HANDLER_STATIC 1\n#define XML_HANDLER_LEGACY 2\n\n/* Keep this small so we can easily exceed the limit and trigger the bug */\n#define MAX_ENCODING_HANDLERS 8\n\n/* Forward decls matching (simplified) public API */\ntypedef int (*xmlCharEncodingInputFunc)(unsigned char *out, int outlen,\n                                        const unsigned char *in, int inlen);\ntypedef int (*xmlCharEncodingOutputFunc)(unsigned char *out, int outlen,\n                                         const unsigned char *in, int inlen);\n\ntypedef struct _xmlCharEncodingHandler xmlCharEncodingHandler;\ntypedef xmlCharEncodingHandler *xmlCharEncodingHandlerPtr;\n\nstruct _xmlCharEncodingHandler {\n    union { xmlCharEncodingInputFunc legacyFunc; void *func; } input;\n    union { xmlCharEncodingOutputFunc legacyFunc; void *func; } output;\n    char *name;\n    int flags;\n};\n\n/* Global registry simulation (simplified version of libxml2's global handlers) */\nstatic xmlCharEncodingHandlerPtr globalHandlers[MAX_ENCODING_HANDLERS];\nstatic int nbCharEncodingHandler = 0;\n\n/* Minimal memory wrappers used by libxml2 code */\nstatic void *xmlMalloc(size_t sz) { return malloc(sz); }\nstatic void xmlFree(void *p) { free(p); }\nstatic char *xmlMemStrdup(const char *s) { return s ? strdup(s) : NULL; }\n\n/* Alias resolution used by xmlNewCharEncodingHandler; return NULL (no alias) */\nstatic const char *xmlGetEncodingAlias(const char *name) {\n    (void)name;\n    return NULL;\n}\n\n/*\n * Vulnerable public API (legacy variant) simplified from libxml2 encoding.c:\n * - Builds an uppercase name copy\n * - Allocates handler, assigns fields\n * - Calls xmlRegisterCharEncodingHandler(handler)\n * - Unconditionally returns handler (BUG: handler may have been freed).\n */\nstatic void xmlRegisterCharEncodingHandler(xmlCharEncodingHandlerPtr handler);\n\nxmlCharEncodingHandlerPtr\nxmlNewCharEncodingHandler(const char *name,\n                          xmlCharEncodingInputFunc input,\n                          xmlCharEncodingOutputFunc output) {\n    char upper[500];\n    int i;\n    char *up;\n    xmlCharEncodingHandlerPtr handler;\n    const char *alias;\n\n    alias = xmlGetEncodingAlias(name);\n    if (alias != NULL)\n        name = alias;\n\n    if (name == NULL)\n        return NULL;\n\n    for (i = 0; i < 499; i++) {\n        upper[i] = (char)toupper((unsigned char)name[i]);\n        if (upper[i] == 0) break;\n    }\n    upper[i] = 0;\n\n    up = xmlMemStrdup(upper);\n    if (up == NULL)\n        return NULL;\n\n    handler = (xmlCharEncodingHandlerPtr)xmlMalloc(sizeof(xmlCharEncodingHandler));\n    if (handler == NULL) {\n        xmlFree(up);\n        return NULL;\n    }\n    memset(handler, 0, sizeof(xmlCharEncodingHandler));\n    handler->input.legacyFunc = input;\n    handler->output.legacyFunc = output;\n    handler->name = up;\n    handler->flags = XML_HANDLER_STATIC | XML_HANDLER_LEGACY;\n\n    /* Register the handler; on failure, the register function may free it. */\n    xmlRegisterCharEncodingHandler(handler);\n\n    /* BUG: returns handler even if it was freed by xmlRegisterCharEncodingHandler */\n    return handler;\n}\n\n/*\n * Simplified version of libxml2's xmlRegisterCharEncodingHandler.\n * When the registry is full, it frees the passed-in handler and returns,\n * leaving the caller (xmlNewCharEncodingHandler) with a dangling pointer.\n */\nstatic void xmlRegisterCharEncodingHandler(xmlCharEncodingHandlerPtr handler) {\n    if (handler == NULL)\n        return;\n\n    if (nbCharEncodingHandler >= MAX_ENCODING_HANDLERS) {\n        /* Failure path: simulate libxml2 freeing the handler on error */\n        fprintf(stderr, \"[xmlRegister] Registry full, freeing handler '%s'\\n\",\n                handler->name ? handler->name : \"(null)\");\n        xmlFree(handler->name);\n        xmlFree(handler);\n        return;\n    }\n\n    globalHandlers[nbCharEncodingHandler++] = handler;\n}\n\n/* Dummy conversion callbacks matching our typedefs */\nstatic int dummy_input(unsigned char *out, int outlen,\n                       const unsigned char *in, int inlen) {\n    (void)out; (void)outlen; (void)in; (void)inlen; return 0;\n}\n\nstatic int dummy_output(unsigned char *out, int outlen,\n                        const unsigned char *in, int inlen) {\n    (void)out; (void)outlen; (void)in; (void)inlen; return 0;\n}\n\nint main(void) {\n    /* Fill the registry to capacity */\n    for (int i = 0; i < MAX_ENCODING_HANDLERS; i++) {\n        char name[32];\n        snprintf(name, sizeof(name), \"enc%d\", i);\n        xmlCharEncodingHandlerPtr h =\n            xmlNewCharEncodingHandler(name, dummy_input, dummy_output);\n        if (h == NULL) {\n            fprintf(stderr, \"Failed to create handler %d\\n\", i);\n            return 1;\n        }\n        fprintf(stderr, \"Registered handler %p with name %s\\n\", (void*)h, h->name);\n    }\n\n    /* This call will exceed the limit; xmlRegister frees the handler,\n     * but xmlNewCharEncodingHandler still returns the freed pointer. */\n    xmlCharEncodingHandlerPtr uaf =\n        xmlNewCharEncodingHandler(\"trigger\", dummy_input, dummy_output);\n\n    fprintf(stderr, \"xmlNewCharEncodingHandler returned %p (expected dangling)\\n\", (void*)uaf);\n\n    /* Use-after-free: write to the freed handler memory. ASan should flag this. */\n    if (uaf) {\n        fprintf(stderr, \"About to write to freed handler->flags to trigger UAF...\\n\");\n        uaf->flags = 0x12345678; /* Heap-use-after-free */\n\n        /* Also attempt to free it again to highlight the double-free possibility */\n        fprintf(stderr, \"About to free the already-freed handler to show double-free...\\n\");\n        free(uaf);\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7207241058349609,
+      "output": "Registered handler 0x603000000040 with name ENC0\nRegistered handler 0x603000000070 with name ENC1\nRegistered handler 0x6030000000a0 with name ENC2\nRegistered handler 0x6030000000d0 with name ENC3\nRegistered handler 0x603000000100 with name ENC4\nRegistered handler 0x603000000130 with name ENC5\nRegistered handler 0x603000000160 with name ENC6\nRegistered handler 0x603000000190 with name ENC7\n[xmlRegister] Registry full, freeing handler 'TRIGGER'\nxmlNewCharEncodingHandler returned 0x6030000001c0 (expected dangling)\nAbout to write to freed handler->flags to trigger UAF...\n=================================================================\n==3987838==ERROR: AddressSanitizer: heap-use-after-free on address 0x6030000001d8 at pc 0x5a19168e5892 bp 0x7fff39b9e290 sp 0x7fff39b9e288\nWRITE of size 4 at 0x6030000001d8 thread T0\n    #0 0x5a19168e5891 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:162:20\n    #1 0x7f225c02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #2 0x7f225c02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #3 0x5a1916825314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer+0x21314) (BuildId: 4f9cb433cbc50907ac773362debd8ad5199b9874)\n\n0x6030000001d8 is located 24 bytes inside of 32-byte region [0x6030000001c0,0x6030000001e0)\nfreed by thread T0 here:\n    #0 0x5a19168a8a76 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer+0xa4a76) (BuildId: 4f9cb433cbc50907ac773362debd8ad5199b9874)\n    #1 0x5a19168e53b4 in xmlFree /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:43:32\n    #2 0x5a19168e54e5 in xmlRegisterCharEncodingHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:120:9\n    #3 0x5a19168e5221 in xmlNewCharEncodingHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:100:5\n    #4 0x5a19168e57c5 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:155:9\n    #5 0x7f225c02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7f225c02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5a1916825314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer+0x21314) (BuildId: 4f9cb433cbc50907ac773362debd8ad5199b9874)\n\npreviously allocated by thread T0 here:\n    #0 0x5a19168a8d22 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer+0xa4d22) (BuildId: 4f9cb433cbc50907ac773362debd8ad5199b9874)\n    #1 0x5a19168e5394 in xmlMalloc /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:42:44\n    #2 0x5a19168e50c0 in xmlNewCharEncodingHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:88:42\n    #3 0x5a19168e57c5 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:155:9\n    #4 0x7f225c02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7f225c02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5a1916825314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer+0x21314) (BuildId: 4f9cb433cbc50907ac773362debd8ad5199b9874)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:162:20 in main\nShadow bytes around the buggy address:\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00 fa fa 00 00\n  0x0c067fff8010: 00 00 fa fa 00 00 00 00 fa fa 00 00 00 00 fa fa\n  0x0c067fff8020: 00 00 00 00 fa fa 00 00 00 00 fa fa 00 00 00 00\n=>0x0c067fff8030: fa fa 00 00 00 00 fa fa fd fd fd[fd]fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack a",
+      "error_type": "heap-use-after-free",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:162",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:162",
+          "20"
+        ],
+        [
+          "1",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "2",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlFree",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:43",
+          "32"
+        ],
+        [
+          "2",
+          "xmlRegisterCharEncodingHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:120",
+          "9"
+        ],
+        [
+          "3",
+          "xmlNewCharEncodingHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:100",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:155",
+          "9"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlMalloc",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:42",
+          "44"
+        ],
+        [
+          "2",
+          "xmlNewCharEncodingHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:88",
+          "42"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/encoding_750_use-after-free/reproducer.c:155",
+          "9"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

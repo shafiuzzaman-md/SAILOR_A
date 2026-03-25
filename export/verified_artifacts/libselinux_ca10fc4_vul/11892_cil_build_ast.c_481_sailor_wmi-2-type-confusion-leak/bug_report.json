@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cil",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cil_gen_blockabstract",
+            "crash_file": "../cil/src/cil_build_ast.c",
+            "crash_line": 469
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cil_gen_blockabstract",
+        "crash_file": "../cil/src/cil_build_ast.c",
+        "crash_line": 469,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==2946==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x511000000158 at pc 0x5578b6579714 bp 0x7ffdca6b8d30 sp 0x7ffdca6b8d20\nREAD of size 4 at 0x511000000158 thread T0\n    #0 0x5578b6579713 in cil_gen_blockabstract ../cil/src/cil_build_ast.c:469\n    #1 0x5578b6576d42 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11892_cil_build_ast.c_481_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:31\n    #2 0x7fd9fb28cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fd9fb28ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5578b6576a44 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11892_cil_build_ast.c_481_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2ea44)\n\n0x511000000158 is located 24 bytes to the right of 256-byte region [0x511000000040,0x511000000140)\nallocated by thread T0 here:\n    #0 0x7fd9fb643a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5578b6576b24 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11892_cil_build_ast.c_481_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:11\n    #2 0x7fd9fb28cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../cil/src/cil_build_ast.c:469 in cil_gen_blockabstract\nShadow bytes around the buggy address:\n  0x0a227fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a227fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a227fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a227fff8000: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00\n  0x0a227fff8010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a227fff8020: 00 00 00 00 00 00 00 00 fa fa fa[fa]fa fa fa fa\n  0x0a227fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a227fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x"
+    }
+}

@@ -1,0 +1,18 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memmove.c
+Line: 21
+assembly.ll line: 230
+State: 2
+Stack: 
+	#000000230 in memmove(symbolic, symbolic, symbolic) at runtime/Freestanding/memmove.c:21
+	#100000089 in ff_cbs_delete_unit(139234938720256, symbolic) at cbs.c:42
+	#200000122 in entry_func(139234938720256, symbolic) at cbs.c:52
+	#300000180 in main() at driver.c:33
+Info: 
+	address: (Add w64 139441097150464
+          (Mul w64 32
+                   (SExt w64 (ReadLSB w32 0 position))))
+	example: 139441097150432
+	range: [139441097150432, 139441097150432]
+	next: object at 138866645274624 of size 4
+		MO30[4] allocated at main():  %6 = alloca i32, align 4

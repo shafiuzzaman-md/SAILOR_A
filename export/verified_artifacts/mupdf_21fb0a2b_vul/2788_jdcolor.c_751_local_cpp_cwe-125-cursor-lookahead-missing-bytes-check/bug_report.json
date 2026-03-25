@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jdcolor.c",
+        "original_line": 751,
+        "function": "jinit_color_deconverter",
+        "entry_point": "jinit_color_deconverter",
+        "spine": [
+            "jinit_color_deconverter"
+        ],
+        "original_context": "746:   case JCS_YCCK:\n747:     if (cinfo->jpeg_color_space != JCS_CMYK ||\n748: \t/* Support only YK part of YCCK for colorless output */\n749: \t! cinfo->comp_info[0].component_needed ||\n750: \t  cinfo->comp_info[1].component_needed ||\n751: \t  cinfo->comp_info[2].component_needed ||\n752: \t! cinfo->comp_info[3].component_needed)\n753:       goto def_label;\n754:     cinfo->out_color_components = 2;\n755:     /* Need all components on input side */\n756:     cinfo->comp_info[1].component_needed = TRUE;"
+    },
+    "klee_crash": {
+        "harness_file": "jdcolor.c",
+        "harness_line": 46,
+        "original_file": "jdcolor.c",
+        "original_line": 756,
+        "original_code": "cinfo->comp_info[1].component_needed = TRUE;",
+        "original_context": "    753:       goto def_label;\n    754:     cinfo->out_color_components = 2;\n    755:     /* Need all components on input side */\n>>> 756:     cinfo->comp_info[1].component_needed = TRUE;\n    757:     cinfo->comp_info[2].component_needed = TRUE;\n    758:     cconvert->pub.color_convert = cmyk_yk_convert;\n    759:     build_rgb_y_table(cinfo);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jdcolor.c\nLine: 46\nassembly.ll line: 114\nState: 1\nStack: \n\t#000000114 in jinit_color_deconverter(139385791311872) at jdcolor.c:46\n\t#100000064 in main() at driver.c:26\nInfo: \n\taddress: 139248352358408\n\tnext: object at 138949852131328 of size 4\n\t\tMO23[4] allocated at main():  %3 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "out_color_space",
+            "size": 4,
+            "data": "b'\\x07\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "jinit_color_deconverter",
+        "crash_file": "thirdparty/libjpeg/jdcolor.c",
+        "crash_line": 619,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==15292==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55ee19c17bb3 bp 0x7fffdcb6b9a0 sp 0x7fffdcb6b950 T0)\n==15292==The signal is caused by a READ memory access.\n==15292==Hint: address points to the zero page.\n    #0 0x55ee19c17bb3 in jinit_color_deconverter thirdparty/libjpeg/jdcolor.c:619\n    #1 0x55ee19c154f3 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2788_jdcolor.c_751_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:27\n    #2 0x7fbecda1cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fbecda1ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55ee19c15294 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2788_jdcolor.c_751_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1294)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/libjpeg/jdcolor.c:619 in jinit_color_deconverter\n==15292==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2788_jdcolor.c_751_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jdcolor.c",
+            "harness_line": 46,
+            "original_file": "jdcolor.c",
+            "original_line": 756,
+            "error_type": "ptr",
+            "crash_function": "jinit_color_deconverter",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2788_jdcolor.c_751_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "jinit_color_deconverter",
+            "crash_file": "thirdparty/libjpeg/jdcolor.c",
+            "crash_line": 619
+        }
+    ]
+}

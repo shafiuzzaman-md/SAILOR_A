@@ -1,0 +1,69 @@
+{
+  "vc1_block.c": {
+    "26": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2961,
+      "code": "static void vc1_decode_skip_blocks(VC1Context *v)"
+    },
+    "27": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2962,
+      "code": "{"
+    },
+    "28": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2963,
+      "code": "MpegEncContext *s = &v->s;"
+    },
+    "30": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2965,
+      "code": "if (!v->s.last_pic.data[0])"
+    },
+    "31": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2966,
+      "code": "return;"
+    },
+    "34": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2974,
+      "code": "memcpy(s->dest[0], s->last_pic.data[0] + s->mb_y * 16 * s->linesize,   s->linesize   * 16);"
+    },
+    "36": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2975,
+      "code": "memcpy(s->dest[1], s->last_pic.data[1] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);"
+    },
+    "37": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2976,
+      "code": "memcpy(s->dest[2], s->last_pic.data[2] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);"
+    },
+    "38": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2978,
+      "code": "}"
+    },
+    "41": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2981,
+      "code": "void ff_vc1_decode_blocks(VC1Context *v)"
+    },
+    "42": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 2982,
+      "code": "{"
+    },
+    "43": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 3008,
+      "code": "vc1_decode_skip_blocks(v);"
+    },
+    "44": {
+      "orig_file": "vc1_block.c",
+      "orig_line": 3021,
+      "code": "}"
+    }
+  }
+}

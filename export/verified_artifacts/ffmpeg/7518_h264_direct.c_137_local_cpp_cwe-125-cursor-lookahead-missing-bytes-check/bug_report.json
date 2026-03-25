@@ -1,0 +1,68 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "h264_direct.c",
+    "original_line": 137,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "132:                                           (sl->ref_list[list][j].reference & 3);\n133:     }\n134: \n135:     if (h->picture_structure == PICT_FRAME) {\n136:         memcpy(cur->ref_count[1], cur->ref_count[0], sizeof(cur->ref_count[0]));\n137:         memcpy(cur->ref_poc[1],   cur->ref_poc[0],   sizeof(cur->ref_poc[0]));\n138:     }\n139: \n140:     if (h->current_slice == 0) {\n141:         cur->mbaff = FRAME_MBAFF(h);\n142:     } else {"
+  },
+  "klee_crash": {
+    "harness_file": "h264_direct.c",
+    "harness_line": 32,
+    "original_file": "h264_direct.c",
+    "original_line": 137,
+    "original_code": "memcpy(cur->ref_poc[1],   cur->ref_poc[0],   sizeof(cur->ref_poc[0]));",
+    "original_context": "    134: \n    135:     if (h->picture_structure == PICT_FRAME) {\n    136:         memcpy(cur->ref_count[1], cur->ref_count[0], sizeof(cur->ref_count[0]));\n>>> 137:         memcpy(cur->ref_poc[1],   cur->ref_poc[0],   sizeof(cur->ref_poc[0]));\n    138:     }\n    139: \n    140:     if (h->current_slice == 0) {",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 181\nState: 1\nStack: \n\t#000000181 in memcpy(139417447973136, 139417447972880, 256) at runtime/Freestanding/memcpy.c:17\n\t#100000131 in ff_h264_direct_ref_list_init(139211289542656, 139142570065920) at h264_direct.c:32\n\t#200000152 in h264_entry(139211289542656, 139142570065920) at h264_direct.c:40\n\t#300000072 in main() at driver.c:35\nInfo: \n\taddress: 139417447973136\n\tnext: object at 138846217322"
+  },
+  "concrete_inputs": [
+    {
+      "name": "pic_small_buf",
+      "size": 128,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7518_h264_direct.c_137_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "h264_direct.c",
+      "harness_line": 32,
+      "original_file": "h264_direct.c",
+      "original_line": 137,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7518_h264_direct.c_137_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: avfft.c
+Line: 37
+assembly.ll line: 90
+State: 1
+Stack: 
+	#000000090 in av_rdft_calc(138969246982144, 138745908682752) at avfft.c:37
+	#100000164 in entry_func(138969246982144, 138745908682752) at avfft.c:52
+	#200000231 in main() at driver.c:40
+Info: 
+	address: 138763088551940
+	next: object at 138463514583040 of size 4
+		MO30[4] allocated at main():  %6 = alloca i32, align 4

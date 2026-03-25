@@ -1,0 +1,119 @@
+{
+  "packet.c": {
+    "3": {
+      "orig_file": "packet.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "8": {
+      "orig_file": "packet.c",
+      "orig_line": 51,
+      "code": "#endif"
+    },
+    "11": {
+      "orig_file": "packet.c",
+      "orig_line": 51,
+      "code": "#endif"
+    },
+    "15": {
+      "orig_file": "packet.c",
+      "orig_line": 235,
+      "code": "uint8_t *data;"
+    },
+    "22": {
+      "orig_file": "packet.c",
+      "orig_line": 235,
+      "code": "uint8_t *data;"
+    },
+    "39": {
+      "orig_file": "packet.c",
+      "orig_line": 227,
+      "code": "return 0;"
+    },
+    "40": {
+      "orig_file": "packet.c",
+      "orig_line": 228,
+      "code": "}"
+    },
+    "43": {
+      "orig_file": "packet.c",
+      "orig_line": 437,
+      "code": "int av_packet_ref(AVPacket *dst, const AVPacket *src)"
+    },
+    "44": {
+      "orig_file": "packet.c",
+      "orig_line": 438,
+      "code": "{"
+    },
+    "45": {
+      "orig_file": "packet.c",
+      "orig_line": 439,
+      "code": "int ret;"
+    },
+    "47": {
+      "orig_file": "packet.c",
+      "orig_line": 441,
+      "code": "dst->buf = NULL;"
+    },
+    "50": {
+      "orig_file": "packet.c",
+      "orig_line": 447,
+      "code": "if (!src->buf) {"
+    },
+    "51": {
+      "orig_file": "packet.c",
+      "orig_line": 448,
+      "code": "ret = packet_alloc(&dst->buf, src->size);"
+    },
+    "54": {
+      "orig_file": "packet.c",
+      "orig_line": 452,
+      "code": "if (src->size)"
+    },
+    "55": {
+      "orig_file": "packet.c",
+      "orig_line": 453,
+      "code": "memcpy(dst->buf->data, src->data, src->size);"
+    },
+    "57": {
+      "orig_file": "packet.c",
+      "orig_line": 455,
+      "code": "dst->data = dst->buf->data;"
+    },
+    "58": {
+      "orig_file": "packet.c",
+      "orig_line": 456,
+      "code": "} else {"
+    },
+    "60": {
+      "orig_file": "packet.c",
+      "orig_line": 461,
+      "code": "}"
+    },
+    "62": {
+      "orig_file": "packet.c",
+      "orig_line": 465,
+      "code": "dst->size = src->size;"
+    },
+    "64": {
+      "orig_file": "packet.c",
+      "orig_line": 467,
+      "code": "return 0;"
+    },
+    "65": {
+      "orig_file": "packet.c",
+      "orig_line": 471,
+      "code": "}"
+    },
+    "70": {
+      "orig_file": "packet.c",
+      "orig_line": 467,
+      "code": "return 0;"
+    },
+    "71": {
+      "orig_file": "packet.c",
+      "orig_line": 471,
+      "code": "}"
+    }
+  }
+}

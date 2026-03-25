@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/gregbook/rpng-win.c",
+    "line": 260,
+    "function": "WinMain",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "The argv-building loop writes pointers into args[1024] without bounds checking (argv[argc++] = q = p;). A long command line with many space-separated tokens can make argc exceed 1023, causing writes past the end of the fixed-size stack array. The terminating write argv[argc] = NULL at line 269 can also overflow for the same reason, leading to stack memory corruption.",
+    "abs_path": "/tmp/libpng_upstream/contrib/gregbook/rpng-win.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* This reproducer embeds the vulnerable argv-building logic from\n * contrib/gregbook/rpng-win.c:WinMain. It builds a very long, space-\n * separated command line so that argc reaches 1024, and then the\n * terminating write argv[argc] = NULL overflows a fixed-size\n * stack array of 1024 pointers. */\n\n#define PROGNAME \"rpng-win\"\n\nstatic void vulnerable_winmain_like(char *cmd)\n{\n    /* Minimal surrounding state to mirror the original context */\n    double LUT_exponent = 1.0;\n    double CRT_exponent = 1.0;\n    double default_display_exponent = LUT_exponent * CRT_exponent;\n    double display_exponent = default_display_exponent;\n    (void)display_exponent; /* suppress unused warning */\n\n    /* Vulnerable argv array and parsing routine */\n    char *argv[1024];\n    int argc = 0;\n    char *p, *q;\n\n    argv[argc++] = (char*)PROGNAME;   /* argv[0] */\n    p = cmd;\n    for (;;) {\n        if (*p == ' ')\n            while (*++p == ' ')\n                ;\n        if (*p == '\\0')\n            break;    /* nothing after the spaces: done */\n        argv[argc++] = q = p;              /* POTENTIAL OVERFLOW (no bounds check) */\n        while (*q && *q != ' ')\n            ++q;\n        if (*q == '\\0')\n            break;    /* last argv already terminated; quit */\n        *q = '\\0';    /* change space to terminator */\n        p = q + 1;\n    }\n    argv[argc] = NULL;   /* terminate the argv array itself (OVERFLOW when argc == 1024) */\n}\n\nint main(void)\n{\n    /* We need exactly 1023 tokens after PROGNAME so that:\n     *  - the last token occupies argv[1023]\n     *  - argc becomes 1024\n     *  - the terminating write argv[1024] = NULL overflows the 1024-element array\n     */\n    const int tokens = 1023; /* number of space-separated tokens */\n\n    /* Build a writable command line string: \"a a a ... a\" (1023 times) */\n    size_t bufsize = (size_t)tokens * 2; /* worst-case: 'a' + space per token; exact size is 2*tokens-1 + NUL */\n    char *cmd = (char *)malloc(bufsize + 1);\n    if (!cmd) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    size_t pos = 0;\n    for (int i = 0; i < tokens; ++i) {\n        cmd[pos++] = 'a';\n        if (i != tokens - 1)\n            cmd[pos++] = ' ';\n    }\n    cmd[pos] = '\\0';\n\n    /* Trigger the vulnerable logic */\n    vulnerable_winmain_like(cmd);\n\n    free(cmd);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.249199390411377,
+      "output": "=================================================================\n==3711852==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc920e3720 at pc 0x5ba1ea18339b bp 0x7ffc920e16f0 sp 0x7ffc920e16e8\nWRITE of size 8 at 0x7ffc920e3720 thread T0\n    #0 0x5ba1ea18339a in vulnerable_winmain_like /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43:16\n    #1 0x5ba1ea182e41 in main /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:72:5\n    #2 0x73d32202a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x73d32202a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5ba1ea0c3314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer+0x21314) (BuildId: f10d721f63c47095c8ddde5c1f46bea93b657c76)\n\nAddress 0x7ffc920e3720 is located in stack of thread T0 at offset 8224 in frame\n    #0 0x5ba1ea182e7f in vulnerable_winmain_like /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:14\n\n  This frame has 1 object(s):\n    [32, 8224) 'argv' (line 23) <== Memory access at offset 8224 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43:16 in vulnerable_winmain_like\nShadow bytes around the buggy address:\n  0x100012414690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000124146a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000124146b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000124146c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x1000124146d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x1000124146e0: 00 00 00 00[f3]f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3\n  0x1000124146f0: f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3 f3\n  0x100012414700: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100012414710: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100012414720: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100012414730: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3711852==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "vulnerable_winmain_like",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "vulnerable_winmain_like",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:43",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c:72",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "vulnerable_winmain_like",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng-win_260_stack-buffer-overflow/reproducer.c",
+          "14"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

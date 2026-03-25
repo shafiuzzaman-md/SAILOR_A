@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,4,4,5,0,0,0,0,FP: external calls + KLEE model errors
+B2: LLM+KLEE no SA,25,0,0,0,0,0,0,All BUILD_ERROR
+B3: Pure LLM detect,0,—,0,0,0,0,0,LLM found 0 vulns
+B4: SA+LLM detect,—,—,—,—,—,—,0,—
+SAILOR-GPT5,—,—,3,—,—,—,0,0 unique verified bugs (all in sliced source)

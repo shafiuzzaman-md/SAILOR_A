@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/opt.c",
+    "line": 1217,
+    "function": "opt_help",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the width calculation loop, the code calls strlen(o->name) without excluding sentinel control entries (OPT_HELP_STR, OPT_SECTION_STR, OPT_PARAM_STR), which are non-string pointer constants. When such an entry is encountered, strlen dereferences an invalid pointer, causing an out-of-bounds read/crash. Only OPT_MORE_STR is skipped, so passing a list containing other sentinels triggers this bug.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/opt.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <stdarg.h>\n\n/* Self-contained reproducer for the opt_help OOB-read bug. */\n\n/* Sentinel control entries as non-string pointer constants (invalid for strlen). */\n#define OPT_HELP_STR    ((const char *)0x1)\n#define OPT_SECTION_STR ((const char *)0x2)\n#define OPT_PARAM_STR   ((const char *)0x3)\n#define OPT_MORE_STR    ((const char *)0x4)\n\n#define MAX_OPT_HELP_WIDTH 80\n\ntypedef struct options_st {\n    const char *name;     /* Option name or sentinel */\n    int         valtype;  /* Value type marker, compared to '-' in code */\n    const char *help;     /* Help text */\n} OPTIONS;\n\nstatic const char *prog = \"repro\";\n\nstatic int opt_printf_stderr(const char *fmt, ...)\n{\n    va_list ap;\n    va_start(ap, fmt);\n    int r = vfprintf(stderr, fmt, ap);\n    va_end(ap);\n    return r;\n}\n\nstatic const char *valtype2param(const OPTIONS *o)\n{\n    (void)o;\n    return \"param\";\n}\n\n/* Minimal stub for opt_print; content doesn't matter for triggering the bug. */\nstatic void opt_print(const OPTIONS *o, int doingparams, int width)\n{\n    (void)o;\n    (void)doingparams;\n    (void)width;\n}\n\nvoid opt_help(const OPTIONS *list)\n{\n    const OPTIONS *o;\n    int i, sawparams = 0, width = 5;\n    int standard_prolog;\n\n    /* Starts with its own help message? */\n    standard_prolog = list[0].name != OPT_HELP_STR;\n\n    /* Find the widest help. */\n    for (o = list; o->name; o++) {\n        if (o->name == OPT_MORE_STR)\n            continue;\n\n        /* BUG: No exclusion for OPT_HELP_STR, OPT_SECTION_STR, OPT_PARAM_STR here. */\n        i = 2 + (int)strlen(o->name);  /* This strlen on sentinel pointer causes OOB-read */\n        if (o->valtype != '-')\n            i += 1 + (int)strlen(valtype2param(o));\n\n        if (i > width)\n            width = i;\n    }\n\n    if (width > MAX_OPT_HELP_WIDTH)\n        width = MAX_OPT_HELP_WIDTH;\n\n    if (standard_prolog) {\n        opt_printf_stderr(\"Usage: %s [options]\\n\", prog);\n        if (list[0].name != OPT_SECTION_STR)\n            opt_printf_stderr(\"Valid options are:\\n\");\n    }\n\n    /* Now let's print. */\n    for (o = list; o->name; o++) {\n        if (o->name == OPT_PARAM_STR)\n            sawparams = 1;\n        opt_print(o, sawparams, width);\n    }\n}\n\nint main(void)\n{\n    /* The first entry is a sentinel (OPT_HELP_STR), which is NOT a C string. */\n    static const OPTIONS opts[] = {\n        { OPT_HELP_STR, '-', \"(help sentinel)\" },\n        /* Additional sentinels would also trigger the issue if reached: */\n        { OPT_SECTION_STR, '-', \"(section sentinel)\" },\n        { OPT_PARAM_STR,   '-', \"(param sentinel)\" },\n        /* Terminate list with NULL name as per iteration condition. */\n        { NULL, 0, NULL }\n    };\n\n    /* This call will hit strlen(o->name) on a non-string pointer and crash under ASan. */\n    opt_help(opts);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8289792537689209,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4136878==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000001 (pc 0x7f4a4138b7dd bp 0x7ffdfc35a900 sp 0x7ffdfc35a0b8 T0)\n==4136878==The signal is caused by a READ memory access.\n==4136878==Hint: address points to the zero page.\n    #0 0x7f4a4138b7dd in __strlen_avx2 string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76\n    #1 0x58719c91a76c in strlen (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer+0x3776c) (BuildId: 25224dbf95fb472e9e3bd821ec70f9149a6497fe)\n    #2 0x58719c9c3d91 in opt_help /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:61:22\n    #3 0x58719c9c419a in main /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:99:5\n    #4 0x7f4a4122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7f4a4122a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x58719c904304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer+0x21304) (BuildId: 25224dbf95fb472e9e3bd821ec70f9149a6497fe)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76 in __strlen_avx2\n==4136878==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__strlen_avx2",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+      "crash_line": 76,
+      "frames": [
+        [
+          "0",
+          "__strlen_avx2",
+          "string/../sysdeps/x86_64/multiarch/strlen-avx2.S",
+          "76"
+        ],
+        [
+          "2",
+          "opt_help",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:61",
+          "22"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_1217_out-of-bounds-read/reproducer.c:99",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

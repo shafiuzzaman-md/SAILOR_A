@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3727169==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x585d7dbcdf61 bp 0x7ffcd7977da0 sp 0x7ffcd7977c60 T0)
+==3727169==The signal is caused by a WRITE memory access.
+==3727169==Hint: address points to the zero page.
+    #0 0x585d7dbcdf61 in PngLoadImage /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63:26
+    #1 0x585d7dbce127 in main /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:77:11
+    #2 0x7b0148c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7b0148c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x585d7db0e304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer+0x21304) (BuildId: 486341e53459344155a2aa774e056e1419cdd010)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63:26 in PngLoadImage
+==3727169==ABORTING

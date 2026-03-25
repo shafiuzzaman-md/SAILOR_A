@@ -1,0 +1,51 @@
+=================================================================
+==2652770==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000014 at pc 0x5bb82db73373 bp 0x7fff936f88d0 sp 0x7fff936f88c0
+READ of size 1 at 0x502000000014 thread T0
+    #0 0x5bb82db73372 in TIFFReverseBits /tmp/libtiff_upstream/libtiff/tif_swab.c:318
+    #1 0x5bb82db714e1 in entry_func /tmp/libtiff_reverify_v3/729_tif_swab.c_318_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_wrapper.c:8
+    #2 0x5bb82db713f4 in main /app/artifacts/libtiff_f324415_vul/concrete_artifacts/findings/729_tif_swab.c_318_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//reproducer.c:40
+    #3 0x783f7262a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #4 0x783f7262a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #5 0x5bb82db711c4 in _start (/tmp/libtiff_reverify_v3/729_tif_swab.c_318_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_bin+0x11c4) (BuildId: 44848ce49b895b861cf7c7fd12c30a4f96bb0bea)
+
+0x502000000014 is located 0 bytes after 4-byte region [0x502000000010,0x502000000014)
+allocated by thread T0 here:
+    #0 0x783f72afd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x5bb82db71319 in main /app/artifacts/libtiff_f324415_vul/concrete_artifacts/findings/729_tif_swab.c_318_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//reproducer.c:22
+    #2 0x783f7262a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x783f7262a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x5bb82db711c4 in _start (/tmp/libtiff_reverify_v3/729_tif_swab.c_318_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_bin+0x11c4) (BuildId: 44848ce49b895b861cf7c7fd12c30a4f96bb0bea)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libtiff_upstream/libtiff/tif_swab.c:318 in TIFFReverseBits
+Shadow bytes around the buggy address:
+  0x501ffffffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501ffffffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501ffffffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x501fffffff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x502000000000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000100: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000180: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x502000000280: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2652770==ABORTING

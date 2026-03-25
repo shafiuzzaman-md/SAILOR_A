@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "parseutils.c",
+    "original_line": 652,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "647:             if (q)\n648:                 break;\n649:         }\n650:     } else {\n651:         /* parse timestr as a duration */\n652:         if (p[0] == '-') {\n653:             negative = 1;\n654:             ++p;\n655:         }\n656:         /* parse timestr as HH:MM:SS */\n657:         q = av_small_strptime(p, \"%J:%M:%S\", &dt);"
+  },
+  "klee_crash": {
+    "harness_file": "parseutils.c",
+    "harness_line": 20,
+    "original_file": "parseutils.c",
+    "original_line": 652,
+    "original_code": "if (p[0] == '-') {",
+    "original_context": "    649:         }\n    650:     } else {\n    651:         /* parse timestr as a duration */\n>>> 652:         if (p[0] == '-') {\n    653:             negative = 1;\n    654:             ++p;\n    655:         }",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: parseutils.c\nLine: 20\nassembly.ll line: 89\nState: 1\nStack: \n\t#000000089 in av_parse_time(138719327907840, 139075810193424, symbolic) at parseutils.c:20\n\t#100000065 in entry_func(138719327907840, 139075810193424, symbolic) at parseutils.c:10\n\t#200000039 in main() at driver.c:25\nInfo: \n\taddress: 139075810193424\n\tnext: object at 138707516747776 of size 4\n\t\tMO50[4] allocated at av_parse_time():  %6 = alloca i32, align 4\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "timestr_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "duration",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23823_parseutils.c_652_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "parseutils.c",
+      "harness_line": 20,
+      "original_file": "parseutils.c",
+      "original_line": 652,
+      "error_type": "ptr",
+      "crash_function": "av_parse_time",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23823_parseutils.c_652_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

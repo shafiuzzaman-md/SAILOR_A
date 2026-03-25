@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,1,1,2,0,0,0,0,2 FP: C++ runtime (TIFFStreamOpen external + std::string OOB)
+B2: LLM+KLEE no SA,19,18,6,6,0,0,0,All SE_DETECTED in harness.c/stubs
+B3: Pure LLM detect,116,—,34,28,3,3,3,3 unique library locations (tif_dumpmode/tif_pdsdirread/tif_pdsdirwrite)
+B4: SA+LLM detect,—,—,—,—,—,—,8,TBD pending re-verification
+SAILOR-GPT5,—,—,172,—,—,—,14,14 unique verified bugs

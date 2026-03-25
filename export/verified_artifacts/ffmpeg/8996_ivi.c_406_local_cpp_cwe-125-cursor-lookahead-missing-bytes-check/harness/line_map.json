@@ -1,0 +1,64 @@
+{
+  "ivi.c": {
+    "6": {
+      "orig_file": "ivi.c",
+      "orig_line": 889,
+      "code": "#endif"
+    },
+    "18": {
+      "orig_file": "ivi.c",
+      "orig_line": 396,
+      "code": "av_cold int ff_ivi_init_tiles(IVIPlaneDesc *planes,"
+    },
+    "19": {
+      "orig_file": "ivi.c",
+      "orig_line": 397,
+      "code": "int tile_width, int tile_height)"
+    },
+    "20": {
+      "orig_file": "ivi.c",
+      "orig_line": 398,
+      "code": "{"
+    },
+    "24": {
+      "orig_file": "ivi.c",
+      "orig_line": 402,
+      "code": "for (p = 0; p < 3; p++) {"
+    },
+    "25": {
+      "orig_file": "ivi.c",
+      "orig_line": 403,
+      "code": "t_width  = !p ? tile_width  : (tile_width  + 3) >> 2;"
+    },
+    "26": {
+      "orig_file": "ivi.c",
+      "orig_line": 404,
+      "code": "t_height = !p ? tile_height : (tile_height + 3) >> 2;"
+    },
+    "29": {
+      "orig_file": "ivi.c",
+      "orig_line": 406,
+      "code": "if (!p && planes[0].num_bands == 4) {"
+    },
+    "30": {
+      "orig_file": "ivi.c",
+      "orig_line": 410,
+      "code": "}"
+    },
+    "33": {
+      "orig_file": "ivi.c",
+      "orig_line": 410,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "ivi.c",
+      "orig_line": 393,
+      "code": "return 0;"
+    },
+    "36": {
+      "orig_file": "ivi.c",
+      "orig_line": 394,
+      "code": "}"
+    }
+  }
+}

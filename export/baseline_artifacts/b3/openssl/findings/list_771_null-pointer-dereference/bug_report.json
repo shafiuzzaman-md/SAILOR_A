@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/list.c",
+    "line": 771,
+    "function": "collect_signatures",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "sk_EVP_SIGNATURE_new() in list_signatures() (line 778) is not checked for NULL. If it returns NULL, the NULL stack is passed into EVP_SIGNATURE_do_all_provided() and then to collect_signatures(), where sk_EVP_SIGNATURE_push(sig_stack, sig) dereferences the NULL pointer.",
+    "abs_path": "/tmp/openssl_upstream/apps/list.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for null-pointer-dereference in collect_signatures\n// It simulates sk_EVP_SIGNATURE_new() returning NULL, leading to passing a NULL\n// stack into collect_signatures(), where sk_EVP_SIGNATURE_push() dereferences it.\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Minimal type stubs to mimic the relevant OpenSSL API\n\ntypedef struct evp_signature_st {\n    int refcnt;\n} EVP_SIGNATURE;\n\n// Emulate STACK_OF(EVP_SIGNATURE)\n#define STACK_OF(type) struct stack_st_##type\nstruct stack_st_EVP_SIGNATURE {\n    int num;\n    EVP_SIGNATURE **data;\n};\n\n// Forward declarations matching the vulnerable path\nstatic int signature_cmp(const EVP_SIGNATURE *const *a, const EVP_SIGNATURE *const *b);\nstatic int is_signature_fetchable(EVP_SIGNATURE *sig);\nstatic int EVP_SIGNATURE_up_ref(EVP_SIGNATURE *sig);\nstatic void EVP_SIGNATURE_free(EVP_SIGNATURE *sig);\nstatic STACK_OF(EVP_SIGNATURE) *sk_EVP_SIGNATURE_new(int (*cmp)(const EVP_SIGNATURE *const *, const EVP_SIGNATURE *const *));\nstatic int sk_EVP_SIGNATURE_push(STACK_OF(EVP_SIGNATURE) *st, EVP_SIGNATURE *val);\nstatic void *app_get0_libctx(void);\nstatic void EVP_SIGNATURE_do_all_provided(void *libctx, void (*fn)(EVP_SIGNATURE *, void *), void *arg);\n\n// Vulnerable callback as in apps/list.c\nstatic void collect_signatures(EVP_SIGNATURE *sig, void *stack) {\n    STACK_OF(EVP_SIGNATURE) *sig_stack = stack;\n\n    if (is_signature_fetchable(sig)\n        && EVP_SIGNATURE_up_ref(sig)\n        && sk_EVP_SIGNATURE_push(sig_stack, sig) <= 0)\n        EVP_SIGNATURE_free(sig); /* up-ref successful but push to stack failed */\n}\n\n// Minimal version of list_signatures() that reaches the vulnerable path\nstatic void list_signatures(void) {\n    // sk_EVP_SIGNATURE_new() is stubbed to return NULL to simulate allocation failure\n    STACK_OF(EVP_SIGNATURE) *sig_stack = sk_EVP_SIGNATURE_new(signature_cmp);\n\n    // sig_stack is NULL here, but is passed into the iteration callback\n    EVP_SIGNATURE_do_all_provided(app_get0_libctx(), collect_signatures, sig_stack);\n\n    // No further code needed; the crash happens inside collect_signatures -> sk_EVP_SIGNATURE_push\n}\n\n// ---------------- Stubs to drive the path ----------------\nstatic int signature_cmp(const EVP_SIGNATURE *const *a, const EVP_SIGNATURE *const *b) {\n    (void)a; (void)b; return 0;\n}\n\nstatic int is_signature_fetchable(EVP_SIGNATURE *sig) {\n    (void)sig; return 1; // Always treat as fetchable\n}\n\nstatic int EVP_SIGNATURE_up_ref(EVP_SIGNATURE *sig) {\n    if (sig) sig->refcnt++;\n    return 1; // Succeed\n}\n\nstatic void EVP_SIGNATURE_free(EVP_SIGNATURE *sig) {\n    // In this minimal stub we just free the object\n    free(sig);\n}\n\n// Simulate allocation failure: return NULL\nstatic STACK_OF(EVP_SIGNATURE) *sk_EVP_SIGNATURE_new(int (*cmp)(const EVP_SIGNATURE *const *, const EVP_SIGNATURE *const *)) {\n    (void)cmp; // Unused in this stub\n    return NULL; // Critical for triggering the bug\n}\n\n// This intentionally dereferences the stack, which will be NULL in this reproducer\nstatic int sk_EVP_SIGNATURE_push(STACK_OF(EVP_SIGNATURE) *st, EVP_SIGNATURE *val) {\n    // The following line will dereference a NULL pointer when st == NULL\n    st->num += 1; // Boom: null-pointer-dereference\n    // Not reached; return value shape consistent with OpenSSL's push API\n    (void)val;\n    return st->num;\n}\n\nstatic void *app_get0_libctx(void) {\n    return NULL; // Unused context in this stub\n}\n\n// Calls the provided callback at least once to trigger the vulnerable path\nstatic void EVP_SIGNATURE_do_all_provided(void *libctx, void (*fn)(EVP_SIGNATURE *, void *), void *arg) {\n    (void)libctx;\n    // Create a dummy signature object\n    EVP_SIGNATURE *sig = (EVP_SIGNATURE *)calloc(1, sizeof(*sig));\n    if (!sig) {\n        fprintf(stderr, \"Failed to allocate dummy EVP_SIGNATURE\\n\");\n        return;\n    }\n    // This will call collect_signatures with arg == NULL, leading to NPD in push\n    fn(sig, arg);\n}\n\nint main(void) {\n    fprintf(stderr, \"Triggering collect_signatures with NULL stack...\\n\");\n    list_signatures();\n    // If we got here without crashing (unexpected), exit non-zero\n    fprintf(stderr, \"Unexpectedly survived null-pointer dereference path.\\n\");\n    return 1;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6551015377044678,
+      "output": "Triggering collect_signatures with NULL stack...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4141962==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b2cf6391f91 bp 0x7ffd7b41a4a0 sp 0x7ffd7b41a470 T0)\n==4141962==The signal is caused by a READ memory access.\n==4141962==Hint: address points to the zero page.\n    #0 0x5b2cf6391f91 in sk_EVP_SIGNATURE_push /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81:13\n    #1 0x5b2cf6391e98 in collect_signatures /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:38:12\n    #2 0x5b2cf6391e27 in EVP_SIGNATURE_do_all_provided /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:101:5\n    #3 0x5b2cf6391d6f in list_signatures /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:48:5\n    #4 0x5b2cf6391cef in main /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:106:5\n    #5 0x780f46e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x780f46e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5b2cf62d2304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer+0x21304) (BuildId: b26bd1147cddb750cc6b1152f71407b27682728e)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81:13 in sk_EVP_SIGNATURE_push\n==4141962==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "sk_EVP_SIGNATURE_push",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "sk_EVP_SIGNATURE_push",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:81",
+          "13"
+        ],
+        [
+          "1",
+          "collect_signatures",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:38",
+          "12"
+        ],
+        [
+          "2",
+          "EVP_SIGNATURE_do_all_provided",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:101",
+          "5"
+        ],
+        [
+          "3",
+          "list_signatures",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:48",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_771_null-pointer-dereference/reproducer.c:106",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

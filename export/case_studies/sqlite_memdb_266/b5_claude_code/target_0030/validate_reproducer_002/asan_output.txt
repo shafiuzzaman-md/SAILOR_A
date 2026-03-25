@@ -1,0 +1,52 @@
+=================================================================
+==1315537==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60b000000160 at pc 0x55b4250dc6e4 bp 0x7ffcc757c5a0 sp 0x7ffcc757bd68
+READ of size 4096 at 0x60b000000160 thread T0
+    #0 0x55b4250dc6e3 in __interceptor_memcpy (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_002/reproducer+0x416e3) (BuildId: 4dd81e568d0e329af18307c2543a24348a5d6e98)
+    #1 0x55b42518758e in memcpy /usr/include/x86_64-linux-gnu/bits/string_fortified.h:29:10
+    #2 0x55b42518758e in memdbRead /app/dataset/0f08d958/sqlite_0f08d958_vul/src/memdb.c:266:3
+    #3 0x55b42518cd7d in readDbPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:3041:10
+    #4 0x55b42519167e in getPageNormal.part.0 /app/dataset/0f08d958/sqlite_0f08d958_vul/src/pager.c:5620:12
+    #5 0x55b4251e9230 in btreeGetPage /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:2339:8
+    #6 0x55b4251e9512 in lockBtree /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:3288:8
+    #7 0x55b4251e9512 in btreeBeginTrans /app/dataset/0f08d958/sqlite_0f08d958_vul/src/btree.c:3707:47
+    #8 0x55b425199f2c in sqlite3InitOne /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:262:10
+    #9 0x55b42519a14b in sqlite3Init /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:449:10
+    #10 0x55b42519a18e in sqlite3ReadSchema /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:475:10
+    #11 0x55b425223d6e in yy_reduce /app/dataset/0f08d958/sqlite_0f08d958_vul/parse.y:523:7
+    #12 0x55b425223d6e in sqlite3Parser /app/dataset/0f08d958/sqlite_0f08d958_vul/parse.c:6187:15
+    #13 0x55b4251ac3a3 in sqlite3RunParser /app/dataset/0f08d958/sqlite_0f08d958_vul/src/tokenize.c:713:5
+    #14 0x55b425199568 in sqlite3Prepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:786:5
+    #15 0x55b42519a24d in sqlite3LockAndPrepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:861:10
+    #16 0x55b42519a24d in sqlite3LockAndPrepare /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:836:12
+    #17 0x55b42519a6b9 in sqlite3_prepare_v2 /app/dataset/0f08d958/sqlite_0f08d958_vul/src/prepare.c:950:8
+    #18 0x55b425180428 in main /app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_002/reproducer.c:121:10
+    #19 0x7f10d50ebd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #20 0x7f10d50ebe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #21 0x55b4250c2494 in _start (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_002/reproducer+0x27494) (BuildId: 4dd81e568d0e329af18307c2543a24348a5d6e98)
+
+0x60b000000160 is located 0 bytes to the right of 112-byte region [0x60b0000000f0,0x60b000000160)
+allocated by thread T0 here:
+    #0 0x55b4251452de in __interceptor_malloc (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_002/reproducer+0xaa2de) (BuildId: 4dd81e568d0e329af18307c2543a24348a5d6e98)
+    #1 0x55b425186e57 in sqlite3MemMalloc /app/dataset/0f08d958/sqlite_0f08d958_vul/src/mem1.c:142:7
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b5/sqlite_0f08d958_vul/targets/target_0030/validate_reproducer_002/reproducer+0x416e3) (BuildId: 4dd81e568d0e329af18307c2543a24348a5d6e98) in __interceptor_memcpy
+Shadow bytes around the buggy address:
+  0x0c167fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c167fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c167fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c167fff8000: fa fa fa fa fa fa fa fa fd fd fd fd fd fd fd fd
+  0x0c167fff8010: fd fd fd fd fd fa fa fa fa fa fa fa fa fa 00 00
+=>0x0c167fff8020: 00 00 00 00 00 00 00 00 00 00 00 00[fa]fa fa fa
+  0x0c167fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c167fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c167fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c167fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c167fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right re

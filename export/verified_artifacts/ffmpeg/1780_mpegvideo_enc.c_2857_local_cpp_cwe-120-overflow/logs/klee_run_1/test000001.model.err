@@ -1,0 +1,14 @@
+Error: concretized symbolic size
+File: mpegvideo_enc.c
+Line: 52
+assembly.ll line: 225
+State: 2
+Stack: 
+	#000000225 in av_fast_padded_malloc(138445513965568, 138435313418240, 160) at mpegvideo_enc.c:52
+	#100000153 in ff_mpv_reallocate_putbitbuffer(138941045817344, 16, 32) at mpegvideo_enc.c:69
+	#200000267 in entry_func(138941045817344, 16, 32) at mpegvideo_enc.c:89
+	#300000100 in main() at driver.c:38
+Info: 
+  size expr: (SExt w64 (ReadLSB w32 0 new_buffer_size))
+  concretization : 1
+  unbound example: 128

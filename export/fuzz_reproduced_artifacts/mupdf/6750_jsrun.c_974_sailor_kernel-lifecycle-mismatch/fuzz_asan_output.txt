@@ -1,0 +1,88 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1813752200
+INFO: Loaded 1 modules   (7 inline 8-bit counters): 7 [0x5b295ae327e0, 0x5b295ae327e7), 
+INFO: Loaded 1 PC tables (7 PCs): 7 [0x5b295ae327e8,0x5b295ae32858), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 36b max: 36b total: 36b rss: 29Mb
+=================================================================
+==95363==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000158 at pc 0x5b295ada9e8c bp 0x7ffe1aa79690 sp 0x7ffe1aa79688
+READ of size 8 at 0x602000000158 thread T0
+    #0 0x5b295ada9e8b in js_delglobal /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/mujs/jsrun.c:974:2
+    #1 0x5b295ad6556f in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_harness.c:33:5
+    #2 0x5b295ac8b94a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x5294a) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #3 0x5b295ac8b015 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x52015) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #4 0x5b295ac8cc18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x53c18) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #5 0x5b295ac8d096 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x54096) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #6 0x5b295ac7a682 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x41682) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #7 0x5b295aca5b26 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x6cb26) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #8 0x798d7ac2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x798d7ac2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5b295ac6eab4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x35ab4) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+
+0x602000000158 is located 260 bytes to the right of 4-byte region [0x602000000050,0x602000000054)
+freed by thread T0 here:
+    #0 0x5b295ad291c6 in __interceptor_free (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0xf01c6) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #1 0x5b295ad654f5 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_harness.c:25:5
+    #2 0x5b295ac8b94a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x5294a) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #3 0x5b295ac8b015 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x52015) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #4 0x5b295ac8cc18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x53c18) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #5 0x5b295ac8d096 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x54096) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #6 0x5b295ac7a682 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x41682) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #7 0x5b295aca5b26 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x6cb26) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #8 0x798d7ac2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x798d7ac2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5b295ac6eab4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x35ab4) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+
+previously allocated by thread T0 here:
+    #0 0x5b295ad2965c in __interceptor_calloc (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0xf065c) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #1 0x5b295ad654a1 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_harness.c:18:33
+    #2 0x5b295ac8b94a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x5294a) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #3 0x5b295ac8b015 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x52015) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #4 0x5b295ac8cc18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x53c18) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #5 0x5b295ac8d096 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x54096) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #6 0x5b295ac7a682 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x41682) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #7 0x5b295aca5b26 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x6cb26) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+    #8 0x798d7ac2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x798d7ac2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5b295ac6eab4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/6750_jsrun.c_974_sailor_kernel-lifecycle-mismatch/fuzz_bin+0x35ab4) (BuildId: 945de595f37033572f6acb6696c60b5a9eb18fc7)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/mujs/jsrun.c:974:2 in js_delglobal
+Shadow bytes around the buggy address:
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 00 fa fa fa fd fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa[fa]fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==95363==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-8696cf0f4655636cc93c566c1be2dad311da646c
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

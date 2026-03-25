@@ -1,0 +1,160 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 2804,
+        "function": "jpeg_idct_16x16",
+        "entry_point": "jpeg_idct_16x16",
+        "spine": [
+            "jpeg_idct_16x16"
+        ],
+        "original_context": "2799:     tmp24 = tmp11 - tmp3;\n2800: \n2801:     /* Odd part */\n2802: \n2803:     z1 = (INT32) wsptr[1];\n2804:     z2 = (INT32) wsptr[3];\n2805:     z3 = (INT32) wsptr[5];\n2806:     z4 = (INT32) wsptr[7];\n2807: \n2808:     tmp11 = z1 + z3;\n2809: "
+    },
+    "klee_crash": {
+        "harness_file": "jidctint.c",
+        "harness_line": 44,
+        "original_file": "jidctint.c",
+        "original_line": 2555,
+        "original_code": "z2 = (INT32) wsptr[3];",
+        "original_context": "    2552:     /* Odd part */\n    2553: \n    2554:     z1 = (INT32) wsptr[1];\n>>> 2555:     z2 = (INT32) wsptr[3];\n    2556:     z4 = (INT32) wsptr[5];\n    2557:     z3 = MULTIPLY(z4, FIX(1.224744871));                    /* c5 */\n    2558:     z4 = (INT32) wsptr[7];",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jidctint.c\nLine: 44\nassembly.ll line: 205\nState: 1\nStack: \n\t#000000205 in jpeg_idct_16x16(139171530555392, 139154350686208, 139497948069888, 139446408462336, 0) at jidctint.c:44\n\t#100000103 in main() at driver.c:46\nInfo: \n\taddress: 138884304617484\n\tnext: object at 138871151280128 of size 4\n\t\tMO267[4] allocated at jpeg_idct_16x16():  %20 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "quant_table",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "coef_block",
+            "size": 512,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "out_row",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_idct_16x16",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 2650,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==25088==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000001a8 at pc 0x5625e370576a bp 0x7ffcd72a7d90 sp 0x7ffcd72a7d80\nREAD of size 8 at 0x5020000001a8 thread T0\n    #0 0x5625e3705769 in jpeg_idct_16x16 thirdparty/libjpeg/jidctint.c:2650\n    #1 0x5625e36f76bd in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4410_jidctint.c_2804_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:47\n    #2 0x7f65b234ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f65b234ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5625e36f72e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4410_jidctint.c_2804_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12e4)\n\n0x5020000001a8 is located 8 bytes to the left of 16-byte region [0x5020000001b0,0x5020000001c0)\nallocated by thread T0 here:\n    #0 0x7f65b2701a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5625e36f7607 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4410_jidctint.c_2804_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:41\n    #2 0x7f65b234ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jidctint.c:2650 in jpeg_idct_16x16\nShadow bytes around the buggy address:\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 00 fa fa fa 00 00 fa fa 00 00\n  0x0a047fff8010: fa fa 00 00 fa fa 00 00 fa fa 00 00 fa fa 00 00\n  0x0a047fff8020: fa fa 00 00 fa fa 00 00 fa fa 00 00 fa fa 00 00\n=>0x0a047fff8030: fa fa 00 00 fa[fa]00 00 fa fa 00 00 fa fa 00 00\n  0x0a047fff8040: fa fa 00 00 fa fa 00 00 fa fa fa fa fa fa fa fa\n  0x0a047fff8050: fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4410_jidctint.c_2804_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jidctint.c",
+            "harness_line": 44,
+            "original_file": "jidctint.c",
+            "original_line": 2555,
+            "error_type": "ptr",
+            "crash_function": "jpeg_idct_16x16",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4410_jidctint.c_2804_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_3/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_idct_16x16",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 2650
+        }
+    ]
+}

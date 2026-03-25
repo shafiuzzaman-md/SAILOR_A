@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: bprint.c
+Line: 37
+assembly.ll line: 97
+State: 2
+Stack: 
+	#000000097 in av_bprint_chars(139736648425472, symbolic, symbolic) at bprint.c:37
+	#100000184 in entry_func(139736648425472, symbolic, symbolic) at bprint.c:44
+	#200000246 in main() at driver.c:44

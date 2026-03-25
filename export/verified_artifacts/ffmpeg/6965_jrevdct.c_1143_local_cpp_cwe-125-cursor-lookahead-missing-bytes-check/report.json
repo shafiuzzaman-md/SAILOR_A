@@ -1,0 +1,135 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 22 (sink assert at 24)\nCrash: CRASH: ptr at jrevdct.c:22\nOriginal: jrevdct.c:1143 \u2192 data[0] += 4;\nASan: not confirmed\n\nAll crashes (1):\n  ptr at jrevdct.c:22 \u2192 jrevdct.c:1143\n"
+    ]
+  ],
+  "line_map": {
+    "jrevdct.c": {
+      "1": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 66,
+        "code": "#include <stdint.h>"
+      },
+      "5": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 950,
+        "code": "#define DCTSIZE 4"
+      },
+      "6": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 179,
+        "code": "#endif"
+      },
+      "9": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 179,
+        "code": "#endif"
+      },
+      "11": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 76,
+        "code": "#define DCTSIZE2 64"
+      },
+      "12": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 92,
+        "code": "#endif"
+      },
+      "17": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 1140,
+        "code": "void ff_j_rev_dct2(DCTBLOCK data){"
+      },
+      "18": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 1141,
+        "code": "int d00, d01, d10, d11;"
+      },
+      "22": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 1143,
+        "code": "data[0] += 4;"
+      },
+      "25": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 1138,
+        "code": "}"
+      },
+      "31": {
+        "orig_file": "jrevdct.c",
+        "orig_line": 1138,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "jrevdct.c",
+      "original_line": 1143,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "1138: }\n1139: \n1140: void ff_j_rev_dct2(DCTBLOCK data){\n1141:   int d00, d01, d10, d11;\n1142: \n1143:   data[0] += 4;\n1144:   d00 = data[0+0*DCTSTRIDE] + data[1+0*DCTSTRIDE];\n1145:   d01 = data[0+0*DCTSTRIDE] - data[1+0*DCTSTRIDE];\n1146:   d10 = data[0+1*DCTSTRIDE] + data[1+1*DCTSTRIDE];\n1147:   d11 = data[0+1*DCTSTRIDE] - data[1+1*DCTSTRIDE];\n1148: "
+    },
+    "klee_crash": {
+      "harness_file": "jrevdct.c",
+      "harness_line": 22,
+      "original_file": "jrevdct.c",
+      "original_line": 1143,
+      "original_code": "data[0] += 4;",
+      "original_context": "    1140: void ff_j_rev_dct2(DCTBLOCK data){\n    1141:   int d00, d01, d10, d11;\n    1142: \n>>> 1143:   data[0] += 4;\n    1144:   d00 = data[0+0*DCTSTRIDE] + data[1+0*DCTSTRIDE];\n    1145:   d01 = data[0+0*DCTSTRIDE] - data[1+0*DCTSTRIDE];\n    1146:   d10 = data[0+1*DCTSTRIDE] + data[1+1*DCTSTRIDE];",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: jrevdct.c\nLine: 22\nassembly.ll line: 72\nState: 1\nStack: \n\t#000000072 in ff_j_rev_dct2(139037565341698) at jrevdct.c:22\n\t#100000090 in entry_point(139037565341698) at jrevdct.c:29\n\t#200000037 in main() at driver.c:19\nInfo: \n\taddress: 139037565341698\n\tnext: object at 138737991372800 of size 4\n\t\tMO37[4] allocated at ff_j_rev_dct2():  %5 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "raw_bytes",
+        "size": 2,
+        "data": "b'\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6965_jrevdct.c_1143_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "jrevdct.c",
+        "harness_line": 22,
+        "original_file": "jrevdct.c",
+        "original_line": 1143,
+        "error_type": "ptr",
+        "crash_function": "ff_j_rev_dct2",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6965_jrevdct.c_1143_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

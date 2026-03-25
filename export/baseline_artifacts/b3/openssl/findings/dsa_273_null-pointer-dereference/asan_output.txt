@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4125706==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5eaf82a0917d bp 0x7ffd18b965f0 sp 0x7ffd18b965d0 T0)
+==4125706==The signal is caused by a READ memory access.
+==4125706==Hint: address points to the zero page.
+    #0 0x5eaf82a0917d in OSSL_ENCODER_CTX_get_num_encoders /app/se_runs/b3/openssl_67b5686b_vul/findings/dsa_273_null-pointer-dereference/reproducer.c:48:17
+    #1 0x5eaf82a08e99 in trigger_dsa_vuln /app/se_runs/b3/openssl_67b5686b_vul/findings/dsa_273_null-pointer-dereference/reproducer.c:129:9
+    #2 0x5eaf82a08cc3 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/dsa_273_null-pointer-dereference/reproducer.c:147:5
+    #3 0x7a889bc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7a889bc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5eaf82949314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/dsa_273_null-pointer-dereference/reproducer+0x21314) (BuildId: 986d8b862c1a553787f17d080208e2c5fe0561f7)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/dsa_273_null-pointer-dereference/reproducer.c:48:17 in OSSL_ENCODER_CTX_get_num_encoders
+==4125706==ABORTING

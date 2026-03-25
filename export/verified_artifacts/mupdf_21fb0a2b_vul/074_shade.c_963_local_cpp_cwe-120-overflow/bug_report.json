@@ -1,0 +1,86 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "shade.c",
+        "original_line": 963,
+        "function": "fz_process_shade_type7",
+        "entry_point": "fz_process_shade",
+        "spine": [
+            "fz_process_shade",
+            "fz_process_shade_type7"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "shade.c",
+        "harness_line": 62,
+        "original_file": "shade.c",
+        "original_line": 963,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=1)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 281\nState: 13\nStack: \n\t#000000281 in memcpy(138837210423296, 138854390292480, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000239 in fz_process_shade_type7(139099203428352, 139236642381824, 138826473005056) at shade.c:62\n\t#200000148 in fz_process_shade(139099203428352, 139236642381824, 138828620488704, 0, 0, 0, 0, 0) at shade.c:78\n\t#300000078 in main() at driver.c:26\nInfo: \n\taddress: 13"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ncomp",
+            "size": 4,
+            "data": "b'@\\x00\\x00\\x00'"
+        },
+        {
+            "name": "cbuf",
+            "size": 2048,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "patch_init",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_process_shade",
+        "crash_file": "source/fitz/shade.c",
+        "crash_line": 992,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3668==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50300000010c at pc 0x56359698fc55 bp 0x7ffc8af86800 sp 0x7ffc8af867f0\nREAD of size 4 at 0x50300000010c thread T0\n    #0 0x56359698fc54 in fz_process_shade source/fitz/shade.c:992\n    #1 0x563596982b9f in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/074_shade.c_963_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:27\n    #2 0x7f59514cad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f59514cae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x563596982834 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/074_shade.c_963_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x21834)\n\n0x50300000010c is located 180 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7f5951881a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5635969829cc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/074_shade.c_963_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:9\n    #2 0x7f59514cad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/shade.c:992 in fz_process_shade\nShadow bytes around the buggy address:\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a067fff8020: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8060: fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/074_shade.c_963_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "shade.c",
+            "harness_line": 62,
+            "original_file": "shade.c",
+            "original_line": 963,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/074_shade.c_963_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_process_shade",
+            "crash_file": "source/fitz/shade.c",
+            "crash_line": 992
+        }
+    ]
+}

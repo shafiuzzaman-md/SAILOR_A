@@ -1,0 +1,20 @@
+Spec	Verdict	OrigBugFile	OrigBugFunc	CrashFile	CrashFunc	CrashLine
+makepng_1578_null-pointer-dereference	CONFIRMED_IN_A	strcpy-avx2.S	__strcpy_avx2	strcpy-avx2.S	__strcpy_avx2	127
+makepng_1600_null-pointer-dereference	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	323
+pngunknown_327_out-of-bounds-read	CONFIRMED_IN_A	pngunknown.c	find			0
+VisualPng_109_out-of-bounds-write	CONFIRMED_IN_A	VisualPng.c	WinMain			0
+VisualPng_111_out-of-bounds-write	CONFIRMED_IN_A	VisualPng.c	WinMain			0
+filter_mmi_inline_assembly_33_out-of-bounds-read	NOT_REPRODUCIBLE					
+filter_mmi_inline_assembly_122_heap-buffer-overflow	NOT_REPRODUCIBLE					
+filter_mmi_inline_assembly_120_out-of-bounds-read	CONFIRMED_IN_A	filter_mmi_inline_assembly.c	png_read_filter_row_sub4_mmi			0
+filter_mmi_inline_assembly_169_out-of-bounds-read	NOT_REPRODUCIBLE					
+filter_msa_intrinsics_394_out-of-bounds-write	NOT_REPRODUCIBLE					
+filter_msa_intrinsics_430_out-of-bounds-write	NOT_REPRODUCIBLE					
+filter_msa_intrinsics_441_out-of-bounds-write	CONFIRMED_IN_A	filter_msa_intrinsics.c	png_read_filter_row_up_msa			0
+filter_msa_intrinsics_388_out-of-bounds-read	CONFIRMED_IN_A	filter_msa_intrinsics.c	png_read_filter_row_up_msa			0
+filter_msa_intrinsics_435_out-of-bounds-read	NOT_REPRODUCIBLE					
+filter_msa_intrinsics_482_out-of-bounds-write	CONFIRMED_IN_A	filter_msa_intrinsics.c	png_read_filter_row_sub4_msa			0
+png_609_heap-buffer-overflow	CONFIRMED_IN_A	png.c	png_free_data			0
+png_4007_null-pointer-dereference	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	271
+pngrutil_4911_heap-buffer-overflow	CONFIRMED_IN_A	pngrutil.c	png_read_reinit			0
+pngset_794_heap-buffer-overflow	CONFIRMED_IN_A	pngset.c	png_set_PLTE			0

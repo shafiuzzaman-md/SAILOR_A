@@ -1,0 +1,138 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 175854,
+    "tokens_prompt": 162860,
+    "tokens_completion": 12994,
+    "turns": 16,
+    "klee_runs": 3
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "vp9recon.c",
+    "line": 611,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/23139_vp9recon.c_611_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "vp9recon.c",
+  "vul_line": "611",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 3,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "vp9recon.c",
+      "original_line": 611,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "606:     }\n607: \n608:     if (!b->skip) {\n609:         /* mostly copied intra_recon() */\n610: \n611:         int w4 = ff_vp9_bwh_tab[1][b->bs][0] << 1, step1d = 1 << b->tx, n;\n612:         int h4 = ff_vp9_bwh_tab[1][b->bs][1] << 1, x, y, step = 1 << (b->tx * 2);\n613:         int end_x = FFMIN(2 * (s->cols - col), w4);\n614:         int end_y = FFMIN(2 * (s->rows - row), h4);\n615:         int tx = 4 * s->s.h.lossless + b->tx, uvtx = b->uvtx + 4 * s->s.h.lossless;\n616:         int uvstep1d = 1 << b->uvtx, p;"
+    },
+    "klee_crash": {
+      "harness_file": "vp9recon.c",
+      "harness_line": 42,
+      "original_file": "vp9recon.c",
+      "original_line": 611,
+      "original_code": "int w4 = ff_vp9_bwh_tab[1][b->bs][0] << 1, step1d = 1 << b->tx, n;",
+      "original_context": "    608:     if (!b->skip) {\n    609:         /* mostly copied intra_recon() */\n    610: \n>>> 611:         int w4 = ff_vp9_bwh_tab[1][b->bs][0] << 1, step1d = 1 << b->tx, n;\n    612:         int h4 = ff_vp9_bwh_tab[1][b->bs][1] << 1, x, y, step = 1 << (b->tx * 2);\n    613:         int end_x = FFMIN(2 * (s->cols - col), w4);\n    614:         int end_y = FFMIN(2 * (s->rows - row), h4);",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: vp9recon.c\nLine: 42\nassembly.ll line: 132\nState: 10\nStack: \n\t#000000132 in inter_recon(139111142625280) at vp9recon.c:42\n\t#100000100 in ff_vp9_inter_recon_8bpp(139111142625280) at vp9recon.c:35\n\t#200000080 in main() at driver.c:32\nInfo: \n\taddress: (Add w64 139905174704136\n          (Mul w64 2\n                   (SExt w64 (ReadLSB w32 0 bs))))\n\texample: 139900879736840\n\trange: [139900879736840, 139909469671430]\n\tnext: object at 138673592832000 of si"
+    },
+    "concrete_inputs": [
+      {
+        "name": "bs",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x80'"
+      },
+      {
+        "name": "tx",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bs",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00`'"
+      },
+      {
+        "name": "tx",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bs",
+        "size": 4,
+        "data": "b'\\x0e\\x00\\x00@'"
+      },
+      {
+        "name": "tx",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23139_vp9recon.c_611_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "vp9recon.c",
+        "harness_line": 42,
+        "original_file": "vp9recon.c",
+        "original_line": 611,
+        "error_type": "ptr",
+        "crash_function": "inter_recon",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23139_vp9recon.c_611_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_3/test000001.ktest"
+      },
+      {
+        "harness_file": "vp9recon.c",
+        "harness_line": 46,
+        "original_file": "vp9recon.c",
+        "original_line": 606,
+        "error_type": "assert",
+        "crash_function": "inter_recon",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23139_vp9recon.c_611_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_3/test000002.ktest"
+      },
+      {
+        "harness_file": "vp9recon.c",
+        "harness_line": 43,
+        "original_file": "vp9recon.c",
+        "original_line": 612,
+        "error_type": "ptr",
+        "crash_function": "inter_recon",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23139_vp9recon.c_611_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_3/test000003.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

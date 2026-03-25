@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/list.c",
+    "line": 716,
+    "function": "collect_skeymanagers",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "sk_EVP_SKEYMGMT_new() in list_skeymanagers() (line 723) is not checked for NULL. A NULL km_stack is passed through EVP_SKEYMGMT_do_all_provided() to collect_skeymanagers(), which then calls sk_EVP_SKEYMGMT_push(km_stack, km) and dereferences the NULL pointer.",
+    "abs_path": "/tmp/openssl_upstream/apps/list.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for null-pointer-dereference in collect_skeymanagers\n// It mimics the vulnerable OpenSSL apps/list.c code path where\n// sk_EVP_SKEYMGMT_new() returns NULL and that NULL is used in\n// collect_skeymanagers() via sk_EVP_SKEYMGMT_push().\n\n#include <stdio.h>\n#include <stdlib.h>\n\n// Minimal stand-ins for OpenSSL's STACK_OF macro and types\n#define STACK_OF(type) struct stack_st_##type\n\ntypedef struct evp_skeymgmt_st {\n    int refcnt;\n} EVP_SKEYMGMT;\n\nstruct stack_st_EVP_SKEYMGMT {\n    int n;\n};\n\n// Stub helper: always report fetchable\nstatic int is_skeymgmt_fetchable(EVP_SKEYMGMT *km) {\n    (void)km;\n    return 1;\n}\n\n// Stub: increments ref (no-op)\nstatic void EVP_SKEYMGMT_up_ref(EVP_SKEYMGMT *km) {\n    if (km) km->refcnt++;\n}\n\n// Vulnerable push: dereferences the stack pointer (will crash if NULL)\nstatic int sk_EVP_SKEYMGMT_push(STACK_OF(EVP_SKEYMGMT) *st, EVP_SKEYMGMT *km) {\n    // This dereference makes the NULL bug visible under ASan\n    st->n += 1;  // If st == NULL, this is a null dereference\n    (void)km;\n    return st->n;\n}\n\n// Comparator (unused in this reproducer, but matches signature)\nstatic int skeymanager_cmp(const EVP_SKEYMGMT *const *a,\n                           const EVP_SKEYMGMT *const *b) {\n    (void)a; (void)b;\n    return 0;\n}\n\n// Stub: simulate allocation failure -> returns NULL\nstatic STACK_OF(EVP_SKEYMGMT) *sk_EVP_SKEYMGMT_new(\n    int (*cmp)(const EVP_SKEYMGMT *const *, const EVP_SKEYMGMT *const *)) {\n    (void)cmp;\n    return NULL;  // Critical: forces km_stack to be NULL\n}\n\n// Stub: app libctx provider handle (unused)\nstatic void *app_get0_libctx(void) {\n    return NULL;\n}\n\n// Callback collection function (matches vulnerable code path)\nstatic void collect_skeymanagers(EVP_SKEYMGMT *km, void *stack) {\n    STACK_OF(EVP_SKEYMGMT) *km_stack = stack;\n\n    // Line modeled after the vulnerable code:\n    // if (is_skeymgmt_fetchable(km)\n    //     && sk_EVP_SKEYMGMT_push(km_stack, km) > 0)\n    //     EVP_SKEYMGMT_up_ref(km);\n    if (is_skeymgmt_fetchable(km)\n        && sk_EVP_SKEYMGMT_push(km_stack, km) > 0)\n        EVP_SKEYMGMT_up_ref(km);\n}\n\n// Iterate over provided implementations and call the collector\nstatic void EVP_SKEYMGMT_do_all_provided(void *libctx,\n                                         void (*fn)(EVP_SKEYMGMT *, void *),\n                                         void *stack) {\n    (void)libctx;\n    EVP_SKEYMGMT dummy = {0};\n    // Call the callback once with a valid km and the (possibly NULL) stack\n    fn(&dummy, stack);\n}\n\n// Minimal list_skeymanagers that triggers the bug early\nstatic void list_skeymanagers(void) {\n    // km_stack becomes NULL due to simulated allocation failure\n    STACK_OF(EVP_SKEYMGMT) *km_stack = sk_EVP_SKEYMGMT_new(skeymanager_cmp);\n\n    // This passes the NULL km_stack into the callback, which then calls\n    // sk_EVP_SKEYMGMT_push(km_stack, ...), dereferencing NULL.\n    EVP_SKEYMGMT_do_all_provided(app_get0_libctx(), collect_skeymanagers, km_stack);\n}\n\nint main(void) {\n    // Trigger the vulnerable path\n    list_skeymanagers();\n    // If we get here, the bug didn't trigger\n    puts(\"Did not trigger (unexpected)\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7744274139404297,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4141466==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x643500595f31 bp 0x7fff8bd5e400 sp 0x7fff8bd5e3d0 T0)\n==4141466==The signal is caused by a READ memory access.\n==4141466==Hint: address points to the zero page.\n    #0 0x643500595f31 in sk_EVP_SKEYMGMT_push /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:34:11\n    #1 0x643500595eb6 in collect_skeymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:67:12\n    #2 0x643500595e16 in EVP_SKEYMGMT_do_all_provided /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:78:5\n    #3 0x643500595cff in list_skeymanagers /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:88:5\n    #4 0x643500595cb3 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:93:5\n    #5 0x76a5e0e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x76a5e0e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x6435004d6304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer+0x20304) (BuildId: 4358d3b4652ae700c08b4c2a81c01dc7a6a65960)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:34:11 in sk_EVP_SKEYMGMT_push\n==4141466==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "sk_EVP_SKEYMGMT_push",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:34",
+      "crash_line": 11,
+      "frames": [
+        [
+          "0",
+          "sk_EVP_SKEYMGMT_push",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:34",
+          "11"
+        ],
+        [
+          "1",
+          "collect_skeymanagers",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:67",
+          "12"
+        ],
+        [
+          "2",
+          "EVP_SKEYMGMT_do_all_provided",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:78",
+          "5"
+        ],
+        [
+          "3",
+          "list_skeymanagers",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:88",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/list_716_null-pointer-dereference/reproducer.c:93",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

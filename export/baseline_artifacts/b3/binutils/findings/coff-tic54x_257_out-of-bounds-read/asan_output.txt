@@ -1,0 +1,42 @@
+=================================================================
+==3609209==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5f2304847c80 at pc 0x5f2304810f3c bp 0x7fff14024d50 sp 0x7fff14024d48
+READ of size 4 at 0x5f2304847c80 thread T0
+    #0 0x5f2304810f3b in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83:43
+    #1 0x739a3ce2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #2 0x739a3ce2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #3 0x5f2304751304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer+0x21304) (BuildId: 01dbdb05f10e1ea1eedf24020113948d7ba1bcc0)
+
+Address 0x5f2304847c80 is a wild pointer inside of access range of size 0x000000000004.
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic54x_257_out-of-bounds-read/reproducer.c:83:43 in main
+Shadow bytes around the buggy address:
+  0x0be4e0900f40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0be4e0900f50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0be4e0900f60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0be4e0900f70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0be4e0900f80: 00 00 00 00 00 00 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+=>0x0be4e0900f90:[f9]f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0be4e0900fa0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0be4e0900fb0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0be4e0900fc0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0be4e0900fd0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0be4e0900fe0: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3609209==ABORTING

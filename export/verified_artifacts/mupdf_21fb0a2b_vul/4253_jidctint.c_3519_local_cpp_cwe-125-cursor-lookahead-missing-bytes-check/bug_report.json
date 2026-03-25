@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_idct_12x6",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 3398
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_idct_12x6",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 3398,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==24784==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000001a8 at pc 0x55726299cbdb bp 0x7ffc07669e60 sp 0x7ffc07669e50\nREAD of size 8 at 0x5020000001a8 thread T0\n    #0 0x55726299cbda in jpeg_idct_12x6 thirdparty/libjpeg/jidctint.c:3398\n    #1 0x55726298b4d6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4253_jidctint.c_3519_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:31\n    #2 0x7f8c7aec0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f8c7aec0e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55726298b2e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4253_jidctint.c_3519_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12e4)\n\n0x5020000001a8 is located 336 bytes to the right of 8-byte region [0x502000000050,0x502000000058)\nallocated by thread T0 here:\n    #0 0x7f8c7b277a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55726298b43e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4253_jidctint.c_3519_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:19\n    #2 0x7f8c7aec0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jidctint.c:3398 in jpeg_idct_12x6\nShadow bytes around the buggy address:\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 00 fa fa fa 00 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff8030: fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8050: fa fa fa fa fa fa fa"
+    }
+}

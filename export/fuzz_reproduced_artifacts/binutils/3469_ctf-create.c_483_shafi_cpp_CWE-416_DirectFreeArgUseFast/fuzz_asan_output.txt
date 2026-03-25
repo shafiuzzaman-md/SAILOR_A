@@ -1,0 +1,37 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1819420661
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x557246cb4de0, 0x557246cb4de3), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x557246cb4de8,0x557246cb4e18), 
+INFO:        5 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 5 min: 4b max: 279b total: 319b rss: 30Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3357924==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x557246c316a0 bp 0x7fff64f64380 sp 0x7fff64f64360 T0)
+==3357924==The signal is caused by a READ memory access.
+==3357924==Hint: this fault was caused by a dereference of a high value address (see register values below).  Disassemble the provided pc to learn which register was used.
+    #0 0x557246c316a0 in ctf_list_append /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:41:15
+    #1 0x557246c2634c in ctf_err_warn /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-subr.c:279:5
+    #2 0x557246c268e3 in ctf_assert_fail_internal /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-subr.c:381:3
+    #3 0x557246bf6d1d in ctf_assert_internal /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/./ctf-inlines.h:88:5
+    #4 0x557246bf9a27 in ctf_add_encoded /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-create.c:517:8
+    #5 0x557246bf6b43 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_harness.c:45:5
+    #6 0x557246b1f4b3 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x474b3) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #7 0x557246b1ec09 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x46c09) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #8 0x557246b20878 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x48878) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #9 0x557246b20d62 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x48d62) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #10 0x557246b0f0b2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x370b2) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #11 0x557246b38da2 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x60da2) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+    #12 0x7f0d99da5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #13 0x7f0d99da5e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #14 0x557246b03af4 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/ossfuzz/fuzz_bin+0x2baf4) (BuildId: e9a6582df6ead4ab132b2ea9d900de0b9e10c312)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:41:15 in ctf_list_append
+==3357924==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-6768033e216468247bd031a0a2d9876d79818f8f
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAA=

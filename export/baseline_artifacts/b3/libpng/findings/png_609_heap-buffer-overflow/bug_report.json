@@ -1,0 +1,57 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "png.c",
+    "line": 609,
+    "function": "png_free_data",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "When freeing a single unknown chunk (num != -1), the code indexes info_ptr->unknown_chunks[num] without validating num against info_ptr->unknown_chunks_num. An out-of-range num results in out-of-bounds access and a png_free() on an out-of-bounds pointer, potentially corrupting the heap.",
+    "abs_path": "/tmp/libpng_upstream/png.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal re-declarations to model the vulnerable path in libpng's png_free_data */\n\ntypedef struct png_struct_def {\n    int dummy;\n} png_struct, *png_structp;\n\ntypedef struct png_unknown_chunk_def {\n    unsigned char *data;\n} png_unknown_chunk;\n\ntypedef struct png_info_def {\n    png_unknown_chunk *unknown_chunks;\n    int unknown_chunks_num;\n    unsigned int free_me;\n} png_info, *png_infop;\n\n/* Bit used by png_free_data to decide whether to free unknown chunks */\n#define PNG_FREE_UNKN 0x1u\n\n/* Stub that mimics libpng's png_free wrapper */\nstatic void png_free(png_structp png_ptr, void *ptr) {\n    (void)png_ptr; /* unused in this stub */\n    free(ptr);\n}\n\n/* Vulnerable function excerpt modeled after libpng's png_free_data unknown chunks block */\nstatic void png_free_data(png_structp png_ptr, png_infop info_ptr, unsigned int mask, int num)\n{\n    if (info_ptr->unknown_chunks != NULL && ((mask & PNG_FREE_UNKN) & info_ptr->free_me) != 0)\n    {\n        if (num != -1)\n        {\n            /* BUG: no bounds check for num against unknown_chunks_num */\n            png_free(png_ptr, info_ptr->unknown_chunks[num].data); /* OOB read of pointer here */\n            info_ptr->unknown_chunks[num].data = NULL;             /* OOB write to pointer here */\n        }\n        else\n        {\n            int i;\n            for (i = 0; i < info_ptr->unknown_chunks_num; i++)\n                png_free(png_ptr, info_ptr->unknown_chunks[i].data);\n\n            png_free(png_ptr, info_ptr->unknown_chunks);\n            info_ptr->unknown_chunks = NULL;\n            info_ptr->unknown_chunks_num = 0;\n        }\n    }\n}\n\nint main(void)\n{\n    png_struct png;\n    png_info info;\n\n    memset(&png, 0, sizeof(png));\n    memset(&info, 0, sizeof(info));\n\n    /* Set up a single unknown chunk so unknown_chunks_num == 1 */\n    info.unknown_chunks_num = 1;\n    info.unknown_chunks = (png_unknown_chunk*)malloc(sizeof(png_unknown_chunk) * info.unknown_chunks_num);\n    if (!info.unknown_chunks) {\n        fprintf(stderr, \"malloc failed\\n\");\n        return 1;\n    }\n    info.unknown_chunks[0].data = (unsigned char*)malloc(16);\n    if (!info.unknown_chunks[0].data) {\n        fprintf(stderr, \"malloc failed\\n\");\n        return 1;\n    }\n    memset(info.unknown_chunks[0].data, 0xAA, 16);\n\n    /* Mark that unknown chunks are allowed to be freed */\n    info.free_me = PNG_FREE_UNKN;\n\n    /* Choose an out-of-range index to trigger OOB on unknown_chunks[num] */\n    int out_of_range_index = 5; /* unknown_chunks_num == 1, so 5 is out of bounds */\n\n    printf(\"Triggering png_free_data with out-of-range num=%d (unknown_chunks_num=%d)\\n\",\n           out_of_range_index, info.unknown_chunks_num);\n\n    /* This will perform an out-of-bounds access on info.unknown_chunks[num] */\n    png_free_data(&png, &info, PNG_FREE_UNKN, out_of_range_index);\n\n    /* Cleanup the valid chunk to avoid leaks if we reached here */\n    if (info.unknown_chunks && info.unknown_chunks_num > 0 && info.unknown_chunks[0].data) {\n        free(info.unknown_chunks[0].data);\n    }\n    free(info.unknown_chunks);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9105205535888672,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3747836==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x5d0bc01e05eb bp 0x000000000000 sp 0x7fff50390570 T0)\n==3747836==The signal is caused by a READ memory access.\n==3747836==Hint: this fault was caused by a dereference of a high value address (see register values below).  Disassemble the provided pc to learn which register was used.\n    #0 0x5d0bc01e05eb in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType) (/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer+0x235eb) (BuildId: 0d83d033b14a26e7dcb6ff7d89c48c3f21fe844a)\n    #1 0x5d0bc0261ac9 in free (/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer+0xa4ac9) (BuildId: 0d83d033b14a26e7dcb6ff7d89c48c3f21fe844a)\n    #2 0x5d0bc029e728 in png_free /app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:28:5\n    #3 0x5d0bc029e4c8 in png_free_data /app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:39:13\n    #4 0x5d0bc029e1a2 in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:87:5\n    #5 0x7216e602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7216e602a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5d0bc01de304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer+0x21304) (BuildId: 0d83d033b14a26e7dcb6ff7d89c48c3f21fe844a)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV (/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer+0x235eb) (BuildId: 0d83d033b14a26e7dcb6ff7d89c48c3f21fe844a) in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType)\n==3747836==ABORTING\n",
+      "error_type": "SEGV",
+      "frames": [
+        [
+          "2",
+          "png_free",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:28",
+          "5"
+        ],
+        [
+          "3",
+          "png_free_data",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:39",
+          "13"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_609_heap-buffer-overflow/reproducer.c:87",
+          "5"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

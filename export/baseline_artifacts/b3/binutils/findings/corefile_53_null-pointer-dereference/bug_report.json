@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/corefile.c",
+    "line": 53,
+    "function": "bfd_core_file_failing_command",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "Dereferences abfd->format without checking if abfd is NULL, causing a crash if called with a NULL bfd pointer.",
+    "abs_path": "/tmp/binutils_upstream/bfd/corefile.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for BFD types and macros to make this self-contained. */\ntypedef struct bfd {\n  int format;\n} bfd;\n\nenum bfd_format {\n  bfd_object = 0,\n  bfd_archive = 1,\n  bfd_core = 2\n};\n\n#define bfd_error_invalid_operation 1\nstatic void bfd_set_error(int err) { (void)err; }\n\n/* In real BFD, BFD_SEND dispatches via the target vector; we won't reach it. */\n#define BFD_SEND(abfd, field, args) ((const char *)\"unreachable\")\n\n/* Vulnerable function as in bfd/corefile.c */\nconst char *\nbfd_core_file_failing_command (bfd *abfd)\n{\n  if (abfd->format != bfd_core)\n    {\n      bfd_set_error (bfd_error_invalid_operation);\n      return NULL;\n    }\n  return BFD_SEND (abfd, _core_file_failing_command, (abfd));\n}\n\nint main(void)\n{\n  /* Intentionally pass NULL to trigger the null-pointer dereference. */\n  bfd *abfd = NULL;\n\n  /* This call will dereference abfd->format and crash. */\n  const char *cmd = bfd_core_file_failing_command(abfd);\n\n  /* Not reached, but kept to avoid unused warnings. */\n  if (cmd)\n    printf(\"Command: %s\\n\", cmd);\n  else\n    printf(\"Returned NULL (unexpected if no crash)\\n\");\n\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7670712471008301,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3633731==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5734d179cced bp 0x7ffd4a9ce3b0 sp 0x7ffd4a9ce390 T0)\n==3633731==The signal is caused by a READ memory access.\n==3633731==Hint: address points to the zero page.\n    #0 0x5734d179cced in bfd_core_file_failing_command /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25:20\n    #1 0x5734d179cd5f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:39:21\n    #2 0x75b73862a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x75b73862a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5734d16dd304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer+0x21304) (BuildId: b798a1d3faebc1dfff7f6c8e0b05ebdbfcb4c63d)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25:20 in bfd_core_file_failing_command\n==3633731==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "bfd_core_file_failing_command",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "bfd_core_file_failing_command",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:25",
+          "20"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_53_null-pointer-dereference/reproducer.c:39",
+          "21"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

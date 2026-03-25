@@ -1,0 +1,12 @@
+Error: memory error: out of bound pointer
+File: ivi.c
+Line: 29
+assembly.ll line: 132
+State: 1
+Stack: 
+	#000000132 in ff_ivi_init_tiles(138967052386304, 2, 2) at ivi.c:29
+	#100000047 in main() at driver.c:33
+Info: 
+	address: 138967052386308
+	next: object at 138666941546496 of size 4
+		MO41[4] allocated at ff_ivi_init_tiles():  %9 = alloca i32, align 4

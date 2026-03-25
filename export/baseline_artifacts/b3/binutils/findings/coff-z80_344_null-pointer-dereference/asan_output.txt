@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3610847==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b6b2d32270f bp 0x7ffe05adcd20 sp 0x7ffe05adcb30 T0)
+==3610847==The signal is caused by a READ memory access.
+==3610847==Hint: address points to the zero page.
+    #0 0x5b6b2d32270f in extra_case /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138:25
+    #1 0x5b6b2d322181 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:194:9
+    #2 0x7c196e02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7c196e02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5b6b2d262304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer+0x21304) (BuildId: f66f731ad99efe2f5179751da011f62a4ba97f6e)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-z80_344_null-pointer-dereference/reproducer.c:138:25 in extra_case
+==3610847==ABORTING

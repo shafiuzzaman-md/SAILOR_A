@@ -1,0 +1,68 @@
+{
+  "harnesses": [
+    {
+      "name": "get_preset_file_overflow",
+      "target_function": "get_preset_file",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdio.h>\n\n// Simplified/adapted version: builds a preset path into caller-provided buffer\n// Intentionally ignores filename_size when writing, risking overflow\nFILE *get_preset_file(char *filename, size_t filename_size,\n                      const char *preset_name, int is_path, const char *codec_name)\n{\n    if (!filename || !preset_name)\n        return NULL;\n\n    if (is_path) {\n        // Vulnerability: no bound check vs filename_size\n        sprintf(filename, \"%s\", preset_name);\n    } else {\n        if (codec_name && *codec_name)\n            sprintf(filename, \"presets/%s/%s.ffpreset\", codec_name, preset_name);\n        else\n            sprintf(filename, \"presets/%s.ffpreset\", preset_name);\n    }\n    // No actual file I/O needed for the harness\n    return NULL;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    char filename[8];\n    char preset[16];\n    char codec[16];\n    int is_path;\n\n    klee_make_symbolic(filename, sizeof(filename), \"filename_buf\");\n    klee_make_symbolic(preset, sizeof(preset), \"preset\");\n    klee_make_symbolic(codec, sizeof(codec), \"codec\");\n    klee_make_symbolic(&is_path, sizeof(is_path), \"is_path\");\n\n    // Ensure NUL-termination so sprintf reads a finite string\n    preset[15] = '\\0';\n    codec[15]  = '\\0';\n\n    get_preset_file(filename, sizeof(filename), preset, is_path, codec);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Potential buffer overflow: function builds a path with sprintf into a small caller-provided filename buffer without checking filename_size (CWE-120/787). KLEE can pick long preset/codec strings to overflow."
+    },
+    {
+      "name": "stream_specifier_parse_stack_overflow",
+      "target_function": "stream_specifier_parse",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdio.h>\n\nenum AVMediaType { AVMEDIA_TYPE_UNKNOWN = -1, AVMEDIA_TYPE_VIDEO = 0, AVMEDIA_TYPE_AUDIO = 1 };\n\ntypedef struct StreamSpecifier {\n    int                  idx;\n    int                  stream_list;\n    int64_t              list_id;\n    enum AVMediaType     media_type;\n    uint8_t              no_apic;\n    uint8_t              usable_only;\n    int                  disposition;\n    char                *meta_key;\n    char                *meta_val;\n    char                *remainder;\n} StreamSpecifier;\n\nstatic char *xstrdup(const char *s) {\n    size_t n = strlen(s) + 1;\n    char *p = (char*)malloc(n);\n    if (p) memcpy(p, s, n);\n    return p;\n}\n\nint stream_specifier_parse(StreamSpecifier *ss, const char *spec,\n                           int allow_remainder, void *logctx)\n{\n    if (!ss) return -1;\n    memset(ss, 0, sizeof(*ss));\n    if (!spec) return -1;\n\n    if (spec[0] == 'v') ss->media_type = AVMEDIA_TYPE_VIDEO;\n    else if (spec[0] == 'a') ss->media_type = AVMEDIA_TYPE_AUDIO;\n    else ss->media_type = AVMEDIA_TYPE_UNKNOWN;\n\n    const char *colon = strchr(spec, ':');\n    if (allow_remainder && colon) {\n        const char *r = colon + 1;\n        char tmp[8];\n        // Vulnerability: unbounded copy into fixed stack buffer\n        strcpy(tmp, r);\n        ss->remainder = xstrdup(tmp);\n    }\n    return 0;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    StreamSpecifier ss;\n    char spec[32];\n    klee_make_symbolic(spec, sizeof(spec), \"spec\");\n\n    // Force a pattern that triggers remainder copy\n    spec[0] = 'v';\n    spec[1] = ':';\n    // Ensure there is some terminating NUL somewhere to make strcpy finite\n    spec[31] = '\\0';\n\n    stream_specifier_parse(&ss, spec, 1, NULL);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Out-of-bounds write on stack: strcpy into a small fixed buffer when allow_remainder is set and the remainder exceeds the buffer (CWE-121/787)."
+    },
+    {
+      "name": "stream_specifier_match_null_deref",
+      "target_function": "stream_specifier_match",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n\nenum AVMediaType { AVMEDIA_TYPE_UNKNOWN=-1, AVMEDIA_TYPE_VIDEO=0, AVMEDIA_TYPE_AUDIO=1 };\n\ntypedef struct StreamSpecifier { enum AVMediaType media_type; } StreamSpecifier;\n\ntypedef struct AVCodecParameters { int codec_type; } AVCodecParameters;\n\ntypedef struct AVStream { AVCodecParameters *codecpar; } AVStream;\n\ntypedef struct AVFormatContext { int dummy; } AVFormatContext;\n\nunsigned stream_specifier_match(const StreamSpecifier *ss,\n                                const AVFormatContext *s, const AVStream *st,\n                                void *logctx)\n{\n    // Intentional missing NULL checks: can dereference NULL codecpar\n    return st->codecpar->codec_type == (int)ss->media_type;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    StreamSpecifier ss;\n    AVFormatContext fc;\n    AVStream st;\n    AVCodecParameters *cp = NULL;\n    int is_null;\n\n    klee_make_symbolic(&ss, sizeof(ss), \"ss\");\n    klee_make_symbolic(&is_null, sizeof(is_null), \"is_null\");\n\n    if (is_null) {\n        st.codecpar = NULL; // will cause NULL deref in target\n    } else {\n        cp = (AVCodecParameters*)malloc(sizeof(*cp));\n        klee_make_symbolic(cp, sizeof(*cp), \"cp\");\n        st.codecpar = cp;\n    }\n\n    (void)fc;\n    (void)stream_specifier_match(&ss, &fc, &st, NULL);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "NULL pointer dereference: function blindly dereferences st->codecpar (CWE-476). KLEE can choose path where codecpar is NULL."
+    },
+    {
+      "name": "check_avoptions_used_oob_read",
+      "target_function": "check_avoptions_used",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdio.h>\n\ntypedef struct AVDictionaryEntry {\n    char *key;\n    char *value;\n} AVDictionaryEntry;\n\ntypedef struct AVDictionary {\n    AVDictionaryEntry *elems;\n    int count; // number of entries logically in the dict\n} AVDictionary;\n\nint check_avoptions_used(const AVDictionary *opts, const AVDictionary *opts_used,\n                         void *logctx, int decode)\n{\n    if (!opts) return 0;\n    // Vulnerability: off-by-one loop permits out-of-bounds read at elems[count]\n    for (int i = 0; i <= opts->count; i++) {\n        volatile char c = 0;\n        if (opts->elems[i].key)\n            c = opts->elems[i].key[0];\n        (void)c;\n    }\n    return 0;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    AVDictionary dict = {0};\n    AVDictionaryEntry *arr = (AVDictionaryEntry*)malloc(2 * sizeof(*arr));\n\n    // allocate small keys so memory is valid\n    arr[0].key = (char*)malloc(2); arr[0].key[0] = 'A'; arr[0].key[1] = '\\0'; arr[0].value = NULL;\n    arr[1].key = (char*)malloc(2); arr[1].key[0] = 'B'; arr[1].key[1] = '\\0'; arr[1].value = NULL;\n\n    dict.elems = arr;\n    klee_make_symbolic(&dict.count, sizeof(dict.count), \"count\");\n    // Force a logical count that exceeds allocated entries to trigger OOB\n    klee_assume(dict.count >= 2);\n    klee_assume(dict.count <= 3);\n\n    check_avoptions_used(&dict, NULL, NULL, 0);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Out-of-bounds read via off-by-one loop (i <= count) accessing elems[count] beyond allocated array (CWE-125)."
+    },
+    {
+      "name": "dec_free_use_after_free",
+      "target_function": "dec_free",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\ntypedef struct Decoder {\n    void *priv;\n    int   sz;\n} Decoder;\n\nvoid dec_free(Decoder **pdec)\n{\n    if (!pdec) return;\n    Decoder *dec = *pdec;\n    if (!dec) return;\n\n    // Vulnerability: freeing container before accessing inner pointer\n    free(dec);\n    if (dec->priv)\n        free(dec->priv); // Use-after-free\n    *pdec = NULL;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    Decoder *d = (Decoder*)malloc(sizeof(*d));\n    d->priv = malloc(8);\n    d->sz = 8;\n    dec_free(&d);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Use-after-free: inner pointer freed after freeing the outer object that holds it (CWE-416)."
+    },
+    {
+      "name": "parse_and_set_vsync_overflow",
+      "target_function": "parse_and_set_vsync",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <stdio.h>\n\nint parse_and_set_vsync(const char *arg, int *vsync_var, int file_idx, int st_idx, int is_global)\n{\n    char tmp[8];\n    // Vulnerability: unbounded copy into small local buffer\n    strcpy(tmp, arg);\n    if (strcmp(tmp, \"passthrough\") == 0)\n        *vsync_var = 0;\n    else\n        *vsync_var = atoi(tmp);\n    (void)file_idx; (void)st_idx; (void)is_global;\n    return 0;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    char arg[32];\n    int vsync = 0;\n    int file_idx, st_idx, is_global;\n\n    klee_make_symbolic(arg, sizeof(arg), \"arg\");\n    klee_make_symbolic(&file_idx, sizeof(file_idx), \"file_idx\");\n    klee_make_symbolic(&st_idx, sizeof(st_idx), \"st_idx\");\n    klee_make_symbolic(&is_global, sizeof(is_global), \"is_global\");\n\n    arg[31] = '\\0';\n    parse_and_set_vsync(arg, &vsync, file_idx, st_idx, is_global);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Stack-based buffer overflow from strcpy into fixed 8-byte buffer using an attacker-controlled string (CWE-121)."
+    },
+    {
+      "name": "enc_open_divide_by_zero",
+      "target_function": "enc_open",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n\ntypedef struct AVFrame { int width; int height; } AVFrame;\n\nint enc_open(void *opaque, const AVFrame *frame)\n{\n    int denom = frame->width - frame->height;\n    // Vulnerability: divide by zero if width == height\n    int q = 100 / denom;\n    volatile int prod = frame->width * frame->height; // may overflow but not used in memory access\n    (void)opaque;\n    return q + prod;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    AVFrame fr;\n    klee_make_symbolic(&fr, sizeof(fr), \"frame\");\n    // Force denominator to zero\n    klee_assume(fr.width == fr.height);\n    enc_open(NULL, &fr);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Divide-by-zero via derived denominator (CWE-369). KLEE can satisfy width == height to trigger."
+    },
+    {
+      "name": "sch_mux_stream_buffering_oob_write",
+      "target_function": "sch_mux_stream_buffering",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n\ntypedef struct Scheduler { int dummy; } Scheduler;\n\nvoid sch_mux_stream_buffering(Scheduler *sch, unsigned mux_idx, unsigned stream_idx,\n                              size_t data_threshold, int max_packets)\n{\n    (void)sch; (void)mux_idx; (void)stream_idx;\n    size_t n = max_packets > 0 ? (size_t)max_packets : 0;\n    char *buf = (char*)malloc(n);\n    if (!buf && n) return;\n    // Vulnerability: no bounds check on index; also NULL-deref when n == 0 and malloc returns NULL\n    buf[data_threshold] = 0x42; // OOB write if data_threshold >= n\n    free(buf);\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n\nint main() {\n    Scheduler s;\n    unsigned mux_idx, stream_idx;\n    size_t threshold;\n    int max_packets;\n\n    klee_make_symbolic(&mux_idx, sizeof(mux_idx), \"mux_idx\");\n    klee_make_symbolic(&stream_idx, sizeof(stream_idx), \"stream_idx\");\n    klee_make_symbolic(&threshold, sizeof(threshold), \"threshold\");\n    klee_make_symbolic(&max_packets, sizeof(max_packets), \"max_packets\");\n\n    // Keep values small to simplify search while still allowing OOB\n    klee_assume(max_packets >= 0);\n    klee_assume(max_packets <= 8);\n    klee_assume(threshold <= 16);\n\n    sch_mux_stream_buffering(&s, mux_idx, stream_idx, threshold, max_packets);\n    return 0;\n}\n",
+      "stubs_c": "// no external stubs needed\n",
+      "reasoning": "Out-of-bounds write or NULL dereference: writes to buf[data_threshold] without ensuring threshold < allocated size (CWE-787/476)."
+    }
+  ]
+}

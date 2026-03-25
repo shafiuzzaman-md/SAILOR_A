@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/gregbook/rpng2-win.c",
+    "line": 377,
+    "function": "WinMain",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "The command line is tokenized into a fixed-size array args[1024] without bounds checking (argv[argc++] = q = p;). A command line with more than 1024 tokens will write past the end of the args array on the stack. Additionally, the subsequent argv[argc] = NULL at line 386 can also write out of bounds. This can be triggered by invoking the program with many short, space-separated arguments, leading to memory corruption.",
+    "abs_path": "/tmp/libpng_upstream/contrib/gregbook/rpng2-win.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-in for the Windows program name used in rpng2-win.c */\n#define PROGNAME \"rpng2-win\"\n\n/*\n * This function reproduces the vulnerable tokenization logic from\n * contrib/gregbook/rpng2-win.c:WinMain. It builds an argv[1024] on the stack\n * and then overflows it by processing too many space-separated tokens from\n * the command line string.\n */\n__attribute__((noinline)) static void vulnerable_tokenizer(char *cmd)\n{\n    char *argv[1024];   /* fixed-size stack array, like in rpng2-win.c */\n    int argc = 0;\n    char *p, *q;\n\n    /* Mimic the code around lines 368-386 */\n    argv[argc++] = (char *)PROGNAME;  /* consumes one slot */\n    p = cmd;\n    for (;;) {\n        if (*p == ' ')\n            while (*++p == ' ')\n                ;\n        if (*p == '\\0')\n            break;\n        argv[argc++] = q = p;          /* may overflow when too many tokens */\n        while (*q && *q != ' ')\n            ++q;\n        if (*q == '\\0')\n            break;\n        *q = '\\0';\n        p = q + 1;\n    }\n    /* This write matches line 386 and will go out-of-bounds when argc == 1024 */\n    argv[argc] = NULL;                 /* definite OOB when exactly 1023 tokens */\n\n    /* Keep the local argv \"live\" to prevent over-aggressive elimination */\n    if (argc > 0 && argv[0]) {\n        volatile char c = argv[0][0];\n        (void)c;\n    }\n}\n\nint main(void)\n{\n    /* Build a command line with exactly 1023 short tokens (\"a\"), space-separated.\n     * After inserting PROGNAME first, the next 1023 tokens fill the 1024 entries.\n     * The subsequent argv[argc] = NULL write overflows the stack array by 1. */\n    const int tokens = 1023; /* triggers the overflow at the terminator write */\n\n    size_t len = (size_t)tokens               /* characters */\n               + (size_t)(tokens - 1)         /* spaces */\n               + 1;                           /* NUL */\n\n    char *cmd = (char *)malloc(len);\n    if (!cmd) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    size_t pos = 0;\n    for (int i = 0; i < tokens; ++i) {\n        cmd[pos++] = 'a';\n        if (i != tokens - 1)\n            cmd[pos++] = ' ';\n    }\n    cmd[pos] = '\\0';\n\n    vulnerable_tokenizer(cmd);\n\n    free(cmd);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08869600296020508,
+      "output": ""
+    }
+  }
+}

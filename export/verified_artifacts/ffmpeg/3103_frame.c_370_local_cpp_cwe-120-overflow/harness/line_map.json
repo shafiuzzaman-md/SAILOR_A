@@ -1,0 +1,84 @@
+{
+  "frame.c": {
+    "8": {
+      "orig_file": "frame.c",
+      "orig_line": 76,
+      "code": "#endif"
+    },
+    "12": {
+      "orig_file": "frame.c",
+      "orig_line": 720,
+      "code": "uint8_t *data;"
+    },
+    "42": {
+      "orig_file": "frame.c",
+      "orig_line": 726,
+      "code": "return NULL;"
+    },
+    "43": {
+      "orig_file": "frame.c",
+      "orig_line": 716,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "frame.c",
+      "orig_line": 716,
+      "code": "}"
+    },
+    "54": {
+      "orig_file": "frame.c",
+      "orig_line": 716,
+      "code": "}"
+    },
+    "61": {
+      "orig_file": "frame.c",
+      "orig_line": 715,
+      "code": "return frame_copy_props(dst, src, 1);"
+    },
+    "62": {
+      "orig_file": "frame.c",
+      "orig_line": 716,
+      "code": "}"
+    },
+    "67": {
+      "orig_file": "frame.c",
+      "orig_line": 489,
+      "code": "int ret = 0;"
+    },
+    "74": {
+      "orig_file": "frame.c",
+      "orig_line": 869,
+      "code": "if (!sd_dst)"
+    },
+    "79": {
+      "orig_file": "frame.c",
+      "orig_line": 371,
+      "code": "} else {"
+    },
+    "84": {
+      "orig_file": "frame.c",
+      "orig_line": 370,
+      "code": "memcpy(sd_dst->data, sd_src->data, sd_src->size);"
+    },
+    "88": {
+      "orig_file": "frame.c",
+      "orig_line": 369,
+      "code": "}"
+    },
+    "89": {
+      "orig_file": "frame.c",
+      "orig_line": 369,
+      "code": "}"
+    },
+    "91": {
+      "orig_file": "frame.c",
+      "orig_line": 385,
+      "code": "return ret;"
+    },
+    "92": {
+      "orig_file": "frame.c",
+      "orig_line": 386,
+      "code": "}"
+    }
+  }
+}

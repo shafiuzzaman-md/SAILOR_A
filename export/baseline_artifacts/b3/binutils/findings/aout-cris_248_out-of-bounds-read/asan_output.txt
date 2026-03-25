@@ -1,0 +1,44 @@
+_bfd_error_handler: 0x602000000010B: unsupported relocation type imported: 0x3
+bfd_set_error: 1
+=================================================================
+==3575518==ERROR: AddressSanitizer: global-buffer-overflow on address 0x653aa0e3fb6c at pc 0x653aa0e08fa0 bp 0x7fffff5d8fd0 sp 0x7fffff5d8fc8
+READ of size 4 at 0x653aa0e3fb6c thread T0
+    #0 0x653aa0e08f9f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149:46
+    #1 0x7e6b60a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #2 0x7e6b60a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #3 0x653aa0d49304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer+0x21304) (BuildId: db8f92069a3944f5742f87d086b821df4d9e156b)
+
+0x653aa0e3fb6c is located 0 bytes to the right of global variable 'howto_table_ext' defined in '/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:45:14' (0x653aa0e3fb60) of size 12
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149:46 in main
+Shadow bytes around the buggy address:
+  0x0ca7d41bff10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca7d41bff20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca7d41bff30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca7d41bff40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca7d41bff50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0ca7d41bff60: 00 00 00 00 00 00 00 00 00 00 00 00 00[04]f9 f9
+  0x0ca7d41bff70: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0ca7d41bff80: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0ca7d41bff90: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0ca7d41bffa0: f9 f9 f9 f9 f9 f9 f9 f9 00 00 00 00 00 00 00 00
+  0x0ca7d41bffb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3575518==ABORTING

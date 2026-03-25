@@ -1,0 +1,34 @@
+{
+  "dovi_rpudec.c": {
+    "30": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 34,
+      "code": "{"
+    },
+    "38": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 87,
+      "code": "return 0;"
+    },
+    "39": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 88,
+      "code": "}"
+    },
+    "43": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 91,
+      "code": "{"
+    },
+    "45": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 87,
+      "code": "return 0;"
+    },
+    "46": {
+      "orig_file": "dovi_rpudec.c",
+      "orig_line": 88,
+      "code": "}"
+    }
+  }
+}

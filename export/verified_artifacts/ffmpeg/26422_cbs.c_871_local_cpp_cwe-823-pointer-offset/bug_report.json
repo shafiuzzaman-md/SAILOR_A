@@ -1,0 +1,128 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 3,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "cbs.c",
+    "original_line": 871,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "866:     cbs_unit_uninit(&frag->units[position]);\n867: \n868:     --frag->nb_units;\n869: \n870:     if (frag->nb_units > 0)\n871:         memmove(frag->units + position,\n872:                 frag->units + position + 1,\n873:                 (frag->nb_units - position) * sizeof(*frag->units));\n874: }\n875: \n876: static void cbs_default_free_unit_content(FFRefStructOpaque opaque, void *content)"
+  },
+  "klee_crash": {
+    "harness_file": "cbs.c",
+    "harness_line": 42,
+    "original_file": "cbs.c",
+    "original_line": 871,
+    "original_code": "memmove(frag->units + position,",
+    "original_context": "    868:     --frag->nb_units;\n    869: \n    870:     if (frag->nb_units > 0)\n>>> 871:         memmove(frag->units + position,\n    872:                 frag->units + position + 1,\n    873:                 (frag->nb_units - position) * sizeof(*frag->units));\n    874: }",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memmove.c\nLine: 21\nassembly.ll line: 227\nState: 4\nStack: \n\t#000000227 in memmove(symbolic, symbolic, symbolic) at runtime/Freestanding/memmove.c:21\n\t#100000089 in ff_cbs_delete_unit(139234938720256, symbolic) at cbs.c:42\n\t#200000122 in entry_func(139234938720256, symbolic) at cbs.c:52\n\t#300000180 in main() at driver.c:33\nInfo: \n\taddress: (Add w64 139441097150496\n          (Mul w64 32\n                   (SExt w64 (ReadLSB w32 0 "
+  },
+  "concrete_inputs": [
+    {
+      "name": "units_buf",
+      "size": 256,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "nb_units",
+      "size": 4,
+      "data": "b'\\x04\\x00\\x00\\x00'"
+    },
+    {
+      "name": "position",
+      "size": 4,
+      "data": "b'>\\x00\\x00\\x00'"
+    },
+    {
+      "name": "units_buf",
+      "size": 256,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "nb_units",
+      "size": 4,
+      "data": "b'\\x02\\x00\\x00\\x00'"
+    },
+    {
+      "name": "position",
+      "size": 4,
+      "data": "b'\\xff\\xff\\xff\\xff'"
+    },
+    {
+      "name": "units_buf",
+      "size": 256,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "nb_units",
+      "size": 4,
+      "data": "b'\\x0b\\x00\\x00\\x00'"
+    },
+    {
+      "name": "position",
+      "size": 4,
+      "data": "b'\\n\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "cbs.c",
+      "harness_line": 42,
+      "original_file": "cbs.c",
+      "original_line": 871,
+      "error_type": "ptr",
+      "crash_function": "memmove",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/logs/klee_run_2/test000001.ktest"
+    },
+    {
+      "harness_file": "cbs.c",
+      "harness_line": 42,
+      "original_file": "cbs.c",
+      "original_line": 871,
+      "error_type": "ptr",
+      "crash_function": "memmove",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/logs/klee_run_2/test000002.ktest"
+    },
+    {
+      "harness_file": "cbs.c",
+      "harness_line": 46,
+      "original_file": "cbs.c",
+      "original_line": 874,
+      "error_type": "assert",
+      "crash_function": "ff_cbs_delete_unit",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/26422_cbs.c_871_local_cpp_cwe-823-pointer-offset/logs/klee_run_2/test000003.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

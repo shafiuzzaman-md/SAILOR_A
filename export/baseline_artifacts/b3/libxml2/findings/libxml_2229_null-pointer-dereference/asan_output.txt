@@ -1,0 +1,15 @@
+About to trigger NULL dereference in libxml_name...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4010721==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64f2e127a0ab bp 0x7ffd0ed34880 sp 0x7ffd0ed34720 T0)
+==4010721==The signal is caused by a READ memory access.
+==4010721==Hint: address points to the zero page.
+    #0 0x64f2e127a0ab in libxml_name /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2229_null-pointer-dereference/reproducer.c:112:18
+    #1 0x64f2e1279d0d in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2229_null-pointer-dereference/reproducer.c:164:11
+    #2 0x7c1f7da2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7c1f7da2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64f2e11ba304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2229_null-pointer-dereference/reproducer+0x21304) (BuildId: 6b18b2ea6718f8eeebfe6830fc5e69bb77144e84)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2229_null-pointer-dereference/reproducer.c:112:18 in libxml_name
+==4010721==ABORTING

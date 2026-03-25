@@ -1,0 +1,87 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coffgen.c",
+    "line": 645,
+    "function": "bfd_coff_read_internal_relocs",
+    "bug_type": "integer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "The size for the internal relocation array is computed with amt = sec->reloc_count * sizeof(struct internal_reloc). On 32-bit size_t, this multiplication can overflow for large sec->reloc_count, resulting in allocating a too-small buffer. The subsequent loop (lines 656\u2013657) iterates based on relsz * sec->reloc_count (also subject to modulo wrap), and writes through irel++, which can exceed the allocated buffer, causing a heap buffer overflow.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coffgen.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for the integer overflow in bfd_coff_read_internal_relocs\n// Compile with: clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n// Force 32-bit arithmetic for bfd_size_type to model the vulnerable build.\ntypedef uint32_t bfd_size_type;\ntypedef unsigned char bfd_byte;\ntypedef int bfd_boolean;\n\nstruct bfd { int dummy; };\n\nstruct internal_reloc {\n  // Make this large so that amt = reloc_count * sizeof(struct internal_reloc)\n  // overflows 32-bit easily and allocates too small a buffer.\n  char pad[1024];\n};\n\nstruct coff_section_tdata {\n  struct internal_reloc *relocs;\n  void *contents;\n};\n\nstruct asection {\n  bfd_size_type reloc_count;\n  long rel_filepos;\n  void *used_by_bfd; // will point to coff_section_tdata when allocated\n};\n\nstatic struct coff_section_tdata *coff_section_data(struct bfd *abfd, struct asection *sec) {\n  (void)abfd;\n  return (struct coff_section_tdata *)sec->used_by_bfd;\n}\n\nstatic bfd_size_type bfd_coff_relsz(struct bfd *abfd) {\n  (void)abfd;\n  // Keep external reloc size small so relsz * reloc_count does not wrap in 32-bit\n  // for our chosen reloc_count, ensuring many loop iterations.\n  return 2; // bytes per external reloc entry\n}\n\nstatic void *bfd_malloc(bfd_size_type amt) {\n  return malloc((size_t)amt);\n}\n\nstatic void *bfd_zalloc(struct bfd *abfd, bfd_size_type amt) {\n  (void)abfd;\n  return calloc(1, (size_t)amt);\n}\n\nstatic int bfd_seek(struct bfd *abfd, long pos, int whence) {\n  (void)abfd; (void)pos; (void)whence;\n  return 0; // success\n}\n\nstatic bfd_size_type bfd_read(void *buf, bfd_size_type size, struct bfd *abfd) {\n  (void)abfd;\n  memset(buf, 0x41, (size_t)size);\n  return size; // simulate a full read\n}\n\n// Stub that writes sizeof(struct internal_reloc) bytes into the destination,\n// matching typical behavior of a swap-in routine that populates an internal structure.\nstatic void bfd_coff_swap_reloc_in(struct bfd *abfd, void *erel, void *irel) {\n  (void)abfd; (void)erel;\n  memset(irel, 0x42, sizeof(struct internal_reloc));\n}\n\n// Vulnerable function recreated with stubs to trigger the overflow/overflowed allocation.\nstatic struct internal_reloc *\nbfd_coff_read_internal_relocs(struct bfd *abfd,\n                              struct asection *sec,\n                              bfd_byte *external_relocs,\n                              struct internal_reloc *internal_relocs,\n                              int cache,\n                              int require_internal)\n{\n  bfd_size_type relsz;\n  bfd_byte *free_external = NULL;\n  struct internal_reloc *free_internal = NULL;\n  bfd_byte *erel;\n  bfd_byte *erel_end;\n  struct internal_reloc *irel;\n  bfd_size_type amt;\n\n  if (sec->reloc_count == 0)\n    return internal_relocs; /* Nothing to do.  */\n\n  if (coff_section_data(abfd, sec) != NULL && coff_section_data(abfd, sec)->relocs != NULL) {\n    if (!require_internal)\n      return coff_section_data(abfd, sec)->relocs;\n    memcpy(internal_relocs, coff_section_data(abfd, sec)->relocs,\n           (size_t)(sec->reloc_count * (bfd_size_type)sizeof(struct internal_reloc)));\n    return internal_relocs;\n  }\n\n  relsz = bfd_coff_relsz(abfd);\n\n  amt = sec->reloc_count * relsz; // may overflow 32-bit if relsz large, here it does not\n  if (external_relocs == NULL) {\n    free_external = (bfd_byte *) bfd_malloc(amt);\n    if (free_external == NULL)\n      goto error_return;\n    external_relocs = free_external;\n  }\n\n  if (bfd_seek(abfd, sec->rel_filepos, SEEK_SET) != 0\n      || bfd_read(external_relocs, amt, abfd) != amt)\n    goto error_return;\n\n  if (internal_relocs == NULL) {\n    amt = sec->reloc_count;\n    amt *= (bfd_size_type)sizeof(struct internal_reloc); // integer overflow here on 32-bit\n    free_internal = (struct internal_reloc *) bfd_malloc(amt);\n    if (free_internal == NULL)\n      goto error_return;\n    internal_relocs = free_internal;\n  }\n\n  // Swap in the relocs.\n  erel = external_relocs;\n  erel_end = erel + (relsz * sec->reloc_count); // also uses 32-bit arithmetic here\n  irel = internal_relocs;\n  for (; erel < erel_end; erel += relsz, irel++)\n    bfd_coff_swap_reloc_in(abfd, (void *) erel, (void *) irel);\n\n  free(free_external);\n  free_external = NULL;\n\n  if (cache && free_internal != NULL) {\n    if (coff_section_data(abfd, sec) == NULL) {\n      amt = (bfd_size_type)sizeof(struct coff_section_tdata);\n      sec->used_by_bfd = bfd_zalloc(abfd, amt);\n      if (sec->used_by_bfd == NULL)\n        goto error_return;\n      coff_section_data(abfd, sec)->contents = NULL;\n    }\n    coff_section_data(abfd, sec)->relocs = free_internal;\n  }\n\n  return internal_relocs;\n\nerror_return:\n  free(free_external);\n  free(free_internal);\n  return NULL;\n}\n\nint main(void) {\n  struct bfd abfd_obj;\n  struct asection sec;\n  memset(&abfd_obj, 0, sizeof(abfd_obj));\n  memset(&sec, 0, sizeof(sec));\n\n  // Choose reloc_count so that:\n  //  - amt_ext = reloc_count * relsz does NOT wrap (so loop iterates many times)\n  //  - amt_int = reloc_count * sizeof(struct internal_reloc) DOES wrap to a tiny value\n  // With bfd_size_type as 32-bit:\n  //   sizeof(struct internal_reloc) = 1024\n  //   2^32 / 1024 = 4,194,304\n  // Set reloc_count = 4,194,304 + 1 = 4,194,305\n  // Then:\n  //   - external amt = 4,194,305 * 2 = 8,388,610 bytes (OK)\n  //   - internal amt = (4,194,305 * 1024) mod 2^32 = 1024 bytes (only 1 entry)\n  // The loop runs 4,194,305 iterations, writing 1024 bytes each time via bfd_coff_swap_reloc_in,\n  // overflowing after the first iteration.\n  sec.reloc_count = (bfd_size_type)(4194304u + 1u);\n  sec.rel_filepos = 0;\n  sec.used_by_bfd = NULL;\n\n  struct internal_reloc *res = bfd_coff_read_internal_relocs(&abfd_obj, &sec,\n                                                             NULL, NULL,\n                                                             0, 0);\n  // Prevent compiler from optimizing away side effects\n  fprintf(stderr, \"Result pointer: %p\\n\", (void*)res);\n\n  // If the function returned (unlikely if ASan already crashed), free to avoid leaks\n  free(res);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.923569917678833,
+      "output": "=================================================================\n==3617416==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x619000000480 at pc 0x58f9e38eb300 bp 0x7ffe5b42f320 sp 0x7ffe5b42eaf0\nWRITE of size 1024 at 0x619000000480 thread T0\n    #0 0x58f9e38eb2ff in __asan_memset (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa42ff) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)\n    #1 0x58f9e3928646 in bfd_coff_swap_reloc_in /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:69:3\n    #2 0x58f9e3928381 in bfd_coff_read_internal_relocs /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:128:5\n    #3 0x58f9e3927e69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174:32\n    #4 0x764d4142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x764d4142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x58f9e3868304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0x21304) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)\n\n0x619000000480 is located 0 bytes to the right of 1024-byte region [0x619000000080,0x619000000480)\nallocated by thread T0 here:\n    #0 0x58f9e38ebd12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa4d12) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)\n    #1 0x58f9e39285c4 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:46:10\n    #2 0x58f9e39282b6 in bfd_coff_read_internal_relocs /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:117:47\n    #3 0x58f9e3927e69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174:32\n    #4 0x764d4142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x764d4142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x58f9e3868304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0x21304) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa42ff) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177) in __asan_memset\nShadow bytes around the buggy address:\n  0x0c327fff8040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c327fff8050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c327fff8060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c327fff8070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c327fff8080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c327fff8090:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c327fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c327fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c327fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c327fff80d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c327fff80e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3617416==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "bfd_coff_swap_reloc_in",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:69",
+          "3"
+        ],
+        [
+          "2",
+          "bfd_coff_read_internal_relocs",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:128",
+          "5"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174",
+          "32"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "bfd_malloc",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:46",
+          "10"
+        ],
+        [
+          "2",
+          "bfd_coff_read_internal_relocs",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:117",
+          "47"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174",
+          "32"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

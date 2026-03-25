@@ -1,0 +1,5 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+selabel_file_compiled-fuzzer	BUILD_ERROR	FP			0			0	0		
+selabel_file_text-fuzzer	BUILD_ERROR	FP			0			0	0		
+secilc-fuzzer	BUILD_ERROR	FP			0			0	0		
+binpolicy-fuzzer	BUILD_ERROR	FP			0			0	0		

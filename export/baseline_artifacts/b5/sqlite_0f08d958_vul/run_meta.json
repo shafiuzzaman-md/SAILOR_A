@@ -1,0 +1,12 @@
+{
+  "baseline": "B5",
+  "project": "sqlite_0f08d958_vul",
+  "targets": 40,
+  "timeout_per_target": 600,
+  "jobs": 16,
+  "total_findings_reported": 0,
+  "total_validated": 43,
+  "confirmed": 11,
+  "unique": 3,
+  "elapsed": 40.23953938484192
+}

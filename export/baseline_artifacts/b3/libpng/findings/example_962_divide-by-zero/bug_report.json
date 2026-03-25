@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "example.c",
+    "line": 962,
+    "function": "write_png",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "high",
+    "explanation": "The guard uses division by (width * bytes_per_pixel) without ensuring the denominator is non-zero. If width or bytes_per_pixel is 0, this triggers a divide-by-zero at runtime.",
+    "abs_path": "/tmp/libpng_upstream/example.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for divide-by-zero in example.c:write_png guard\n#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n// Minimal libpng-like typedefs and macros to match the vulnerable code's types\ntypedef uint32_t png_uint_32;\ntypedef unsigned char png_byte;\ntypedef struct png_struct_def* png_structp;\n\n#ifndef UINT32_MAX\n#define UINT32_MAX 0xFFFFFFFFu\n#endif\n\n// Constants used by the guard in the vulnerable code\n#define PNG_SIZE_MAX ((png_uint_32)UINT32_MAX)\n#define PNG_UINT_32_MAX ((png_uint_32)UINT32_MAX)\n\n// Stub for png_error used by the code path (won't be reached due to div-by-zero)\nstatic void png_error(png_structp png_ptr, const char *msg) {\n    (void)png_ptr;\n    fprintf(stderr, \"png_error: %s\\n\", msg);\n    exit(1);\n}\n\n// This function mirrors the vulnerable guard from example.c:write_png\n// Specifically, it evaluates: if (height > PNG_SIZE_MAX / (width * bytes_per_pixel))\n// Without guarding width*bytes_per_pixel != 0, passing width==0 triggers a divide-by-zero.\nstatic void write_png(png_uint_32 width, png_uint_32 height, png_uint_32 bytes_per_pixel) {\n    // The original code has additional setup calls; they are not necessary to trigger the bug.\n\n    // Guard against integer overflow (vulnerable due to division by (width*bytes_per_pixel))\n    if (height > PNG_SIZE_MAX / (width * bytes_per_pixel)) {\n        png_error(NULL, \"Image data buffer would be too large\");\n    }\n\n    // The following allocations are present in the original code after the guard,\n    // but are unreachable here because the divide-by-zero occurs when evaluating the guard.\n    // Included only to reflect structure (not executed if crash occurs as intended):\n    // png_byte image[height * width * bytes_per_pixel];\n    // png_byte *row_pointers[height];\n}\n\nint main(void) {\n    // Crafted input: set width=0 to make (width * bytes_per_pixel) == 0.\n    // This forces a divide-by-zero in the guard expression before any error handling.\n    png_uint_32 width = 0;            // Triggers denominator == 0\n    png_uint_32 height = 10;          // Any non-zero value\n    png_uint_32 bytes_per_pixel = 4;  // Typical RGBA bytes per pixel\n\n    // Call the vulnerable function. On most systems, this will raise SIGFPE\n    // due to integer divide-by-zero; with sanitizers, it will be reported accordingly.\n    write_png(width, height, bytes_per_pixel);\n\n    // Should not reach here\n    puts(\"Unexpectedly survived divide-by-zero\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6742393970489502,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3729276==ERROR: AddressSanitizer: FPE on unknown address 0x5b3e43e5ed25 (pc 0x5b3e43e5ed25 bp 0x7ffffc4d2dc0 sp 0x7ffffc4d2db0 T0)\n    #0 0x5b3e43e5ed25 in write_png /app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:33:31\n    #1 0x5b3e43e5ece1 in main /app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:53:5\n    #2 0x78a4da02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78a4da02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b3e43d9f314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer+0x21314) (BuildId: 028d2bc7019174626ee9e6ca88edd9f2954abeb0)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:33:31 in write_png\n==3729276==ABORTING\n",
+      "error_type": "FPE",
+      "crash_function": "write_png",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:33",
+      "crash_line": 31,
+      "frames": [
+        [
+          "0",
+          "write_png",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:33",
+          "31"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/example_962_divide-by-zero/reproducer.c:53",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

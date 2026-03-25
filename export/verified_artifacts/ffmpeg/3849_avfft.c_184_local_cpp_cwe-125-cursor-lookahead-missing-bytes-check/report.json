@@ -1,0 +1,240 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 37 (sink assert at 38)\nCrash: CRASH: ptr at avfft.c:37\nOriginal: avfft.c:184 \u2192 src[w->len] = src[1];\nASan: not confirmed\n\nAll crashes (1):\n  ptr at avfft.c:37 \u2192 avfft.c:184\n"
+    ]
+  ],
+  "line_map": {
+    "avfft.c": {
+      "1": {
+        "orig_file": "avfft.c",
+        "orig_line": 19,
+        "code": "#include <stddef.h>"
+      },
+      "2": {
+        "orig_file": "avfft.c",
+        "orig_line": 20,
+        "code": "#include <string.h>"
+      },
+      "12": {
+        "orig_file": "avfft.c",
+        "orig_line": 28,
+        "code": "typedef struct AVTXWrapper {"
+      },
+      "13": {
+        "orig_file": "avfft.c",
+        "orig_line": 29,
+        "code": "AVTXContext *ctx;"
+      },
+      "14": {
+        "orig_file": "avfft.c",
+        "orig_line": 30,
+        "code": "av_tx_fn fn;"
+      },
+      "16": {
+        "orig_file": "avfft.c",
+        "orig_line": 32,
+        "code": "AVTXContext *ctx2;"
+      },
+      "17": {
+        "orig_file": "avfft.c",
+        "orig_line": 33,
+        "code": "av_tx_fn fn2;"
+      },
+      "19": {
+        "orig_file": "avfft.c",
+        "orig_line": 35,
+        "code": "ptrdiff_t stride;"
+      },
+      "20": {
+        "orig_file": "avfft.c",
+        "orig_line": 36,
+        "code": "int len;"
+      },
+      "21": {
+        "orig_file": "avfft.c",
+        "orig_line": 37,
+        "code": "int inv;"
+      },
+      "23": {
+        "orig_file": "avfft.c",
+        "orig_line": 39,
+        "code": "float *tmp;"
+      },
+      "24": {
+        "orig_file": "avfft.c",
+        "orig_line": 40,
+        "code": "int out_of_place;"
+      },
+      "25": {
+        "orig_file": "avfft.c",
+        "orig_line": 41,
+        "code": "} AVTXWrapper;"
+      },
+      "28": {
+        "orig_file": "avfft.c",
+        "orig_line": 175,
+        "code": "void av_rdft_calc(RDFTContext *s, FFTSample *data)"
+      },
+      "29": {
+        "orig_file": "avfft.c",
+        "orig_line": 176,
+        "code": "{"
+      },
+      "30": {
+        "orig_file": "avfft.c",
+        "orig_line": 177,
+        "code": "AVTXWrapper *w = (AVTXWrapper *)s;"
+      },
+      "31": {
+        "orig_file": "avfft.c",
+        "orig_line": 178,
+        "code": "float *src = w->inv ? w->tmp : (float *)data;"
+      },
+      "32": {
+        "orig_file": "avfft.c",
+        "orig_line": 179,
+        "code": "float *dst = w->inv ? (float *)data : w->tmp;"
+      },
+      "34": {
+        "orig_file": "avfft.c",
+        "orig_line": 181,
+        "code": "if (w->inv) {"
+      },
+      "35": {
+        "orig_file": "avfft.c",
+        "orig_line": 182,
+        "code": "memcpy(src, data, w->len*sizeof(float));"
+      },
+      "37": {
+        "orig_file": "avfft.c",
+        "orig_line": 184,
+        "code": "src[w->len] = src[1];"
+      },
+      "39": {
+        "orig_file": "avfft.c",
+        "orig_line": 185,
+        "code": "src[1] = 0.0f;"
+      },
+      "40": {
+        "orig_file": "avfft.c",
+        "orig_line": 186,
+        "code": "}"
+      },
+      "42": {
+        "orig_file": "avfft.c",
+        "orig_line": 188,
+        "code": "w->fn(w->ctx, dst, (void *)src, w->stride);"
+      },
+      "44": {
+        "orig_file": "avfft.c",
+        "orig_line": 190,
+        "code": "if (!w->inv) {"
+      },
+      "45": {
+        "orig_file": "avfft.c",
+        "orig_line": 191,
+        "code": "dst[1] = dst[w->len];"
+      },
+      "46": {
+        "orig_file": "avfft.c",
+        "orig_line": 192,
+        "code": "memcpy(data, dst, w->len*sizeof(float));"
+      },
+      "47": {
+        "orig_file": "avfft.c",
+        "orig_line": 193,
+        "code": "}"
+      },
+      "48": {
+        "orig_file": "avfft.c",
+        "orig_line": 194,
+        "code": "}"
+      },
+      "54": {
+        "orig_file": "avfft.c",
+        "orig_line": 194,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "avfft.c",
+      "original_line": 184,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "179:     float *dst = w->inv ? (float *)data : w->tmp;\n180: \n181:     if (w->inv) {\n182:         memcpy(src, data, w->len*sizeof(float));\n183: \n184:         src[w->len] = src[1];\n185:         src[1] = 0.0f;\n186:     }\n187: \n188:     w->fn(w->ctx, dst, (void *)src, w->stride);\n189: "
+    },
+    "klee_crash": {
+      "harness_file": "avfft.c",
+      "harness_line": 37,
+      "original_file": "avfft.c",
+      "original_line": 184,
+      "original_code": "src[w->len] = src[1];",
+      "original_context": "    181:     if (w->inv) {\n    182:         memcpy(src, data, w->len*sizeof(float));\n    183: \n>>> 184:         src[w->len] = src[1];\n    185:         src[1] = 0.0f;\n    186:     }\n    187: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: avfft.c\nLine: 37\nassembly.ll line: 90\nState: 1\nStack: \n\t#000000090 in av_rdft_calc(138969246982144, 138745908682752) at avfft.c:37\n\t#100000164 in entry_func(138969246982144, 138745908682752) at avfft.c:52\n\t#200000231 in main() at driver.c:40\nInfo: \n\taddress: 138763088551940\n\tnext: object at 138463514583040 of size 4\n\t\tMO30[4] allocated at main():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "tmp_buf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "len",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "data_buf",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3849_avfft.c_184_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "avfft.c",
+        "harness_line": 37,
+        "original_file": "avfft.c",
+        "original_line": 184,
+        "error_type": "ptr",
+        "crash_function": "av_rdft_calc",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3849_avfft.c_184_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

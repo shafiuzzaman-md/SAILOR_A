@@ -1,0 +1,44 @@
+{
+  "aacenc_pred.c": {
+    "24": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 119,
+      "code": "void ff_aac_apply_main_pred(AACEncContext *s, SingleChannelElement *sce)"
+    },
+    "25": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 120,
+      "code": "{"
+    },
+    "27": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 124,
+      "code": "if (sce->ics.window_sequence[0] != EIGHT_SHORT_SEQUENCE) {"
+    },
+    "30": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 134,
+      "code": "} else {"
+    },
+    "32": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 136,
+      "code": "}"
+    },
+    "33": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 137,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 148,
+      "code": "return 0;"
+    },
+    "39": {
+      "orig_file": "aacenc_pred.c",
+      "orig_line": 149,
+      "code": "}"
+    }
+  }
+}

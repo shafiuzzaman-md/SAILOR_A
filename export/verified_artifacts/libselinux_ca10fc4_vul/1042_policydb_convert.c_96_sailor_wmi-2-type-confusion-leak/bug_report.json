@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "policydb",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "policydb_write",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c",
+            "crash_line": 2241
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "policydb_write",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c",
+        "crash_line": 2241,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1834==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000002c at pc 0x55775b55b04a bp 0x7ffec71afd90 sp 0x7ffec71afd80\nREAD of size 4 at 0x50200000002c thread T0\n    #0 0x55775b55b049 in policydb_write /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c:2241\n    #1 0x55775b5461ce in policydb_to_image /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/policydb_convert.c:47\n    #2 0x55775b545b0f in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1042_policydb_convert.c_96_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:25\n    #3 0x7f6f13d4fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f6f13d4fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55775b5457c4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1042_policydb_convert.c_96_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x137c4)\n\n0x50200000002c is located 24 bytes to the right of 4-byte region [0x502000000010,0x502000000014)\nallocated by thread T0 here:\n    #0 0x7f6f14106887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55775b54593f in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1042_policydb_convert.c_96_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:13\n    #2 0x7f6f13d4fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c:2241 in policydb_write\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff"
+    }
+}

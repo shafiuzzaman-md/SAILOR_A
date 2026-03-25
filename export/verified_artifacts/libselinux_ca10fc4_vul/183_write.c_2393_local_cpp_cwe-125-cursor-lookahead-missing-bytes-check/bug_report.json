@@ -1,0 +1,95 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 0,
+        "secondary_bugs": 1
+    },
+    "vulnerability": {
+        "original_file": "write.c",
+        "original_line": 2393,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "2388: \t\t    ((p->policy_type == POLICY_KERN) ||\n2389: \t\t     (p->policy_type != POLICY_KERN &&\n2390: \t\t      p->policyvers < MOD_POLICYDB_VERSION_ROLEATTRIB)))\n2391: \t\t\t(void)hashtab_map(p->symtab[i].table, role_attr_uncount, &buf[1]);\n2392: \n2393: \t\tbuf[1] = cpu_to_le32(buf[1]);\n2394: \t\titems = put_entry(buf, sizeof(uint32_t), 2, fp);\n2395: \t\tif (items != 2)\n2396: \t\t\treturn POLICYDB_ERROR;\n2397: \t\tif (hashtab_map(p->symtab[i].table, write_f[i], &pd))\n2398: \t\t\treturn POLICYDB_ERROR;"
+    },
+    "klee_crash": {
+        "harness_file": "write.c",
+        "harness_line": 23,
+        "original_file": "write.c",
+        "original_line": 613,
+        "original_code": "return 0;",
+        "original_context": "    610: \t\tdatum = datum->next;\n    611: \t} while (datum);\n    612: \n>>> 613: \treturn 0;\n    614: }\n    615: \n    616: static int filename_write_one(hashtab_key_t key, void *data, void *ptr)",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: write.c\nLine: 23\nassembly.ll line: 99\nState: 1\nStack: \n\t#000000099 in policydb_write(139414680240128, 139397500370944) at write.c:23\n\t#100000133 in harness_entry(139414680240128, 139397500370944) at write.c:32\n\t#200000055 in main() at driver.c:16\nInfo: \n\taddress: 139431860109316\n\tnext: object at 139118327496704 of size 4\n\t\tMO23[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "policydb",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "policy_file",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "buf0",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "policydb_write",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c",
+        "crash_line": 2241,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4491==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000002c at pc 0x55a835726afc bp 0x7fff8d2d93c0 sp 0x7fff8d2d93b0\nREAD of size 4 at 0x50200000002c thread T0\n    #0 0x55a835726afb in policydb_write /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c:2241\n    #1 0x55a8357129ad in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:17\n    #2 0x7f74af3b8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f74af3b8e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55a8357127a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x127a4)\n\n0x50200000002c is located 4 bytes to the left of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7f74af76fa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55a835712896 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:10\n    #2 0x7f74af3b8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c:2241 in policydb_write\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa[fa]00 fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "write.c",
+            "harness_line": 23,
+            "original_file": "write.c",
+            "original_line": 613,
+            "error_type": "ptr",
+            "crash_function": "policydb_write",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "policydb_write",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/write.c",
+            "crash_line": 2241
+        }
+    ],
+    "secondary_bugs": [
+        {
+            "original_file": "write.c",
+            "original_line": 613,
+            "error_type": "ptr",
+            "crash_function": "policydb_write",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/183_write.c_2393_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ]
+}

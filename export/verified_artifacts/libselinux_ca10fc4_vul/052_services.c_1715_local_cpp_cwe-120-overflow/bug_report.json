@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "services.c",
+        "original_line": 1715,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "1710: \tcase PF_USE_MEMORY:\n1711: \t\tif (bytes > fp->len) {\n1712: \t\t\terrno = EOVERFLOW;\n1713: \t\t\treturn -1;\n1714: \t\t}\n1715: \t\tmemcpy(buf, fp->data, bytes);\n1716: \t\tfp->data += bytes;\n1717: \t\tfp->len -= bytes;\n1718: \t\tbreak;\n1719: \tdefault:\n1720: \t\terrno = EINVAL;"
+    },
+    "klee_crash": {
+        "harness_file": "services.c",
+        "harness_line": 52,
+        "original_file": "services.c",
+        "original_line": 1715,
+        "original_code": "memcpy(buf, fp->data, bytes);",
+        "original_context": "    1712: \t\t\terrno = EOVERFLOW;\n    1713: \t\t\treturn -1;\n    1714: \t\t}\n>>> 1715: \t\tmemcpy(buf, fp->data, bytes);\n    1716: \t\tfp->data += bytes;\n    1717: \t\tfp->len -= bytes;\n    1718: \t\tbreak;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 253\nState: 1\nStack: \n\t#000000253 in memcpy(139281246896128, 139796642971648, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000185 in next_entry(139281246896128, 139349966372864, symbolic) at services.c:52\n\t#200000224 in entry_func(139281246896128, 139349966372864, symbolic) at services.c:66\n\t#300000118 in main() at driver.c:42\nInfo: \n\taddress: 139281246896160\n\tnext: object at 13884530771"
+    },
+    "concrete_inputs": [
+        {
+            "name": "dst_init",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "src_buf",
+            "size": 4096,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "bytes",
+            "size": 8,
+            "data": "b'!\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "__interceptor_memcpy",
+        "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+        "crash_line": 827,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1709==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000060 at pc 0x7fa8834a62c3 bp 0x7fff8de45b10 sp 0x7fff8de452b8\nWRITE of size 33 at 0x503000000060 thread T0\n    #0 0x7fa8834a62c2 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827\n    #1 0x5648bc0fb3c5 in next_entry /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/services.c:1715\n    #2 0x5648bc0edb62 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/052_services.c_1715_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:42\n    #3 0x7fa883169d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fa883169e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5648bc0ed784 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/052_services.c_1715_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x12784)\n\n0x503000000060 is located 0 bytes to the right of 32-byte region [0x503000000040,0x503000000060)\nallocated by thread T0 here:\n    #0 0x7fa883520887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5648bc0ed8ec in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/052_services.c_1715_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:12\n    #2 0x7fa883169d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/052_services.c_1715_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "services.c",
+            "harness_line": 52,
+            "original_file": "services.c",
+            "original_line": 1715,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/052_services.c_1715_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "__interceptor_memcpy",
+            "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+            "crash_line": 827
+        }
+    ]
+}

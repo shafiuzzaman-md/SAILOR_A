@@ -1,0 +1,53 @@
+{
+  "baseline": "B1",
+  "description": "OSS-Fuzz Harness + KLEE Symbolic Execution",
+  "project": "libtiff",
+  "commit": "f3244156eda339cfe0eaa9a7db60fc2868fe29f5",
+  "harness_source": "in-tree: contrib/oss-fuzz/tiff_read_rgba_fuzzer.cc",
+  "total_harnesses": 1,
+  "compiled": 1,
+  "build_errors": 0,
+  "se_detected": 2,
+  "unique_bugs": 0,
+  "false_positives": 2,
+  "klee_timeout": 300,
+  "project_bc_size_mb": 2.2,
+  "run_date": "2026-03-12",
+  "run_environment": "local (KLEE 3.2-pre, clang-14)",
+  "summary": "1/1 harness compiled and linked successfully. KLEE ran for 3.6s and reported 2 crashes, both false positives: (1) failed external call on TIFFStreamOpen (C++ function not in bitcode), (2) out-of-bound pointer in std::string constructor (C++ standard library, not libtiff code). 0 real bugs found.",
+  "failure_reason": "Both KLEE crashes are in C++ runtime/library code (std::string, TIFFStreamOpen), not in libtiff itself",
+  "harnesses": [
+    {
+      "name": "tiff_read_rgba_fuzzer",
+      "path": "contrib/oss-fuzz/tiff_read_rgba_fuzzer.cc",
+      "language": "C++",
+      "status": "FP_EXTERNAL_CALL",
+      "compile": "OK",
+      "link": "OK",
+      "klee_tests": 2,
+      "klee_errors": 2,
+      "klee_time_s": 3.6,
+      "crashes": [
+        {
+          "type": "external",
+          "file": "tiff_read_rgba_fuzzer.cc",
+          "line": 62,
+          "detail": "Failed external call: TIFFStreamOpen (C++ function not in LLVM bitcode)"
+        },
+        {
+          "type": "ptr",
+          "file": "char_traits.h",
+          "line": 358,
+          "detail": "Out of bound pointer in std::string constructor — C++ standard library, not libtiff"
+        }
+      ],
+      "verdict": "FP — both crashes are in C++ runtime code, not in libtiff library"
+    }
+  ],
+  "key_findings": [
+    "libtiff has 1 OSS-Fuzz harness (tiff_read_rgba_fuzzer.cc) — compiled successfully with clang++ to LLVM bitcode",
+    "KLEE reported 2 crashes in 3.6s, both false positives in C++ runtime (TIFFStreamOpen external call, std::string OOB)",
+    "The harness uses C++ std::istringstream + TIFFStreamOpen which KLEE cannot model",
+    "0 real bugs found from 1 harness vs SAILOR's 14"
+  ]
+}

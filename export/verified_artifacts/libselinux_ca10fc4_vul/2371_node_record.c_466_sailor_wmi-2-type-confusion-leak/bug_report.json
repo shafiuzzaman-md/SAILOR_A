@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "node_record.c",
+        "original_line": 466,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "461: \t\t\t      char **buffer, size_t * bsize)\n462: {\n463: \n464: \tchar *tmp_buf = malloc(node->mask_sz);\n465: \tif (!tmp_buf) {\n466: \t\tERR(handle, \"out of memory, could not get netmask bytes\");\n467: \t\treturn STATUS_ERR;\n468: \t}\n469: \n470: \tmemcpy(tmp_buf, node->mask, node->mask_sz);\n471: \t*buffer = tmp_buf;"
+    },
+    "klee_crash": {
+        "harness_file": "node_record.c",
+        "harness_line": 57,
+        "original_file": "node_record.c",
+        "original_line": 470,
+        "original_code": "memcpy(tmp_buf, node->mask, node->mask_sz);",
+        "original_context": "    467: \t\treturn STATUS_ERR;\n    468: \t}\n    469: \n>>> 470: \tmemcpy(tmp_buf, node->mask, node->mask_sz);\n    471: \t*buffer = tmp_buf;\n    472: \t*bsize = node->mask_sz;\n    473: \treturn STATUS_SUCCESS;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 214\nState: 34\nStack: \n\t#000000214 in memcpy(139389700513792, symbolic, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000139 in sepol_node_get_mask_bytes(139338160906240, 139406880382976, 138911885402112, 138914032885760) at node_record.c:57\n\t#200000175 in entry_func(139338160906240, 139406880382976) at node_record.c:66\n\t#300000055 in main() at driver.c:44\nInfo: \n\taddress: (ReadLSB w64 16"
+    },
+    "concrete_inputs": [
+        {
+            "name": "handle",
+            "size": 24,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "node",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_sz",
+            "size": 8,
+            "data": "b'\\x00\\x02\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "sepol_node_get_mask_bytes",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+        "crash_line": 470,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==5327==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7f2af2a23881 bp 0x7ffcd2ec3990 sp 0x7ffcd2ec3958 T0)\n==5327==The signal is caused by a READ memory access.\n==5327==Hint: address points to the zero page.\n    #0 0x7f2af2a23881 in memcpy (/lib/x86_64-linux-gnu/libc.so.6+0xc4881)\n    #1 0x5635531fa464 in sepol_node_get_mask_bytes /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:470\n    #2 0x5635531f67f4 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2371_node_record.c_466_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:45\n    #3 0x7f2af2988d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f2af2988e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5635531f6484 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2371_node_record.c_466_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x3484)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV (/lib/x86_64-linux-gnu/libc.so.6+0xc4881) in memcpy\n==5327==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2371_node_record.c_466_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "node_record.c",
+            "harness_line": 57,
+            "original_file": "node_record.c",
+            "original_line": 470,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2371_node_record.c_466_sailor_wmi-2-type-confusion-leak/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "sepol_node_get_mask_bytes",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+            "crash_line": 470
+        }
+    ]
+}

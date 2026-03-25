@@ -1,0 +1,51 @@
+=================================================================
+==3594678==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000028 at pc 0x5855ff095df3 bp 0x7fff560c7380 sp 0x7fff560c7378
+WRITE of size 1 at 0x602000000028 thread T0
+    #0 0x5855ff095df2 in bfd_putl16 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31:8
+    #1 0x5855ff095d60 in coff_pe_i386_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:75:3
+    #2 0x5855ff096234 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:114:9
+    #3 0x7e1f9362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7e1f9362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5855fefd6314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0x21314) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)
+
+0x602000000028 is located 8 bytes to the right of 16-byte region [0x602000000010,0x602000000020)
+allocated by thread T0 here:
+    #0 0x5855ff059d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0xa4d22) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)
+    #1 0x5855ff095fb5 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:85:36
+    #2 0x7e1f9362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7e1f9362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5855fefd6314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0x21314) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31:8 in bfd_putl16
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 00 00 fa[fa]fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3594678==ABORTING

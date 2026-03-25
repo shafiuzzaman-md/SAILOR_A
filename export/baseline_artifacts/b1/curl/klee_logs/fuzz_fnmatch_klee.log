@@ -1,0 +1,24 @@
+
+KLEE: NOTE: Using POSIX model: /home/user/tools/klee/build/runtime/lib/libkleeRuntimePOSIX64_Debug+Asserts.bca
+KLEE: NOTE: Using klee-uclibc : /home/user/tools/klee/build/runtime/lib/klee-uclibc.bca
+KLEE: output directory is "/app/se_runs/b1/curl_run/fuzz_fnmatch/klee_out"
+KLEE: Using Z3 solver backend
+KLEE: Deterministic allocator: Using quarantine queue size 8
+KLEE: Deterministic allocator: globals (start-address=0x74b615a00000 size=10 GiB)
+KLEE: Deterministic allocator: constants (start-address=0x74b395a00000 size=10 GiB)
+KLEE: Deterministic allocator: heap (start-address=0x73b395a00000 size=1024 GiB)
+KLEE: Deterministic allocator: stack (start-address=0x739395a00000 size=128 GiB)
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.or.v8i8
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.or.v4i8
+KLEE: WARNING ONCE: unsupported intrinsic llvm.load.relative.i64
+KLEE: WARNING ONCE: unsupported intrinsic llvm.vector.reduce.add.v2i64
+KLEE: WARNING ONCE: unsupported intrinsic llvm.x86.sse2.pause
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 127122804834304) at runtime/POSIX/fd.c:997 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: HaltTimer invoked
+KLEE: halting execution, dumping remaining states
+
+KLEE: done: total instructions = 1492136
+KLEE: done: completed paths = 9613
+KLEE: done: partially completed paths = 5177
+KLEE: done: generated tests = 57

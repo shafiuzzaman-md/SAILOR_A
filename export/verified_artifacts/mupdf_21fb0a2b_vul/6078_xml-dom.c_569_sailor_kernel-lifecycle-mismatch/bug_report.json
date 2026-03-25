@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "xml-dom.c",
+        "original_line": 569,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "xml-dom.c",
+        "harness_line": 46,
+        "original_file": "xml-dom.c",
+        "original_line": 569,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=8)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: use after free\nFile: xml-dom.c\nLine: 46\nassembly.ll line: 185\nState: 1\nStack: \n\t#000000185 in fz_dom_remove_attribute(139466590912512, 139449411043328, 139168090685440) at xml-dom.c:46\n\t#100000226 in entry_func(139466590912512, 139449411043328, 139168090685440) at xml-dom.c:62\n\t#200000116 in main() at driver.c:39\nInfo: \n\taddress: 139604029865984\n\tnext: object at 139168090685440 of size 2\n\t\tMO29[2] allocated at main():  %8 = alloca [2 x i8], align 1\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "att",
+            "size": 2,
+            "data": "b'\\xa7\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_dom_remove_attribute",
+        "crash_file": "source/html/xml-dom.c",
+        "crash_line": 556,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==34417==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000038 at pc 0x55cd47b36a31 bp 0x7fff1c356fd0 sp 0x7fff1c356fc0\nREAD of size 8 at 0x502000000038 thread T0\n    #0 0x55cd47b36a30 in fz_dom_remove_attribute source/html/xml-dom.c:556\n    #1 0x55cd47b348a8 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6078_xml-dom.c_569_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:39\n    #2 0x7faa6002fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7faa6002fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55cd47b343f4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6078_xml-dom.c_569_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x1493f4)\n\n0x502000000038 is located 0 bytes to the right of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7faa603e6a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55cd47b34567 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6078_xml-dom.c_569_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:12\n    #2 0x7faa6002fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/html/xml-dom.c:556 in fz_dom_remove_attribute\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00[fa]fa fa 02 fa fa fa 02 fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/6078_xml-dom.c_569_sailor_kernel-lifecycle-mismatch/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xml-dom.c",
+            "harness_line": 46,
+            "original_file": "xml-dom.c",
+            "original_line": 569,
+            "error_type": "ptr",
+            "crash_function": "fz_dom_remove_attribute",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/6078_xml-dom.c_569_sailor_kernel-lifecycle-mismatch/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_dom_remove_attribute",
+            "crash_file": "source/html/xml-dom.c",
+            "crash_line": 556
+        }
+    ]
+}

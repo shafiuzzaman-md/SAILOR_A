@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3717890==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7f04be78b5d4 bp 0x7fff04eb8ab0 sp 0x7fff04eb8268 T0)
+==3717890==The signal is caused by a WRITE memory access.
+==3717890==Hint: address points to the zero page.
+    #0 0x7f04be78b5d4 in __strcpy_avx2 string/../sysdeps/x86_64/multiarch/strcpy-avx2.S:127
+    #1 0x5b16d53fa43c in strcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1578_null-pointer-dereference/reproducer+0x8e43c) (BuildId: 579bf374504d6b7c11aa1eb3b1893d44a243b94b)
+    #2 0x5b16d544bd0c in strstash /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1578_null-pointer-dereference/reproducer.c:23:16
+    #3 0x5b16d544bcc2 in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1578_null-pointer-dereference/reproducer.c:35:11
+    #4 0x7f04be62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7f04be62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5b16d538c304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1578_null-pointer-dereference/reproducer+0x20304) (BuildId: 579bf374504d6b7c11aa1eb3b1893d44a243b94b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strcpy-avx2.S:127 in __strcpy_avx2
+==3717890==ABORTING

@@ -1,0 +1,94 @@
+{
+  "ffv1.c": {
+    "38": {
+      "orig_file": "ffv1.c",
+      "orig_line": 53,
+      "code": "return 0;"
+    },
+    "39": {
+      "orig_file": "ffv1.c",
+      "orig_line": 54,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "ffv1.c",
+      "orig_line": 187,
+      "code": "void ff_ffv1_clear_slice_state(const FFV1Context *f, FFV1SliceContext *sc)"
+    },
+    "43": {
+      "orig_file": "ffv1.c",
+      "orig_line": 188,
+      "code": "{"
+    },
+    "44": {
+      "orig_file": "ffv1.c",
+      "orig_line": 174,
+      "code": "int i;"
+    },
+    "46": {
+      "orig_file": "ffv1.c",
+      "orig_line": 191,
+      "code": "for (i = 0; i < f->plane_count; i++) {"
+    },
+    "47": {
+      "orig_file": "ffv1.c",
+      "orig_line": 192,
+      "code": "PlaneContext *p = &sc->plane[i];"
+    },
+    "49": {
+      "orig_file": "ffv1.c",
+      "orig_line": 194,
+      "code": "if (f->ac != AC_GOLOMB_RICE) {"
+    },
+    "50": {
+      "orig_file": "ffv1.c",
+      "orig_line": 195,
+      "code": "if (f->initial_states[p->quant_table_index]) {"
+    },
+    "51": {
+      "orig_file": "ffv1.c",
+      "orig_line": 196,
+      "code": "memcpy(p->state, f->initial_states[p->quant_table_index],"
+    },
+    "52": {
+      "orig_file": "ffv1.c",
+      "orig_line": 197,
+      "code": "CONTEXT_SIZE * p->context_count);"
+    },
+    "54": {
+      "orig_file": "ffv1.c",
+      "orig_line": 200,
+      "code": "} else {"
+    },
+    "55": {
+      "orig_file": "ffv1.c",
+      "orig_line": 199,
+      "code": "memset(p->state, 128, CONTEXT_SIZE * p->context_count);"
+    },
+    "56": {
+      "orig_file": "ffv1.c",
+      "orig_line": 206,
+      "code": "}"
+    },
+    "57": {
+      "orig_file": "ffv1.c",
+      "orig_line": 200,
+      "code": "} else {"
+    },
+    "59": {
+      "orig_file": "ffv1.c",
+      "orig_line": 206,
+      "code": "}"
+    },
+    "60": {
+      "orig_file": "ffv1.c",
+      "orig_line": 207,
+      "code": "}"
+    },
+    "61": {
+      "orig_file": "ffv1.c",
+      "orig_line": 208,
+      "code": "}"
+    }
+  }
+}

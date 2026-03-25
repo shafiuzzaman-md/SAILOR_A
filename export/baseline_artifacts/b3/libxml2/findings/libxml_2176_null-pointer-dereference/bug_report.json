@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 2176,
+    "function": "libxml_xmlRegisterXPathFunction",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The result of xmlRealloc is assigned directly to libxml_xpathCallbacks without a NULL check. On realloc failure, libxml_xpathCallbacks becomes NULL and the code then writes to (*libxml_xpathCallbacks)[i], leading to a NULL pointer dereference.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal type stubs to mirror the libxml Python binding environment */\ntypedef unsigned char xmlChar;\ntypedef void* xmlXPathContextPtr;\n\ntypedef struct _PyObject {\n    int refcnt;\n} PyObject;\n\n/* Callback entry as used by the Python binding */\ntypedef struct {\n    xmlXPathContextPtr ctx;\n    xmlChar *name;\n    xmlChar *ns_uri;\n    PyObject *function;\n} xmlXPathCallback;\n\ntypedef xmlXPathCallback* xmlXPathCallbackArray;\n\n/* Globals matching the binding's storage */\nstatic xmlXPathCallbackArray* libxml_xpathCallbacks = NULL;\nstatic int libxml_xpathCallbacksAllocd = 0;\nstatic int libxml_xpathCallbacksNb = 0;\nstatic int libxml_xpathCallbacksInitialized = 0;\n\n/* Stubs for Python/macros */\n#define Py_XINCREF(op) do { if ((op) != NULL) ((PyObject*)(op))->refcnt++; } while (0)\n#define Py_XDECREF(op) do { if ((op) != NULL) ((PyObject*)(op))->refcnt--; } while (0)\n\nstatic PyObject* libxml_intWrap(int v) {\n    (void)v; /* not used in crash path */\n    PyObject *o = (PyObject*)calloc(1, sizeof(PyObject));\n    return o;\n}\n\n/* libxml2 API stubs used in the vulnerable function */\nstatic void libxml_xpathCallbacksInitialize(void) {\n    libxml_xpathCallbacksInitialized = 1;\n}\n\nstatic void libxml_xmlXPathFuncLookupFunc(void) { /* dummy */ }\n\nstatic void xmlXPathRegisterFuncLookup(xmlXPathContextPtr ctx, void* f, void* data) {\n    (void)ctx; (void)f; (void)data; /* no-op */\n}\n\n/* xmlStr helpers */\nstatic int xmlStrEqual(const xmlChar *a, const xmlChar *b) {\n    if (a == NULL || b == NULL) return a == b;\n    return strcmp((const char*)a, (const char*)b) == 0;\n}\n\nstatic xmlChar* xmlStrdup(const xmlChar *s) {\n    if (!s) return NULL;\n    size_t n = strlen((const char*)s) + 1;\n    xmlChar *out = (xmlChar*)malloc(n);\n    if (out) memcpy(out, s, n);\n    return out;\n}\n\n/* Critical: xmlRealloc stub that simulates allocation failure (returns NULL) */\nstatic void* xmlRealloc(void* ptr, size_t size) {\n    (void)ptr; (void)size;\n    /* Simulate OOM to trigger the bug path */\n    return NULL;\n}\n\n/* Reimplementation of the vulnerable function, simplified to directly set up inputs. */\nPyObject * libxml_xmlRegisterXPathFunction(PyObject * self, PyObject * args) {\n    (void)self; (void)args;\n\n    PyObject *py_retval;\n    int c_retval = 0;\n    xmlChar *name = (xmlChar*)\"myfunc\";\n    xmlChar *ns_uri = (xmlChar*)\"urn:ns\";\n    xmlXPathContextPtr ctx = (xmlXPathContextPtr)0x1234; /* dummy non-NULL */\n    PyObject *pyobj_ctx = (PyObject*)0x1;                 /* dummy non-NULL to avoid early return */\n    PyObject *pyobj_f = (PyObject*)calloc(1, sizeof(PyObject)); /* function object */\n    int i;\n\n    if (libxml_xpathCallbacksInitialized == 0)\n        libxml_xpathCallbacksInitialize();\n    xmlXPathRegisterFuncLookup(ctx, (void*)libxml_xmlXPathFuncLookupFunc, ctx);\n\n    if ((pyobj_ctx == NULL) || (name == NULL) || (pyobj_f == NULL)) {\n        py_retval = libxml_intWrap(-1);\n        return (py_retval);\n    }\n\n    /* No existing callbacks yet, skip the loop effectively */\n    for (i = 0; i < libxml_xpathCallbacksNb; i++) {\n        if ((ctx == (*libxml_xpathCallbacks)[i].ctx) &&\n            (xmlStrEqual(name, (*libxml_xpathCallbacks)[i].name)) &&\n            (xmlStrEqual(ns_uri, (*libxml_xpathCallbacks)[i].ns_uri))) {\n            Py_XINCREF(pyobj_f);\n            Py_XDECREF((*libxml_xpathCallbacks)[i].function);\n            (*libxml_xpathCallbacks)[i].function = pyobj_f;\n            c_retval = 1;\n            goto done;\n        }\n    }\n\n    /* Force reallocation path; our xmlRealloc returns NULL simulating OOM */\n    if (libxml_xpathCallbacksNb >= libxml_xpathCallbacksAllocd) {\n        libxml_xpathCallbacksAllocd += 10;\n        libxml_xpathCallbacks = (xmlXPathCallbackArray*)xmlRealloc(\n            libxml_xpathCallbacks,\n            (size_t)libxml_xpathCallbacksAllocd * sizeof(xmlXPathCallback));\n    }\n\n    /* Following lines dereference libxml_xpathCallbacks without NULL check */\n    i = libxml_xpathCallbacksNb++;\n    Py_XINCREF(pyobj_f);\n\n    /* This write will dereference a NULL base pointer (libxml_xpathCallbacks) */\n    (*libxml_xpathCallbacks)[i].ctx = ctx;               /* NULL deref here */\n    (*libxml_xpathCallbacks)[i].name = xmlStrdup(name);\n    (*libxml_xpathCallbacks)[i].ns_uri = xmlStrdup(ns_uri);\n    (*libxml_xpathCallbacks)[i].function = pyobj_f;\n    c_retval = 1;\n\n  done:\n    py_retval = libxml_intWrap((int) c_retval);\n    return (py_retval);\n}\n\nint main(void) {\n    /* Call the vulnerable function; it will crash due to NULL dereference */\n    (void)libxml_xmlRegisterXPathFunction(NULL, NULL);\n    /* If it somehow returns, print something (should not happen) */\n    puts(\"Unexpectedly returned\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7428243160247803,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4010361==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5cde2ed7225d bp 0x7ffdbf07faa0 sp 0x7ffdbf07f930 T0)\n==4010361==The signal is caused by a READ memory access.\n==4010361==Hint: address points to the zero page.\n    #0 0x5cde2ed7225d in libxml_xmlRegisterXPathFunction /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:120:6\n    #1 0x5cde2ed725ea in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:133:11\n    #2 0x7ae737e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7ae737e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5cde2ecb2304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer+0x21304) (BuildId: a3d9b4a3666441c58ff58336d799c687f44cc2dc)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:120:6 in libxml_xmlRegisterXPathFunction\n==4010361==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "libxml_xmlRegisterXPathFunction",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:120",
+      "crash_line": 6,
+      "frames": [
+        [
+          "0",
+          "libxml_xmlRegisterXPathFunction",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:120",
+          "6"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2176_null-pointer-dereference/reproducer.c:133",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

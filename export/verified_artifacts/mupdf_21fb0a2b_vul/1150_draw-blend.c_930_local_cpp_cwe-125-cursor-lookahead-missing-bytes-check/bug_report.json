@@ -1,0 +1,86 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "draw-blend.c",
+        "original_line": 930,
+        "function": "fz_blend_nonseparable_nonisolated",
+        "entry_point": "fz_blend_pixmap",
+        "spine": [
+            "fz_blend_pixmap",
+            "fz_blend_nonseparable_nonisolated"
+        ],
+        "original_context": "925: \t\t\t\t\t/* ugh, division to get non-premul components */\n926: \t\t\t\t\tint invsa = sa ? 255 * 256 / sa : 0;\n927: \t\t\t\t\tint invba = ba ? 255 * 256 / ba : 0;\n928: \n929: \t\t\t\t\tint sr = (sp[0] * invsa) >> 8;\n930: \t\t\t\t\tint sg = (sp[1] * invsa) >> 8;\n931: \t\t\t\t\tint sb = (sp[2] * invsa) >> 8;\n932: \n933: \t\t\t\t\tint br = (bp[0] * invba) >> 8;\n934: \t\t\t\t\tint bg = (bp[1] * invba) >> 8;\n935: \t\t\t\t\tint bb = (bp[2] * invba) >> 8;"
+    },
+    "klee_crash": {
+        "harness_file": "draw-blend.c",
+        "harness_line": 40,
+        "original_file": "draw-blend.c",
+        "original_line": 527,
+        "original_code": "int sb = (sp[2] * invsa) >> 8;",
+        "original_context": "    524: \n    525: \t\t\t\tint sr = (sp[0] * invsa) >> 8;\n    526: \t\t\t\tint sg = (sp[1] * invsa) >> 8;\n>>> 527: \t\t\t\tint sb = (sp[2] * invsa) >> 8;\n    528: \n    529: \t\t\t\tint br = (bp[0] * invba) >> 8;\n    530: \t\t\t\tint bg = (bp[1] * invba) >> 8;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: draw-blend.c\nLine: 40\nassembly.ll line: 340\nState: 1\nStack: \n\t#000000340 in fz_blend_nonseparable_nonisolated(139743084294144, 0, 139708724555776, 0, 3, 1, 0, 0, 139700134621184, 255, 3) at draw-blend.c:40\n\t#100000225 in fz_blend_pixmap(139725904424960, 139914882985984, 139932062855168, 255, 0, 0, 139949242724352) at draw-blend.c:64\n\t#200000506 in main() at driver.c:39\nInfo: \n\taddress: 139708724555778\n\tnext: object at 139425525149696 of size 4\n\t\tMO"
+    },
+    "concrete_inputs": [
+        {
+            "name": "src_buf",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        },
+        {
+            "name": "dst_buf",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "shape_buf",
+            "size": 1,
+            "data": "b'\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "fz_colorspace_is_subtractive",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 243,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4982==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000023 (pc 0x559bf5fab8b3 bp 0x7ffe5b569420 sp 0x7ffe5b569318 T0)\n==4982==The signal is caused by a READ memory access.\n==4982==Hint: address points to the zero page.\n    #0 0x559bf5fab8b3 in fz_colorspace_is_subtractive source/fitz/colorspace.c:243\n    #1 0x559bf5f87fbe in fz_blend_pixmap source/fitz/draw-blend.c:1135\n    #2 0x559bf5f84277 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1150_draw-blend.c_930_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:39\n    #3 0x7f86b93cfd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f86b93cfe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x559bf5f83904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1150_draw-blend.c_930_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x10904)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV source/fitz/colorspace.c:243 in fz_colorspace_is_subtractive\n==4982==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1150_draw-blend.c_930_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "draw-blend.c",
+            "harness_line": 40,
+            "original_file": "draw-blend.c",
+            "original_line": 527,
+            "error_type": "ptr",
+            "crash_function": "fz_blend_nonseparable_nonisolated",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1150_draw-blend.c_930_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "fz_colorspace_is_subtractive",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 243
+        }
+    ]
+}

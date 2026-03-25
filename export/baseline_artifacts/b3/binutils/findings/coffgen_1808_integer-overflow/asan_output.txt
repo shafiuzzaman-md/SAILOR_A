@@ -1,0 +1,53 @@
+=================================================================
+==3618637==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x570bf3ec6310 bp 0x7ffde4963370 sp 0x7ffde4962b40
+WRITE of size 4 at 0x602000000011 thread T0
+    #0 0x570bf3ec630f in __asan_memset (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa430f) (BuildId: e61abb66155618549b385a548508730b1ac1a644)
+    #1 0x570bf3f03496 in _bfd_coff_read_string_table /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:135:5
+    #2 0x570bf3f02f51 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166:15
+    #3 0x7c0ef2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7c0ef2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x570bf3e43314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0x21314) (BuildId: e61abb66155618549b385a548508730b1ac1a644)
+
+0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)
+allocated by thread T0 here:
+    #0 0x570bf3ec6d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa4d22) (BuildId: e61abb66155618549b385a548508730b1ac1a644)
+    #1 0x570bf3f03df4 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:79:12
+    #2 0x570bf3f03454 in _bfd_coff_read_string_table /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:130:23
+    #3 0x570bf3f02f51 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166:15
+    #4 0x7c0ef2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7c0ef2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x570bf3e43314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0x21314) (BuildId: e61abb66155618549b385a548508730b1ac1a644)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa430f) (BuildId: e61abb66155618549b385a548508730b1ac1a644) in __asan_memset
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3618637==ABORTING

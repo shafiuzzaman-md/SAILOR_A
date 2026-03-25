@@ -1,0 +1,12 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3724884==ERROR: AddressSanitizer: FPE on unknown address 0x57b8149d96d0 (pc 0x57b8149d96d0 bp 0x7ffcf1b55d60 sp 0x7ffcf1b55b60 T0)
+    #0 0x57b8149d96d0 in validation_ascii_to_fp_reproducer /app/se_runs/b3/libpng_747dd02_vul/findings/tarith_189_divide-by-zero/reproducer.c:82:42
+    #1 0x57b8149d8d0d in main /app/se_runs/b3/libpng_747dd02_vul/findings/tarith_189_divide-by-zero/reproducer.c:121:5
+    #2 0x7f4680c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7f4680c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x57b814919354 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/tarith_189_divide-by-zero/reproducer+0x21354) (BuildId: 33c4aefb2ae29e1bed724c556ceeb313e5d0bce3)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/tarith_189_divide-by-zero/reproducer.c:82:42 in validation_ascii_to_fp_reproducer
+==3724884==ABORTING

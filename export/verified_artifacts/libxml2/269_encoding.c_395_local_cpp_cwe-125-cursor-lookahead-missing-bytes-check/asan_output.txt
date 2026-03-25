@@ -1,0 +1,49 @@
+=================================================================
+==2609561==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x79f067500023 at pc 0x5c7ea4e0d105 bp 0x7ffe722faaf0 sp 0x7ffe722faae0
+READ of size 1 at 0x79f067500023 thread T0
+    #0 0x5c7ea4e0d104 in xmlDetectCharEncoding /tmp/libxml2_upstream/encoding.c:396
+    #1 0x5c7ea4e0ce94 in main /tmp/libxml2_upstream_verify_v5/269_encoding.c_395_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/driver.c:39
+    #2 0x79f06962a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x79f06962a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x5c7ea4e0ccb4 in _start (/tmp/libxml2_upstream_verify_v5/269_encoding.c_395_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/bin+0x55cb4) (BuildId: df8d58097273d70aeb89039325f1c79e50008a9a)
+
+Address 0x79f067500023 is located in stack of thread T0 at offset 35 in frame
+    #0 0x5c7ea4e0cd88 in main /tmp/libxml2_upstream_verify_v5/269_encoding.c_395_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/driver.c:29
+
+  This frame has 1 object(s):
+    [32, 35) 'in' (line 30) <== Memory access at offset 35 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /tmp/libxml2_upstream/encoding.c:396 in xmlDetectCharEncoding
+Shadow bytes around the buggy address:
+  0x79f0674ffd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f0674ffe00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f0674ffe80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f0674fff00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f0674fff80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x79f067500000: f1 f1 f1 f1[03]f3 f3 f3 00 00 00 00 00 00 00 00
+  0x79f067500080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f067500100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f067500180: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f067500200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x79f067500280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==2609561==ABORTING

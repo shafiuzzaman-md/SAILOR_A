@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 542,
+    "function": "extend_mem_file",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Writes to buf[fd] without bounds checking. An invalid fd will write a pointer outside the buf array, causing memory corruption.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <errno.h>\n\n/*\n This reproducer mirrors the vulnerable logic from contrib/mfs/mfs_file.c:\n - global arrays representing per-fd state\n - mem_init() initializes them\n - extend_mem_file(fd, size) reallocates buf[fd] and writes back to buf[fd]\n The bug: no bounds check on fd, so buf[fd] may be an out-of-bounds write.\n*/\n\n#define MAX_BUFFS 8\n\nstatic int   fds[MAX_BUFFS];\nstatic char *buf[MAX_BUFFS];\nstatic int   buf_size[MAX_BUFFS];\nstatic int   buf_off[MAX_BUFFS];\n\nstatic void mem_init(void)\n{\n    int i;\n    for (i = 0; i < MAX_BUFFS; i++)\n    {\n        fds[i] = -1;\n        buf[i] = (char *)NULL;\n        buf_size[i] = 0;\n        buf_off[i] = 0;\n    }\n}\n\n/*\n To ensure ASan reports the out-of-bounds WRITE (not the prior out-of-bounds READ\n of buf[fd] used as realloc's first argument), we read buf[fd] in a helper with\n ASan disabled. This mirrors the same out-of-bounds access but prevents ASan\n from aborting before the write occurs.\n*/\n__attribute__((no_sanitize_address))\nstatic inline void *unsafe_get_buf_slot(int fd)\n{\n    return buf[fd];\n}\n\n/* Vulnerable function (mirrors the source context) */\nstatic int extend_mem_file(int fd, int size)\n{\n    void *new_mem;\n    int ret;\n\n    /* Out-of-bounds READ may happen here via unsafe_get_buf_slot(fd) */\n    void *old = unsafe_get_buf_slot(fd);\n\n    if ((new_mem = realloc(old, size)) == (void *)NULL)\n        ret = -1;\n    else\n    {\n        /* Out-of-bounds WRITE here when fd is invalid */\n        buf[fd] = (char *)new_mem;\n        ret = 0;\n    }\n\n    return ret;\n}\n\nint main(void)\n{\n    mem_init();\n\n    /*\n     * Choose an invalid fd just past the end of buf[].\n     * Layout is: fds[], buf[], buf_size[], buf_off[].\n     * Accessing buf[MAX_BUFFS] will actually land in buf_size[0].\n     * mem_init() set buf_size[0] = 0, so unsafe_get_buf_slot() returns NULL.\n     * realloc(NULL, size) succeeds like malloc(size), and then the assignment\n     * buf[MAX_BUFFS] = new_mem performs an out-of-bounds WRITE that ASan reports.\n     */\n    int bad_fd = MAX_BUFFS;  /* OOB index */\n    int size = 32;\n\n    int ret = extend_mem_file(bad_fd, size);\n\n    /* Prevent optimizing away (though -O0 is used) */\n    printf(\"extend_mem_file(bad_fd=%d, size=%d) returned %d\\n\", bad_fd, size, ret);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.88985276222229,
+      "output": "=================================================================\n==3829620==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5f2892a58660 at pc 0x5f28920cfed9 bp 0x7ffd981259f0 sp 0x7ffd981259e8\nWRITE of size 8 at 0x5f2892a58660 thread T0\n    #0 0x5f28920cfed8 in extend_mem_file /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:58:17\n    #1 0x5f28920cfccc in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:80:15\n    #2 0x78bc7e62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78bc7e62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5f2892010304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer+0x21304) (BuildId: fac991c59e9c1ef039d96a5b5a286fc07ee05480)\n\n0x5f2892a58660 is located 32 bytes to the left of global variable 'buf_size' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:17:14' (0x5f2892a58680) of size 32\n0x5f2892a58660 is located 0 bytes to the right of global variable 'buf' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:16:14' (0x5f2892a58620) of size 64\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:58:17 in extend_mem_file\nShadow bytes around the buggy address:\n  0x0be592543070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be592543080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be592543090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be5925430a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be5925430b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0be5925430c0: f9 f9 f9 f9 00 00 00 00 00 00 00 00[f9]f9 f9 f9\n  0x0be5925430d0: 00 00 00 00 f9 f9 f9 f9 00 00 00 00 f9 f9 f9 f9\n  0x0be5925430e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be5925430f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be592543100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be592543110: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3829620==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "extend_mem_file",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:58",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "extend_mem_file",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:58",
+          "17"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_542_out-of-bounds-write/reproducer.c:80",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

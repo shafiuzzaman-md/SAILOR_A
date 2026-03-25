@@ -1,0 +1,22 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+parse_number_minmax	BUILD_ERROR	FP			0	parse_number		0	3979		
+show_help_options_flags	BUILD_ERROR	FP			0	show_help_options		0	3979		
+grow_array_overflow	BUILD_ERROR	FP			0	grow_array		0	3979		
+allocate_array_elem_overflow	BUILD_ERROR	FP			0	allocate_array_elem		0	3979		
+get_rotation_oob_read	BUILD_ERROR	FP			0	get_rotation		0	3979		
+cmdutils_isalnum_charclass	BUILD_ERROR	FP			0	cmdutils_isalnum		0	3979		
+get_preset_file_overflow	BUILD_ERROR	FP			0	get_preset_file		0	3979		
+stream_specifier_parse_stack_overflow	BUILD_ERROR	FP			0	stream_specifier_parse		0	3979		
+stream_specifier_match_null_deref	BUILD_ERROR	FP			0	stream_specifier_match		0	3979		
+check_avoptions_used_oob_read	BUILD_ERROR	FP			0	check_avoptions_used		0	3979		
+dec_free_use_after_free	BUILD_ERROR	FP			0	dec_free		0	3979		
+parse_and_set_vsync_overflow	BUILD_ERROR	FP			0	parse_and_set_vsync		0	3979		
+enc_open_divide_by_zero	BUILD_ERROR	FP			0	enc_open		0	3979		
+sch_mux_stream_buffering_oob_write	BUILD_ERROR	FP			0	sch_mux_stream_buffering		0	3979		
+uninit_opts_double_free	BUILD_ERROR	FP			0	uninit_opts		0	3979		
+show_help_children_null_deref	BUILD_ERROR	FP			0	show_help_children		0	3979		
+stream_specifier_uninit_double_free	BUILD_ERROR	FP			0	stream_specifier_uninit		0	3979		
+remove_avoptions_oob	BUILD_ERROR	FP			0	remove_avoptions		0	3979		
+check_avoptions_oob	BUILD_ERROR	FP			0	check_avoptions		0	3979		
+locate_option_no_terminator	BUILD_ERROR	FP			0	locate_option		0	3979		
+log_callback_help_varargs	BUILD_ERROR	FP			0	log_callback_help		0	3979		

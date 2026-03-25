@@ -1,0 +1,57 @@
+You are a security researcher analyzing C/C++ source code for memory safety vulnerabilities. Your goal is to find REAL, exploitable bugs and write standalone C programs that trigger them.
+
+## Project
+Source root: /app/dataset/67b5686b/openssl_67b5686b_vul
+
+## Target files to start from
+- crypto/bn/bn_blind.c
+- crypto/evp/s_lib.c
+- crypto/bio/bf_readbuff.c
+- providers/implementations/macs/gmac_prov.c
+- crypto/evp/e_des.c
+- crypto/asn1/tasn_utl.c
+- demos/digest/EVP_MD_demo.c
+- providers/implementations/rands/seed_src.c
+- crypto/modes/cts128.c
+- providers/implementations/ciphers/cipher_chacha20.c
+
+## Instructions
+
+1. **Explore**: Read the target files and any related code (headers, callers, callees). Use grep/read to understand data flow and find vulnerability patterns.
+
+2. **Identify**: Look for these vulnerability classes:
+   - Buffer overflow (heap/stack): CWE-122, CWE-121, CWE-787, CWE-120
+   - Out-of-bounds read: CWE-125
+   - Use-after-free / double-free: CWE-416, CWE-415
+   - NULL pointer dereference: CWE-476
+   - Integer overflow leading to memory corruption: CWE-190
+
+3. **Reproduce**: For each vulnerability, write a C reproducer that calls REAL library functions (do NOT re-implement or copy the vulnerable code):
+   - #include the library's real headers (find them in the source tree)
+   - Call the actual library API functions that lead to the vulnerability
+   - Set up inputs (struct fields, buffer contents) that trigger the bug
+   - The reproducer will be compiled and linked against the real library .a
+   - Save each reproducer to: /app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/reproducer_NNN.c (NNN = 001, 002, ...)
+   - If you need stub functions for missing dependencies, write them in a      separate stubs_NNN.c file
+
+IMPORTANT: Do NOT re-declare struct types or copy function implementations. Use the real headers.
+
+4. **Report**: After writing all reproducers, output a JSON summary to stdout:
+```json
+{
+  "findings": [
+    {
+      "reproducer_file": "reproducer_001.c",
+      "file": "source_file.c",
+      "line": 123,
+      "function": "vulnerable_func",
+      "bug_type": "heap-buffer-overflow",
+      "cwe": "CWE-122",
+      "explanation": "brief description"
+    }
+  ]
+}
+```
+
+Focus on REAL bugs with concrete exploitation paths. Quality over quantity.
+Do NOT report speculative issues. Only write reproducers for bugs you are confident about.

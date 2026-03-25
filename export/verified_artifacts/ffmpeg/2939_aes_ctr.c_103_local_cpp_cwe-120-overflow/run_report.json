@@ -1,0 +1,93 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 63052,
+    "tokens_prompt": 54837,
+    "tokens_completion": 8215,
+    "turns": 7,
+    "klee_runs": 2
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "aes_ctr.c",
+    "line": 103,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow.json",
+  "vul_file": "aes_ctr.c",
+  "vul_line": "103",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "aes_ctr.c",
+      "original_line": 103,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "98: }\n99: \n100: void av_aes_ctr_increment_iv(struct AVAESCTR *a)\n101: {\n102:     av_aes_ctr_increment_be64(a->counter);\n103:     memset(a->counter + AES_CTR_IV_SIZE, 0, sizeof(a->counter) - AES_CTR_IV_SIZE);\n104:     a->block_offset = 0;\n105: }\n106: \n107: void av_aes_ctr_crypt(struct AVAESCTR *a, uint8_t *dst, const uint8_t *src, int count)\n108: {"
+    },
+    "klee_crash": {
+      "harness_file": "aes_ctr.c",
+      "harness_line": 34,
+      "original_file": "aes_ctr.c",
+      "original_line": 103,
+      "original_code": "memset(a->counter + AES_CTR_IV_SIZE, 0, sizeof(a->counter) - AES_CTR_IV_SIZE);",
+      "original_context": "    100: void av_aes_ctr_increment_iv(struct AVAESCTR *a)\n    101: {\n    102:     av_aes_ctr_increment_be64(a->counter);\n>>> 103:     memset(a->counter + AES_CTR_IV_SIZE, 0, sizeof(a->counter) - AES_CTR_IV_SIZE);\n    104:     a->block_offset = 0;\n    105: }\n    106: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 175\nState: 1\nStack: \n\t#000000175 in memset(139710197792784, 0, 18446744073709551608) at runtime/Freestanding/memset.c:15\n\t#100000026 in av_aes_ctr_increment_iv(139778917269504) at aes_ctr.c:34\n\t#200000091 in entry_func(139778917269504) at aes_ctr.c:43\n\t#300000136 in main() at driver.c:22\nInfo: \n\taddress: 139710197792784\n\tnext: object at 139345125572608 of size 4\n\t\tMO22[4] allocated at main():"
+    },
+    "concrete_inputs": [
+      {
+        "name": "counter_bytes",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "aes_ctr.c",
+        "harness_line": 34,
+        "original_file": "aes_ctr.c",
+        "original_line": 103,
+        "error_type": "ptr",
+        "crash_function": "memset",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/timepng.c",
+    "line": 552,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "When reading filenames from stdin, if a line does not end with a newline (e.g., the last line without a trailing newline), the else branch prints an error using filename+len-32. If len < 32 (short line), this pointer underflows before the start of the filename buffer, and fprintf with %s reads from out-of-bounds stack memory, causing a stack OOB read and potential crash or information leak.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/timepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <limits.h>\n#include <unistd.h>\n#include <stdlib.h>\n#include <errno.h>\n\n/*\n This standalone program reproduces the out-of-bounds read from\n contrib/libtests/timepng.c:552 by emulating the same logic:\n - Read a filename from stdin using fgets\n - If the line does not end with a newline (e.g., last line without \\n),\n   print an error using filename+len-32, which underflows for short lines.\n*/\nint main(void)\n{\n    /* Prepare stdin to contain a short line without a trailing newline. */\n    int fds[2];\n    if (pipe(fds) != 0) {\n        perror(\"pipe\");\n        return 1;\n    }\n\n    const char *short_line_no_newline = \"shortname\"; /* len = 9 (< 32) */\n    ssize_t w = write(fds[1], short_line_no_newline, (unsigned)strlen(short_line_no_newline));\n    (void)w; /* ignore write result in reproducer */\n    close(fds[1]);\n\n    /* Redirect the read end of the pipe to stdin (fd 0). */\n    if (dup2(fds[0], 0) == -1) {\n        perror(\"dup2\");\n        close(fds[0]);\n        return 1;\n    }\n    close(fds[0]);\n\n    /* Reproduce the vulnerable stdin-processing block from timepng.c */\n    char filename[FILENAME_MAX+1];\n\n    while (fgets(filename, FILENAME_MAX+1, stdin))\n    {\n        size_t len = strlen(filename);\n\n        if (filename[len-1] == '\\n')\n        {\n            filename[len-1] = 0;\n            /* In the original code this would try to add the file, but it's\n               irrelevant for triggering the bug. */\n        }\n        else\n        {\n            /* BUG: If len < 32 (true here: 9), this underflows the pointer\n               before the start of the filename buffer, causing an OOB read\n               when fprintf processes %s. */\n            fprintf(stderr, \"timepng: file name too long: ...%s\\n\", filename + len - 32);\n            break;\n        }\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7550845146179199,
+      "output": "=================================================================\n==3725862==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc0199f729 at pc 0x58a485df251d bp 0x7ffc0199f5c0 sp 0x7ffc0199ed48\nREAD of size 6 at 0x7ffc0199f729 thread T0\n    #0 0x58a485df251c in printf_common(void*, char const*, __va_list_tag*) asan_interceptors.cpp.o\n    #1 0x58a485df3a5d in fprintf (/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer+0x44a5d) (BuildId: 49944620dda3e6d9c7b1bcf8b4ef6cf63d0e8b6f)\n    #2 0x58a485e901c8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer.c:55:13\n    #3 0x7c4dffa2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7c4dffa2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x58a485dd0334 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer+0x21334) (BuildId: 49944620dda3e6d9c7b1bcf8b4ef6cf63d0e8b6f)\n\nAddress 0x7ffc0199f729 is located in stack of thread T0 at offset 41 in frame\n    #0 0x58a485e8fcdf in main /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer.c:16\n\n  This frame has 2 object(s):\n    [32, 40) 'fds' (line 18) <== Memory access at offset 41 overflows this variable\n    [64, 4161) 'filename' (line 38)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow asan_interceptors.cpp.o in printf_common(void*, char const*, __va_list_tag*)\nShadow bytes around the buggy address:\n  0x10000032be90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bea0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032beb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bec0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bed0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x10000032bee0: f1 f1 f1 f1 00[f2]f2 f2 00 00 00 00 00 00 00 00\n  0x10000032bef0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bf00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bf10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bf20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000032bf30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3725862==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer.c",
+      "crash_line": 16,
+      "frames": [
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer.c:55",
+          "13"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_552_out-of-bounds-read/reproducer.c",
+          "16"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

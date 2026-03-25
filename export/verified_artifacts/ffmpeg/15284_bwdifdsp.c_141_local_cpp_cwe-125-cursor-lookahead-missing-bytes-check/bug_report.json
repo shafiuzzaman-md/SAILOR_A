@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "bwdifdsp.c",
+    "original_line": 141,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "136:     const uint8_t *next  = next1;\n137:     const uint8_t *prev2 = parity ? prev : cur ;\n138:     const uint8_t *next2 = parity ? cur  : next;\n139:     int interpol, x;\n140: \n141:     FILTER1()\n142:     FILTER_LINE()\n143:     FILTER2()\n144: }\n145: \n146: void ff_bwdif_filter_edge_c(void *dst1, const void *prev1, const void *cur1, const void *next1,"
+  },
+  "klee_crash": {
+    "harness_file": "bwdifdsp.c",
+    "harness_line": 37,
+    "original_file": "bwdifdsp.c",
+    "original_line": 141,
+    "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=4)",
+    "original_context": "    138:     const uint8_t *next2 = parity ? cur  : next;\n    139:     int interpol, x;\n    140: \n>>> 141:     FILTER1()\n    142:     FILTER_LINE()\n    143:     FILTER2()\n    144: }",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: bwdifdsp.c\nLine: 37\nassembly.ll line: 162\nState: 2\nStack: \n\t#000000162 in ff_bwdif_filter_line_c(139497523404800, 139480343535632, 139514703273984, 139471753601024, 8, 1, 1, 2, 2, 3, 3, 4, 4, 1, 255) at bwdifdsp.c:37\n\t#100000327 in entry_func(139497523404800, 139480343535632, 139514703273984, 139471753601024, 8, 1, 1, 2, 2, 3, 3, 4, 4, 1, 255) at bwdifdsp.c:50\n\t#200000415 in main() at driver.c:44\nInfo: \n\taddress: 139480343535632\n\tnext: object at 13"
+  },
+  "concrete_inputs": [
+    {
+      "name": "dst_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "prev_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "cur_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "next_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "c",
+      "size": 4,
+      "data": "b'\\xff\\xff\\xff\\xff'"
+    },
+    {
+      "name": "e",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/15284_bwdifdsp.c_141_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "bwdifdsp.c",
+      "harness_line": 37,
+      "original_file": "bwdifdsp.c",
+      "original_line": 141,
+      "error_type": "ptr",
+      "crash_function": "ff_bwdif_filter_line_c",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/15284_bwdifdsp.c_141_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

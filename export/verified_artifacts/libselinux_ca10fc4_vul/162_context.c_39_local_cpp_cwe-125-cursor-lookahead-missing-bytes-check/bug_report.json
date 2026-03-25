@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "context.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "context_new",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libselinux/src/context.c",
+            "crash_line": 40
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "context_new",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libselinux/src/context.c",
+        "crash_line": 40,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4157==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fff851483a8 at pc 0x55a67b7367b6 bp 0x7fff85148310 sp 0x7fff85148300\nREAD of size 1 at 0x7fff851483a8 thread T0\n    #0 0x55a67b7367b5 in context_new /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libselinux/src/context.c:40\n    #1 0x55a67b73645f in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/162_context.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:26\n    #2 0x7fdfe7605d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fdfe7605e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55a67b7362c4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/162_context.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12c4)\n\nAddress 0x7fff851483a8 is located in stack of thread T0 at offset 40 in frame\n    #0 0x55a67b736398 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/162_context.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:9\n\n  This frame has 1 object(s):\n    [32, 40) 'str' (line 11) <== Memory access at offset 40 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libselinux/src/context.c:40 in context_new\nShadow bytes around the buggy address:\n  0x100070a21020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100070a21030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100070a21040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100070a21050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100070a21060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n"
+    }
+}

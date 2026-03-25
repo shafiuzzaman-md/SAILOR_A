@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "HTMLparser.c",
+    "line": 5046,
+    "function": "htmlParseTryOrFinish",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "When parsing \"<!\" sequences, the code reads in->cur[2] and in->cur[3] to detect \"<!--\" without ensuring avail >= 4 if terminate is true. If terminate is set and avail is 2 or 3, accessing in->cur[2]/[3] reads past the end of the input buffer.",
+    "abs_path": "/tmp/libxml2_upstream/HTMLparser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n\n/* Minimal stand-in types mimicking libxml2 structures used by htmlParseTryOrFinish */\ntypedef struct _xmlParserInput {\n    const unsigned char *base;\n    const unsigned char *cur;\n    const unsigned char *end;\n} xmlParserInput, *xmlParserInputPtr;\n\ntypedef struct _htmlParserCtxt {\n    int instate;\n    int endCheckState;\n    int checkIndex;\n    xmlParserInputPtr in;\n} htmlParserCtxt, *htmlParserCtxtPtr;\n\n/* Macros used by the vulnerable function */\n#define SKIP(n) do { ctxt->in->cur += (n); } while (0)\n#define UPP(n)  (toupper(ctxt->in->cur[(n)]))\n\n/* Stubs for other parser helpers referenced in the original function */\nstatic int htmlParseCharData(htmlParserCtxtPtr ctxt, int disable) {\n    (void)ctxt; (void)disable; return 1; /* not used in this path */\n}\nstatic int htmlParseLookupCommentEnd(htmlParserCtxtPtr ctxt) {\n    (void)ctxt; return -1; /* not used in this path */\n}\nstatic int htmlParseLookupString(htmlParserCtxtPtr ctxt, int start, const char *str, int len, int end) {\n    (void)ctxt; (void)start; (void)str; (void)len; (void)end; return -1; /* not used in this path */\n}\nstatic void htmlParseComment(htmlParserCtxtPtr ctxt, int bogus) {\n    (void)ctxt; (void)bogus;\n}\nstatic void htmlParseDocTypeDecl(htmlParserCtxtPtr ctxt) {\n    (void)ctxt;\n}\n\n/*\n * Minimal reproduction of the vulnerable portion of htmlParseTryOrFinish\n * (mirrors the logic around lines 5029-5054 from the provided source context).\n */\nstatic void htmlParseTryOrFinish(htmlParserCtxtPtr ctxt, int terminate) {\n    xmlParserInputPtr in = ctxt->in;\n    int avail = (int)(in->end - in->cur);\n    if (avail < 1)\n        return;\n\n    int mode = ctxt->endCheckState;\n\n    if (mode != 0) {\n        if (htmlParseCharData(ctxt, !terminate) == 0)\n            return;\n    } else if (in->cur[0] == '<') {\n        int next;\n\n        if (avail < 2) {\n            if (!terminate)\n                return;\n            next = ' ';\n        } else {\n            next = in->cur[1];\n        }\n\n        if (next == '!') {\n            /* Bug: When terminate is true, the original code doesn't ensure avail >= 4 */\n            if ((!terminate) && (avail < 4))\n                return;\n            /* Out-of-bounds read happens here when avail is 2 or 3 and terminate is true */\n            if ((in->cur[2] == '-') && (in->cur[3] == '-')) {\n                if ((!terminate) && (htmlParseLookupCommentEnd(ctxt) < 0))\n                    return;\n                SKIP(4);\n                htmlParseComment(ctxt, 0);\n            }\n            /* Stop here; we only need to trigger the OOB read above. */\n            return;\n        }\n    }\n}\n\nint main(void) {\n    /* Allocate a minimal input buffer of exactly 2 bytes: \"<!\" */\n    unsigned char *buf = (unsigned char *)malloc(2);\n    if (!buf) return 1;\n    memcpy(buf, \"<!\", 2);\n\n    xmlParserInput *in = (xmlParserInput *)calloc(1, sizeof(*in));\n    htmlParserCtxt *ctxt = (htmlParserCtxt *)calloc(1, sizeof(*ctxt));\n    if (!in || !ctxt) return 1;\n\n    in->base = buf;\n    in->cur  = buf;\n    in->end  = buf + 2; /* avail == 2 */\n\n    ctxt->in = in;\n    ctxt->instate = 0;       /* not relevant for this minimal path */\n    ctxt->endCheckState = 0; /* force the '<' handling path */\n\n    /*\n     * Call with terminate == 1 to emulate end-of-input condition that\n     * triggers the buggy read of in->cur[2] and in->cur[3].\n     */\n    htmlParseTryOrFinish(ctxt, 1);\n\n    /* Cleanup (unreached if ASan aborts on OOB) */\n    free((void*)in);\n    free((void*)ctxt);\n    free(buf);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7453393936157227,
+      "output": "=================================================================\n==3969677==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000012 at pc 0x5599011a7218 bp 0x7ffeb4aa6c60 sp 0x7ffeb4aa6c58\nREAD of size 1 at 0x602000000012 thread T0\n    #0 0x5599011a7217 in htmlParseTryOrFinish /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:72:18\n    #1 0x5599011a6ed1 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:106:5\n    #2 0x76e2a342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x76e2a342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5599010e7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer+0x20304) (BuildId: dd7a2e18389b7e3766ba14cfa7b4fdae7cb9b9ca)\n\n0x602000000012 is located 0 bytes to the right of 2-byte region [0x602000000010,0x602000000012)\nallocated by thread T0 here:\n    #0 0x55990116ad12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer+0xa3d12) (BuildId: dd7a2e18389b7e3766ba14cfa7b4fdae7cb9b9ca)\n    #1 0x5599011a6cbb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:86:43\n    #2 0x76e2a342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x76e2a342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5599010e7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer+0x20304) (BuildId: dd7a2e18389b7e3766ba14cfa7b4fdae7cb9b9ca)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:72:18 in htmlParseTryOrFinish\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[02]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3969677==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "htmlParseTryOrFinish",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:72",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "htmlParseTryOrFinish",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:72",
+          "18"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:106",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5046_out-of-bounds-read/reproducer.c:86",
+          "43"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

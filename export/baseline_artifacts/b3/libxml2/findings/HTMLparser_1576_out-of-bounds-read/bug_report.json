@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "HTMLparser.c",
+    "line": 1576,
+    "function": "htmlIsScriptAttribute",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Accesses name[1] without ensuring the string has length >= 2. Calling htmlIsScriptAttribute with an empty string (e.g., (const xmlChar *)\"\") reads one byte past the end of the buffer.",
+    "abs_path": "/tmp/libxml2_upstream/HTMLparser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal re-declarations from libxml2 */\ntypedef unsigned char xmlChar;\n\nstatic int xmlStrEqual(const xmlChar *a, const xmlChar *b) {\n    if (a == NULL || b == NULL)\n        return 0;\n    while (*a && *b) {\n        if (*a != *b)\n            return 0;\n        a++; b++;\n    }\n    return (*a == 0 && *b == 0);\n}\n\n/* Dummy table so the function compiles; it's not reached in this repro */\nstatic const char *htmlScriptAttributes[] = {\n    \"onclick\", \"onload\", \"onerror\"\n};\n\n__attribute__((noinline))\nint htmlIsScriptAttribute(const xmlChar *name) {\n    unsigned int i;\n\n    if (name == NULL)\n        return 0;\n    /* Vulnerable check: may read name[1] without ensuring length >= 2 */\n    if ((name[0] != 'o') || (name[1] != 'n'))\n        return 0;\n    for (i = 0; i < sizeof(htmlScriptAttributes)/sizeof(htmlScriptAttributes[0]); i++) {\n        if (xmlStrEqual(name, (const xmlChar *) htmlScriptAttributes[i]))\n            return 1;\n    }\n    return 0;\n}\n\nint main(void) {\n    /* Allocate a 1-byte buffer so that reading name[1] goes OOB. */\n    xmlChar *name = (xmlChar *)malloc(1);\n    if (name == NULL)\n        return 1;\n\n    /* Set name[0] to 'o' so the left side of the || is false and\n       the code evaluates name[1], which is out-of-bounds. */\n    name[0] = 'o';  /* Note: not NUL-terminated on purpose */\n\n    int res = htmlIsScriptAttribute(name);\n    printf(\"Result: %d\\n\", res);\n\n    free(name);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.0902552604675293,
+      "output": ""
+    }
+  }
+}

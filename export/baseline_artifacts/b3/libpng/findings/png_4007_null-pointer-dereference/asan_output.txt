@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3750230==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x702ff0988aa1 bp 0x7ffe5259ed80 sp 0x7ffe5259e548 T0)
+==3750230==The signal is caused by a WRITE memory access.
+==3750230==Hint: address points to the zero page.
+    #0 0x702ff0988aa1 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271
+    #1 0x5f9bc44130d5 in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 1e10cb6552449f2cf3fed43b5f8884df183594ad)
+    #2 0x5f9bc444fdde in png_safecat /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:34:22
+    #3 0x5f9bc444fcd9 in png_image_error /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:45:5
+    #4 0x5f9bc444fe76 in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:57:11
+    #5 0x702ff082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x702ff082a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5f9bc4390304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer+0x21304) (BuildId: 1e10cb6552449f2cf3fed43b5f8884df183594ad)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271 in __memcpy_avx_unaligned_erms
+==3750230==ABORTING

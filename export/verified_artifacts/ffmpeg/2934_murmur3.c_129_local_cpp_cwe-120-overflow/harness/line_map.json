@@ -1,0 +1,71 @@
+{
+  "murmur3.c": {
+    "1": {
+      "orig_file": "murmur3.c",
+      "orig_line": 22,
+      "code": "#include <stdint.h>"
+    },
+    "2": {
+      "orig_file": "murmur3.c",
+      "orig_line": 21,
+      "code": "#include <stddef.h>"
+    },
+    "3": {
+      "orig_file": "murmur3.c",
+      "orig_line": 23,
+      "code": "#include <string.h>"
+    },
+    "10": {
+      "orig_file": "murmur3.c",
+      "orig_line": 28,
+      "code": "typedef struct AVMurMur3 {"
+    },
+    "14": {
+      "orig_file": "murmur3.c",
+      "orig_line": 31,
+      "code": "int      state_pos;",
+      "match_type": "fuzzy"
+    },
+    "16": {
+      "orig_file": "murmur3.c",
+      "orig_line": 33,
+      "code": "} AVMurMur3;"
+    },
+    "21": {
+      "orig_file": "murmur3.c",
+      "orig_line": 127,
+      "code": "len &= 15;"
+    },
+    "22": {
+      "orig_file": "murmur3.c",
+      "orig_line": 128,
+      "code": "if (len > 0) {"
+    },
+    "24": {
+      "orig_file": "murmur3.c",
+      "orig_line": 129,
+      "code": "memcpy(c->state, src, len);"
+    },
+    "25": {
+      "orig_file": "murmur3.c",
+      "orig_line": 130,
+      "code": "c->state_pos = (int)len;",
+      "match_type": "fuzzy"
+    },
+    "28": {
+      "orig_file": "murmur3.c",
+      "orig_line": 131,
+      "code": "}"
+    },
+    "29": {
+      "orig_file": "murmur3.c",
+      "orig_line": 132,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "murmur3.c",
+      "orig_line": 132,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "h264_loopfilter.c",
+    "original_line": 732,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "727:     int a = 52 + sl->slice_alpha_c0_offset - qp_bd_offset;\n728:     int b = 52 + sl->slice_beta_offset - qp_bd_offset;\n729: \n730:     if (FRAME_MBAFF(h)\n731:             // and current and left pair do not have the same interlaced type\n732:             && IS_INTERLACED(mb_type ^ sl->left_type[LTOP])\n733:             // and left mb is in available to us\n734:             && sl->left_type[LTOP]) {\n735:         /* First vertical edge is different in MBAFF frames\n736:          * There are 8 different bS to compute and 2 different Qp\n737:          */"
+  },
+  "klee_crash": {
+    "harness_file": "h264_loopfilter.c",
+    "harness_line": 45,
+    "original_file": "h264_loopfilter.c",
+    "original_line": 732,
+    "original_code": "&& IS_INTERLACED(mb_type ^ sl->left_type[LTOP])",
+    "original_context": "    729: \n    730:     if (FRAME_MBAFF(h)\n    731:             // and current and left pair do not have the same interlaced type\n>>> 732:             && IS_INTERLACED(mb_type ^ sl->left_type[LTOP])\n    733:             // and left mb is in available to us\n    734:             && sl->left_type[LTOP]) {\n    735:         /* First vertical edge is different in MBAFF frames",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: h264_loopfilter.c\nLine: 45\nassembly.ll line: 161\nState: 1\nStack: \n\t#000000161 in ff_h264_filter_mb(138886301646848, 138869121777664, 0, 0, 138817582170112, 138800402300928, 138834762039296, 4, 4) at h264_loopfilter.c:45\n\t#100000225 in entry_func(138886301646848, 138869121777664, 138817582170112, 138800402300928, 138834762039296, 4, 4) at h264_loopfilter.c:59\n\t#200000091 in main() at driver.c:59\nInfo: \n\taddress: 138731682824192\n\tnext: object at 1384"
+  },
+  "concrete_inputs": [
+    {
+      "name": "mb_type0",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "left_type_tiny",
+      "size": 1,
+      "data": "b'\\x00'"
+    },
+    {
+      "name": "img_y",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "img_cb",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "img_cr",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/5741_h264_loopfilter.c_732_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "h264_loopfilter.c",
+      "harness_line": 45,
+      "original_file": "h264_loopfilter.c",
+      "original_line": 732,
+      "error_type": "ptr",
+      "crash_function": "ff_h264_filter_mb",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/5741_h264_loopfilter.c_732_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

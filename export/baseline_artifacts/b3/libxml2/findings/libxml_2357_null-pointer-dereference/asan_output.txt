@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4011974==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5560b3951e63 bp 0x7ffda27149a0 sp 0x7ffda2714880 T0)
+==4011974==The signal is caused by a READ memory access.
+==4011974==Hint: address points to the zero page.
+    #0 0x5560b3951e63 in libxml_prev /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2357_null-pointer-dereference/reproducer.c:84:18
+    #1 0x5560b3951cd1 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2357_null-pointer-dereference/reproducer.c:114:11
+    #2 0x742eba42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x742eba42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5560b3892304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2357_null-pointer-dereference/reproducer+0x21304) (BuildId: 08e9ef103859ce86b9993463a109dc4df721be69)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2357_null-pointer-dereference/reproducer.c:84:18 in libxml_prev
+==4011974==ABORTING

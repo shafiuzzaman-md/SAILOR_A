@@ -1,0 +1,18 @@
+KLEE: output directory is "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3758_acelp_filters.c_130_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1"
+KLEE: Using Z3 solver backend
+KLEE: Deterministic allocator: Using quarantine queue size 8
+KLEE: Deterministic allocator: globals (start-address=0x7f5abddc5000 size=10 GiB)
+KLEE: Deterministic allocator: constants (start-address=0x7f583ddc5000 size=10 GiB)
+KLEE: Deterministic allocator: heap (start-address=0x7e583ddc5000 size=1024 GiB)
+KLEE: Deterministic allocator: stack (start-address=0x7e383ddc5000 size=128 GiB)
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: silently concretizing (reason: floating point) expression (ReadLSB w32 0 pole_coeffs) to value 0 (acelp_filters.c:14)
+KLEE: WARNING ONCE: silently concretizing (reason: floating point) expression (ReadLSB w32 0 gain) to value 0 (acelp_filters.c:14)
+KLEE: ERROR: acelp_filters.c:14: memory error: out of bound pointer
+KLEE: NOTE: now ignoring this error at this location
+
+KLEE: done: total instructions = 146
+KLEE: done: completed paths = 0
+KLEE: done: partially completed paths = 1
+KLEE: done: generated tests = 1
+

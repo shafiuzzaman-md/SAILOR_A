@@ -1,0 +1,17 @@
+Error: memory error: out of bound pointer
+File: vp9recon.c
+Line: 42
+assembly.ll line: 132
+State: 10
+Stack: 
+	#000000132 in inter_recon(139111142625280) at vp9recon.c:42
+	#100000100 in ff_vp9_inter_recon_8bpp(139111142625280) at vp9recon.c:35
+	#200000080 in main() at driver.c:32
+Info: 
+	address: (Add w64 139905174704136
+          (Mul w64 2
+                   (SExt w64 (ReadLSB w32 0 bs))))
+	example: 139900879736840
+	range: [139900879736840, 139909469671430]
+	next: object at 138673592832000 of size 4
+		MO72[4] allocated at inter_recon():  %8 = alloca i32, align 4

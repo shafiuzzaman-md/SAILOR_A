@@ -1,0 +1,114 @@
+{
+  "packet.c": {
+    "3": {
+      "orig_file": "packet.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "11": {
+      "orig_file": "packet.c",
+      "orig_line": 235,
+      "code": "uint8_t *data;"
+    },
+    "17": {
+      "orig_file": "packet.c",
+      "orig_line": 235,
+      "code": "uint8_t *data;"
+    },
+    "23": {
+      "orig_file": "packet.c",
+      "orig_line": 51,
+      "code": "#endif"
+    },
+    "34": {
+      "orig_file": "packet.c",
+      "orig_line": 95,
+      "code": "return 0;"
+    },
+    "35": {
+      "orig_file": "packet.c",
+      "orig_line": 96,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "packet.c",
+      "orig_line": 492,
+      "code": "int av_packet_make_refcounted(AVPacket *pkt)"
+    },
+    "39": {
+      "orig_file": "packet.c",
+      "orig_line": 493,
+      "code": "{"
+    },
+    "40": {
+      "orig_file": "packet.c",
+      "orig_line": 494,
+      "code": "int ret;"
+    },
+    "42": {
+      "orig_file": "packet.c",
+      "orig_line": 496,
+      "code": "if (pkt->buf)"
+    },
+    "43": {
+      "orig_file": "packet.c",
+      "orig_line": 497,
+      "code": "return 0;"
+    },
+    "45": {
+      "orig_file": "packet.c",
+      "orig_line": 499,
+      "code": "ret = packet_alloc(&pkt->buf, pkt->size);"
+    },
+    "46": {
+      "orig_file": "packet.c",
+      "orig_line": 500,
+      "code": "if (ret < 0)"
+    },
+    "47": {
+      "orig_file": "packet.c",
+      "orig_line": 501,
+      "code": "return ret;"
+    },
+    "48": {
+      "orig_file": "packet.c",
+      "orig_line": 502,
+      "code": "av_assert1(!pkt->size || pkt->data);"
+    },
+    "49": {
+      "orig_file": "packet.c",
+      "orig_line": 503,
+      "code": "if (pkt->size)"
+    },
+    "50": {
+      "orig_file": "packet.c",
+      "orig_line": 504,
+      "code": "memcpy(pkt->buf->data, pkt->data, pkt->size);"
+    },
+    "55": {
+      "orig_file": "packet.c",
+      "orig_line": 506,
+      "code": "pkt->data = pkt->buf->data;"
+    },
+    "57": {
+      "orig_file": "packet.c",
+      "orig_line": 508,
+      "code": "return 0;"
+    },
+    "58": {
+      "orig_file": "packet.c",
+      "orig_line": 509,
+      "code": "}"
+    },
+    "63": {
+      "orig_file": "packet.c",
+      "orig_line": 508,
+      "code": "return 0;"
+    },
+    "64": {
+      "orig_file": "packet.c",
+      "orig_line": 509,
+      "code": "}"
+    }
+  }
+}

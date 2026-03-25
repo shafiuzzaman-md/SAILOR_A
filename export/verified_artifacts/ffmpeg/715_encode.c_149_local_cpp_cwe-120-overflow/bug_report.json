@@ -1,0 +1,121 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 0,
+    "secondary_bugs": 2
+  },
+  "vulnerability": {
+    "original_file": "encode.c",
+    "original_line": 149,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "144: \n145:     avpkt->data = NULL;\n146:     ret = ff_get_encode_buffer(avctx, avpkt, avpkt->size, 0);\n147:     if (ret < 0)\n148:         return ret;\n149:     memcpy(avpkt->data, data, avpkt->size);\n150: \n151:     return 0;\n152: }\n153: \n154: /**"
+  },
+  "klee_crash": {
+    "harness_file": "encode.c",
+    "harness_line": 29,
+    "original_file": "encode.c",
+    "original_line": 232,
+    "original_code": "return 0;",
+    "original_context": "    229: FF_ENABLE_DEPRECATION_WARNINGS\n    230: #endif\n    231: \n>>> 232:     return 0;\n    233: }\n    234: \n    235: int ff_encode_reordered_opaque(AVCodecContext *avctx,",
+    "error_type": "assert",
+    "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: encode.c\nLine: 29\nassembly.ll line: 122\nState: 1\nStack: \n\t#000000122 in encode_receive_packet_internal(139675291901952, 139658112032768) at encode.c:29\n\t#100000099 in avcodec_receive_packet(139675291901952, 139658112032768) at encode.c:35\n\t#200000072 in main() at driver.c:40\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "pkt_buf",
+      "size": 32,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "ctx_buf",
+      "size": 96,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "internal_size",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "pkt_buf",
+      "size": 32,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "ctx_buf",
+      "size": 96,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "internal_size",
+      "size": 4,
+      "data": "b'\\x8d\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/715_encode.c_149_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "encode.c",
+      "harness_line": 29,
+      "original_file": "encode.c",
+      "original_line": 232,
+      "error_type": "assert",
+      "crash_function": "encode_receive_packet_internal",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/715_encode.c_149_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+    },
+    {
+      "harness_file": "encode.c",
+      "harness_line": 28,
+      "original_file": "encode.c",
+      "original_line": 232,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/715_encode.c_149_local_cpp_cwe-120-overflow/logs/klee_run_2/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": [],
+  "secondary_bugs": [
+    {
+      "original_file": "encode.c",
+      "original_line": 232,
+      "error_type": "assert",
+      "crash_function": "encode_receive_packet_internal",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/715_encode.c_149_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+    },
+    {
+      "original_file": "encode.c",
+      "original_line": 232,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/715_encode.c_149_local_cpp_cwe-120-overflow/logs/klee_run_2/test000002.ktest"
+    }
+  ]
+}

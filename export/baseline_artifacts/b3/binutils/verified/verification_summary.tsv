@@ -1,0 +1,19 @@
+Spec	Verdict	OrigBugFile	OrigBugFunc	CrashFile	CrashFunc	CrashLine
+aix5ppc-core_307_heap-buffer-overflow	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	323
+archive_488_out-of-bounds-read	CONFIRMED_IN_A	strtol_l.c:449	__GI_____strtol_l_internal	strtol_l.c:449	__GI_____strtol_l_internal	28
+bfd_2807_integer-overflow	CONFIRMED_IN_A	bfd.c	bfd_record_phdr			0
+coff-arm_1037_integer-overflow	NOT_REPRODUCIBLE					
+coff-arm_1066_integer-overflow	NOT_REPRODUCIBLE					
+coff-bfd_85_out-of-bounds-read	CONFIRMED_IN_A	coff-bfd.c	bfd_coff_get_auxent			0
+coff-mips_766_out-of-bounds-read	CONFIRMED_IN_A	coff-mips.c	mips_relocate_hi			0
+coff-mips_772_out-of-bounds-read	CONFIRMED_IN_A	coff-mips.c	mips_relocate_hi			0
+coff-rs6000_4211_integer-overflow	CONFIRMED_IN_A	coff-rs6000.c	xcoff_generate_rtinit			0
+coff64-rs6000_1583_out-of-bounds-read	CONFIRMED_IN_A	coff64-rs6000.c	xcoff64_ppc_relocate_section			0
+coffgen_64_out-of-bounds-read	CONFIRMED_IN_A	coffgen.c	extract_long_section_name			0
+coffgen_346_integer-overflow	CONFIRMED_IN_A	coffgen.c	coff_real_object_p			0
+coffgen_645_integer-overflow	NOT_REPRODUCIBLE					
+coffgen_1808_integer-overflow	CONFIRMED_IN_A	coffgen.c	_bfd_coff_read_string_table			0
+cofflink_1292_out-of-bounds-read	CONFIRMED_IN_A	cofflink.c	process_embedded_commands			0
+cofflink_1716_out-of-bounds-read	CONFIRMED_IN_A	cofflink.c	coff_renumber_symbols			0
+cofflink_2265_out-of-bounds-read	CONFIRMED_IN_A	cofflink.c	_bfd_coff_final_link			0
+compress_659_heap-buffer-overflow	CONFIRMED_IN_A	compress.c	bfd_compress_section_contents			0

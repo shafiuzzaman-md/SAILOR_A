@@ -1,0 +1,180 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 34 (sink assert at 35)\nCrash: CRASH: ptr at vc1_block.c:34\nOriginal: vc1_block.c:2974 \u2192 memcpy(s->dest[0], s->last_pic.data[0] + s->mb_y * 16 * s->linesize,   s->linesize   * 16);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at vc1_block.c:34 \u2192 vc1_block.c:2974\n"
+    ]
+  ],
+  "line_map": {
+    "vc1_block.c": {
+      "26": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2961,
+        "code": "static void vc1_decode_skip_blocks(VC1Context *v)"
+      },
+      "27": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2962,
+        "code": "{"
+      },
+      "28": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2963,
+        "code": "MpegEncContext *s = &v->s;"
+      },
+      "30": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2965,
+        "code": "if (!v->s.last_pic.data[0])"
+      },
+      "31": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2966,
+        "code": "return;"
+      },
+      "34": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2974,
+        "code": "memcpy(s->dest[0], s->last_pic.data[0] + s->mb_y * 16 * s->linesize,   s->linesize   * 16);"
+      },
+      "36": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2975,
+        "code": "memcpy(s->dest[1], s->last_pic.data[1] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);"
+      },
+      "37": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2976,
+        "code": "memcpy(s->dest[2], s->last_pic.data[2] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);"
+      },
+      "38": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2978,
+        "code": "}"
+      },
+      "41": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2981,
+        "code": "void ff_vc1_decode_blocks(VC1Context *v)"
+      },
+      "42": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 2982,
+        "code": "{"
+      },
+      "43": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 3008,
+        "code": "vc1_decode_skip_blocks(v);"
+      },
+      "44": {
+        "orig_file": "vc1_block.c",
+        "orig_line": 3021,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "vc1_block.c",
+      "original_line": 2965,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "2960: \n2961: static void vc1_decode_skip_blocks(VC1Context *v)\n2962: {\n2963:     MpegEncContext *s = &v->s;\n2964: \n2965:     if (!v->s.last_pic.data[0])\n2966:         return;\n2967: \n2968:     ff_er_add_slice(&s->er, 0, s->start_mb_y, s->mb_width - 1, s->end_mb_y - 1, ER_MB_END);\n2969:     s->first_slice_line = 1;\n2970:     for (s->mb_y = s->start_mb_y; s->mb_y < s->end_mb_y; s->mb_y++) {"
+    },
+    "klee_crash": {
+      "harness_file": "vc1_block.c",
+      "harness_line": 34,
+      "original_file": "vc1_block.c",
+      "original_line": 2974,
+      "original_code": "memcpy(s->dest[0], s->last_pic.data[0] + s->mb_y * 16 * s->linesize,   s->linesize   * 16);",
+      "original_context": "    2971:         s->mb_x = 0;\n    2972:         init_block_index(v);\n    2973:         update_block_index(s);\n>>> 2974:         memcpy(s->dest[0], s->last_pic.data[0] + s->mb_y * 16 * s->linesize,   s->linesize   * 16);\n    2975:         memcpy(s->dest[1], s->last_pic.data[1] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);\n    2976:         memcpy(s->dest[2], s->last_pic.data[2] + s->mb_y *  8 * s->uvlinesize, s->uvlinesize *  8);\n    2977:         s->first_slice_line = 0;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 277\nState: 1\nStack: \n\t#000000277 in memcpy(140047276457984, 139841118027776, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000244 in vc1_decode_skip_blocks(139978556981248) at vc1_block.c:34\n\t#200000193 in ff_vc1_decode_blocks(139978556981248) at vc1_block.c:43\n\t#300000170 in main() at driver.c:49\nInfo: \n\taddress: 139841118027808\n\tnext: object at 139404105105408 of size 4\n\t\tMO35[4] alloc"
+    },
+    "concrete_inputs": [
+      {
+        "name": "dest_buf",
+        "size": 1024,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "dest_buf",
+        "size": 1024,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "dest_buf",
+        "size": 1024,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "last0",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "last1",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "last2",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "linesize",
+        "size": 4,
+        "data": "b'\\x03\\x00\\x00\\x00'"
+      },
+      {
+        "name": "uvlinesize",
+        "size": 4,
+        "data": "b'\\x01\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11115_vc1_block.c_2965_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "vc1_block.c",
+        "harness_line": 34,
+        "original_file": "vc1_block.c",
+        "original_line": 2974,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11115_vc1_block.c_2965_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

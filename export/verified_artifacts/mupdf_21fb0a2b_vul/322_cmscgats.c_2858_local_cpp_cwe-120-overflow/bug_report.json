@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cmscgats.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "SynError",
+            "crash_file": "thirdparty/lcms2/src/cmscgats.c",
+            "crash_line": 531
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "SynError",
+        "crash_file": "thirdparty/lcms2/src/cmscgats.c",
+        "crash_line": 531,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==18276==ERROR: AddressSanitizer: SEGV on unknown address 0x502000042448 (pc 0x55f2189e35df bp 0x7ffea5ff63c0 sp 0x7ffea5ff5c80 T0)\n==18276==The signal is caused by a READ memory access.\n    #0 0x55f2189e35df in SynError thirdparty/lcms2/src/cmscgats.c:531\n    #1 0x55f2189ef4bc in GetTable thirdparty/lcms2/src/cmscgats.c:1098\n    #2 0x55f2189ef4bc in cmsIT8GetPatchName thirdparty/lcms2/src/cmscgats.c:2852\n    #3 0x55f2189e32a9 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/322_cmscgats.c_2858_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:33\n    #4 0x7ff010868d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #5 0x7ff010868e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #6 0x55f2189e3024 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/322_cmscgats.c_2858_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xe024)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/lcms2/src/cmscgats.c:531 in SynError\n==18276==ABORTING\n"
+    }
+}

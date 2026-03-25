@@ -1,0 +1,51 @@
+
+=================================================================
+==3354692==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000e8 at pc 0x55803b48d00f bp 0x7ffeba6bc810 sp 0x7ffeba6bc800
+READ of size 8 at 0x5020000000e8 thread T0
+    #0 0x55803b48d00e in ctf_lookup_by_name_internal /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-lookup.c:247
+    #1 0x55803b48d2d1 in ctf_lookup_by_name /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-lookup.c:322
+    #2 0x55803b48bd12 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3474_ctf-lookup.c_276_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer.c:32
+    #3 0x7f96922e2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7f96922e2e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x55803b48ba84 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3474_ctf-lookup.c_276_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer_bin+0xba84)
+
+0x5020000000e8 is located 200 bytes to the right of 16-byte region [0x502000000010,0x502000000020)
+allocated by thread T0 here:
+    #0 0x7f9692699a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154
+    #1 0x55803b48bbde in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3474_ctf-lookup.c_276_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer.c:18
+    #2 0x7f96922e2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-lookup.c:247 in ctf_lookup_by_name_internal
+Shadow bytes around the buggy address:
+  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff8000: fa fa 00 00 fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]fa fa
+  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==3354692==ABORTING

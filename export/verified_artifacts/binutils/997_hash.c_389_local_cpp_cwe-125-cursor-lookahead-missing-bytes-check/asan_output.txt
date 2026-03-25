@@ -1,0 +1,12 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3355740==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x000000000000 bp 0x7ffd229482b0 sp 0x7ffd22948238 T0)
+==3355740==Hint: pc points to the zero page.
+==3355740==The signal is caused by a READ memory access.
+==3355740==Hint: address points to the zero page.
+    #0 0x0  (<unknown module>)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (<unknown module>) 
+==3355740==ABORTING

@@ -1,0 +1,70 @@
+{
+  "vp8.c": {
+    "7": {
+      "orig_file": "vp8.c",
+      "orig_line": 462,
+      "code": "#define VP7_MVC_SIZE 17"
+    },
+    "8": {
+      "orig_file": "vp8.c",
+      "orig_line": 260,
+      "code": "#endif"
+    },
+    "10": {
+      "orig_file": "vp8.c",
+      "orig_line": 463,
+      "code": "#define VP8_MVC_SIZE 19"
+    },
+    "11": {
+      "orig_file": "vp8.c",
+      "orig_line": 260,
+      "code": "#endif"
+    },
+    "34": {
+      "orig_file": "vp8.c",
+      "orig_line": 269,
+      "code": "{"
+    },
+    "35": {
+      "orig_file": "vp8.c",
+      "orig_line": 136,
+      "code": "VP8Context *s = (VP8Context*)avctx->priv_data;",
+      "match_type": "fuzzy"
+    },
+    "38": {
+      "orig_file": "vp8.c",
+      "orig_line": 2820,
+      "code": "memcpy(&s->framep[0], &s->next_framep[0], sizeof(s->framep[0]) * 4);"
+    },
+    "41": {
+      "orig_file": "vp8.c",
+      "orig_line": 2858,
+      "code": "return 0;"
+    },
+    "42": {
+      "orig_file": "vp8.c",
+      "orig_line": 2859,
+      "code": "}"
+    },
+    "45": {
+      "orig_file": "vp8.c",
+      "orig_line": 2840,
+      "code": "int ff_vp8_decode_frame(AVCodecContext *avctx, AVFrame *frame,"
+    },
+    "46": {
+      "orig_file": "vp8.c",
+      "orig_line": 2841,
+      "code": "int *got_frame, AVPacket *avpkt)"
+    },
+    "47": {
+      "orig_file": "vp8.c",
+      "orig_line": 2842,
+      "code": "{"
+    },
+    "49": {
+      "orig_file": "vp8.c",
+      "orig_line": 2844,
+      "code": "}"
+    }
+  }
+}

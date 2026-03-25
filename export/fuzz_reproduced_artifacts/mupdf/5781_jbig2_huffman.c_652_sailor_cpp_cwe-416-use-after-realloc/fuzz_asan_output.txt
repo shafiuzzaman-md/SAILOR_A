@@ -1,0 +1,75 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 290749891
+INFO: Loaded 1 modules   (10 inline 8-bit counters): 10 [0x57176556d720, 0x57176556d72a), 
+INFO: Loaded 1 PC tables (10 PCs): 10 [0x57176556d730,0x57176556d7d0), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+=================================================================
+==95312==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6030000001c0 at pc 0x5717654e063f bp 0x7ffd872611a0 sp 0x7ffd87261198
+WRITE of size 8 at 0x6030000001c0 thread T0
+    #0 0x5717654e063e in jbig2_table /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/jbig2dec/jbig2_huffman.c:544:21
+    #1 0x5717654dd4e2 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_harness.c:25:5
+    #2 0x57176540383a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4c83a) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #3 0x571765402f05 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4bf05) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #4 0x571765404b08 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4db08) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #5 0x571765404f86 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4df86) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #6 0x5717653f2572 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x3b572) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #7 0x57176541da16 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x66a16) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #8 0x7f60b242a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7f60b242a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5717653e69a4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x2f9a4) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+
+0x6030000001c0 is located 24 bytes to the right of 24-byte region [0x603000000190,0x6030000001a8)
+allocated by thread T0 here:
+    #0 0x5717654a154c in __interceptor_calloc (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0xea54c) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #1 0x5717654dd386 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_harness.c:13:45
+    #2 0x57176540383a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4c83a) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #3 0x571765402f05 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4bf05) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #4 0x571765404b08 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4db08) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #5 0x571765404f86 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x4df86) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #6 0x5717653f2572 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x3b572) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #7 0x57176541da16 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x66a16) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+    #8 0x7f60b242a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7f60b242a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5717653e69a4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/5781_jbig2_huffman.c_652_sailor_cpp_cwe-416-use-after-realloc/fuzz_bin+0x2f9a4) (BuildId: 539d4cb5f325d74a7ab3524870d1d6881911d754)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/jbig2dec/jbig2_huffman.c:544:21 in jbig2_table
+Shadow bytes around the buggy address:
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+  0x0c067fff8010: 03 fa fa fa 00 00 00 00 fa fa 00 00 00 fa fa fa
+  0x0c067fff8020: 00 00 00 00 fa fa 00 00 00 00 fa fa fd fd fd fd
+=>0x0c067fff8030: fa fa 00 00 00 fa fa fa[fa]fa fa fa fa fa fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==95312==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

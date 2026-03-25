@@ -1,0 +1,36 @@
+#include <stddef.h>
+// Combined reproducer for 6012_half2float.c_51_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check
+// Original harness: driver.c + smart_stubs.c + sliced source
+
+// === smart_stubs.c ===
+/* Smart stubs — auto-generated from path + vulnerability analysis */
+/* Symbolic stubs model the environment: KLEE explores return values */
+/* that both REACH the sink AND TRIGGER the vulnerability */
+#include <stdlib.h>
+#include <string.h>
+/* PROACTIVE: statement (auto-detected external) */
+int statement() { return 0; }
+
+/* PROACTIVE: through (auto-detected external) */
+int through() { return 0; }
+
+// === driver.c ===
+#include "harness_types.h"
+#include <stdlib.h>
+#include <stdint.h>
+
+int entry_func(Half2FloatTables *t);
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 64) return 0;
+    // Intentionally undersized allocation to trigger OOB when writing exponenttable[0]
+    size_t tiny = 8; // concrete small size
+    void *raw = calloc(1, tiny);
+    if (!raw) return 0;
+    // make memory symbolic to explore variations (optional)
+    memcpy(raw, fuzz_data + (0), tiny);
+
+    Half2FloatTables *t = (Half2FloatTables *)raw;
+    entry_func(t);
+    return 0;
+}

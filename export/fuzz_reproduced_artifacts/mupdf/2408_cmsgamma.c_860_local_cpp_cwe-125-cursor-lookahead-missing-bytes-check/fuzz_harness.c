@@ -1,0 +1,33 @@
+#include <stdint.h>
+#include <stddef.h>
+#include <string.h>
+#include "harness_types.h"
+// klee removed for replay
+#include <stdlib.h>
+
+// Ensure buffer is larger than MAX_NODES_IN_CURVE (4097)
+#ifndef VALUES_CAP
+#define VALUES_CAP 8192
+#endif
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 512) return 0;
+    // Allocate a large concrete buffer for values
+    cmsFloat32Number *values = (cmsFloat32Number*)malloc(VALUES_CAP * sizeof(cmsFloat32Number));
+    if (!values) return 0;
+
+    // Make buffer contents symbolic
+    { memcpy(values, fuzz_data + 0, 512); };
+
+    // Drive to OOB: nEntries == 0 makes index (nEntries-1) == -1
+    cmsInt32Number nEntries;
+    { static const unsigned char nEntries_data[] = {0x00, 0x00, 0x00, 0x00}; memcpy(&nEntries, nEntries_data, (sizeof(nEntries) < sizeof(nEntries_data)) ? sizeof(nEntries) : sizeof(nEntries_data)); };
+    /* klee_assume removed */
+
+    // Context can be any pointer; NULL is fine
+    cmsContext ctx = (cmsContext)0;
+
+    // Direct call to entry
+    cmsBuildTabulatedToneCurveFloat(ctx, nEntries, values);
+    return 0;
+}

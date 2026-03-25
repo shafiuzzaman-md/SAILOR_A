@@ -1,0 +1,21 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080894==ERROR: AddressSanitizer: SEGV on unknown address 0x5a377d23c520 (pc 0x7ec6e8188adb bp 0x7fff20ba08e0 sp 0x7fff20ba08b8 T0)
+==4080894==The signal is caused by a WRITE memory access.
+    #0 0x7ec6e8188adb in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333
+    #1 0x7ec6e8060d87 in __GI_memcpy stdio-common/../string/bits/string_fortified.h:29:10
+    #2 0x7ec6e8060d87 in __printf_buffer_write stdio-common/./stdio-common/Xprintf_buffer_write.c:39:7
+    #3 0x7ec6e806a5cd in __printf_buffer stdio-common/./stdio-common/vfprintf-process-arg.c:240:9
+    #4 0x7ec6e8088a4d in __vsprintf_internal libio/./libio/iovsprintf.c:62:3
+    #5 0x7ec6e8088a4d in vsprintf libio/./libio/iovsprintf.c:76:10
+    #6 0x5a377d18bb86 in __interceptor_vsprintf (/app/export/baseline_artifacts/b3/libtiff/verified/ras2tif_95_buffer-overflow/reproducer+0x43b86) (BuildId: 4f3eb873c6002292f324071b6d39d8b462e365ad)
+    #7 0x5a377d18cc97 in sprintf (/app/export/baseline_artifacts/b3/libtiff/verified/ras2tif_95_buffer-overflow/reproducer+0x44c97) (BuildId: 4f3eb873c6002292f324071b6d39d8b462e365ad)
+    #8 0x5a377d229116 in ras2tif_main /app/export/baseline_artifacts/b3/libtiff/verified/ras2tif_95_buffer-overflow/reproducer.c:63:5
+    #9 0x5a377d228dc8 in main /app/export/baseline_artifacts/b3/libtiff/verified/ras2tif_95_buffer-overflow/reproducer.c:73:12
+    #10 0x7ec6e802a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x7ec6e802a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x5a377d169324 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/ras2tif_95_buffer-overflow/reproducer+0x21324) (BuildId: 4f3eb873c6002292f324071b6d39d8b462e365ad)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333 in __memcpy_avx_unaligned_erms
+==4080894==ABORTING

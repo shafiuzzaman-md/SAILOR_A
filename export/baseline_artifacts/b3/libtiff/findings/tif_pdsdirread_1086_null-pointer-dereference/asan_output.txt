@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3833314==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5a816463cd15 bp 0x7ffec58230b0 sp 0x7ffec5823080 T0)
+==3833314==The signal is caused by a WRITE memory access.
+==3833314==Hint: address points to the zero page.
+    #0 0x5a816463cd15 in TIFFFetchByteArray /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_1086_null-pointer-dereference/reproducer.c:40:10
+    #1 0x5a816463d210 in TIFFFetchExtraSamples /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_1086_null-pointer-dereference/reproducer.c:67:18
+    #2 0x5a816463cf6e in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_1086_null-pointer-dereference/reproducer.c:88:11
+    #3 0x790c9282a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x790c9282a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5a816457d304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_1086_null-pointer-dereference/reproducer+0x20304) (BuildId: f731c019f05000732998bc34f80a231d5309a8ca)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_1086_null-pointer-dereference/reproducer.c:40:10 in TIFFFetchByteArray
+==3833314==ABORTING

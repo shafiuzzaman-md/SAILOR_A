@@ -1,0 +1,16 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3355842==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000044 (pc 0x55c77142a9e9 bp 0x7ffc69068400 sp 0x7ffc69068270 T0)
+==3355842==The signal is caused by a READ memory access.
+==3355842==Hint: address points to the zero page.
+    #0 0x55c77142a9e9 in _bfd_dwarf2_find_nearest_line_with_alt dwarf2.c:5819
+    #1 0x55c77142a750 in _bfd_dwarf2_find_nearest_line dwarf2.c:5757
+    #2 0x55c771411398 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3168_dwarf2.c_6119_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer.c:48
+    #3 0x7ff0f2b95d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7ff0f2b95e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x55c771411094 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3168_dwarf2.c_6119_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer_bin+0x9a094)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV dwarf2.c:5819 in _bfd_dwarf2_find_nearest_line_with_alt
+==3355842==ABORTING

@@ -1,0 +1,223 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 2,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "mvs.c",
+    "original_line": 485,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "480:  * 8.5.3.1.1 Derivation process of luma Mvs for merge mode\n481:  */\n482: void ff_hevc_luma_mv_merge_mode(HEVCLocalContext *lc, const HEVCPPS *pps,\n483:                                 int x0, int y0, int nPbW,\n484:                                 int nPbH, int log2_cb_size, int part_idx,\n485:                                 int merge_idx, MvField *mv)\n486: {\n487:     const HEVCSPS *const  sps = pps->sps;\n488:     const HEVCContext *const s = lc->parent;\n489:     int singleMCLFlag = 0;\n490:     int nCS = 1 << log2_cb_size;"
+  },
+  "klee_crash": {
+    "harness_file": "mvs.c",
+    "harness_line": 122,
+    "original_file": "mvs.c",
+    "original_line": 505,
+    "original_code": "derive_spatial_merge_candidates(lc, s, pps, sps, x0, y0, nPbW, nPbH, log2_cb_size,",
+    "original_context": "    502:     }\n    503: \n    504:     ff_hevc_set_neighbour_available(lc, x0, y0, nPbW, nPbH, sps->log2_ctb_size);\n>>> 505:     derive_spatial_merge_candidates(lc, s, pps, sps, x0, y0, nPbW, nPbH, log2_cb_size,\n    506:                                     singleMCLFlag, part_idx,\n    507:                                     merge_idx, mergecand_list);\n    508: ",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 503\nState: 12\nStack: \n\t#000000503 in memcpy(138507972354048, symbolic, 12) at runtime/Freestanding/memcpy.c:17\n\t#100000337 in ff_hevc_luma_mv_merge_mode(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, 138510119837696) at mvs.c:122\n\t#200000477 in entry_func(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic"
+  },
+  "concrete_inputs": [
+    {
+      "name": "log2_ctb_size",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "log2_parallel_merge_level",
+      "size": 4,
+      "data": "b'\\x03\\x00\\x00\\x00'"
+    },
+    {
+      "name": "poc",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "slice_type",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "max_num_merge_cand",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "cu_x",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "cu_y",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "x0",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "y0",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "nPbW",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "nPbH",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "log2_cb_size",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "part_idx",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "merge_idx",
+      "size": 4,
+      "data": "b'u\\xaf\\xbb\\xdb'"
+    },
+    {
+      "name": "mergecandlist",
+      "size": 60,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "log2_ctb_size",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "log2_parallel_merge_level",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "poc",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "slice_type",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "max_num_merge_cand",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "cu_x",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "cu_y",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "x0",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "y0",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "nPbW",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "nPbH",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "log2_cb_size",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "part_idx",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "merge_idx",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "mergecandlist",
+      "size": 60,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "mvs.c",
+      "harness_line": 122,
+      "original_file": "mvs.c",
+      "original_line": 505,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000003.ktest"
+    },
+    {
+      "harness_file": "mvs.c",
+      "harness_line": 126,
+      "original_file": "mvs.c",
+      "original_line": 502,
+      "error_type": "assert",
+      "crash_function": "ff_hevc_luma_mv_merge_mode",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/16373_mvs.c_485_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000004.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

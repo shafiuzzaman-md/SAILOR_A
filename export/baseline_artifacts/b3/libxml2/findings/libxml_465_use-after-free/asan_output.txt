@@ -1,0 +1,58 @@
+=================================================================
+==4001955==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000050 at pc 0x598435c02488 bp 0x7ffdd7c12cf0 sp 0x7ffdd7c12ce8
+READ of size 4 at 0x603000000050 thread T0
+    #0 0x598435c02487 in xmlPythonFileWrite /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86:32
+    #1 0x598435c01fa5 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:143:9
+    #2 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)
+
+0x603000000050 is located 16 bytes inside of 20-byte region [0x603000000040,0x603000000054)
+freed by thread T0 here:
+    #0 0x598435bc5a66 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0xa4a66) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)
+    #1 0x598435c021e6 in Py_DECREF /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:33:9
+    #2 0x598435c01ec4 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:137:5
+    #3 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)
+
+previously allocated by thread T0 here:
+    #0 0x598435bc5d12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0xa4d12) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)
+    #1 0x598435c01cbb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:120:34
+    #2 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86:32 in xmlPythonFileWrite
+Shadow bytes around the buggy address:
+  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c067fff8000: fa fa 00 00 00 fa fa fa fd fd[fd]fa fa fa 00 00
+  0x0c067fff8010: 00 00 fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4001955==ABORTING

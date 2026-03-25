@@ -1,0 +1,101 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 1
+    },
+    "vulnerability": {
+        "original_file": "colorspace.c",
+        "original_line": 1634,
+        "function": "memoize_spots",
+        "entry_point": "fz_convert_slow_pixmap_samples",
+        "spine": [
+            "fz_convert_slow_pixmap_samples",
+            "memoize_spots"
+        ],
+        "original_context": "1629: \t\t\t\t\t\tif (da)\n1630: \t\t\t\t\t\t{\n1631: \t\t\t\t\t\t\tfor (k = 0; k < dst_c; k++)\n1632: \t\t\t\t\t\t\t\td[k] = fz_mul255(dstv[k] * 255, alpha);\n1633: \t\t\t\t\t\t\tif (dst_s)\n1634: \t\t\t\t\t\t\t\tmemset(d + dst_c, 0, dst_s);\n1635: \t\t\t\t\t\t\tdold[dst_c] = d[dst_n-1] = alpha;\n1636: \t\t\t\t\t\t}\n1637: \t\t\t\t\t\telse\n1638: \t\t\t\t\t\t{\n1639: \t\t\t\t\t\t\tfor (k = 0; k < dst_c; k++)"
+    },
+    "klee_crash": {
+        "harness_file": "colorspace.c",
+        "harness_line": 55,
+        "original_file": "colorspace.c",
+        "original_line": 1598,
+        "original_code": "if (dst_s)",
+        "original_context": "    1595: \t\t\t\tif (*s == *sold && memcmp(sold, s, src_m) == 0)\n    1596: \t\t\t\t{\n    1597: \t\t\t\t\tmemcpy(d, dold, dst_c);\n>>> 1598: \t\t\t\t\tif (dst_s)\n    1599: \t\t\t\t\t\tmemset(d + dst_c, 0, dst_s);\n    1600: \t\t\t\t\tif (da)\n    1601: \t\t\t\t\t\td[dst_n-1] = sold[src_m];",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 323\nState: 2\nStack: \n\t#000000323 in memset(symbolic, 0, symbolic) at runtime/Freestanding/memset.c:15\n\t#100000189 in memoize_spots(139157487357952, 139363645788160, 139346465918976, 139140307488768, 0) at colorspace.c:55\n\t#200000044 in fz_convert_slow_pixmap_samples(139157487357952, 139363645788160, 139346465918976, 139140307488768, 0) at colorspace.c:32\n\t#300000289 in main() at driver.c:35\nI"
+    },
+    "concrete_inputs": [
+        {
+            "name": "dst_s",
+            "size": 4,
+            "data": "b'\\x10\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_s",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_convert_slow_pixmap_samples",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 1678,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3833==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x506000000068 at pc 0x55bf3d77bd2f bp 0x7ffcedf42740 sp 0x7ffcedf42730\nREAD of size 8 at 0x506000000068 thread T0\n    #0 0x55bf3d77bd2e in fz_convert_slow_pixmap_samples source/fitz/colorspace.c:1678\n    #1 0x55bf3d770d21 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/100_colorspace.c_1634_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:35\n    #2 0x7f2f40d7cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f2f40d7ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55bf3d7708b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/100_colorspace.c_1634_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x108b4)\n\n0x506000000068 is located 16 bytes to the right of 56-byte region [0x506000000020,0x506000000058)\nallocated by thread T0 here:\n    #0 0x7f2f41133a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55bf3d770a39 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/100_colorspace.c_1634_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:12\n    #2 0x7f2f40d7cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/colorspace.c:1678 in fz_convert_slow_pixmap_samples\nShadow bytes around the buggy address:\n  0x0a0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a0c7fff8000: fa fa fa fa 00 00 00 00 00 00 00 fa fa[fa]fa fa\n  0x0a0c7fff8010: 00 00 00 00 00 00 00 fa fa fa fa fa fa fa fa fa\n  0x0a0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a0c7fff8030: fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/100_colorspace.c_1634_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 55,
+            "original_file": "colorspace.c",
+            "original_line": 1598,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/100_colorspace.c_1634_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 56,
+            "original_file": "colorspace.c",
+            "original_line": 1598,
+            "error_type": "assert",
+            "crash_function": "memoize_spots",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/100_colorspace.c_1634_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_convert_slow_pixmap_samples",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 1678
+        }
+    ],
+    "secondary_bugs": [
+        {
+            "original_file": "colorspace.c",
+            "original_line": 1598,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/100_colorspace.c_1634_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ]
+}

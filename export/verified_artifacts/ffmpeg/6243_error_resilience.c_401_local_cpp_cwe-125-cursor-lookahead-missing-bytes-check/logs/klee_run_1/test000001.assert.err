@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: error_resilience.c
+Line: 60
+assembly.ll line: 204
+State: 1
+Stack: 
+	#000000204 in ff_er_frame_end(139445696630784, 139239538200576) at error_resilience.c:60
+	#100000139 in entry_func(139445696630784, 139239538200576) at error_resilience.c:36
+	#200000110 in main() at driver.c:47

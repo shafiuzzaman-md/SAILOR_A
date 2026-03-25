@@ -1,0 +1,64 @@
+{
+  "aacenc_ltp.c": {
+    "40": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 130,
+      "code": "void ff_aac_adjust_common_ltp(AACEncContext *s, ChannelElement *cpe)"
+    },
+    "41": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 131,
+      "code": "{"
+    },
+    "42": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 133,
+      "code": "SingleChannelElement *sce0 = &cpe->ch[0];"
+    },
+    "43": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 134,
+      "code": "SingleChannelElement *sce1 = &cpe->ch[1];"
+    },
+    "45": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 136,
+      "code": "if (!cpe->common_window ||"
+    },
+    "46": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 137,
+      "code": "sce0->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE ||"
+    },
+    "47": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 138,
+      "code": "sce1->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE) {"
+    },
+    "48": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 139,
+      "code": "sce0->ics.ltp.present = 0;"
+    },
+    "49": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 140,
+      "code": "return;"
+    },
+    "50": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 141,
+      "code": "}"
+    },
+    "53": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 141,
+      "code": "}"
+    },
+    "59": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 141,
+      "code": "}"
+    }
+  }
+}

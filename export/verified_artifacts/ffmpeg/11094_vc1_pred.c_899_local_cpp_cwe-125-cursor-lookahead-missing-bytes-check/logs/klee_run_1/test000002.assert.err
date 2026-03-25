@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: vc1_pred.c
+Line: 67
+assembly.ll line: 232
+State: 2
+Stack: 
+	#000000232 in ff_vc1_pred_b_mv_intfi(139773905047552, 0, 0, 0, 0, 0) at vc1_pred.c:67
+	#100000287 in entry_func(139773905047552, 0, 0, 0, 0, 0) at vc1_pred.c:73
+	#200000157 in main() at driver.c:39

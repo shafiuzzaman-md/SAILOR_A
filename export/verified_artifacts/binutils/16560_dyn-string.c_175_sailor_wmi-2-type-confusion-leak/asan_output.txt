@@ -1,0 +1,14 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3356238==ERROR: AddressSanitizer: SEGV on unknown address 0x00027fff8000 (pc 0x558904bc0940 bp 0x7ffffa0f3c30 sp 0x7ffffa0f3c20 T0)
+==3356238==The signal is caused by a READ memory access.
+    #0 0x558904bc0940 in dyn_string_clear dyn-string.c:175
+    #1 0x558904bc05bb in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/reproducer.c:43
+    #2 0x7fad96d1ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #3 0x7fad96d1ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #4 0x558904bc0384 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/reproducer_bin+0x2384)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV dyn-string.c:175 in dyn_string_clear
+==3356238==ABORTING

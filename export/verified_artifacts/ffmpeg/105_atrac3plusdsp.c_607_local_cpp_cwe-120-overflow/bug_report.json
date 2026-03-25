@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "atrac3plusdsp.c",
+    "original_line": 607,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "602: {\n603:     int i, s, sb, t, pos_now, pos_next;\n604:     LOCAL_ALIGNED(32, float, idct_in, [ATRAC3P_SUBBANDS]);\n605:     LOCAL_ALIGNED(32, float, idct_out, [ATRAC3P_SUBBANDS]);\n606: \n607:     memset(out, 0, ATRAC3P_FRAME_SAMPLES * sizeof(*out));\n608: \n609:     for (s = 0; s < ATRAC3P_SUBBAND_SAMPLES; s++) {\n610:         /* pick up one sample from each subband */\n611:         for (sb = 0; sb < ATRAC3P_SUBBANDS; sb++)\n612:             idct_in[sb] = in[sb * ATRAC3P_SUBBAND_SAMPLES + s];"
+  },
+  "klee_crash": {
+    "harness_file": "atrac3plusdsp.c",
+    "harness_line": 40,
+    "original_file": "atrac3plusdsp.c",
+    "original_line": 607,
+    "original_code": "memset(out, 0, ATRAC3P_FRAME_SAMPLES * sizeof(*out));",
+    "original_context": "    604:     LOCAL_ALIGNED(32, float, idct_in, [ATRAC3P_SUBBANDS]);\n    605:     LOCAL_ALIGNED(32, float, idct_out, [ATRAC3P_SUBBANDS]);\n    606: \n>>> 607:     memset(out, 0, ATRAC3P_FRAME_SAMPLES * sizeof(*out));\n    608: \n    609:     for (s = 0; s < ATRAC3P_SUBBAND_SAMPLES; s++) {\n    610:         /* pick up one sample from each subband */",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 179\nState: 1\nStack: \n\t#000000179 in memset(139129644617728, 0, 1200) at runtime/Freestanding/memset.c:15\n\t#100000035 in ff_atrac3p_ipqf(138923486187520, 139854353240064, 139267083571200, 139249903702016, 139129644617728) at atrac3plusdsp.c:40\n\t#200000068 in atrac3_entry(138923486187520, 139267083571200, 139249903702016, 139129644617728) at atrac3plusdsp.c:50\n\t#300000123 in main() at driver.c:"
+  },
+  "concrete_inputs": [
+    {
+      "name": "inbuf",
+      "size": 1024,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "outbuf",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "hist",
+      "size": 1028,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/105_atrac3plusdsp.c_607_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "atrac3plusdsp.c",
+      "harness_line": 40,
+      "original_file": "atrac3plusdsp.c",
+      "original_line": 607,
+      "error_type": "ptr",
+      "crash_function": "memset",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/105_atrac3plusdsp.c_607_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

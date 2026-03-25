@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: h264_direct.c
+Line: 34
+assembly.ll line: 125
+State: 1
+Stack: 
+	#000000125 in ff_h264_direct_ref_list_init(139355331866624, 139286612389888) at h264_direct.c:34
+	#100000145 in h264_entry(139355331866624, 139286612389888) at h264_direct.c:40
+	#200000065 in main() at driver.c:31

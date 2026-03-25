@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff64-rs6000.c",
+    "line": 628,
+    "function": "_bfd_xcoff64_put_ldsymbol_name",
+    "bug_type": "integer-overflow-to-heap-buffer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "medium",
+    "explanation": "The size check uses ldinfo->string_size + len + 3 to decide whether to grow ldinfo->strings, but the addition can overflow bfd_size_type. If it wraps, the reallocation may be skipped or allocated too small, and the subsequent strcpy into ldinfo->strings + ldinfo->string_size + 2 will write len+1 bytes past the end of the buffer. newalc *= 2 in the growth loop can also overflow. An attacker supplying an excessively long name can trigger this.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff64-rs6000.c"
+  },
+  "reproducer_code": "// Standalone reproducer for integer-overflow-to-heap-buffer-overflow in\n// _bfd_xcoff64_put_ldsymbol_name (bfd/coff64-rs6000.c)\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <limits.h>\n\n// Minimal type aliases and stubs to match the vulnerable function signature\ntypedef size_t bfd_size_type;\ntypedef struct bfd bfd; // Opaque, unused in this path\n\n#ifndef ATTRIBUTE_UNUSED\n#define ATTRIBUTE_UNUSED\n#endif\n\nstatic void *bfd_realloc(void *p, bfd_size_type n) {\n    return realloc(p, (size_t)n);\n}\n\n// Minimal struct definitions to satisfy field accesses used by the function\nstruct xcoff_loader_info {\n    char *strings;\n    bfd_size_type string_size;\n    bfd_size_type string_alc;\n    bool failed;\n};\n\nstruct internal_ldsym {\n    struct {\n        struct {\n            unsigned long _l_zeroes;\n            bfd_size_type _l_offset;\n        } _l_l;\n    } _l;\n};\n\n// Vulnerable function copied with the same logic as in the source context\nstatic bool _bfd_xcoff64_put_ldsymbol_name(bfd *abfd ATTRIBUTE_UNUSED,\n                                           struct xcoff_loader_info *ldinfo,\n                                           struct internal_ldsym *ldsym,\n                                           const char *name) {\n    size_t len;\n    len = strlen(name);\n\n    if (ldinfo->string_size + len + 3 > ldinfo->string_alc) {\n        bfd_size_type newalc;\n        char *newstrings;\n\n        newalc = ldinfo->string_alc * 2;\n        if (newalc == 0)\n            newalc = 32;\n        while (ldinfo->string_size + len + 3 > newalc)\n            newalc *= 2; // Potential integer overflow here\n\n        newstrings = (char *) bfd_realloc(ldinfo->strings, newalc);\n        if (newstrings == NULL) {\n            ldinfo->failed = true;\n            return false;\n        }\n        ldinfo->string_alc = newalc;\n        ldinfo->strings = newstrings;\n    }\n\n    // These writes and the strcpy below can go out-of-bounds if the size check\n    // above was bypassed due to integer overflow of string_size + len + 3.\n    ldinfo->strings[ldinfo->string_size] = ((len + 1) >> 8) & 0xff;\n    ldinfo->strings[ldinfo->string_size + 1] = ((len + 1)) & 0xff;\n    strcpy(ldinfo->strings + ldinfo->string_size + 2, name);\n\n    ldsym->_l._l_l._l_zeroes = 0;\n    ldsym->_l._l_l._l_offset = ldinfo->string_size + 2;\n    ldinfo->string_size += len + 3;\n\n    return true;\n}\n\nint main(void) {\n    // Set up a tiny strings buffer so any missed reallocation is dangerous\n    struct xcoff_loader_info ldinfo;\n    ldinfo.string_alc = 64; // very small allocation\n    ldinfo.strings = (char *)malloc(ldinfo.string_alc);\n    if (!ldinfo.strings) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memset(ldinfo.strings, 0x41, ldinfo.string_alc); // fill with 'A'\n    ldinfo.failed = false;\n\n    // Choose string_size so that (string_size + len + 3) overflows size_t and\n    // becomes a small value <= string_alc. This skips the reallocation,\n    // but the subsequent writes use the huge string_size as an index and will\n    // write far before the start of the buffer (heap underflow/overflow).\n    const char *name = \"BBBBBBBBBB\"; // len = 10\n    size_t len = strlen(name);\n\n    // Make the sum wrap: (SIZE_MAX - 10) + 10 + 3 = SIZE_MAX + 3 -> wraps to 2\n    // 2 <= 64, so the if-condition is false and no reallocation occurs.\n    ldinfo.string_size = (bfd_size_type)(SIZE_MAX - 10);\n\n    struct internal_ldsym ldsym;\n    memset(&ldsym, 0, sizeof(ldsym));\n\n    // This call will perform OOB writes due to the integer overflow in the check\n    // and the massive index used in subsequent stores and strcpy.\n    (void)_bfd_xcoff64_put_ldsymbol_name(NULL, &ldinfo, &ldsym, name);\n\n    // If AddressSanitizer is enabled, it should report a heap-buffer-overflow/underflow.\n    // If the program reaches here without ASan, free and exit.\n    free(ldinfo.strings);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8510165214538574,
+      "output": "=================================================================\n==3612836==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x606000000015 at pc 0x582a6ea373c0 bp 0x7fff1a89ccd0 sp 0x7fff1a89ccc8\nWRITE of size 1 at 0x606000000015 thread T0\n    #0 0x582a6ea373bf in _bfd_xcoff64_put_ldsymbol_name /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:69:42\n    #1 0x582a6ea36f9f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:108:11\n    #2 0x70b16822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70b16822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x582a6e977314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer+0x21314) (BuildId: 4c3f2a91a358f2161bd1ef291ed5352a58629ff8)\n\n0x606000000015 is located 11 bytes to the left of 64-byte region [0x606000000020,0x606000000060)\nallocated by thread T0 here:\n    #0 0x582a6e9fad22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer+0xa4d22) (BuildId: 4c3f2a91a358f2161bd1ef291ed5352a58629ff8)\n    #1 0x582a6ea36df7 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:84:30\n    #2 0x70b16822a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70b16822a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x582a6e977314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer+0x21314) (BuildId: 4c3f2a91a358f2161bd1ef291ed5352a58629ff8)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:69:42 in _bfd_xcoff64_put_ldsymbol_name\nShadow bytes around the buggy address:\n  0x0c0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c0c7fff8000: fa fa[fa]fa 00 00 00 00 00 00 00 00 fa fa fa fa\n  0x0c0c7fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c0c7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3612836==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "_bfd_xcoff64_put_ldsymbol_name",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:69",
+      "crash_line": 42,
+      "frames": [
+        [
+          "0",
+          "_bfd_xcoff64_put_ldsymbol_name",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:69",
+          "42"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:108",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff64-rs6000_628_integer-overflow-to-heap-buffer-overflow/reproducer.c:84",
+          "30"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

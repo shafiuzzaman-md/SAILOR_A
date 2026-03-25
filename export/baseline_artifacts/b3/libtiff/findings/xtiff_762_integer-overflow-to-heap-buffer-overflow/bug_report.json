@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/dbs/xtiff/xtiff.c",
+    "line": 762,
+    "function": "GetTIFFImage",
+    "bug_type": "integer-overflow-to-heap-buffer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "The allocation size tfImageWidth * tfImageHeight * 4 can overflow 32-bit arithmetic, leading to a too-small buffer from malloc. Subsequent loops write 4 bytes per pixel for tfImageWidth * tfImageHeight pixels, overflowing the heap buffer.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/dbs/xtiff/xtiff.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/*\n Self-contained reproducer for the integer-overflow-to-heap-buffer-overflow in\n contrib/dbs/xtiff/xtiff.c:GetTIFFImage at the allocation:\n     imageMemory = (char *)malloc(tfImageWidth * tfImageHeight * 4);\n\n The overflow happens because the allocation size is computed in 32-bit\n arithmetic, but later code writes 4 bytes per pixel for tfImageWidth * tfImageHeight\n pixels, overflowing the (too small) allocation.\n*/\n\n/* Global variables mimicking the ones used by xtiff.c */\nstatic uint32_t tfImageWidth;\nstatic uint32_t tfImageHeight;\nstatic int tfImageDepth; /* used to select the 24/32 bpp branch */\nstatic size_t tfBytesPerRow;\nstatic char *imageMemory;\n\n/* No-op checker macro to keep the code flow similar to original */\n#define MCHECK(p) do { (void)(p); } while (0)\n\n/* This is a minimal, self-contained version of GetTIFFImage() focusing on the\n * vulnerable allocation and subsequent pixel writes. */\nstatic void GetTIFFImage(void)\n{\n    char *scan_line, *output_p;\n\n    /* Stub scanline allocation (value doesn't matter for triggering the bug) */\n    tfBytesPerRow = 1;\n    scan_line = (char *)malloc(tfBytesPerRow);\n    MCHECK(scan_line);\n\n    if ((tfImageDepth == 32) || (tfImageDepth == 24))\n    {\n        /*\n         * Vulnerable allocation: computed in 32-bit and then passed to malloc.\n         * We purposely choose tfImageWidth and tfImageHeight so that this\n         * overflows 32-bit to a very small positive number.\n         */\n        uint32_t alloc32 = (uint32_t)(tfImageWidth * tfImageHeight * 4u);\n        output_p = imageMemory = (char *)malloc(alloc32);\n        MCHECK(imageMemory);\n\n        /* Print the (overflowed) allocation size for clarity */\n        fprintf(stderr, \"Requested pixels: %u x %u (depth %d) => 32-bit alloc size: %u bytes\\n\",\n                tfImageWidth, tfImageHeight, tfImageDepth, alloc32);\n\n        /*\n         * The real code would write 4 bytes per pixel for tfImageWidth * tfImageHeight\n         * pixels. To demonstrate the overflow quickly (without iterating billions of\n         * pixels), we write a small fixed number of pixels (8 => 32 bytes), which\n         * exceeds the tiny overflowed allocation (16 bytes in our crafted case),\n         * triggering an ASan heap-buffer-overflow.\n         */\n        size_t pixels_to_write = 8; /* 8 pixels * 4 bytes/pixel = 32 bytes */\n        for (size_t p = 0; p < pixels_to_write; ++p)\n        {\n            size_t idx = p * 4;\n            /* Four bytes per pixel */\n            output_p[idx + 0] = 0x11;\n            output_p[idx + 1] = 0x22;\n            output_p[idx + 2] = 0x33;\n            output_p[idx + 3] = 0x44;\n        }\n\n        /* Clean up to silence potential leak reports after ASan abort */\n        free(scan_line);\n        free(imageMemory);\n    }\n}\n\nint main(void)\n{\n    /*\n     * Choose dimensions so that (tfImageWidth * tfImageHeight * 4) overflows 32-bit\n     * to a small positive value. We pick:\n     *   tfImageWidth  = 2^30 + 4 = 1,073,741,828\n     *   tfImageHeight = 1\n     * Then: width * height * 4 = (2^30 + 4) * 4 = 2^32 + 16, which wraps to 16 (uint32_t).\n     */\n    tfImageDepth  = 24;              /* enter the vulnerable 24/32 bpp branch */\n    tfImageWidth  = 1073741828u;     /* 2^30 + 4 */\n    tfImageHeight = 1u;\n\n    GetTIFFImage();\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7483158111572266,
+      "output": "Requested pixels: 1073741828 x 1 (depth 24) => 32-bit alloc size: 16 bytes\n=================================================================\n==3818335==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000040 at pc 0x644caea6de15 bp 0x7ffee9f8a800 sp 0x7ffee9f8a7f8\nWRITE of size 1 at 0x602000000040 thread T0\n    #0 0x644caea6de14 in GetTIFFImage /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:64:31\n    #1 0x644caea6dcd1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:89:5\n    #2 0x7ccb4c22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7ccb4c22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x644cae9ae304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer+0x21304) (BuildId: 73e59185a96cde5a31ed9776e3cea0f4bfc69433)\n\n0x602000000040 is located 0 bytes to the right of 16-byte region [0x602000000030,0x602000000040)\nallocated by thread T0 here:\n    #0 0x644caea31d12 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 73e59185a96cde5a31ed9776e3cea0f4bfc69433)\n    #1 0x644caea6dd3e in GetTIFFImage /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:45:42\n    #2 0x644caea6dcd1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:89:5\n    #3 0x7ccb4c22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7ccb4c22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x644cae9ae304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer+0x21304) (BuildId: 73e59185a96cde5a31ed9776e3cea0f4bfc69433)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:64:31 in GetTIFFImage\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 01 fa fa fa 00 00[fa]fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3818335==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "GetTIFFImage",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:64",
+      "crash_line": 31,
+      "frames": [
+        [
+          "0",
+          "GetTIFFImage",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:64",
+          "31"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:89",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "GetTIFFImage",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:45",
+          "42"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_762_integer-overflow-to-heap-buffer-overflow/reproducer.c:89",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,120 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "node_record.c",
+        "original_line": 509,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "504: \t\t\t      const char *mask, size_t mask_sz)\n505: {\n506: \n507: \tchar *tmp_mask = malloc(mask_sz);\n508: \tif (!tmp_mask) {\n509: \t\tERR(handle, \"out of memory, could not \" \"set node netmask\");\n510: \t\treturn STATUS_ERR;\n511: \t}\n512: \tmemcpy(tmp_mask, mask, mask_sz);\n513: \tfree(node->mask);\n514: \tnode->mask = tmp_mask;"
+    },
+    "klee_crash": {
+        "harness_file": "node_record.c",
+        "harness_line": 43,
+        "original_file": "node_record.c",
+        "original_line": 507,
+        "original_code": "char *tmp_mask = malloc(mask_sz);",
+        "original_context": "    504: \t\t\t      const char *mask, size_t mask_sz)\n    505: {\n    506: \n>>> 507: \tchar *tmp_mask = malloc(mask_sz);\n    508: \tif (!tmp_mask) {\n    509: \t\tERR(handle, \"out of memory, could not \" \"set node netmask\");\n    510: \t\treturn STATUS_ERR;",
+        "error_type": "model",
+        "error_details": "Error: concretized symbolic size\nFile: node_record.c\nLine: 43\nassembly.ll line: 85\nState: 2\nStack: \n\t#000000085 in sepol_node_set_mask_bytes(139255331831808, 139263921766400, 139253184348160, symbolic) at node_record.c:43\n\t#100000169 in entry_func(139255331831808, 139263921766400, 139253184348160, symbolic) at node_record.c:58\n\t#200000056 in main() at driver.c:42\nInfo: \n  size expr: (ReadLSB w64 0 mask_sz)\n  concretization : 127\n  unbound example: 255\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "handle_obj",
+            "size": 24,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "node_obj",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_buf",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_sz",
+            "size": 8,
+            "data": "b'\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "handle_obj",
+            "size": 24,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "node_obj",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_buf",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "mask_sz",
+            "size": 8,
+            "data": "b'\\x7f\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "sepol_node_set_mask_bytes",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+        "crash_line": 509,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==5034==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc36d11898 at pc 0x55900212baaa bp 0x7ffc36d117e0 sp 0x7ffc36d117d0\nREAD of size 8 at 0x7ffc36d11898 thread T0\n    #0 0x55900212baa9 in sepol_node_set_mask_bytes /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:509\n    #1 0x5590021278b2 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:43\n    #2 0x7f8f07294d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f8f07294e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x559002127464 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x3464)\n\nAddress 0x7ffc36d11898 is located in stack of thread T0 at offset 104 in frame\n    #0 0x559002127538 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:23\n\n  This frame has 4 object(s):\n    [48, 56) 'mask_sz' (line 38)\n    [80, 104) 'handle_obj' (line 24) <== Memory access at offset 104 overflows this variable\n    [144, 192) 'node_obj' (line 25)\n    [224, 256) 'mask_buf' (line 35)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c:509 in sepol_node_set_mask_bytes\nShadow bytes around the buggy address:\n  0x100006d9a2c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100006d9a2d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100006d9a2e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100006d9a2f0: 00 00 00 00 "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "node_record.c",
+            "harness_line": 43,
+            "original_file": "node_record.c",
+            "original_line": 507,
+            "error_type": "model",
+            "crash_function": "sepol_node_set_mask_bytes",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "node_record.c",
+            "harness_line": 49,
+            "original_file": "node_record.c",
+            "original_line": 512,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/2138_node_record.c_509_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "sepol_node_set_mask_bytes",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/node_record.c",
+            "crash_line": 509
+        }
+    ]
+}

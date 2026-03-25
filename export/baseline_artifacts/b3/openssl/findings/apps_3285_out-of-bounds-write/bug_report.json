@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/apps.c",
+    "line": 3285,
+    "function": "corrupt_signature",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Writes to s[signature->length - 1] without checking that signature->length > 0. If length is 0, this indexes -1 and writes before the buffer (and signature->data may be NULL when length is 0), causing a heap out-of-bounds write or NULL dereference.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/apps.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal stand-in for OpenSSL's ASN1_STRING */\ntypedef struct asn1_string_st {\n    int length;\n    int type;\n    unsigned char *data;\n    long flags;\n} ASN1_STRING;\n\n/* Vulnerable function from apps/lib/apps.c */\nvoid corrupt_signature(const ASN1_STRING *signature)\n{\n    unsigned char *s = signature->data;\n    /* BUG: No check that signature->length > 0 */\n    s[signature->length - 1] ^= 0x1;  /* Out-of-bounds write if length == 0 */\n}\n\nint main(void)\n{\n    /* Allocate a 1-byte heap buffer so ASan can catch the write just before it */\n    unsigned char *buf = (unsigned char *)malloc(1);\n    if (buf == NULL) {\n        perror(\"malloc\");\n        return 1;\n    }\n    buf[0] = 0xAA;\n\n    /* Craft ASN1_STRING with length == 0 but non-NULL data pointer */\n    ASN1_STRING sig;\n    sig.length = 0;          /* Triggers s[-1] access in corrupt_signature */\n    sig.data = buf;          /* Points to heap so ASan reports heap OOB write */\n    sig.type = 0;\n    sig.flags = 0;\n\n    fprintf(stderr, \"Calling corrupt_signature with length=0, data=%p\\n\", (void*)buf);\n    corrupt_signature(&sig);\n\n    /* If the program reaches here without ASan aborting, print something */\n    fprintf(stderr, \"Finished call (this should not happen under ASan). buf[0]=%02x\\n\", buf[0]);\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7629842758178711,
+      "output": "Calling corrupt_signature with length=0, data=0x602000000010\n=================================================================\n==4131952==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000000f at pc 0x5db1a74f3d7a bp 0x7fffc64c3d40 sp 0x7fffc64c3d38\nREAD of size 1 at 0x60200000000f thread T0\n    #0 0x5db1a74f3d79 in corrupt_signature /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:18:30\n    #1 0x5db1a74f404f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:39:5\n    #2 0x7426df62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7426df62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5db1a7434314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer+0x21314) (BuildId: 43e5d30738c0d7f5b2ae88423423a2d5eea0cdc9)\n\n0x60200000000f is located 1 bytes to the left of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5db1a74b7d22 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer+0xa4d22) (BuildId: 43e5d30738c0d7f5b2ae88423423a2d5eea0cdc9)\n    #1 0x5db1a74f3e7e in main /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:24:43\n    #2 0x7426df62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7426df62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5db1a7434314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer+0x21314) (BuildId: 43e5d30738c0d7f5b2ae88423423a2d5eea0cdc9)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:18:30 in corrupt_signature\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa[fa]01 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4131952==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "corrupt_signature",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:18",
+      "crash_line": 30,
+      "frames": [
+        [
+          "0",
+          "corrupt_signature",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:18",
+          "30"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:39",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_3285_out-of-bounds-write/reproducer.c:24",
+          "43"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

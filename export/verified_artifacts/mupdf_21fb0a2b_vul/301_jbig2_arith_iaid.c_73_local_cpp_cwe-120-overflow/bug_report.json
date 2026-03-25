@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_arith_iaid.c",
+        "original_line": 73,
+        "function": "jbig2_arith_iaid_ctx_new",
+        "entry_point": "jbig2_arith_iaid_ctx_new",
+        "spine": [
+            "jbig2_arith_iaid_ctx_new"
+        ],
+        "original_context": "68:         jbig2_free(ctx->allocator, result);\n69:         jbig2_error(ctx, JBIG2_SEVERITY_FATAL, JBIG2_UNKNOWN_SEGMENT_NUMBER, \"failed to allocate symbol ID in IAID arithmetic coding state\");\n70:         return NULL;\n71:     }\n72: \n73:     memset(result->IAIDx, 0, ctx_size);\n74:     return result;\n75: }\n76: \n77: /* A.3 */\n78: /* Return value: -1 on error, 0 on normal value */"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_arith_iaid.c",
+        "harness_line": 86,
+        "original_file": "jbig2_arith_iaid.c",
+        "original_line": 73,
+        "original_code": "memset(result->IAIDx, 0, ctx_size);",
+        "original_context": "    70:         return NULL;\n    71:     }\n    72: \n>>> 73:     memset(result->IAIDx, 0, ctx_size);\n    74:     return result;\n    75: }\n    76: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 269\nState: 1\nStack: \n\t#000000269 in memset(139501882155008, 0, symbolic) at runtime/Freestanding/memset.c:15\n\t#100000159 in jbig2_arith_iaid_ctx_new(139484702285824, symbolic) at jbig2_arith_iaid.c:86\n\t#200000059 in main() at driver.c:22\nInfo: \n\taddress: 139501882155009\n\tnext: object at 139177612124160 of size 1\n\t\tMO56[1] allocated at jbig2_arith_iaid_ctx_new():  %5 = alloca i8, align 1\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "SBSYMCODELEN",
+            "size": 1,
+            "data": "b'?'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_alloc",
+        "crash_file": "thirdparty/jbig2dec/jbig2.c",
+        "crash_line": 68,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==17041==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000030 at pc 0x55ed14f950f6 bp 0x7ffe919470f0 sp 0x7ffe919470e0\nREAD of size 8 at 0x502000000030 thread T0\n    #0 0x55ed14f950f5 in jbig2_alloc thirdparty/jbig2dec/jbig2.c:68\n    #1 0x55ed14f94cc5 in jbig2_arith_iaid_ctx_new thirdparty/jbig2dec/jbig2_arith_iaid.c:58\n    #2 0x55ed14f94b98 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/301_jbig2_arith_iaid.c_73_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:23\n    #3 0x7f29b0311d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f29b0311e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55ed14f94994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/301_jbig2_arith_iaid.c_73_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xa994)\n\n0x502000000034 is located 0 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7f29b06c8a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55ed14f94b04 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/301_jbig2_arith_iaid.c_73_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:13\n    #2 0x7f29b0311d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2.c:68 in jbig2_alloc\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa[04]fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/301_jbig2_arith_iaid.c_73_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_arith_iaid.c",
+            "harness_line": 86,
+            "original_file": "jbig2_arith_iaid.c",
+            "original_line": 73,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/301_jbig2_arith_iaid.c_73_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_alloc",
+            "crash_file": "thirdparty/jbig2dec/jbig2.c",
+            "crash_line": 68
+        }
+    ]
+}

@@ -1,0 +1,179 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 2
+    },
+    "vulnerability": {
+        "original_file": "subset-cff.c",
+        "original_line": 284,
+        "function": "index_load",
+        "entry_point": "fz_subset_cff_for_gids",
+        "spine": [
+            "fz_subset_cff_for_gids",
+            "index_load"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "subset-cff.c",
+        "harness_line": 80,
+        "original_file": "subset-cff.c",
+        "original_line": 284,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: subset-cff.c\nLine: 80\nassembly.ll line: 283\nState: 5\nStack: \n\t#000000283 in index_load(139591519358976, 139320936419328, 139574339489792, symbolic, symbolic) at subset-cff.c:80\n\t#100000166 in fz_subset_cff_for_gids(139591519358976, 139660238835712) at subset-cff.c:125\n\t#200000081 in main() at driver.c:40\nInfo: \n\taddress: (Add w64 139574339489794\n          (ZExt w64 (ReadLSB w32 0 g_offset)))\n\texample: 139574339489796\n\trange: [139574339489796, 13957"
+    },
+    "concrete_inputs": [
+        {
+            "name": "orig_buf",
+            "size": 4,
+            "data": "b'\\xff\\xff\\xff\\x00'"
+        },
+        {
+            "name": "orig_len",
+            "size": 4,
+            "data": "b'\\x04\\x00\\x00\\x00'"
+        },
+        {
+            "name": "g_offset",
+            "size": 4,
+            "data": "b'\\x02\\x00\\x00\\x00'"
+        },
+        {
+            "name": "orig_buf",
+            "size": 4,
+            "data": "b'\\xff\\xff\\x00\\xff'"
+        },
+        {
+            "name": "orig_len",
+            "size": 4,
+            "data": "b'\\x03\\x00\\x00\\x00'"
+        },
+        {
+            "name": "g_offset",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        },
+        {
+            "name": "orig_buf",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "orig_len",
+            "size": 4,
+            "data": "b'\\x04\\x00\\x00\\x00'"
+        },
+        {
+            "name": "g_offset",
+            "size": 4,
+            "data": "b'\\x06\\x00\\x00\\x00'"
+        },
+        {
+            "name": "orig_buf",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "orig_len",
+            "size": 4,
+            "data": "b'\\x04\\x00\\x00\\x00'"
+        },
+        {
+            "name": "g_offset",
+            "size": 4,
+            "data": "b'\\x03\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_subset_cff_for_gids",
+        "crash_file": "source/fitz/subset-cff.c",
+        "crash_line": 2067,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==9286==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000048 at pc 0x5559572c0594 bp 0x7ffd53208520 sp 0x7ffd53208510\nREAD of size 8 at 0x502000000048 thread T0\n    #0 0x5559572c0593 in fz_subset_cff_for_gids source/fitz/subset-cff.c:2067\n    #1 0x5559572b4be8 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:40\n    #2 0x7f1efca7bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f1efca7be3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5559572b4944 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x11944)\n\n0x502000000048 is located 8 bytes to the left of 4-byte region [0x502000000050,0x502000000054)\nallocated by thread T0 here:\n    #0 0x7f1efce32887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5559572b4ad5 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:19\n    #2 0x7f1efca7bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/subset-cff.c:2067 in fz_subset_cff_for_gids\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa[fa]04 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "subset-cff.c",
+            "harness_line": 80,
+            "original_file": "subset-cff.c",
+            "original_line": 284,
+            "error_type": "ptr",
+            "crash_function": "index_load",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        },
+        {
+            "harness_file": "subset-cff.c",
+            "harness_line": 81,
+            "original_file": "subset-cff.c",
+            "original_line": 284,
+            "error_type": "assert",
+            "crash_function": "index_load",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000002.ktest"
+        },
+        {
+            "harness_file": "subset-cff.c",
+            "harness_line": 34,
+            "original_file": "",
+            "original_line": 0,
+            "error_type": "ptr",
+            "crash_function": "get16",
+            "relevance": "secondary_bug",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000004.ktest"
+        },
+        {
+            "harness_file": "subset-cff.c",
+            "harness_line": 34,
+            "original_file": "",
+            "original_line": 0,
+            "error_type": "ptr",
+            "crash_function": "get16",
+            "relevance": "secondary_bug",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000005.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_subset_cff_for_gids",
+            "crash_file": "source/fitz/subset-cff.c",
+            "crash_line": 2067
+        }
+    ],
+    "secondary_bugs": [
+        {
+            "original_file": "",
+            "original_line": 0,
+            "error_type": "ptr",
+            "crash_function": "get16",
+            "relevance": "secondary_bug",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000004.ktest"
+        },
+        {
+            "original_file": "",
+            "original_line": 0,
+            "error_type": "ptr",
+            "crash_function": "get16",
+            "relevance": "secondary_bug",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1881_subset-cff.c_284_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000005.ktest"
+        }
+    ]
+}

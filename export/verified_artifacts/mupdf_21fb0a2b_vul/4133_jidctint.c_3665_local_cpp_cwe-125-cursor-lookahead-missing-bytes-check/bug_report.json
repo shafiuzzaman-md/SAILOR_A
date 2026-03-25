@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "jpeg_idct_10x5",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 3580
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "jpeg_idct_10x5",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 3580,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==23978==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000198 (pc 0x5601c3a8bdd0 bp 0x7ffd5c11eee0 sp 0x7ffd5c11ed40 T0)\n==23978==The signal is caused by a READ memory access.\n==23978==Hint: address points to the zero page.\n    #0 0x5601c3a8bdd0 in jpeg_idct_10x5 thirdparty/libjpeg/jidctint.c:3580\n    #1 0x5601c3a7a544 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4133_jidctint.c_3665_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:38\n    #2 0x7f2a10f68d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f2a10f68e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5601c3a7a284 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4133_jidctint.c_3665_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1284)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/libjpeg/jidctint.c:3580 in jpeg_idct_10x5\n==23978==ABORTING\n"
+    }
+}

@@ -1,0 +1,54 @@
+=================================================================
+==3617416==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x619000000480 at pc 0x58f9e38eb300 bp 0x7ffe5b42f320 sp 0x7ffe5b42eaf0
+WRITE of size 1024 at 0x619000000480 thread T0
+    #0 0x58f9e38eb2ff in __asan_memset (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa42ff) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)
+    #1 0x58f9e3928646 in bfd_coff_swap_reloc_in /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:69:3
+    #2 0x58f9e3928381 in bfd_coff_read_internal_relocs /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:128:5
+    #3 0x58f9e3927e69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174:32
+    #4 0x764d4142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x764d4142a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x58f9e3868304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0x21304) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)
+
+0x619000000480 is located 0 bytes to the right of 1024-byte region [0x619000000080,0x619000000480)
+allocated by thread T0 here:
+    #0 0x58f9e38ebd12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa4d12) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)
+    #1 0x58f9e39285c4 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:46:10
+    #2 0x58f9e39282b6 in bfd_coff_read_internal_relocs /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:117:47
+    #3 0x58f9e3927e69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer.c:174:32
+    #4 0x764d4142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x764d4142a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x58f9e3868304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0x21304) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_645_integer-overflow/reproducer+0xa42ff) (BuildId: 095bb75e2dd3f7335507737162b11a12ebafc177) in __asan_memset
+Shadow bytes around the buggy address:
+  0x0c327fff8040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c327fff8050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c327fff8060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c327fff8070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c327fff8080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c327fff8090:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c327fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c327fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c327fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c327fff80d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c327fff80e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3617416==ABORTING

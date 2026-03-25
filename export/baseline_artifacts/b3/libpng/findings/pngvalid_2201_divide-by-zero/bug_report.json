@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngvalid.c",
+    "line": 2201,
+    "function": "chromaticity_x",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "Returns c.X / (c.X + c.Y + c.Z) without checking if the denominator is zero; if X=Y=Z=0, this divides by zero.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngvalid.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE\n#pragma STDC FENV_ACCESS ON\n#include <stdio.h>\n#include <fenv.h>\n#include <stdlib.h>\n\n/* GNU extension to enable trapping FP exceptions. Declare explicitly in case\n * the prototype is not exposed by default headers on the system. */\nextern int feenableexcept(int);\n\n/* Minimal re-declarations from contrib/libtests/pngvalid.c */\ntypedef struct CIE_color {\n    double X, Y, Z;\n} CIE_color;\n\n/* Vulnerable function from pngvalid.c (no denominator check) */\nstatic double chromaticity_x(CIE_color c)\n{\n    return c.X / (c.X + c.Y + c.Z);\n}\n\nint main(void)\n{\n    /* Make floating-point divide-by-zero (and invalid) raise SIGFPE so the\n     * bug is visible when running under ASan-only builds. */\n    feclearexcept(FE_ALL_EXCEPT);\n    feenableexcept(FE_DIVBYZERO | FE_INVALID);\n\n    /* Craft inputs so the denominator (X+Y+Z) is exactly zero while the\n     * numerator (X) is non-zero, which triggers a true floating-point\n     * divide-by-zero exception (FE_DIVBYZERO).\n     *\n     * Note: Using X=Y=Z=0 would yield 0.0/0.0, which triggers FE_INVALID, so\n     * enabling FE_INVALID above would also reproduce the issue. */\n    CIE_color c;\n    c.X = 1.0;\n    c.Y = -0.5;\n    c.Z = -0.5;  /* X + Y + Z == 0.0 */\n\n    volatile double r = chromaticity_x(c); /* Triggers SIGFPE here */\n    /* The line below should never execute due to the SIGFPE. */\n    printf(\"Result: %f\\n\", r);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6937680244445801,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3722758==ERROR: AddressSanitizer: FPE on unknown address 0x594491abd183 (pc 0x594491abd183 bp 0x7ffd441ae170 sp 0x7ffd441ae060 T0)\n    #0 0x594491abd183 in chromaticity_x /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:19:16\n    #1 0x594491abcf0d in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:40:25\n    #2 0x7c0b6b22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c0b6b22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5944919fd324 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer+0x21324) (BuildId: d3d5627e1c95f608e77c3e909c0e8b156fd87f69)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:19:16 in chromaticity_x\n==3722758==ABORTING\n",
+      "error_type": "FPE",
+      "crash_function": "chromaticity_x",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:19",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "chromaticity_x",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:19",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngvalid_2201_divide-by-zero/reproducer.c:40",
+          "25"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

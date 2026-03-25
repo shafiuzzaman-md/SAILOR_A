@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3724337==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000080 (pc 0x5f923ed38fe7 bp 0x7ffc4dba5610 sp 0x7ffc4dba55d0 T0)
+==3724337==The signal is caused by a WRITE memory access.
+==3724337==Hint: address points to the zero page.
+    #0 0x5f923ed38fe7 in png_read_row /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78:20
+    #1 0x5f923ed3940f in read_png /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:124:21
+    #2 0x5f923ed39561 in main /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:143:13
+    #3 0x78539a22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x78539a22a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5f923ec79304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer+0x21304) (BuildId: 2d20feecfb278bf3ca6e3174816a698ef3e6f605)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78:20 in png_read_row
+==3724337==ABORTING

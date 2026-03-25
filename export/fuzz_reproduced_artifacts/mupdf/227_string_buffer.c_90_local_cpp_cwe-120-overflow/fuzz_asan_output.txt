@@ -1,0 +1,34 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 766886741
+INFO: Loaded 1 modules   (5 inline 8-bit counters): 5 [0x557eeca0ef80, 0x557eeca0ef85), 
+INFO: Loaded 1 PC tables (5 PCs): 5 [0x557eeca0ef88,0x557eeca0efd8), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 8b max: 8b total: 8b rss: 29Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==90351==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x557eec9cdce4 bp 0x7ffd46f068c0 sp 0x7ffd46f068b0 T0)
+==90351==The signal is caused by a READ memory access.
+==90351==Hint: address points to the zero page.
+    #0 0x557eec9cdce4 in gumbo_parser_allocate /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/gumbo-parser/src/util.c:35:16
+    #1 0x557eec9cdb19 in gumbo_string_buffer_to_string /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/gumbo-parser/src/string_buffer.c:96:18
+    #2 0x557eec9cd3f5 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_harness.c:30:5
+    #3 0x557eec8f380a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x4380a) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #4 0x557eec8f2ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x42ed5) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #5 0x557eec8f4ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x44ad8) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #6 0x557eec8f4f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x44f56) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #7 0x557eec8e2542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x32542) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #8 0x557eec90d9e6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x5d9e6) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+    #9 0x71a61aa2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x71a61aa2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x557eec8d6974 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/227_string_buffer.c_90_local_cpp_cwe-120-overflow/fuzz_bin+0x26974) (BuildId: 5b28262f2a09d97dd50c0abf0f5b1a7976143248)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/gumbo-parser/src/util.c:35:16 in gumbo_parser_allocate
+==90351==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-05fe405753166f125559e7c9ac558654f107c7e9
+Base64: AAAAAAAAAAA=

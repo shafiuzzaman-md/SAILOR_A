@@ -1,0 +1,35 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 4056161089
+INFO: Loaded 1 modules   (7 inline 8-bit counters): 7 [0x565e78bce5b0, 0x565e78bce5b7), 
+INFO: Loaded 1 PC tables (7 PCs): 7 [0x565e78bce5b8,0x565e78bce628), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 16b max: 16b total: 16b rss: 29Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==104397==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x565e78acbc2b bp 0x000000000000 sp 0x7ffec2a2e560 T0)
+==104397==The signal is caused by a READ memory access.
+==104397==Hint: this fault was caused by a dereference of a high value address (see register values below).  Disassemble the provided pc to learn which register was used.
+    #0 0x565e78acbc2b in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x60c2b) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #1 0x565e78b4d109 in __interceptor_free (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0xe2109) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #2 0x565e78b8bbf5 in sepol_user_free /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/user_record.c:373:3
+    #3 0x565e78b89700 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_harness.c:38:5
+    #4 0x565e78aaf82a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x4482a) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #5 0x565e78aaeef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x43ef5) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #6 0x565e78ab0af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x45af8) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #7 0x565e78ab0f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x45f76) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #8 0x565e78a9e562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x33562) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #9 0x565e78ac9a06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x5ea06) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+    #10 0x74b1f802a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x74b1f802a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x565e78a92994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x27994) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/fuzz_bin+0x60c2b) (BuildId: 5ab1b548ad843ddfe34ba48a7df8cf8c83edf259) in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType)
+==104397==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-e129f27c5103bc5cc44bcdf0a15e160d445066ff
+Base64: AAAAAAAAAAAAAAAAAAAAAA==

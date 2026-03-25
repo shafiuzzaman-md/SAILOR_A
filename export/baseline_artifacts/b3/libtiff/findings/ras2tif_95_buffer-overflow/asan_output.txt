@@ -1,0 +1,21 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3837256==ERROR: AddressSanitizer: SEGV on unknown address 0x55de70e1f520 (pc 0x70efff788adb bp 0x7fff063cfd00 sp 0x7fff063cfcd8 T0)
+==3837256==The signal is caused by a WRITE memory access.
+    #0 0x70efff788adb in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333
+    #1 0x70efff660d87 in __GI_memcpy stdio-common/../string/bits/string_fortified.h:29:10
+    #2 0x70efff660d87 in __printf_buffer_write stdio-common/./stdio-common/Xprintf_buffer_write.c:39:7
+    #3 0x70efff66a5cd in __printf_buffer stdio-common/./stdio-common/vfprintf-process-arg.c:240:9
+    #4 0x70efff688a4d in __vsprintf_internal libio/./libio/iovsprintf.c:62:3
+    #5 0x70efff688a4d in vsprintf libio/./libio/iovsprintf.c:76:10
+    #6 0x55de70d6eb86 in __interceptor_vsprintf (/app/se_runs/b3/libtiff_f324415_vul/findings/ras2tif_95_buffer-overflow/reproducer+0x43b86) (BuildId: 5e905e27df2a6b8592f71d1cfa370a9dbbfc1f37)
+    #7 0x55de70d6fc97 in sprintf (/app/se_runs/b3/libtiff_f324415_vul/findings/ras2tif_95_buffer-overflow/reproducer+0x44c97) (BuildId: 5e905e27df2a6b8592f71d1cfa370a9dbbfc1f37)
+    #8 0x55de70e0c116 in ras2tif_main /app/se_runs/b3/libtiff_f324415_vul/findings/ras2tif_95_buffer-overflow/reproducer.c:63:5
+    #9 0x55de70e0bdc8 in main /app/se_runs/b3/libtiff_f324415_vul/findings/ras2tif_95_buffer-overflow/reproducer.c:73:12
+    #10 0x70efff62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x70efff62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x55de70d4c324 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/ras2tif_95_buffer-overflow/reproducer+0x21324) (BuildId: 5e905e27df2a6b8592f71d1cfa370a9dbbfc1f37)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333 in __memcpy_avx_unaligned_erms
+==3837256==ABORTING

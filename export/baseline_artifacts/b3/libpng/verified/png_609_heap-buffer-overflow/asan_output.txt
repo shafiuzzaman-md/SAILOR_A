@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080491==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x5adbd91c65eb bp 0x000000000000 sp 0x7ffd33ef2590 T0)
+==4080491==The signal is caused by a READ memory access.
+==4080491==Hint: this fault was caused by a dereference of a high value address (see register values below).  Disassemble the provided pc to learn which register was used.
+    #0 0x5adbd91c65eb in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType) (/app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer+0x235eb) (BuildId: 48de526b72e7d8e9b3f4da3b74b315dd56f9df8b)
+    #1 0x5adbd9247ac9 in free (/app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer+0xa4ac9) (BuildId: 48de526b72e7d8e9b3f4da3b74b315dd56f9df8b)
+    #2 0x5adbd9284728 in png_free /app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer.c:28:5
+    #3 0x5adbd92844c8 in png_free_data /app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer.c:39:13
+    #4 0x5adbd92841a2 in main /app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer.c:87:5
+    #5 0x7b9b2422a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7b9b2422a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5adbd91c4304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer+0x21304) (BuildId: 48de526b72e7d8e9b3f4da3b74b315dd56f9df8b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (/app/export/baseline_artifacts/b3/libpng/verified/png_609_heap-buffer-overflow/reproducer+0x235eb) (BuildId: 48de526b72e7d8e9b3f4da3b74b315dd56f9df8b) in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType)
+==4080491==ABORTING

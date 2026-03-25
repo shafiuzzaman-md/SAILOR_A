@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_halftone.c",
+        "original_line": 214,
+        "function": "jbig2_pattern_dictionary",
+        "entry_point": "jbig2_pattern_dictionary",
+        "spine": [
+            "jbig2_pattern_dictionary"
+        ],
+        "original_context": "209:     }\n210:     flags = segment_data[0];\n211:     params.HDMMR = flags & 1;\n212:     params.HDTEMPLATE = (flags & 6) >> 1;\n213:     params.HDPW = segment_data[1];\n214:     params.HDPH = segment_data[2];\n215:     params.GRAYMAX = jbig2_get_uint32(segment_data + 3);\n216:     offset += 7;\n217: \n218:     jbig2_error(ctx, JBIG2_SEVERITY_INFO, segment->number,\n219:                 \"pattern dictionary, flags=%02x, %d grays (%dx%d cell)\", flags, params.GRAYMAX + 1, params.HDPW, params.HDPH);"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_halftone.c",
+        "harness_line": 44,
+        "original_file": "jbig2_halftone.c",
+        "original_line": 214,
+        "original_code": "params.HDPH = segment_data[2];",
+        "original_context": "    211:     params.HDMMR = flags & 1;\n    212:     params.HDTEMPLATE = (flags & 6) >> 1;\n    213:     params.HDPW = segment_data[1];\n>>> 214:     params.HDPH = segment_data[2];\n    215:     params.GRAYMAX = jbig2_get_uint32(segment_data + 3);\n    216:     offset += 7;\n    217: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jbig2_halftone.c\nLine: 44\nassembly.ll line: 137\nState: 1\nStack: \n\t#000000137 in jbig2_pattern_dictionary_impl(138852166725632, 138920886202368, 138834986856448) at jbig2_halftone.c:44\n\t#100000078 in jbig2_pattern_dictionary(138852166725632, 138920886202368, 138834986856448) at jbig2_halftone.c:56\n\t#200000048 in main() at driver.c:22\nInfo: \n\taddress: 138834986856450\n\tnext: object at 138547224047616 of size 1\n\t\tMO59[1] allocated at jbig2_pattern_dict"
+    },
+    "concrete_inputs": [
+        {
+            "name": "segment_data",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_pattern_dictionary",
+        "crash_file": "thirdparty/jbig2dec/jbig2_halftone.c",
+        "crash_line": 207,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==9774==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x56436590df37 bp 0x7ffcb64ffc00 sp 0x7ffcb64ffbf0\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x56436590df36 in jbig2_pattern_dictionary thirdparty/jbig2dec/jbig2_halftone.c:207\n    #1 0x56436590cb5e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1961_jbig2_halftone.c_214_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:23\n    #2 0x7f00c7007d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f00c7007e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56436590c994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1961_jbig2_halftone.c_214_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xa994)\n\n0x502000000040 is located 0 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f00c73bea57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x56436590ca86 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1961_jbig2_halftone.c_214_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:11\n    #2 0x7f00c7007d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2_halftone.c:207 in jbig2_pattern_dictionary\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa 00 00[fa]fa 02 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1961_jbig2_halftone.c_214_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_halftone.c",
+            "harness_line": 44,
+            "original_file": "jbig2_halftone.c",
+            "original_line": 214,
+            "error_type": "ptr",
+            "crash_function": "jbig2_pattern_dictionary_impl",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1961_jbig2_halftone.c_214_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_pattern_dictionary",
+            "crash_file": "thirdparty/jbig2dec/jbig2_halftone.c",
+            "crash_line": 207
+        }
+    ]
+}

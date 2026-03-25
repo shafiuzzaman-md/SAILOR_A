@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: cavs.c
+Line: 15
+assembly.ll line: 36
+State: 1
+Stack: 
+	#000000036 in ff_cavs_load_intra_pred_luma(139913076854784, 139569479471104, 139283864145920, 0) at cavs.c:15
+	#100000074 in decode_entry(139913076854784, 139569479471104, 139283864145920, 0) at cavs.c:26
+	#200000115 in main() at driver.c:26
+Info: 
+	address: 139569479471105
+	next: object at 139269905502208 of size 4
+		MO56[4] allocated at ff_cavs_load_intra_pred_luma():  %8 = alloca i32, align 4

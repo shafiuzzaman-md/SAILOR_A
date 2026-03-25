@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/archive.c",
+    "line": 416,
+    "function": "_bfd_add_bfd_to_archive_cache",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The result of bfd_zalloc is not checked for NULL. On allocation failure, the subsequent dereference (cache->ptr = filepos) will dereference a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/binutils_upstream/bfd/archive.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stubs and types to reproduce the null-pointer-dereference in\n   _bfd_add_bfd_to_archive_cache when bfd_zalloc returns NULL. */\n\ntypedef long file_ptr;\n\ntypedef struct bfd bfd;\n\ntypedef struct {\n    void *cache; /* archive cache (htab_t) */\n} bfd_archdata_t;\n\ntypedef struct {\n    void *parent_cache; /* htab_t */\n    file_ptr key;\n} areltdata_stub;\n\nstruct bfd {\n    bfd_archdata_t *tdata;  /* Archive data */\n    areltdata_stub *arelt;  /* Element data */\n};\n\n/* Archive cache entry. */\nstruct ar_cache {\n    file_ptr ptr;\n    bfd *arbfd;\n};\n\n/* Hash table stubs (libiberty-like). */\ntypedef void* htab_t;\n\nstatic unsigned int hash_file_ptr(const void *p) {\n    /* Dummy hash. */\n    const struct ar_cache *ac = (const struct ar_cache *)p;\n    return (unsigned int)(ac ? (uintptr_t)ac->ptr : 0U);\n}\n\nstatic int eq_file_ptr(const void *p1, const void *p2) {\n    const struct ar_cache *a = (const struct ar_cache *)p1;\n    const struct ar_cache *b = (const struct ar_cache *)p2;\n    return a && b && a->ptr == b->ptr;\n}\n\nstatic void * _bfd_calloc_wrapper(size_t a, size_t b) {\n    return calloc(a, b);\n}\n\nstatic htab_t htab_create_alloc(unsigned int size,\n                                unsigned int (*hash_f)(const void*),\n                                int (*eq_f)(const void*, const void*),\n                                void (*del_f)(void*),\n                                void *(*alloc_f)(size_t, size_t),\n                                void (*free_f)(void*)) {\n    (void)size; (void)hash_f; (void)eq_f; (void)del_f; (void)free_f;\n    /* Return any non-NULL pointer to simulate successful creation. */\n    void *tbl = alloc_f(1, 8);\n    if (!tbl) tbl = (void*)0x1; /* Fallback non-NULL */\n    return (htab_t)tbl;\n}\n\nenum insert_option { NO_INSERT = 0, INSERT = 1 };\n\nstatic void **htab_find_slot(htab_t table, const void *entry, int insert) {\n    (void)table; (void)insert;\n    /* Return the address of a static slot. */\n    static void *slot = NULL;\n    slot = (void *)entry;\n    return &slot;\n}\n\n/* Accessors mimicking bfd_ardata and arch_eltdata. */\nstatic inline bfd_archdata_t *bfd_ardata(bfd *abfd) { return abfd->tdata; }\nstatic inline areltdata_stub *arch_eltdata(bfd *abfd) { return abfd->arelt; }\n\n/* Stub bfd_zalloc that forces allocation failure to trigger the bug. */\nstatic void *bfd_zalloc(bfd *abfd, size_t size) {\n    (void)abfd; (void)size;\n    /* Simulate out-of-memory: return NULL. */\n    return NULL;\n}\n\n/* Vulnerable function (reproduced with minimal dependencies). */\nbool _bfd_add_bfd_to_archive_cache(bfd *arch_bfd, file_ptr filepos, bfd *new_elt) {\n    struct ar_cache *cache;\n    htab_t hash_table = bfd_ardata(arch_bfd)->cache;\n\n    /* If the hash table hasn't been created, create it. */\n    if (hash_table == NULL) {\n        hash_table = htab_create_alloc(16, hash_file_ptr, eq_file_ptr,\n                                       NULL, _bfd_calloc_wrapper, free);\n        if (hash_table == NULL)\n            return false;\n        bfd_ardata(arch_bfd)->cache = hash_table;\n    }\n\n    /* Insert new_elt into the hash table by filepos. */\n    cache = (struct ar_cache *) bfd_zalloc(arch_bfd, sizeof(struct ar_cache));\n    /* BUG: cache is not checked for NULL, dereference causes crash. */\n    cache->ptr = filepos;              /* Null-pointer dereference here */\n    cache->arbfd = new_elt;\n    *htab_find_slot(hash_table, (const void *)cache, INSERT) = cache;\n\n    /* Provide a means of accessing this from child. */\n    arch_eltdata(new_elt)->parent_cache = hash_table;\n    arch_eltdata(new_elt)->key = filepos;\n\n    return true;\n}\n\nint main(void) {\n    /* Set up a minimal archive bfd and a new element bfd. */\n    bfd *archive = (bfd *)calloc(1, sizeof(bfd));\n    bfd *element = (bfd *)calloc(1, sizeof(bfd));\n    if (!archive || !element) {\n        fprintf(stderr, \"Allocation failure in setup.\\n\");\n        return 1;\n    }\n\n    archive->tdata = (bfd_archdata_t *)calloc(1, sizeof(bfd_archdata_t));\n    element->arelt = (areltdata_stub *)calloc(1, sizeof(areltdata_stub));\n    if (!archive->tdata || !element->arelt) {\n        fprintf(stderr, \"Allocation failure in setup (tdata/arelt).\\n\");\n        return 1;\n    }\n\n    /* Ensure cache is NULL to exercise hashtable creation path. */\n    archive->tdata->cache = NULL;\n\n    /* This call will attempt to bfd_zalloc and then unconditionally deref it. */\n    /* With our stubbed bfd_zalloc returning NULL, this triggers the crash. */\n    (void)_bfd_add_bfd_to_archive_cache(archive, (file_ptr)0x1234, element);\n\n    /* Should not reach here. */\n    printf(\"Unexpectedly survived null dereference.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6111197471618652,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3576727==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5987e92bedbb bp 0x7fff4b55de80 sp 0x7fff4b55dde0 T0)\n==3576727==The signal is caused by a WRITE memory access.\n==3576727==Hint: address points to the zero page.\n    #0 0x5987e92bedbb in _bfd_add_bfd_to_archive_cache /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104:16\n    #1 0x5987e92bf384 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:136:11\n    #2 0x722ffb82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x722ffb82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5987e91ff304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer+0x21304) (BuildId: e257377ad5d2f90f61e79e3086b13092c56bbc69)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104:16 in _bfd_add_bfd_to_archive_cache\n==3576727==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "_bfd_add_bfd_to_archive_cache",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "_bfd_add_bfd_to_archive_cache",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:104",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/archive_416_null-pointer-dereference/reproducer.c:136",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,4 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+sqlite_exec_harness	NO_BUG	FP			300			0	0		
+sqlite_prepare_harness	NO_BUG	FP			300			0	0		
+sqlite_deserialize_harness	NO_BUG	FP			300			0	0		

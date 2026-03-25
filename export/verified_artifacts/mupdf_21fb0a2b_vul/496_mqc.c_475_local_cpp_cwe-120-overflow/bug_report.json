@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "mqc.c",
+        "original_line": 475,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "470: \n471: \n472: void opq_mqc_finish_dec(opj_mqc_t *mqc)\n473: {\n474:     /* Restore the bytes overwritten by opj_mqc_init_dec_common() */\n475:     memcpy(mqc->end, mqc->backup, OPJ_COMMON_CBLK_DATA_EXTRA);\n476: }\n477: \n478: void opj_mqc_resetstates(opj_mqc_t *mqc)\n479: {\n480:     OPJ_UINT32 i;"
+    },
+    "klee_crash": {
+        "harness_file": "mqc.c",
+        "harness_line": 22,
+        "original_file": "mqc.c",
+        "original_line": 475,
+        "original_code": "memcpy(mqc->end, mqc->backup, OPJ_COMMON_CBLK_DATA_EXTRA);",
+        "original_context": "    472: void opq_mqc_finish_dec(opj_mqc_t *mqc)\n    473: {\n    474:     /* Restore the bytes overwritten by opj_mqc_init_dec_common() */\n>>> 475:     memcpy(mqc->end, mqc->backup, OPJ_COMMON_CBLK_DATA_EXTRA);\n    476: }\n    477: \n    478: void opj_mqc_resetstates(opj_mqc_t *mqc)",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 113\nState: 1\nStack: \n\t#000000113 in memcpy(139025780719616, 139008600850432, 8) at runtime/Freestanding/memcpy.c:17\n\t#100000070 in opq_mqc_finish_dec(139094500196352) at mqc.c:22\n\t#200000084 in entry_func(139094500196352) at mqc.c:29\n\t#300000044 in main() at driver.c:24\nInfo: \n\taddress: 139025780719620\n\tnext: object at 138729427976192 of size 4\n\t\tMO22[4] allocated at main():  %1 = alloca i32,"
+    },
+    "concrete_inputs": [
+        {
+            "name": "dest_buf",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "src_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "opq_mqc_finish_dec",
+        "crash_file": "thirdparty/openjpeg/src/lib/openjp2/mqc.c",
+        "crash_line": 475,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==27476==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000030 at pc 0x5611a35cb396 bp 0x7fff779dc7c0 sp 0x7fff779dc7b0\nREAD of size 8 at 0x502000000030 thread T0\n    #0 0x5611a35cb395 in opq_mqc_finish_dec thirdparty/openjpeg/src/lib/openjp2/mqc.c:475\n    #1 0x5611a35ca4d3 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/496_mqc.c_475_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:24\n    #2 0x7fe42730fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fe42730fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5611a35ca274 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/496_mqc.c_475_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x2274)\n\n0x502000000034 is located 0 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7fe4276c6887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5611a35ca361 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/496_mqc.c_475_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:12\n    #2 0x7fe42730fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/openjpeg/src/lib/openjp2/mqc.c:475 in opq_mqc_finish_dec\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa fa[04]fa fa fa 00 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/496_mqc.c_475_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "mqc.c",
+            "harness_line": 22,
+            "original_file": "mqc.c",
+            "original_line": 475,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/496_mqc.c_475_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "opq_mqc_finish_dec",
+            "crash_file": "thirdparty/openjpeg/src/lib/openjp2/mqc.c",
+            "crash_line": 475
+        }
+    ]
+}

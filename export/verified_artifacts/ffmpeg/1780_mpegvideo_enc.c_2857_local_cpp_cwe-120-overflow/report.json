@@ -1,0 +1,236 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 75 (sink assert at 76)\nCrash: CRASH: ptr at mpegvideo_enc.c:75\nOriginal: mpegvideo_enc.c:2857 \u2192 memcpy(new_buffer, s->avctx->internal->byte_buffer, s->avctx->internal->byte_buffer_size);\nASan: not confirmed\n\nAll crashes (2):\n  model at mpegvideo_enc.c:52 \u2192 mpegvideo_enc.c:307\n  ptr at mpegvideo_enc.c:75 \u2192 mpegvideo_enc.c:2857\n"
+    ]
+  ],
+  "line_map": {
+    "mpegvideo_enc.c": {
+      "1": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 36,
+        "code": "#include <stdint.h>"
+      },
+      "4": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 79,
+        "code": "#include <limits.h>"
+      },
+      "10": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 303,
+        "code": "#endif"
+      },
+      "40": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 307,
+        "code": "}"
+      },
+      "55": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 307,
+        "code": "}"
+      },
+      "58": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2835,
+        "code": "int ff_mpv_reallocate_putbitbuffer(MpegEncContext *s, size_t threshold, size_t size_increase)"
+      },
+      "59": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2836,
+        "code": "{"
+      },
+      "63": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2842,
+        "code": "uint8_t *new_buffer = NULL;"
+      },
+      "64": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2843,
+        "code": "int new_buffer_size = 0;"
+      },
+      "66": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2850,
+        "code": "emms_c();"
+      },
+      "69": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2852,
+        "code": "av_fast_padded_malloc(&new_buffer, &new_buffer_size,"
+      },
+      "70": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2853,
+        "code": "(size_t)s->avctx->internal->byte_buffer_size + size_increase);",
+        "match_type": "fuzzy"
+      },
+      "71": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2854,
+        "code": "if (!new_buffer)"
+      },
+      "72": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2855,
+        "code": "return AVERROR(ENOMEM);"
+      },
+      "75": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2857,
+        "code": "memcpy(new_buffer, s->avctx->internal->byte_buffer, s->avctx->internal->byte_buffer_size);"
+      },
+      "78": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2858,
+        "code": "av_free(s->avctx->internal->byte_buffer);"
+      },
+      "79": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2859,
+        "code": "s->avctx->internal->byte_buffer      = new_buffer;"
+      },
+      "80": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2860,
+        "code": "s->avctx->internal->byte_buffer_size = new_buffer_size;"
+      },
+      "81": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2861,
+        "code": "rebase_put_bits(&s->pb, new_buffer, new_buffer_size);"
+      },
+      "82": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2862,
+        "code": "s->ptr_lastgob   = s->pb.buf + lastgob_pos;"
+      },
+      "84": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2866,
+        "code": "return 0;"
+      },
+      "85": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2867,
+        "code": "}"
+      },
+      "90": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2866,
+        "code": "return 0;"
+      },
+      "91": {
+        "orig_file": "mpegvideo_enc.c",
+        "orig_line": 2867,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 1
+    },
+    "vulnerability": {
+      "original_file": "mpegvideo_enc.c",
+      "original_line": 2857,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "2852:         av_fast_padded_malloc(&new_buffer, &new_buffer_size,\n2853:                               s->avctx->internal->byte_buffer_size + size_increase);\n2854:         if (!new_buffer)\n2855:             return AVERROR(ENOMEM);\n2856: \n2857:         memcpy(new_buffer, s->avctx->internal->byte_buffer, s->avctx->internal->byte_buffer_size);\n2858:         av_free(s->avctx->internal->byte_buffer);\n2859:         s->avctx->internal->byte_buffer      = new_buffer;\n2860:         s->avctx->internal->byte_buffer_size = new_buffer_size;\n2861:         rebase_put_bits(&s->pb, new_buffer, new_buffer_size);\n2862:         s->ptr_lastgob   = s->pb.buf + lastgob_pos;"
+    },
+    "klee_crash": {
+      "harness_file": "mpegvideo_enc.c",
+      "harness_line": 52,
+      "original_file": "mpegvideo_enc.c",
+      "original_line": 307,
+      "original_code": "}",
+      "original_context": "    304: \n    305:     if (s->avctx->trellis)\n    306:         s->dct_quantize  = dct_quantize_trellis_c;\n>>> 307: }\n    308: \n    309: static av_cold int me_cmp_init(MpegEncContext *s, AVCodecContext *avctx)\n    310: {",
+      "error_type": "model",
+      "error_details": "Error: concretized symbolic size\nFile: mpegvideo_enc.c\nLine: 52\nassembly.ll line: 225\nState: 2\nStack: \n\t#000000225 in av_fast_padded_malloc(138445513965568, 138435313418240, 160) at mpegvideo_enc.c:52\n\t#100000153 in ff_mpv_reallocate_putbitbuffer(138941045817344, 16, 32) at mpegvideo_enc.c:69\n\t#200000267 in entry_func(138941045817344, 16, 32) at mpegvideo_enc.c:89\n\t#300000100 in main() at driver.c:38\nInfo: \n  size expr: (SExt w64 (ReadLSB w32 0 new_buffer_size))\n  concretization : 1\n  unbound ex"
+    },
+    "concrete_inputs": [
+      {
+        "name": "byte_buffer_data",
+        "size": 128,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "new_buffer_size",
+        "size": 4,
+        "data": "b'\\x80\\x00\\x00\\x00'"
+      },
+      {
+        "name": "byte_buffer_data",
+        "size": 128,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "new_buffer_size",
+        "size": 4,
+        "data": "b'\\x01\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1780_mpegvideo_enc.c_2857_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "mpegvideo_enc.c",
+        "harness_line": 52,
+        "original_file": "mpegvideo_enc.c",
+        "original_line": 307,
+        "error_type": "model",
+        "crash_function": "av_fast_padded_malloc",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1780_mpegvideo_enc.c_2857_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      },
+      {
+        "harness_file": "mpegvideo_enc.c",
+        "harness_line": 75,
+        "original_file": "mpegvideo_enc.c",
+        "original_line": 2857,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1780_mpegvideo_enc.c_2857_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+      }
+    ],
+    "all_asan_crashes": [],
+    "secondary_bugs": [
+      {
+        "original_file": "mpegvideo_enc.c",
+        "original_line": 307,
+        "error_type": "model",
+        "crash_function": "av_fast_padded_malloc",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1780_mpegvideo_enc.c_2857_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ]
+  }
+}

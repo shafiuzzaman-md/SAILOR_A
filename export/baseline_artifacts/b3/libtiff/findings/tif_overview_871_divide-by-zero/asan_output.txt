@@ -1,0 +1,12 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3809917==ERROR: AddressSanitizer: FPE on unknown address 0x56ed325add87 (pc 0x56ed325add87 bp 0x7ffd2b644a90 sp 0x7ffd2b644a20 T0)
+    #0 0x56ed325add87 in TIFFBuildOverviews /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32:56
+    #1 0x56ed325adf78 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:52:11
+    #2 0x7f0c3d62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7f0c3d62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x56ed324ee304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer+0x20304) (BuildId: 709494650f02a23563a1daf170de714dc1ca206f)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32:56 in TIFFBuildOverviews
+==3809917==ABORTING

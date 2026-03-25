@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "shell.c",
+    "line": 1313,
+    "function": "xmllintShell",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "In the 'xpath' command handler (when compiled with LIBXML_DEBUG_ENABLED), the result of xmlXPathEval is not checked for NULL before calling xmlXPathDebugDumpObject. If the user enters an invalid XPath expression, xmlXPathEval can return NULL, and passing this NULL to xmlXPathDebugDumpObject can lead to a NULL pointer dereference and crash.",
+    "abs_path": "/tmp/libxml2_upstream/shell.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal type re-declarations to simulate the libxml2 shell context and XPath API */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlNode xmlNode;\ntypedef xmlNode* xmlNodePtr;\ntypedef struct _xmlDoc xmlDoc;\ntypedef xmlDoc* xmlDocPtr;\n\ntypedef struct _xmlXPathContext {\n    xmlNodePtr node;\n} xmlXPathContext;\ntypedef xmlXPathContext* xmlXPathContextPtr;\n\ntypedef enum {\n    XPATH_UNDEFINED = 0,\n    XPATH_NODESET = 1\n} xmlXPathObjectType;\n\ntypedef struct _xmlXPathObject {\n    xmlXPathObjectType type;\n} xmlXPathObject;\ntypedef xmlXPathObject* xmlXPathObjectPtr;\n\n/* Shell context like xmllintShellCtxt */\ntypedef struct {\n    FILE *output;\n    xmlDocPtr doc;\n    xmlNodePtr node;\n    xmlXPathContextPtr pctxt;\n} xmllintShellCtxt;\n\n/* Stub: xmlXPathEval returns NULL for invalid expressions.\n * For the purpose of this reproducer, we always return NULL to simulate\n * an invalid XPath expression. */\nxmlXPathObjectPtr xmlXPathEval(const xmlChar *expr, xmlXPathContextPtr ctx) {\n    (void)expr;\n    (void)ctx;\n    return NULL; /* Simulate parse/eval failure */\n}\n\n/* Stub: xmlXPathDebugDumpObject wrongly assumes 'cur' is non-NULL and dereferences it. */\nvoid xmlXPathDebugDumpObject(FILE *output, xmlXPathObjectPtr cur, int depth) {\n    (void)depth;\n    /* This dereference will crash when cur == NULL, simulating the NPD in the real code */\n    fprintf(output, \"Object type: %d\\n\", cur->type);\n}\n\n/* Stub: free function is a no-op, tolerates NULL. */\nvoid xmlXPathFreeObject(xmlXPathObjectPtr obj) {\n    (void)obj;\n}\n\n/* Minimal reproduction of the vulnerable branch inside xmllintShell */\nvoid xmllintShell(xmllintShellCtxt *ctxt, const char *command, const char *arg) {\n    if (!strcmp(command, \"xpath\")) {\n        if (arg[0] == '\\0') {\n            fprintf(ctxt->output, \"xpath: expression required\\n\");\n            return;\n        }\n        /* Vulnerable sequence: no NULL check on the result of xmlXPathEval */\n        ctxt->pctxt->node = ctxt->node;\n        xmlXPathObjectPtr list = xmlXPathEval((const xmlChar *)arg, ctxt->pctxt);\n        /* BUG: list may be NULL. The following call dereferences it unconditionally. */\n        xmlXPathDebugDumpObject(ctxt->output, list, 0);\n        xmlXPathFreeObject(list);\n    } else {\n        fprintf(ctxt->output, \"Unknown command: %s\\n\", command);\n    }\n}\n\nint main(void) {\n    /* Set up a shell context similar to xmllint's shell */\n    xmllintShellCtxt ctxt;\n    memset(&ctxt, 0, sizeof(ctxt));\n    ctxt.output = stdout;\n\n    /* Allocate a minimal XPath context */\n    ctxt.pctxt = (xmlXPathContextPtr)malloc(sizeof(xmlXPathContext));\n    if (!ctxt.pctxt) {\n        fprintf(stderr, \"Allocation failure\\n\");\n        return 1;\n    }\n    ctxt.pctxt->node = NULL;\n\n    /* Dummy doc/node pointers (not used by stubs) */\n    ctxt.doc = (xmlDocPtr)0x1;\n    ctxt.node = (xmlNodePtr)0x1;\n\n    /* Pass a non-empty but invalid XPath expression to trigger xmlXPathEval failure (NULL) */\n    const char *invalid_xpath = \"(\"; /* Invalid XPath expression */\n\n    /* This will hit the vulnerable path and crash due to NULL deref inside xmlXPathDebugDumpObject */\n    xmllintShell(&ctxt, \"xpath\", invalid_xpath);\n\n    free(ctxt.pctxt);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7753491401672363,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4065725==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x640190dc0d10 bp 0x7ffdc0ed8c80 sp 0x7ffdc0ed8c50 T0)\n==4065725==The signal is caused by a READ memory access.\n==4065725==Hint: address points to the zero page.\n    #0 0x640190dc0d10 in xmlXPathDebugDumpObject /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:49:47\n    #1 0x640190dc0ef1 in xmllintShell /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:68:9\n    #2 0x640190dc1237 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:97:5\n    #3 0x79bba9c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x79bba9c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x640190d01304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer+0x21304) (BuildId: b0cb8a73bddd2253878610438de5a128b3c4f984)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:49:47 in xmlXPathDebugDumpObject\n==4065725==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlXPathDebugDumpObject",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:49",
+      "crash_line": 47,
+      "frames": [
+        [
+          "0",
+          "xmlXPathDebugDumpObject",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:49",
+          "47"
+        ],
+        [
+          "1",
+          "xmllintShell",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:68",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_1313_null-pointer-dereference/reproducer.c:97",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

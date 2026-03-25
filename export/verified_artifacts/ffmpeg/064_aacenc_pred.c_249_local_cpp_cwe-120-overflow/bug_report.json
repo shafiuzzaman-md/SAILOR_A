@@ -1,0 +1,73 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "aacenc_pred.c",
+    "original_line": 249,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "244:     }\n245: \n246:     if (!sce->ics.predictor_initialized) {\n247:         reset_all_predictors(sce->predictor_state);\n248:         sce->ics.predictor_initialized = 1;\n249:         memcpy(sce->prcoeffs, sce->coeffs, 1024*sizeof(float));\n250:         for (i = 1; i < 31; i++)\n251:             sce->ics.predictor_reset_count[i] = i;\n252:     }\n253: \n254:     update_pred_resets(sce);"
+  },
+  "klee_crash": {
+    "harness_file": "aacenc_pred.c",
+    "harness_line": 36,
+    "original_file": "aacenc_pred.c",
+    "original_line": 249,
+    "original_code": "memcpy(sce->prcoeffs, sce->coeffs, 1024*sizeof(float));",
+    "original_context": "    246:     if (!sce->ics.predictor_initialized) {\n    247:         reset_all_predictors(sce->predictor_state);\n    248:         sce->ics.predictor_initialized = 1;\n>>> 249:         memcpy(sce->prcoeffs, sce->coeffs, 1024*sizeof(float));\n    250:         for (i = 1; i < 31; i++)\n    251:             sce->ics.predictor_reset_count[i] = i;\n    252:     }",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 212\nState: 1\nStack: \n\t#000000212 in memcpy(138976328642560, 139423005241344, 4096) at runtime/Freestanding/memcpy.c:17\n\t#100000049 in ff_aac_search_for_pred(0, 138907609165824) at aacenc_pred.c:36\n\t#200000082 in harness_entry(138907609165824) at aacenc_pred.c:44\n\t#300000170 in main() at driver.c:34\nInfo: \n\taddress: 138976328642624\n\tnext: object at 138473817468928 of size 4\n\t\tMO23[4] allocated"
+  },
+  "concrete_inputs": [
+    {
+      "name": "coeffs_bytes",
+      "size": 4096,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "prcoeffs_bytes",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/064_aacenc_pred.c_249_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "aacenc_pred.c",
+      "harness_line": 36,
+      "original_file": "aacenc_pred.c",
+      "original_line": 249,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/064_aacenc_pred.c_249_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

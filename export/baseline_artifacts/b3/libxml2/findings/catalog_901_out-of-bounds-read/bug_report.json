@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "catalog.c",
+    "line": 901,
+    "function": "xmlCatalogUnWrapURN",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the '%' branch, the code unconditionally reads urn[1] and urn[2] to match escape sequences without verifying the string has at least two more characters. Inputs ending with an incomplete percent-encoding (e.g., \"urn:publicid:%\" or \"%2\") cause reads past the string terminator.",
+    "abs_path": "/tmp/libxml2_upstream/catalog.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal libxml2-like typedefs and helpers */\ntypedef unsigned char xmlChar;\n\n#define BAD_CAST (xmlChar *)\n#define XML_URN_PUBID \"urn:publicid:\"\n\nstatic int xmlStrncmp(const xmlChar *s1, const xmlChar *s2, int len) {\n    return strncmp((const char *)s1, (const char *)s2, (size_t)len);\n}\n\nstatic xmlChar *xmlStrdup(const xmlChar *s) {\n    size_t len = strlen((const char *)s);\n    xmlChar *out = (xmlChar *)malloc(len + 1);\n    if (out == NULL) return NULL;\n    memcpy(out, s, len + 1);\n    return out;\n}\n\n/* Vulnerable function copied/adapted from the provided source context */\nstatic xmlChar *\nxmlCatalogUnWrapURN(const xmlChar *urn) {\n    xmlChar result[2000];\n    unsigned int i = 0;\n\n    if (xmlStrncmp(urn, BAD_CAST XML_URN_PUBID, sizeof(XML_URN_PUBID) - 1))\n        return(NULL);\n    urn += sizeof(XML_URN_PUBID) - 1;\n\n    while (*urn != 0) {\n        if (i > sizeof(result) - 4)\n            break;\n        if (*urn == '+') {\n            result[i++] = ' ';\n            urn++;\n        } else if (*urn == ':') {\n            result[i++] = '/';\n            result[i++] = '/';\n            urn++;\n        } else if (*urn == ';') {\n            result[i++] = ':';\n            result[i++] = ':';\n            urn++;\n        } else if (*urn == '%') {\n            /* BUG: No length checks before accessing urn[1] and urn[2] */\n            if ((urn[1] == '2') && (urn[2] == 'B'))\n                result[i++] = '+';\n            else if ((urn[1] == '3') && (urn[2] == 'A'))\n                result[i++] = ':';\n            else if ((urn[1] == '2') && (urn[2] == 'F'))\n                result[i++] = '/';\n            else if ((urn[1] == '3') && (urn[2] == 'B'))\n                result[i++] = ';';\n            else if ((urn[1] == '2') && (urn[2] == '7'))\n                result[i++] = '\\'';\n            else if ((urn[1] == '3') && (urn[2] == 'F'))\n                result[i++] = '?';\n            else if ((urn[1] == '2') && (urn[2] == '3'))\n                result[i++] = '#';\n            else if ((urn[1] == '2') && (urn[2] == '5'))\n                result[i++] = '%';\n            else {\n                result[i++] = *urn;\n                urn++;\n                continue;\n            }\n            urn += 3;\n        } else {\n            result[i++] = *urn;\n            urn++;\n        }\n    }\n    result[i] = 0;\n\n    return(xmlStrdup(result));\n}\n\nint main(void) {\n    /* Craft input ending with an incomplete percent-encoding to trigger OOB read */\n    const char *input = \"urn:publicid:%\"; /* After skipping prefix, urn points to '%\\0' */\n    size_t len = strlen(input);\n\n    /* Heap-allocate exact size so ASan places a redzone right after the string */\n    char *buf = (char *)malloc(len + 1);\n    if (!buf) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memcpy(buf, input, len + 1);\n\n    xmlChar *out = xmlCatalogUnWrapURN((const xmlChar *)buf);\n    if (out) {\n        /* Use the result to prevent optimizing away */\n        printf(\"Unwrapped: %s\\n\", (char *)out);\n        free(out);\n    } else {\n        printf(\"xmlCatalogUnWrapURN returned NULL\\n\");\n    }\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0037636756896972656,
+      "output": "Unwrapped: %\n"
+    }
+  }
+}

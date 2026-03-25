@@ -1,0 +1,115 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 9 (sink assert at 17)\nCrash: CRASH: ptr at eaidct.c:9\nOriginal: eaidct.c:67 \u2192 if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {\nASan: not confirmed\n\nAll crashes (1):\n  ptr at eaidct.c:9 \u2192 eaidct.c:67\n"
+    ]
+  ],
+  "line_map": {
+    "eaidct.c": {
+      "8": {
+        "orig_file": "eaidct.c",
+        "orig_line": 66,
+        "code": "static inline void ea_idct_col(int16_t *dest, const int16_t *src) {"
+      },
+      "9": {
+        "orig_file": "eaidct.c",
+        "orig_line": 67,
+        "code": "if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {"
+      },
+      "11": {
+        "orig_file": "eaidct.c",
+        "orig_line": 75,
+        "code": "dest[56] = src[0];"
+      },
+      "15": {
+        "orig_file": "eaidct.c",
+        "orig_line": 78,
+        "code": "}"
+      },
+      "18": {
+        "orig_file": "eaidct.c",
+        "orig_line": 78,
+        "code": "}"
+      },
+      "25": {
+        "orig_file": "eaidct.c",
+        "orig_line": 78,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "eaidct.c",
+      "original_line": 67,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "62: \n63: #define MUNGE_8BIT(x) av_clip_uint8((x)>>4)\n64: #define IDCT_ROW(dest,src) IDCT_TRANSFORM(dest,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,MUNGE_8BIT,src)\n65: \n66: static inline void ea_idct_col(int16_t *dest, const int16_t *src) {\n67:     if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {\n68:         dest[0]  =\n69:         dest[8]  =\n70:         dest[16] =\n71:         dest[24] =\n72:         dest[32] ="
+    },
+    "klee_crash": {
+      "harness_file": "eaidct.c",
+      "harness_line": 9,
+      "original_file": "eaidct.c",
+      "original_line": 67,
+      "original_code": "if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {",
+      "original_context": "    64: #define IDCT_ROW(dest,src) IDCT_TRANSFORM(dest,0,1,2,3,4,5,6,7,0,1,2,3,4,5,6,7,MUNGE_8BIT,src)\n    65: \n    66: static inline void ea_idct_col(int16_t *dest, const int16_t *src) {\n>>> 67:     if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {\n    68:         dest[0]  =\n    69:         dest[8]  =\n    70:         dest[16] =",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: eaidct.c\nLine: 9\nassembly.ll line: 77\nState: 1\nStack: \n\t#000000077 in ea_idct_col(139606437785600, 139606437785600) at eaidct.c:9\n\t#100000063 in ff_ea_idct_put_c(139623617654784, 8, 139606437785600) at eaidct.c:23\n\t#200000036 in main() at driver.c:21\nInfo: \n\taddress: 139606437785616\n\tnext: object at 139258545434624 of size 4\n\t\tMO19[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "dest_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "block_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4403_eaidct.c_67_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "eaidct.c",
+        "harness_line": 9,
+        "original_file": "eaidct.c",
+        "original_line": 67,
+        "error_type": "ptr",
+        "crash_function": "ea_idct_col",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4403_eaidct.c_67_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

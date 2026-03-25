@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/addtiffo/addtiffo.c",
+    "line": 95,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the option-parsing loop, argv and argc are adjusted but the loop condition still evaluates argv[1][0] without verifying that at least two arguments remain. If invoked with only \"-r\" and no value (initial argc==2), the code does argv += 2; argc -= 2; making argc==0 and then re-evaluates while (argv[1][0] == '-'), which reads argv[1] past the end of the argv array (original argv[3]) and dereferences it, causing an out-of-bounds read/segmentation fault.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/addtiffo/addtiffo.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal forward declaration so we don't need to include tiff headers */\ntypedef struct TIFF TIFF;\n\n/* This function replicates the vulnerable option parsing from\n * contrib/addtiffo/addtiffo.c:main(), up through the buggy loop. */\nstatic int addtiffo_like_main(int argc, char **argv)\n{\n    int anOverviews[100];\n    int nOverviewCount = 0;\n    int bUseSubIFD = 0;\n    TIFF *hTIFF; /* Unused here, but mirrors original code */\n    const char *pszResampling = \"nearest\";\n\n    if (argc < 2)\n    {\n        printf(\"Usage: addtiffo [-r {nearest,average,mode}]\\n\"\n               \"                tiff_filename [resolution_reductions]\\n\");\n        return 1;\n    }\n\n    /* Vulnerable loop from line ~95 in the original file. */\n    while (argv[1][0] == '-')\n    {\n        if (strcmp(argv[1], \"-subifd\") == 0)\n        {\n            bUseSubIFD = 1;\n            argv++;\n            argc--;\n        }\n        else if (strcmp(argv[1], \"-r\") == 0)\n        {\n            /* This advances past the option and its value without checking\n             * that a value actually exists. With only \"-r\" present and no\n             * following value, this moves argv to point to the terminating\n             * NULL, and reduces argc to 0. */\n            argv += 2;\n            argc -= 2;\n            pszResampling = *argv; /* becomes NULL in our crafted case */\n        }\n        else\n        {\n            fprintf(stderr, \"Incorrect parameters\\n\");\n            return 1;\n        }\n    }\n\n    /* Not reached in our reproducer because the loop condition will access\n     * out-of-bounds memory and ASan will report it. */\n    (void)anOverviews; (void)nOverviewCount; (void)bUseSubIFD; (void)hTIFF; (void)pszResampling;\n    return 0;\n}\n\nint main(void)\n{\n    /* Craft argv as if the program was invoked with exactly two arguments:\n     * argv[0] = program name, argv[1] = \"-r\", and no value following -r.\n     * This matches the vulnerable scenario described. */\n    int argc = 2;\n    char **argv = (char**)malloc(sizeof(char*) * 3);\n    if (!argv) return 1;\n    argv[0] = (char*)\"repro\";\n    argv[1] = (char*)\"-r\";\n    argv[2] = NULL; /* like a real argv terminator */\n\n    /* Call the function that reproduces the original main's parsing logic. */\n    int ret = addtiffo_like_main(argc, argv);\n\n    /* We likely won't reach here because the out-of-bounds read occurs when\n     * the while condition re-evaluates argv[1][0] after argv has been\n     * advanced past the end of the array. */\n    free(argv);\n    return ret;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8039116859436035,
+      "output": "=================================================================\n==3809034==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000000058 at pc 0x59c211db0e43 bp 0x7ffe7025cec0 sp 0x7ffe7025ceb8\nREAD of size 8 at 0x603000000058 thread T0\n    #0 0x59c211db0e42 in addtiffo_like_main /app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:26:12\n    #1 0x59c211db0d82 in main /app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:70:15\n    #2 0x70e4db42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70e4db42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x59c211cf1304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer+0x21304) (BuildId: 2727b2a10cd88983d8ff393c83c84dd923055b67)\n\n0x603000000058 is located 0 bytes to the right of 24-byte region [0x603000000040,0x603000000058)\nallocated by thread T0 here:\n    #0 0x59c211d74d12 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 2727b2a10cd88983d8ff393c83c84dd923055b67)\n    #1 0x59c211db0cbf in main /app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:63:27\n    #2 0x70e4db42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70e4db42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x59c211cf1304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer+0x21304) (BuildId: 2727b2a10cd88983d8ff393c83c84dd923055b67)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:26:12 in addtiffo_like_main\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00[fa]fa fa fa fa\n  0x0c067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3809034==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "addtiffo_like_main",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:26",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "addtiffo_like_main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:26",
+          "12"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:70",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_out-of-bounds-read/reproducer.c:63",
+          "27"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

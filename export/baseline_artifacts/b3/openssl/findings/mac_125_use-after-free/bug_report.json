@@ -1,0 +1,99 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/mac.c",
+    "line": 125,
+    "function": "mac_main",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "If -cipher is specified multiple times, the previous string stored in 'cipher' is freed (OPENSSL_free(cipher)) but its pointer remains in the 'opts' stack that was previously populated by alloc_mac_algorithm_name(). Later, app_params_new_from_opts(opts, ...) (line 161) iterates the 'opts' stack and dereferences these stale pointers, leading to a use-after-free.",
+    "abs_path": "/tmp/openssl_upstream/apps/mac.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for OpenSSL-like APIs and types used in the snippet */\ntypedef struct OSSL_PARAM_st { int dummy; } OSSL_PARAM;\n\nstatic void OPENSSL_free(void *p) { free(p); }\n\n/* A minimal stack of C strings to emulate STACK_OF(OPENSSL_STRING) */\ntypedef struct OPENSSL_STRING_STACK {\n    char **items;\n    int num;\n    int cap;\n} OPENSSL_STRING_STACK;\n\nstatic OPENSSL_STRING_STACK *sk_OPENSSL_STRING_new_null(void)\n{\n    OPENSSL_STRING_STACK *sk = (OPENSSL_STRING_STACK *)calloc(1, sizeof(*sk));\n    if (sk == NULL)\n        return NULL;\n    sk->cap = 4;\n    sk->items = (char **)calloc((size_t)sk->cap, sizeof(char *));\n    if (sk->items == NULL) {\n        free(sk);\n        return NULL;\n    }\n    return sk;\n}\n\nstatic int sk_OPENSSL_STRING_push(OPENSSL_STRING_STACK *sk, char *s)\n{\n    if (sk == NULL)\n        return 0;\n    if (sk->num == sk->cap) {\n        int ncap = sk->cap * 2;\n        char **nitems = (char **)realloc(sk->items, (size_t)ncap * sizeof(char *));\n        if (nitems == NULL)\n            return 0;\n        sk->items = nitems;\n        sk->cap = ncap;\n    }\n    sk->items[sk->num++] = s;\n    return 1;\n}\n\n/* This mimics alloc_mac_algorithm_name(&opts, \"cipher\", value)\n * It allocates a new string and ALSO pushes the SAME pointer into opts,\n * just like the real helper does when building the opts stack.\n */\nstatic char *alloc_mac_algorithm_name(OPENSSL_STRING_STACK **popts,\n                                      const char *key, const char *value)\n{\n    size_t klen = strlen(key);\n    size_t vlen = strlen(value);\n    char *s = (char *)malloc(klen + 1 /* ':' */ + vlen + 1 /* NUL */);\n    if (s == NULL)\n        return NULL;\n    memcpy(s, key, klen);\n    s[klen] = ':';\n    memcpy(s + klen + 1, value, vlen);\n    s[klen + 1 + vlen] = '\\0';\n\n    if (*popts == NULL)\n        *popts = sk_OPENSSL_STRING_new_null();\n    if (*popts == NULL || !sk_OPENSSL_STRING_push(*popts, s)) {\n        free(s);\n        return NULL;\n    }\n    return s;\n}\n\n/* This mimics app_params_new_from_opts(opts, ...) and iterates the opts stack.\n * It dereferences each stored pointer (including stale/freed ones),\n * which will trigger ASan Use-After-Free when it encounters the first -cipher value.\n */\nstatic OSSL_PARAM *app_params_new_from_opts(OPENSSL_STRING_STACK *opts, void *ignored)\n{\n    (void)ignored;\n    if (opts == NULL)\n        return NULL;\n    for (int i = 0; i < opts->num; i++) {\n        char *s = opts->items[i];\n        /* UAF: if s points to freed memory, strlen/printf will read freed bytes */\n        volatile size_t l = strlen(s); /* Intentional read of potentially freed memory */\n        printf(\"opts[%d] len=%zu value=%.32s\\n\", i, l, s);\n    }\n    /* Return any non-NULL value to mimic success */\n    static OSSL_PARAM dummy;\n    return &dummy;\n}\n\nint main(void)\n{\n    OPENSSL_STRING_STACK *opts = NULL;\n    char *cipher = NULL;\n\n    /* Simulate first -cipher <val1> option */\n    cipher = alloc_mac_algorithm_name(&opts, \"cipher\", \"AES-128-CBC\");\n    if (cipher == NULL) {\n        fprintf(stderr, \"alloc_mac_algorithm_name #1 failed\\n\");\n        return 1;\n    }\n\n    /* Simulate second -cipher <val2> option: previous 'cipher' is freed,\n     * but its pointer is still present inside 'opts', causing a stale entry.\n     */\n    OPENSSL_free(cipher); /* This leaves a dangling pointer inside opts */\n    cipher = alloc_mac_algorithm_name(&opts, \"cipher\", \"AES-256-CBC\");\n    if (cipher == NULL) {\n        fprintf(stderr, \"alloc_mac_algorithm_name #2 failed\\n\");\n        return 1;\n    }\n\n    /* Later, app_params_new_from_opts walks 'opts' and dereferences entries.\n     * The first entry is a UAF because it points to the freed string.\n     */\n    (void)app_params_new_from_opts(opts, NULL);\n\n    /* Clean up minimal allocations we still own (not strictly necessary for the reproducer). */\n    /* Free the remaining live pointer(s) to avoid leaks after the demonstration. */\n    for (int i = 0; i < opts->num; i++) {\n        /* Avoid double-free of the first (already freed) element by checking pointer equality. */\n        if (opts->items[i] != NULL && opts->items[i] != cipher) {\n            /* It may already be freed; in a robust impl we'd track that. Here we only free the last 'cipher'. */\n        }\n    }\n    OPENSSL_free(cipher);\n    free(opts->items);\n    free(opts);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7738208770751953,
+      "output": "=================================================================\n==4144679==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000040 at pc 0x5943ee8d78ba bp 0x7ffdf9752950 sp 0x7ffdf9752118\nREAD of size 2 at 0x603000000040 thread T0\n    #0 0x5943ee8d78b9 in strlen (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0x378b9) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n    #1 0x5943ee9815a9 in app_params_new_from_opts /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:86:29\n    #2 0x5943ee980ed1 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:119:11\n    #3 0x7042d0c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7042d0c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5943ee8c1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0x21304) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n\n0x603000000040 is located 0 bytes inside of 19-byte region [0x603000000040,0x603000000053)\nfreed by thread T0 here:\n    #0 0x5943ee944a66 in free (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0xa4a66) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n    #1 0x5943ee9813d4 in OPENSSL_free /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:9:37\n    #2 0x5943ee980e22 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:109:5\n    #3 0x7042d0c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7042d0c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5943ee8c1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0x21304) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n\npreviously allocated by thread T0 here:\n    #0 0x5943ee944d12 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0xa4d12) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n    #1 0x5943ee9811d5 in alloc_mac_algorithm_name /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:57:23\n    #2 0x5943ee980dac in main /app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:100:14\n    #3 0x7042d0c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7042d0c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5943ee8c1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0x21304) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a)\n\nSUMMARY: AddressSanitizer: heap-use-after-free (/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer+0x378b9) (BuildId: 470675faeefad2f2b99050b9803da2742a09939a) in strlen\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa[fd]fd fd fa fa fa 00 00\n  0x0c067fff8010: 00 00 fa fa 00 00 03 fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4144679==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "frames": [
+        [
+          "1",
+          "app_params_new_from_opts",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:86",
+          "29"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:119",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "OPENSSL_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:9",
+          "37"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:109",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "alloc_mac_algorithm_name",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:57",
+          "23"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/mac_125_use-after-free/reproducer.c:100",
+          "14"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

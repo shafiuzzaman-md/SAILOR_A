@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 1161,
+    "function": "pythonEntityDecl",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "PyObject_CallMethod uses format \"sisss\" with publicId, systemId, and content. In libxml2, these can be NULL for certain entity types (e.g., external entities have NULL content). Using \"s\" with NULL crashes CPython.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdarg.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for Python C-API types and functions */\ntypedef struct { int dummy; } PyObject;\n\nstatic int PyObject_HasAttrString(PyObject *obj, const char *name) {\n    /* Always claim the handler has the attribute so the vulnerable path is taken */\n    (void)obj; (void)name;\n    return 1;\n}\n\nstatic int PyErr_Occurred(void) {\n    return 0;\n}\n\nstatic void PyErr_Print(void) {\n}\n\n#define Py_XDECREF(o) do { (void)(o); } while (0)\n\n/*\n * Stub that mimics the dangerous behavior of CPython's PyObject_CallMethod\n * when using the \"s\" format with a NULL char* argument. Here we explicitly\n * dereference each 's' argument to trigger a NULL pointer dereference.\n */\nstatic PyObject *PyObject_CallMethod(PyObject *self, const char *method, const char *fmt, ...) {\n    (void)self; (void)method;\n    va_list ap;\n    va_start(ap, fmt);\n    for (const char *p = fmt; *p; ++p) {\n        if (*p == 's') {\n            const char *s = va_arg(ap, const char *);\n            /* This will crash if s == NULL, mirroring CPython's behavior for 's' */\n            volatile char c = s[0];\n            (void)c;\n        } else if (*p == 'i') {\n            (void)va_arg(ap, int);\n        } else if (*p == '#') {\n            /* length specifier paired with a previous 's' (not used in this path) */\n            (void)va_arg(ap, int);\n        } else {\n            /* Consume as pointer for any other unexpected specifier to keep varargs aligned. */\n            (void)va_arg(ap, void *);\n        }\n    }\n    va_end(ap);\n    /* Return non-NULL dummy object */\n    return (PyObject *)0x1;\n}\n\n/* Minimal libxml2-like typedef */\ntypedef unsigned char xmlChar;\n\n/* Vulnerable function copied and minimized from python/libxml.c */\nstatic void pythonEntityDecl(void *user_data,\n                             const xmlChar * name,\n                             int type,\n                             const xmlChar * publicId,\n                             const xmlChar * systemId,\n                             xmlChar * content) {\n    PyObject *handler;\n    PyObject *result;\n\n    handler = (PyObject *) user_data;\n    if (PyObject_HasAttrString(handler, \"entityDecl\")) {\n        /* Vulnerable call: uses 's' for args that can be NULL (publicId/systemId/content) */\n        result = PyObject_CallMethod(handler, \"entityDecl\",\n                                     \"sisss\", name, type,\n                                     (const char *)publicId, (const char *)systemId, (const char *)content);\n        if (PyErr_Occurred())\n            PyErr_Print();\n        Py_XDECREF(result);\n    }\n}\n\nint main(void) {\n    PyObject handler = {0};\n\n    const xmlChar *name = (const xmlChar *)\"extEntity\";\n    /* Use a value representing an external entity; the exact value is irrelevant for the crash. */\n    int type = 2;\n\n    /* For external entities, content is NULL in libxml2. publicId/systemId may also be NULL. */\n    const xmlChar *publicId = (const xmlChar *)\"PUBLIC-ID\";\n    const xmlChar *systemId = (const xmlChar *)\"http://example.com/ext.ent\";\n    xmlChar *content = NULL;  /* Critical: NULL passed to 's' in format string */\n\n    /* This call will cause our PyObject_CallMethod stub to dereference NULL */\n    pythonEntityDecl(&handler, name, type, publicId, systemId, content);\n\n    /* Not reached */\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6382379531860352,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4005700==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55b40e677352 bp 0x7fffbe3d5070 sp 0x7fffbe3d4d40 T0)\n==4005700==The signal is caused by a READ memory access.\n==4005700==Hint: address points to the zero page.\n    #0 0x55b40e677352 in PyObject_CallMethod /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37:31\n    #1 0x55b40e676e95 in pythonEntityDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:70:18\n    #2 0x55b40e676dc2 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:92:5\n    #3 0x7ef7d662a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7ef7d662a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x55b40e5b7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer+0x21304) (BuildId: 37b0112ca212cd7c3b0654ea41a0a76975b311e3)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37:31 in PyObject_CallMethod\n==4005700==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "PyObject_CallMethod",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37",
+      "crash_line": 31,
+      "frames": [
+        [
+          "0",
+          "PyObject_CallMethod",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37",
+          "31"
+        ],
+        [
+          "1",
+          "pythonEntityDecl",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:70",
+          "18"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:92",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

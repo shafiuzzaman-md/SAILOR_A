@@ -1,0 +1,51 @@
+=================================================================
+==3984914==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffeec308f10 at pc 0x59f6afb5b2c2 bp 0x7ffeec308d90 sp 0x7ffeec308d88
+READ of size 8 at 0x7ffeec308f10 thread T0
+    #0 0x59f6afb5b2c1 in xmlCatalogConvertEntry /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:65:16
+    #1 0x59f6afb5b227 in xmlHashScan /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:52:5
+    #2 0x59f6afb5b067 in xmlConvertSGMLCatalog /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:90:5
+    #3 0x59f6afb5ae37 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:120:11
+    #4 0x74dcc922a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x74dcc922a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x59f6afa9b314 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer+0x21314) (BuildId: bc9a071e47596c4add7d35ffd6aa5951839159d7)
+
+Address 0x7ffeec308f10 is located in stack of thread T0 at offset 48 in frame
+    #0 0x59f6afb5ae7f in xmlConvertSGMLCatalog /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:80
+
+  This frame has 1 object(s):
+    [32, 40) 'catal.addr' <== Memory access at offset 48 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/libxml2_e334a9d_vul/findings/catalog_858_null-pointer-dereference/reproducer.c:65:16 in xmlCatalogConvertEntry
+Shadow bytes around the buggy address:
+  0x10005d859190: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d8591a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d8591b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d8591c0: f1 f1 f1 f1 06 f3 f3 f3 00 00 00 00 00 00 00 00
+  0x10005d8591d0: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+=>0x10005d8591e0: 00 f3[f3]f3 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d8591f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d859200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d859210: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d859220: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005d859230: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3984914==ABORTING

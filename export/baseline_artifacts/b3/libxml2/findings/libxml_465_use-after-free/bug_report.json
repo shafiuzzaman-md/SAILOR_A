@@ -1,0 +1,96 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 465,
+    "function": "xmlOutputBufferCreatePythonFile",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "The function passes a PyObject* (file) as the I/O context to xmlOutputBufferCreateIO without increasing its reference count. The corresponding close callback (xmlPythonFileClose) also does not DECREF the object. This means the libxml2 output buffer holds a raw, non-owned pointer to the Python object. If the Python code drops its last reference to the file object while the output buffer still exists, subsequent callbacks (write/close) will operate on a freed PyObject, leading to a use-after-free.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for libxml2 types */\ntypedef void *xmlCharEncodingHandlerPtr;\n\ntypedef int (*xmlOutputWriteCallback)(void * context, const char * buffer, int len);\ntypedef int (*xmlOutputCloseCallback)(void * context);\n\ntypedef struct _xmlOutputBuffer {\n    xmlOutputWriteCallback writecallback;\n    xmlOutputCloseCallback closecallback;\n    void *context;\n    xmlCharEncodingHandlerPtr encoder;\n} xmlOutputBuffer, *xmlOutputBufferPtr;\n\n/* Minimal stand-ins for Python C-API objects and functions */\ntypedef struct _PyObject {\n    int refcnt;\n    int has_io_close;\n    int has_flush;\n    int has_write;\n    int magic; /* arbitrary payload to touch */\n} PyObject;\n\nstatic void Py_DECREF(PyObject *o) {\n    if (o == NULL) return;\n    o->refcnt--;\n    if (o->refcnt == 0) {\n        /* Free to make subsequent access a heap-use-after-free under ASan */\n        free(o);\n    }\n}\n\nstatic void Py_INCREF(PyObject *o) {\n    if (o) o->refcnt++;\n}\n\nstatic int PyObject_HasAttrString(PyObject *obj, const char *name) {\n    /* Accessing fields of obj after it has been freed will trigger UAF */\n    if (obj == NULL) return 0;\n    if (strcmp(name, \"io_close\") == 0) return obj->has_io_close;\n    if (strcmp(name, \"flush\") == 0) return obj->has_flush;\n    if (strcmp(name, \"write\") == 0) return obj->has_write;\n    return 0;\n}\n\nstatic PyObject *PyObject_CallMethod(PyObject *obj, const char *name, const char *fmt) {\n    /* Touch the object to ensure ASan sees a read from freed memory in callbacks */\n    if (obj == NULL) return NULL;\n    volatile int touch = obj->magic; /* read-after-free when obj is freed */\n    (void)touch;\n    /* Return a new dummy object to be DECREF'ed by the caller */\n    PyObject *ret = (PyObject *)malloc(sizeof(PyObject));\n    if (ret) {\n        ret->refcnt = 1;\n        ret->has_io_close = ret->has_flush = ret->has_write = 0;\n        ret->magic = 0xBEEF;\n    }\n    return ret;\n}\n\n/* Callbacks as in python/libxml.c */\nstatic int xmlPythonFileClose(void * context) {\n    PyObject *file, *ret = NULL;\n\n    file = (PyObject *) context;\n    if (file == NULL) return(-1);\n    if (PyObject_HasAttrString(file, \"io_close\")) {\n        ret = PyObject_CallMethod(file, \"io_close\", \"()\");\n    } else if (PyObject_HasAttrString(file, \"flush\")) {\n        ret = PyObject_CallMethod(file, \"flush\", \"()\");\n    }\n    if (ret != NULL) {\n        Py_DECREF(ret);\n    }\n    return(0);\n}\n\nstatic int xmlPythonFileWrite(void * context, const char * buffer, int len) {\n    PyObject *file = (PyObject *) context;\n    if (file == NULL) return -1;\n    /* Touch the object. If it was freed, ASan will flag UAF. */\n    volatile int touch = file->magic;\n    (void)touch;\n    return len;\n}\n\n/* Minimal stand-in for xmlOutputBufferCreateIO */\nstatic xmlOutputBufferPtr xmlOutputBufferCreateIO(xmlOutputWriteCallback iowrite,\n                                                  xmlOutputCloseCallback ioclose,\n                                                  void *ioctx,\n                                                  xmlCharEncodingHandlerPtr encoder) {\n    xmlOutputBufferPtr buf = (xmlOutputBufferPtr)malloc(sizeof(xmlOutputBuffer));\n    if (!buf) return NULL;\n    buf->writecallback = iowrite;\n    buf->closecallback = ioclose;\n    buf->context = ioctx;\n    buf->encoder = encoder;\n    return buf;\n}\n\n/* Vulnerable constructor: passes raw PyObject* without INCREF */\nstatic xmlOutputBufferPtr xmlOutputBufferCreatePythonFile(PyObject *file,\n                                                         xmlCharEncodingHandlerPtr encoder) {\n    xmlOutputBufferPtr ret;\n\n    if (file == NULL) return NULL;\n\n    /* No Py_INCREF(file) here -> buffer holds a non-owned raw pointer */\n    ret = xmlOutputBufferCreateIO(xmlPythonFileWrite, xmlPythonFileClose, file, encoder);\n\n    return ret;\n}\n\nint main(void) {\n    /* Create a fake Python file object with a single reference */\n    PyObject *file = (PyObject *)malloc(sizeof(PyObject));\n    if (!file) return 1;\n    file->refcnt = 1;                 /* single owning ref */\n    file->has_io_close = 1;           /* make close path call into object */\n    file->has_flush = 1;\n    file->has_write = 1;\n    file->magic = 0xDEADBEEF;\n\n    /* Create the libxml2 output buffer. Vulnerable code stores raw pointer. */\n    xmlOutputBufferPtr buf = xmlOutputBufferCreatePythonFile(file, NULL);\n    if (!buf) {\n        fprintf(stderr, \"Failed to create output buffer\\n\");\n        return 1;\n    }\n\n    /* Simulate Python dropping its last reference to the file object\n       while the output buffer still exists. This frees the PyObject. */\n    Py_DECREF(file); /* file is now freed, but buf->context still points to it */\n\n    /* Any subsequent callback (write/close) will use the dangling pointer. */\n    if (buf->writecallback) {\n        const char *data = \"trigger\";\n        /* This will read file->magic, causing heap-use-after-free under ASan */\n        buf->writecallback(buf->context, data, (int)strlen(data));\n    }\n\n    if (buf->closecallback) {\n        /* This will call PyObject_HasAttrString on the freed PyObject */\n        buf->closecallback(buf->context);\n    }\n\n    free(buf);\n\n    fprintf(stderr, \"If compiled with ASan, a heap-use-after-free should have been reported.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7578721046447754,
+      "output": "=================================================================\n==4001955==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000050 at pc 0x598435c02488 bp 0x7ffdd7c12cf0 sp 0x7ffdd7c12ce8\nREAD of size 4 at 0x603000000050 thread T0\n    #0 0x598435c02487 in xmlPythonFileWrite /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86:32\n    #1 0x598435c01fa5 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:143:9\n    #2 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)\n\n0x603000000050 is located 16 bytes inside of 20-byte region [0x603000000040,0x603000000054)\nfreed by thread T0 here:\n    #0 0x598435bc5a66 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0xa4a66) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)\n    #1 0x598435c021e6 in Py_DECREF /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:33:9\n    #2 0x598435c01ec4 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:137:5\n    #3 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)\n\npreviously allocated by thread T0 here:\n    #0 0x598435bc5d12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0xa4d12) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)\n    #1 0x598435c01cbb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:120:34\n    #2 0x7d154c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d154c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x598435b42304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer+0x21304) (BuildId: b2aec41f5d4a8ba5c1ed9b4f31acc5d0577a3da8)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86:32 in xmlPythonFileWrite\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa fd fd[fd]fa fa fa 00 00\n  0x0c067fff8010: 00 00 fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4001955==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "crash_function": "xmlPythonFileWrite",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86",
+      "crash_line": 32,
+      "frames": [
+        [
+          "0",
+          "xmlPythonFileWrite",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:86",
+          "32"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:143",
+          "9"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "Py_DECREF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:33",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:137",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_465_use-after-free/reproducer.c:120",
+          "34"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

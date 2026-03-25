@@ -1,0 +1,53 @@
+=================================================================
+==3633514==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000020 at pc 0x56f15ca783ba bp 0x7ffe7f3577b0 sp 0x7ffe7f3577a8
+READ of size 1 at 0x602000000020 thread T0
+    #0 0x56f15ca783b9 in decompress_contents /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:69:15
+    #1 0x56f15ca7813d in bfd_get_full_section_contents /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:119:12
+    #2 0x56f15ca78686 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:159:9
+    #3 0x79e61582a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x79e61582a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x56f15c9b8304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer+0x20304) (BuildId: 3974ce2e4e2fd1728d185a8a1a123d702c3b7e2a)
+
+0x602000000020 is located 15 bytes to the right of 1-byte region [0x602000000010,0x602000000011)
+allocated by thread T0 here:
+    #0 0x56f15ca3bd12 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer+0xa3d12) (BuildId: 3974ce2e4e2fd1728d185a8a1a123d702c3b7e2a)
+    #1 0x56f15ca78254 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:32:51
+    #2 0x56f15ca77d5a in bfd_get_full_section_contents /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:88:40
+    #3 0x56f15ca78686 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:159:9
+    #4 0x79e61582a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x79e61582a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x56f15c9b8304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer+0x20304) (BuildId: 3974ce2e4e2fd1728d185a8a1a123d702c3b7e2a)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/compress_819_out-of-bounds-read/reproducer.c:69:15 in decompress_contents
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa 01 fa[fa]fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3633514==ABORTING

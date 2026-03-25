@@ -1,0 +1,180 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 20 (sink assert at 24)\nCrash: CRASH: ptr at xtea.c:20\nOriginal: xtea.c:231 \u2192 dst[i] = src[i] ^ iv[i];\nASan: not confirmed\n\nAll crashes (1):\n  ptr at xtea.c:20 \u2192 xtea.c:231\n"
+    ]
+  ],
+  "line_map": {
+    "xtea.c": {
+      "2": {
+        "orig_file": "xtea.c",
+        "orig_line": 31,
+        "code": "#include <string.h>"
+      },
+      "11": {
+        "orig_file": "xtea.c",
+        "orig_line": 214,
+        "code": "static void xtea_crypt(AVXTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+      },
+      "12": {
+        "orig_file": "xtea.c",
+        "orig_line": 215,
+        "code": "uint8_t *iv, int decrypt,"
+      },
+      "13": {
+        "orig_file": "xtea.c",
+        "orig_line": 216,
+        "code": "void (*crypt)(AVXTEA *, uint8_t *, const uint8_t *, int, uint8_t *))"
+      },
+      "14": {
+        "orig_file": "xtea.c",
+        "orig_line": 217,
+        "code": "{"
+      },
+      "15": {
+        "orig_file": "xtea.c",
+        "orig_line": 218,
+        "code": "int i;"
+      },
+      "17": {
+        "orig_file": "xtea.c",
+        "orig_line": 221,
+        "code": "while (count--) {"
+      },
+      "18": {
+        "orig_file": "xtea.c",
+        "orig_line": 229,
+        "code": "if (iv) {"
+      },
+      "19": {
+        "orig_file": "xtea.c",
+        "orig_line": 230,
+        "code": "for (i = 0; i < 8; i++)"
+      },
+      "20": {
+        "orig_file": "xtea.c",
+        "orig_line": 231,
+        "code": "dst[i] = src[i] ^ iv[i];"
+      },
+      "25": {
+        "orig_file": "xtea.c",
+        "orig_line": 234,
+        "code": "} else {"
+      },
+      "28": {
+        "orig_file": "xtea.c",
+        "orig_line": 236,
+        "code": "}"
+      },
+      "31": {
+        "orig_file": "xtea.c",
+        "orig_line": 236,
+        "code": "}"
+      },
+      "32": {
+        "orig_file": "xtea.c",
+        "orig_line": 236,
+        "code": "}"
+      },
+      "35": {
+        "orig_file": "xtea.c",
+        "orig_line": 243,
+        "code": "void av_xtea_crypt(AVXTEA *ctx, uint8_t *dst, const uint8_t *src, int count,"
+      },
+      "36": {
+        "orig_file": "xtea.c",
+        "orig_line": 244,
+        "code": "uint8_t *iv, int decrypt)"
+      },
+      "37": {
+        "orig_file": "xtea.c",
+        "orig_line": 245,
+        "code": "{"
+      },
+      "39": {
+        "orig_file": "xtea.c",
+        "orig_line": 247,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "xtea.c",
+      "original_line": 233,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "228:         while (count--) {\n229:             if (iv) {\n230:                 for (i = 0; i < 8; i++)\n231:                     dst[i] = src[i] ^ iv[i];\n232:                 crypt(ctx, dst, dst, decrypt, NULL);\n233:                 memcpy(iv, dst, 8);\n234:             } else {\n235:                 crypt(ctx, dst, src, decrypt, NULL);\n236:             }\n237:             src   += 8;\n238:             dst   += 8;"
+    },
+    "klee_crash": {
+      "harness_file": "xtea.c",
+      "harness_line": 20,
+      "original_file": "xtea.c",
+      "original_line": 231,
+      "original_code": "dst[i] = src[i] ^ iv[i];",
+      "original_context": "    228:         while (count--) {\n    229:             if (iv) {\n    230:                 for (i = 0; i < 8; i++)\n>>> 231:                     dst[i] = src[i] ^ iv[i];\n    232:                 crypt(ctx, dst, dst, decrypt, NULL);\n    233:                 memcpy(iv, dst, 8);\n    234:             } else {",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: xtea.c\nLine: 20\nassembly.ll line: 158\nState: 1\nStack: \n\t#000000158 in xtea_crypt.3(139303165259776, 139079826960384, 139097006829568, 1, 139114186698752, 1) at xtea.c:20\n\t#100000095 in av_xtea_crypt(139303165259776, 139079826960384, 139097006829568, 1, 139114186698752, 1) at xtea.c:38\n\t#200000054 in main() at driver.c:32\nInfo: \n\taddress: 139114186698756\n\tnext: object at 138796895989760 of size 4\n\t\tMO81[4] allocated at xtea_crypt.3():  %14 = alloca "
+    },
+    "concrete_inputs": [
+      {
+        "name": "src_bytes",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "dst_bytes",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "iv_bytes",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3000_xtea.c_233_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "xtea.c",
+        "harness_line": 20,
+        "original_file": "xtea.c",
+        "original_line": 231,
+        "error_type": "ptr",
+        "crash_function": "av_xtea_crypt",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3000_xtea.c_233_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

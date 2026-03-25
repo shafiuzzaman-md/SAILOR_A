@@ -1,0 +1,54 @@
+{
+  "ivi_dsp.c": {
+    "3": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 29,
+      "code": "#include <string.h>"
+    },
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 65,
+      "code": "}"
+    },
+    "16": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 709,
+      "code": "void ff_ivi_row_slant4(const int32_t *in, int16_t *out, ptrdiff_t pitch, const uint8_t *flags)"
+    },
+    "17": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 710,
+      "code": "{"
+    },
+    "20": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 714,
+      "code": "#define COMPENSATE(x) (((x) + 1)>>1)"
+    },
+    "22": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 716,
+      "code": "if (!in[0] && !in[1] && !in[2] && !in[3]) {"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 718,
+      "code": "} else {"
+    },
+    "26": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 722,
+      "code": "}"
+    },
+    "27": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 726,
+      "code": "#undef COMPENSATE"
+    },
+    "31": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 727,
+      "code": "}"
+    }
+  }
+}

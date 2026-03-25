@@ -1,0 +1,39 @@
+{
+  "aacenc_ltp.c": {
+    "12": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 53,
+      "code": "void ff_aac_ltp_insert_new_frame(AACEncContext *s)"
+    },
+    "13": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 54,
+      "code": "{"
+    },
+    "14": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 38,
+      "code": "int i;"
+    },
+    "16": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 58,
+      "code": "for (i = 0; i < s->chan_map[0]; i++) {"
+    },
+    "19": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 51,
+      "code": "}"
+    },
+    "20": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 51,
+      "code": "}"
+    },
+    "26": {
+      "orig_file": "aacenc_ltp.c",
+      "orig_line": 51,
+      "code": "}"
+    }
+  }
+}

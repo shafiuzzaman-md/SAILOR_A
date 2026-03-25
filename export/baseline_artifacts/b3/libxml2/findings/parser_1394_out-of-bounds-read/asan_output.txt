@@ -1,0 +1,1 @@
+xmlCheckLanguageID("en-1") returned 0

@@ -1,0 +1,102 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/kdf.c",
+    "line": 116,
+    "function": "kdf_main",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "On repeated -cipher options, the previous 'cipher' string (also stored in 'opts' by alloc_kdf_algorithm_name) is freed with OPENSSL_free(cipher) but not removed from 'opts'. Later, app_params_new_from_opts(opts, ...) at line 159 iterates and dereferences entries in 'opts', leading to a use-after-free of that stale pointer.",
+    "abs_path": "/tmp/openssl_upstream/apps/kdf.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <assert.h>\n\n/* Minimal stand-ins for the OpenSSL types/APIs used in apps/kdf.c */\n\ntypedef struct stack_st_OPENSSL_STRING {\n    size_t num;\n    size_t cap;\n    char **data;\n} STACK_OF_OPENSSL_STRING;\n\nstatic STACK_OF_OPENSSL_STRING *sk_OPENSSL_STRING_new_null(void) {\n    STACK_OF_OPENSSL_STRING *sk = (STACK_OF_OPENSSL_STRING *)calloc(1, sizeof(*sk));\n    return sk;\n}\n\nstatic int sk_OPENSSL_STRING_push(STACK_OF_OPENSSL_STRING *sk, char *s) {\n    if (sk == NULL) return 0;\n    if (sk->num == sk->cap) {\n        size_t ncap = sk->cap ? sk->cap * 2 : 4;\n        char **nd = (char **)realloc(sk->data, ncap * sizeof(*nd));\n        if (nd == NULL) return 0;\n        sk->data = nd;\n        sk->cap = ncap;\n    }\n    sk->data[sk->num++] = s;\n    return 1;\n}\n\nstatic void sk_OPENSSL_STRING_free(STACK_OF_OPENSSL_STRING *sk) {\n    if (!sk) return;\n    /* Intentionally do NOT free the elements here to simulate app lifetime. */\n    free(sk->data);\n    free(sk);\n}\n\n/* OPENSSL_free is just free() for our purposes */\nstatic void OPENSSL_free(void *p) {\n    free(p);\n}\n\n/*\n * Mimics alloc_kdf_algorithm_name(&opts, name, value) from apps/kdf.c.\n * It allocates a single string that is also pushed into opts and returned\n * to the caller (double ownership). This mirrors the problematic ownership\n * that leads to the use-after-free when the caller frees the previous\n * \"cipher\" value but doesn't remove it from opts.\n */\nstatic char *alloc_kdf_algorithm_name(STACK_OF_OPENSSL_STRING **popts,\n                                      const char *name, const char *value) {\n    size_t nlen = strlen(name);\n    size_t vlen = strlen(value);\n    size_t len = nlen + 1 /* ':' */ + vlen + 1 /* NUL */;\n    char *buf = (char *)malloc(len);\n    if (buf == NULL) return NULL;\n    snprintf(buf, len, \"%s:%s\", name, value);\n\n    if (*popts == NULL)\n        *popts = sk_OPENSSL_STRING_new_null();\n    if (*popts == NULL) {\n        free(buf);\n        return NULL;\n    }\n    if (!sk_OPENSSL_STRING_push(*popts, buf)) {\n        free(buf);\n        return NULL;\n    }\n    return buf; /* Same pointer is also stored in opts */\n}\n\n/*\n * Stand-in for app_params_new_from_opts(opts, ...).\n * It iterates over opts, dereferences each entry.\n * If an entry points to freed memory (due to the bug), ASan will detect it.\n */\nstatic void app_params_new_from_opts(STACK_OF_OPENSSL_STRING *opts) {\n    if (opts == NULL) return;\n    volatile unsigned sum = 0;\n    for (size_t i = 0; i < opts->num; i++) {\n        char *s = opts->data[i];\n        if (s) {\n            /* Touch the memory to trigger UAF under ASan if freed. */\n            sum += (unsigned)(unsigned char)s[0];\n        }\n    }\n    /* Prevent optimizing away */\n    fprintf(stderr, \"sum=%u\\n\", sum);\n}\n\nint main(void) {\n    STACK_OF_OPENSSL_STRING *opts = NULL;\n    char *cipher = NULL;\n\n    /* First -cipher option: allocate and store in both 'cipher' and 'opts' */\n    cipher = alloc_kdf_algorithm_name(&opts, \"cipher\", \"AES-128-CBC\");\n    if (!cipher) {\n        fprintf(stderr, \"alloc_kdf_algorithm_name first failed\\n\");\n        return 1;\n    }\n\n    /* Second -cipher option: the buggy path frees the previous 'cipher' */\n    /* apps/kdf.c line 116 equivalent */\n    OPENSSL_free(cipher); /* BUG: the same pointer still lives inside 'opts' */\n\n    /* Replace with a new cipher value (like processing a repeated -cipher) */\n    cipher = alloc_kdf_algorithm_name(&opts, \"cipher\", \"AES-256-CBC\");\n    if (!cipher) {\n        fprintf(stderr, \"alloc_kdf_algorithm_name second failed\\n\");\n        return 1;\n    }\n\n    /* Later, the app iterates over 'opts' and dereferences entries */\n    /* This will read the freed pointer from the first -cipher and trigger UAF */\n    app_params_new_from_opts(opts);\n\n    /* Cleanup (won't be reached if ASan aborts on UAF) */\n    sk_OPENSSL_STRING_free(opts);\n    OPENSSL_free(cipher);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7600681781768799,
+      "output": "=================================================================\n==4127584==ERROR: AddressSanitizer: heap-use-after-free on address 0x603000000040 at pc 0x58decad8e343 bp 0x7ffe29fb50f0 sp 0x7ffe29fb50e8\nREAD of size 1 at 0x603000000040 thread T0\n    #0 0x58decad8e342 in app_params_new_from_opts /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:86:45\n    #1 0x58decad8dea9 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:117:5\n    #2 0x7f692d62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7f692d62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58decacce304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer+0x21304) (BuildId: 793dde7306e570284f663fffa44a22cdbdc0dc2e)\n\n0x603000000040 is located 0 bytes inside of 19-byte region [0x603000000040,0x603000000053)\nfreed by thread T0 here:\n    #0 0x58decad51a66 in free (/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer+0xa4a66) (BuildId: 793dde7306e570284f663fffa44a22cdbdc0dc2e)\n    #1 0x58decad8e114 in OPENSSL_free /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:42:5\n    #2 0x58decad8de0a in main /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:106:5\n    #3 0x7f692d62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7f692d62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x58decacce304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer+0x21304) (BuildId: 793dde7306e570284f663fffa44a22cdbdc0dc2e)\n\npreviously allocated by thread T0 here:\n    #0 0x58decad51d12 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer+0xa4d12) (BuildId: 793dde7306e570284f663fffa44a22cdbdc0dc2e)\n    #1 0x58decad8df9a in alloc_kdf_algorithm_name /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:57:25\n    #2 0x58decad8dda3 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:98:14\n    #3 0x7f692d62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7f692d62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x58decacce304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer+0x21304) (BuildId: 793dde7306e570284f663fffa44a22cdbdc0dc2e)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:86:45 in app_params_new_from_opts\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa[fd]fd fd fa fa fa 00 00\n  0x0c067fff8010: 00 fa fa fa 00 00 00 00 fa fa 00 00 03 fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4127584==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "crash_function": "app_params_new_from_opts",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:86",
+      "crash_line": 45,
+      "frames": [
+        [
+          "0",
+          "app_params_new_from_opts",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:86",
+          "45"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:117",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "OPENSSL_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:42",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:106",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "alloc_kdf_algorithm_name",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:57",
+          "25"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/kdf_116_use-after-free/reproducer.c:98",
+          "14"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

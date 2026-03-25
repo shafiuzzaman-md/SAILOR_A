@@ -1,0 +1,13 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3581075==ERROR: AddressSanitizer: SEGV on unknown address 0x6020007a1210 (pc 0x5bd15ee7e500 bp 0x7ffdfc4e66c0 sp 0x7ffdfc4e6590 T0)
+==3581075==The signal is caused by a READ memory access.
+    #0 0x5bd15ee7e500 in coff_pe_aarch64_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-aarch64_520_out-of-bounds-read/reproducer.c:125:34
+    #1 0x5bd15ee7e1a2 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-aarch64_520_out-of-bounds-read/reproducer.c:192:11
+    #2 0x7d1a4582a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d1a4582a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5bd15edbe304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-aarch64_520_out-of-bounds-read/reproducer+0x20304) (BuildId: 7dae2f0ba7b70eb82918fd28c0420866f85a52fa)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-aarch64_520_out-of-bounds-read/reproducer.c:125:34 in coff_pe_aarch64_relocate_section
+==3581075==ABORTING

@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_extension.c",
+    "line": 104,
+    "function": "TIFFSetClientInfo",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If the caller passes name == NULL and no existing link is found (or list is empty), strlen(name) is called when allocating the name buffer, dereferencing a NULL pointer.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_extension.c"
+  },
+  "reproducer_code": "#include <tiffio.h>\n#include <stdio.h>\n#include <stdlib.h>\n#include <unistd.h>\n\nint main(void) {\n    // Create a temporary writable file path for TIFFOpen\n    char tmpl[] = \"/tmp/libtiff_clientinfo_XXXXXX\";\n    int fd = mkstemp(tmpl);\n    if (fd < 0) {\n        perror(\"mkstemp\");\n        return 1;\n    }\n    close(fd);\n\n    // Open a fresh TIFF handle; tif->tif_clientinfo should be NULL initially\n    TIFF *tif = TIFFOpen(tmpl, \"w\");\n    if (!tif) {\n        fprintf(stderr, \"TIFFOpen failed\\n\");\n        unlink(tmpl);\n        return 1;\n    }\n\n    // Trigger: pass name == NULL when no existing clientinfo link exists\n    // This reaches strlen(name) in TIFFSetClientInfo (tif_extension.c:104)\n    void *data = (void*)0xDEADBEEF;\n    const char *name = NULL;  // Vulnerable input\n    TIFFSetClientInfo(tif, data, name);\n\n    // We should never reach here due to the null-pointer dereference\n    TIFFClose(tif);\n    unlink(tmpl);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_extension_104_null-pointer-dereference/reproducer.c:1:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

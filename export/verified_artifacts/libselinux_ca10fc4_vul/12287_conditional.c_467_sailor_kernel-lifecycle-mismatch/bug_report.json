@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "conditional.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cond_av_list_destroy",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/conditional.c",
+            "crash_line": 467
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cond_av_list_destroy",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/conditional.c",
+        "crash_line": 467,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3133==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x557c2d7cfb7e bp 0x7fff07ed24d0 sp 0x7fff07ed24c0\nREAD of size 8 at 0x502000000018 thread T0\n    #0 0x557c2d7cfb7d in cond_av_list_destroy /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/conditional.c:467\n    #1 0x557c2d7cc985 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/12287_conditional.c_467_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:25\n    #2 0x7f9abd28ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f9abd28ee3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x557c2d7cc7a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/12287_conditional.c_467_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x117a4)\n\n0x502000000018 is located 0 bytes to the right of 8-byte region [0x502000000010,0x502000000018)\nallocated by thread T0 here:\n    #0 0x7f9abd645887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x557c2d7cc87e in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/12287_conditional.c_467_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:11\n    #2 0x7f9abd28ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/conditional.c:467 in cond_av_list_destroy\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00[fa]fa fa fd fa fa fa fa fa fa fa fa fa\n  0x0a047fff801"
+    }
+}

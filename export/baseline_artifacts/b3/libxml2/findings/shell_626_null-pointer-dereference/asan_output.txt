@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4065368==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5b0d4732b598 bp 0x7fff2632d810 sp 0x7fff2632d720 T0)
+==4065368==The signal is caused by a READ memory access.
+==4065368==Hint: address points to the zero page.
+    #0 0x5b0d4732b598 in xmlRelaxNGSetValidErrors /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_626_null-pointer-dereference/reproducer.c:65:65
+    #1 0x5b0d4732afd1 in xmllintShellRNGValidate /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_626_null-pointer-dereference/reproducer.c:101:5
+    #2 0x5b0d4732ae87 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_626_null-pointer-dereference/reproducer.c:128:5
+    #3 0x746fc722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x746fc722a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5b0d4726b304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_626_null-pointer-dereference/reproducer+0x21304) (BuildId: ab628a660979a7f001de70276bfdc4f677faff87)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_626_null-pointer-dereference/reproducer.c:65:65 in xmlRelaxNGSetValidErrors
+==4065368==ABORTING

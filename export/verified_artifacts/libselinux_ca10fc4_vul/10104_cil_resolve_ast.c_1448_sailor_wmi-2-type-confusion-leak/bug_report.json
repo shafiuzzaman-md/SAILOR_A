@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cil_resolve_ast.c",
+        "original_line": 1448,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "1443: \tint rc = SEPOL_ERR;\n1444: \tint unordered = CIL_FALSE;\n1445: \n1446: \tcil_list_init(&ordered->datums, CIL_DATUM);\n1447: \n1448: \tcil_list_for_each(curr, ordered->strs) {\n1449: \t\tif (curr->data == CIL_KEY_UNORDERED) {\n1450: \t\t\tunordered = CIL_TRUE;\n1451: \t\t\tcontinue;\n1452: \t\t}\n1453: "
+    },
+    "klee_crash": {
+        "harness_file": "cil_resolve_ast.c",
+        "harness_line": 40,
+        "original_file": "cil_resolve_ast.c",
+        "original_line": 1448,
+        "original_code": "cil_list_for_each(curr, ordered->strs) {",
+        "original_context": "    1445: \n    1446: \tcil_list_init(&ordered->datums, CIL_DATUM);\n    1447: \n>>> 1448: \tcil_list_for_each(curr, ordered->strs) {\n    1449: \t\tif (curr->data == CIL_KEY_UNORDERED) {\n    1450: \t\t\tunordered = CIL_TRUE;\n    1451: \t\t\tcontinue;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: use after free\nFile: cil_resolve_ast.c\nLine: 40\nassembly.ll line: 45\nState: 1\nStack: \n\t#000000045 in cil_resolve_classorder(139069070024704, 139051890155520, 139206508978176, 139189329108992) at cil_resolve_ast.c:40\n\t#100000086 in harness_entry(139069070024704, 139051890155520, 139206508978176, 139189329108992) at cil_resolve_ast.c:51\n\t#200000167 in main() at driver.c:39\nInfo: \n\taddress: 139223688847360\n\tnext: object at 138772717281280 of size 4\n\t\tMO22[4] allocated at main()"
+    },
+    "concrete_inputs": [
+        {
+            "name": "strs_head",
+            "size": 24,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cil_resolve_classorder",
+        "crash_file": "../cil/src/cil_resolve_ast.c",
+        "crash_line": 1440,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1754==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x5594f04636c9 bp 0x7ffe0798ab90 sp 0x7ffe0798ab80\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x5594f04636c8 in cil_resolve_classorder ../cil/src/cil_resolve_ast.c:1440\n    #1 0x5594f0458d27 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10104_cil_resolve_ast.c_1448_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:39\n    #2 0x7ff88e3fdd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7ff88e3fde3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5594f0458a44 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10104_cil_resolve_ast.c_1448_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2ea44)\n\n0x502000000040 is located 0 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7ff88e7b4a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5594f0458b36 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10104_cil_resolve_ast.c_1448_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:12\n    #2 0x7ff88e3fdd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../cil/src/cil_resolve_ast.c:1440 in cil_resolve_classorder\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa 00 00[fa]fa 04 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/10104_cil_resolve_ast.c_1448_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cil_resolve_ast.c",
+            "harness_line": 40,
+            "original_file": "cil_resolve_ast.c",
+            "original_line": 1448,
+            "error_type": "ptr",
+            "crash_function": "cil_resolve_classorder",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/10104_cil_resolve_ast.c_1448_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cil_resolve_classorder",
+            "crash_file": "../cil/src/cil_resolve_ast.c",
+            "crash_line": 1440
+        }
+    ]
+}

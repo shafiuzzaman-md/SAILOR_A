@@ -1,0 +1,81 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "load-bmp.c",
+        "original_line": 1419,
+        "function": "fz_load_bmp_info_subimage",
+        "entry_point": "fz_load_bmp_info",
+        "spine": [
+            "fz_load_bmp_info",
+            "fz_load_bmp_info_subimage"
+        ],
+        "original_context": "1414: \t\t\t/* read16(p+10) == suitable pelx dimensions */\n1415: \t\t\t/* read16(p+12) == suitable pely dimensions */\n1416: \t\t\tp += 14;\n1417: \t\t\t(void) p;\n1418: \t\t}\n1419: \t\telse if (is_bitmap(p))\n1420: \t\t{\n1421: \t\t\tnextoffset = 0;\n1422: \t\t}\n1423: \t\telse\n1424: \t\t{"
+    },
+    "klee_crash": {
+        "harness_file": "load-bmp.c",
+        "harness_line": 55,
+        "original_file": "load-bmp.c",
+        "original_line": 1345,
+        "original_code": "fz_throw(ctx, FZ_ERROR_FORMAT, \"not enough data for bitmap array (%02x%02x) in bmp image\", p[0], p[1]);",
+        "original_context": "    1342: \t\tp = begin + nextoffset;\n    1343: \n    1344: \t\tif (end - p < 14)\n>>> 1345: \t\t\tfz_throw(ctx, FZ_ERROR_FORMAT, \"not enough data for bitmap array (%02x%02x) in bmp image\", p[0], p[1]);\n    1346: \n    1347: \t\tif (is_bitmap_array(p))\n    1348: \t\t{",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: load-bmp.c\nLine: 55\nassembly.ll line: 198\nState: 1\nStack: \n\t#000000198 in fz_load_bmp_info_subimage(138881941438464, 138864761569280, symbolic, 138583441211392, 138587736178688, 138582367469568, 138588809920512, 138590957404160) at load-bmp.c:55\n\t#100000111 in fz_load_bmp_info(138881941438464, 138864761569280, symbolic, 138583441211392, 138587736178688, 138582367469568, 138588809920512, 138590957404160) at load-bmp.c:33\n\t#200000059 in main() at dri"
+    },
+    "concrete_inputs": [
+        {
+            "name": "bmp_buf",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "len",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_load_bmp_info_subimage",
+        "crash_file": "source/fitz/load-bmp.c",
+        "crash_line": 1407,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4432==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000031 at pc 0x55e0ea824dea bp 0x7ffdf7a9f440 sp 0x7ffdf7a9f430\nREAD of size 1 at 0x502000000031 thread T0\n    #0 0x55e0ea824de9 in fz_load_bmp_info_subimage source/fitz/load-bmp.c:1407\n    #1 0x55e0ea825068 in fz_load_bmp_info source/fitz/load-bmp.c:1513\n    #2 0x55e0ea81b589 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1086_load-bmp.c_1419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:28\n    #3 0x7ff47b6b7d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7ff47b6b7e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55e0ea81b234 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1086_load-bmp.c_1419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x19234)\n\n0x502000000031 is located 0 bytes to the right of 1-byte region [0x502000000030,0x502000000031)\nallocated by thread T0 here:\n    #0 0x7ff47ba6e887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55e0ea81b3cb in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1086_load-bmp.c_1419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:17\n    #2 0x7ff47b6b7d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/load-bmp.c:1407 in fz_load_bmp_info_subimage\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa[01]fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1086_load-bmp.c_1419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "load-bmp.c",
+            "harness_line": 55,
+            "original_file": "load-bmp.c",
+            "original_line": 1345,
+            "error_type": "ptr",
+            "crash_function": "fz_load_bmp_info_subimage",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1086_load-bmp.c_1419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_load_bmp_info_subimage",
+            "crash_file": "source/fitz/load-bmp.c",
+            "crash_line": 1407
+        }
+    ]
+}

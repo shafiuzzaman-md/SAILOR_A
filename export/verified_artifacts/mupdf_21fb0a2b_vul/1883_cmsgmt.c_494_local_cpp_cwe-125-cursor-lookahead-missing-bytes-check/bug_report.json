@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsgmt.c",
+        "original_line": 494,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "489:     cmsCloseProfile(ContextID, hLab);\n490:     if (bp.hRoundTrip == NULL) return 0;\n491: \n492:     // For L* we only need black and white. For C* we need many points\n493:     GridPoints[0] = 6;\n494:     GridPoints[1] = 74;\n495:     GridPoints[2] = 74;\n496: \n497: \n498:     if (!cmsSliceSpace16(ContextID, 3, GridPoints, EstimateTAC, &bp)) {\n499:         bp.MaxTAC = 0;"
+    },
+    "klee_crash": {
+        "harness_file": "cmsgmt.c",
+        "harness_line": 39,
+        "original_file": "cmsgmt.c",
+        "original_line": 493,
+        "original_code": "GridPoints[0] = 6;",
+        "original_context": "    490:     if (bp.hRoundTrip == NULL) return 0;\n    491: \n    492:     // For L* we only need black and white. For C* we need many points\n>>> 493:     GridPoints[0] = 6;\n    494:     GridPoints[1] = 74;\n    495:     GridPoints[2] = 74;\n    496: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cmsgmt.c\nLine: 39\nassembly.ll line: 35\nState: 1\nStack: \n\t#000000035 in cmsDetectTAC(138928816463872, 138911636594688) at cmsgmt.c:39\n\t#100000056 in w_entry(138928816463872, 138911636594688) at cmsgmt.c:48\n\t#200000094 in main() at driver.c:19\nInfo: \n\taddress: 138565891727364\n\tnext: object at 138561596760064 of size 4\n\t\tMO46[4] allocated at cmsDetectTAC():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ctx_bytes",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "profile_bytes",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cmsGetDeviceClass",
+        "crash_file": "thirdparty/lcms2/src/cmsio0.c",
+        "crash_line": 1095,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==9224==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000074 at pc 0x55dbf6a7edd4 bp 0x7ffe8b38c100 sp 0x7ffe8b38c0f0\nREAD of size 4 at 0x502000000074 thread T0\n    #0 0x55dbf6a7edd3 in cmsGetDeviceClass thirdparty/lcms2/src/cmsio0.c:1095\n    #1 0x55dbf6a79f70 in cmsDetectTAC thirdparty/lcms2/src/cmsgmt.c:467\n    #2 0x55dbf6a780d8 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1883_cmsgmt.c_494_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:20\n    #3 0x7f395f150d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f395f150e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55dbf6a77eb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1883_cmsgmt.c_494_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xaeb4)\n\n0x502000000074 is located 52 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f395f507887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55dbf6a77f9d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1883_cmsgmt.c_494_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:13\n    #2 0x7f395f150d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmsio0.c:1095 in cmsGetDeviceClass\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa fa 00 00 fa fa fa fa fa fa[fa]fa\n  0x0a047fff8010: fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1883_cmsgmt.c_494_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsgmt.c",
+            "harness_line": 39,
+            "original_file": "cmsgmt.c",
+            "original_line": 493,
+            "error_type": "ptr",
+            "crash_function": "cmsDetectTAC",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1883_cmsgmt.c_494_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cmsGetDeviceClass",
+            "crash_file": "thirdparty/lcms2/src/cmsio0.c",
+            "crash_line": 1095
+        }
+    ]
+}

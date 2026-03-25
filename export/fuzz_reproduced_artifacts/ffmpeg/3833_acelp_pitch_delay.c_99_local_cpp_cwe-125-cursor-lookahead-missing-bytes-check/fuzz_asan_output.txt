@@ -1,0 +1,77 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 4170122140
+INFO: Loaded 1 modules   (8 inline 8-bit counters): 8 [0x5c028cdfcec0, 0x5c028cdfcec8), 
+INFO: Loaded 1 PC tables (8 PCs): 8 [0x5c028cdfcec8,0x5c028cdfcf48), 
+INFO:        1 files found in artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 64b max: 64b total: 64b rss: 29Mb
+=================================================================
+==118730==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000003c at pc 0x5c028cd7fa73 bp 0x7fffc23d2970 sp 0x7fffc23d2140
+READ of size 12 at 0x60200000003c thread T0
+    #0 0x5c028cd7fa72 in __asan_memmove (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe0a72) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #1 0x5c028cdbc524 in ff_amr_set_fixed_gain /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/acelp_pitch_delay.c:20:5
+    #2 0x5c028cdbc600 in entry_func /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/acelp_pitch_delay.c:32:5
+    #3 0x5c028cdbc419 in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:37:5
+    #4 0x5c028cce280a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #5 0x5c028cce1ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #6 0x5c028cce3ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #7 0x5c028cce3f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #8 0x5c028ccd1542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #9 0x5c028ccfc9e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #10 0x7b2325a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x7b2325a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x5c028ccc5974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+
+0x60200000003c is located 0 bytes to the right of 12-byte region [0x602000000030,0x60200000003c)
+allocated by thread T0 here:
+    #0 0x5c028cd80332 in malloc (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe1332) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #1 0x5c028cdbc33b in LLVMFuzzerTestOneInput /app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:23:40
+    #2 0x5c028cce280a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #3 0x5c028cce1ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #4 0x5c028cce3ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #5 0x5c028cce3f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #6 0x5c028ccd1542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #7 0x5c028ccfc9e6 in main (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+    #8 0x7b2325a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7b2325a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5c028ccc5974 in _start (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/artifacts/ffmpeg_vul/ossfuzz_artifacts/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe0a72) (BuildId: e85409e4a842c7501a4dc0e39b44750b3c777eef) in __asan_memmove
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa 00[04]fa fa 00 00 fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==118730==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

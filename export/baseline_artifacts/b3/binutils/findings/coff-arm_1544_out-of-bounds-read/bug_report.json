@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-arm.c",
+    "line": 1544,
+    "function": "coff_arm_relocate_section",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "Reads a 32-bit word from contents + (rel->r_vaddr - input_section->vma) without validating that this offset lies within the section buffer. In other relocation paths (e.g., later at lines 1607-1611) bounds are checked, but this BL fixup path omits the check, allowing a crafted object with an out-of-range r_vaddr to trigger an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-arm.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used by the vulnerable code path. */\ntypedef uint64_t bfd_vma;\ntypedef int64_t bfd_signed_vma;\n\ntypedef struct outsec {\n    bfd_vma vma;\n} outsec;\n\ntypedef struct asection {\n    bfd_vma vma;\n    bfd_vma output_offset;\n    outsec *output_section;\n    unsigned char *contents; /* Not used by the buggy line, but present for realism. */\n} asection;\n\ntypedef struct arelent {\n    bfd_vma r_vaddr;\n} arelent;\n\n/* Stub for bfd object. */\ntypedef struct bfd_stub {\n    int dummy;\n} bfd;\n\n/* Minimal bfd_get_32 that performs a 4-byte read from the provided pointer. */\nstatic uint32_t bfd_get_32(bfd *abfd, const void *p)\n{\n    (void)abfd; /* unused */\n    const unsigned char *q = (const unsigned char *)p;\n    /* This will trigger ASan OOB-read if q points past the end of a buffer. */\n    return (uint32_t)q[0]\n         | ((uint32_t)q[1] << 8)\n         | ((uint32_t)q[2] << 16)\n         | ((uint32_t)q[3] << 24);\n}\n\n/* Minimal bfd_put_32 to mirror the real signature, not used here. */\nstatic void bfd_put_32(bfd *abfd, uint32_t val, void *p)\n{\n    (void)abfd;\n    unsigned char *q = (unsigned char *)p;\n    q[0] = (unsigned char)(val & 0xFF);\n    q[1] = (unsigned char)((val >> 8) & 0xFF);\n    q[2] = (unsigned char)((val >> 16) & 0xFF);\n    q[3] = (unsigned char)((val >> 24) & 0xFF);\n}\n\n/*\n * A greatly simplified version of the vulnerable code path in\n * bfd/coff-arm.c:coff_arm_relocate_section focusing on the buggy access:\n *   tmp = bfd_get_32(input_bfd, contents + rel->r_vaddr - input_section->vma);\n */\nstatic void coff_arm_relocate_section_minimal(bfd *input_bfd,\n                                              asection *input_section,\n                                              unsigned char *contents,\n                                              arelent *rel)\n{\n    /* Compute the unchecked offset and perform the 4-byte read. */\n    bfd_vma offset = rel->r_vaddr - input_section->vma;\n    /* Vulnerable access: no bounds check on offset vs contents buffer size. */\n    volatile uint32_t tmp = bfd_get_32(input_bfd, contents + (size_t)offset);\n\n    /* Use tmp to avoid it being optimized away (even though -O0 is used). */\n    fprintf(stderr, \"Read value: 0x%08x\\n\", tmp);\n}\n\nint main(void)\n{\n    /* Allocate a small section contents buffer. */\n    const size_t buf_size = 8; /* Tiny buffer to make OOB easy. */\n    unsigned char *contents = (unsigned char *)malloc(buf_size);\n    if (!contents) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memset(contents, 0x41, buf_size);\n\n    /* Set up a fake input section with a base vma. */\n    asection input_section;\n    memset(&input_section, 0, sizeof(input_section));\n    input_section.vma = 0; /* Simplify: make offset equal to r_vaddr. */\n\n    /* Craft a relocation whose r_vaddr points near the end of the buffer.\n       We pick an offset of 6 so reading 4 bytes straddles the end of the\n       8-byte buffer (bytes 6,7 plus 2 bytes OOB). */\n    arelent rel;\n    rel.r_vaddr = 6; /* Out-of-bounds for a 4-byte read starting at contents+6. */\n\n    bfd dummy_bfd; /* Unused, but matches the signature. */\n\n    /* This call triggers the out-of-bounds read inside bfd_get_32. */\n    coff_arm_relocate_section_minimal(&dummy_bfd, &input_section, contents, &rel);\n\n    free(contents);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08803606033325195,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4125360==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x646940badced bp 0x7ffdc2be4100 sp 0x7ffdc2be40e0 T0)
+==4125360==The signal is caused by a READ memory access.
+==4125360==Hint: address points to the zero page.
+    #0 0x646940badced in EVP_MD_xof /app/se_runs/b3/openssl_67b5686b_vul/findings/dgst_452_null-pointer-dereference/reproducer.c:14:16
+    #1 0x646940badeff in dgst_main /app/se_runs/b3/openssl_67b5686b_vul/findings/dgst_452_null-pointer-dereference/reproducer.c:60:14
+    #2 0x646940bae22b in main /app/se_runs/b3/openssl_67b5686b_vul/findings/dgst_452_null-pointer-dereference/reproducer.c:84:12
+    #3 0x78dd83c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x78dd83c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x646940aee304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/dgst_452_null-pointer-dereference/reproducer+0x21304) (BuildId: 87987f0fdcf107367af578b6c9f63fbc74ef9719)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/dgst_452_null-pointer-dereference/reproducer.c:14:16 in EVP_MD_xof
+==4125360==ABORTING

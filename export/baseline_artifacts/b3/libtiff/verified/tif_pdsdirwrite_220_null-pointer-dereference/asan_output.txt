@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080888==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7294ee188adb bp 0x7ffe0e7c4240 sp 0x7ffe0e7c3a08 T0)
+==4080888==The signal is caused by a WRITE memory access.
+==4080888==Hint: address points to the zero page.
+    #0 0x7294ee188adb in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333
+    #1 0x5f41e886c0d5 in __asan_memcpy (/app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirwrite_220_null-pointer-dereference/reproducer+0xa30d5) (BuildId: 7a27c374f1603b47ba75788459cff7e1c36b3939)
+    #2 0x5f41e88a8f34 in _TIFFmemcpy /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:24:5
+    #3 0x5f41e88a8ee7 in TIFFWritePrivateDataSubDirectory /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:40:5
+    #4 0x5f41e88a8e1e in main /app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:59:11
+    #5 0x7294ee02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7294ee02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5f41e87e9304 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/tif_pdsdirwrite_220_null-pointer-dereference/reproducer+0x20304) (BuildId: 7a27c374f1603b47ba75788459cff7e1c36b3939)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333 in __memcpy_avx_unaligned_erms
+==4080888==ABORTING

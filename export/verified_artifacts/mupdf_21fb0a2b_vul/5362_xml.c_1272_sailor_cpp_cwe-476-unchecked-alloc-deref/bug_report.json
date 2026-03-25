@@ -1,0 +1,230 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 0,
+        "secondary_bugs": 6
+    },
+    "vulnerability": {
+        "original_file": "xml.c",
+        "original_line": 1272,
+        "function": "fz_parse_xml_from_html5",
+        "entry_point": "fz_parse_xml_from_html5",
+        "spine": [
+            "fz_parse_xml_from_html5"
+        ],
+        "original_context": "1267: \n1268: \t\tfor (node = parser.head; node; node = node->up)\n1269: \t\t\tnode->u.node.next = NULL;\n1270: \n1271: \t\txml = fz_pool_alloc(ctx, parser.pool, sizeof *xml);\n1272: \t\txml->up = NULL;\n1273: \t\txml->down = root.down;\n1274: \t\txml->u.doc.pool = parser.pool;\n1275: \t\txml->u.doc.refs = 1;\n1276: \n1277: \t\tfor (node = root.down; node; node = node->u.node.next)"
+    },
+    "klee_crash": {
+        "harness_file": "xml.c",
+        "harness_line": 48,
+        "original_file": "xml.c",
+        "original_line": 1108,
+        "original_code": "xml->up = NULL;",
+        "original_context": "    1105: \t\t\tnode->u.node.next = NULL;\n    1106: \n    1107: \t\txml = fz_pool_alloc(ctx, parser.pool, sizeof *xml);\n>>> 1108: \t\txml->up = NULL;\n    1109: \t\txml->down = root.down;\n    1110: \t\txml->u.doc.refs = 1;\n    1111: \t\txml->u.doc.pool = parser.pool;",
+        "error_type": "read_only",
+        "error_details": "Error: memory error: object read only\nFile: xml.c\nLine: 48\nassembly.ll line: 104\nState: 13\nStack: \n\t#000000104 in target_fz_parse_xml_from_html5(139326367096832, 139395086573568) at xml.c:48\n\t#100000077 in fz_parse_xml_from_html5(139326367096832, 139395086573568) at xml.c:65\n\t#200000051 in main() at driver.c:27\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\x00`\\x9eR\\x90\\x7f\\x00\\x00'"
+        },
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\xf8o\\x9erO\\x7f\\x00\\x00'"
+        },
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\xf0o\\x9erO\\x7f\\x00\\x00'"
+        },
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\xe8o\\x9erO\\x7f\\x00\\x00'"
+        },
+        {
+            "name": "html5_input",
+            "size": 8192,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "fz_pool_alloc_ptr",
+            "size": 8,
+            "data": "b'\\x00`\\x9erO\\x7f\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_terminate_buffer",
+        "crash_file": "source/fitz/buffer.c",
+        "crash_line": 263,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==31528==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000048 at pc 0x56345c01419d bp 0x7ffd51e45400 sp 0x7ffd51e453f0\nREAD of size 8 at 0x502000000048 thread T0\n    #0 0x56345c01419c in fz_terminate_buffer source/fitz/buffer.c:263\n    #1 0x56345c00faec in fz_parse_xml_from_html5 source/fitz/xml.c:1233\n    #2 0x56345c00955d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/asan_real/replay_driver.c:27\n    #3 0x7fe9be0f0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fe9be0f0e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x56345c0093b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/asan_real/replay_bin+0x1483b4)\n\n0x502000000048 is located 8 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7fe9be4a7a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x56345c0094a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/asan_real/replay_driver.c:15\n    #2 0x7fe9be0f0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/buffer.c:263 in fz_terminate_buffer\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa[fa]fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xml.c",
+            "harness_line": 48,
+            "original_file": "xml.c",
+            "original_line": 1108,
+            "error_type": "read_only",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "xml.c",
+            "harness_line": 48,
+            "original_file": "xml.c",
+            "original_line": 1108,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000002.ktest"
+        },
+        {
+            "harness_file": "xml.c",
+            "harness_line": 51,
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000003.ktest"
+        },
+        {
+            "harness_file": "xml.c",
+            "harness_line": 52,
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000004.ktest"
+        },
+        {
+            "harness_file": "xml.c",
+            "harness_line": 53,
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000005.ktest"
+        },
+        {
+            "harness_file": "xml.c",
+            "harness_line": 56,
+            "original_file": "xml.c",
+            "original_line": 1127,
+            "error_type": "assert",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000006.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_terminate_buffer",
+            "crash_file": "source/fitz/buffer.c",
+            "crash_line": 263
+        }
+    ],
+    "secondary_bugs": [
+        {
+            "original_file": "xml.c",
+            "original_line": 1108,
+            "error_type": "read_only",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "original_file": "xml.c",
+            "original_line": 1108,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000002.ktest"
+        },
+        {
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000003.ktest"
+        },
+        {
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000004.ktest"
+        },
+        {
+            "original_file": "xml.c",
+            "original_line": 1110,
+            "error_type": "ptr",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000005.ktest"
+        },
+        {
+            "original_file": "xml.c",
+            "original_line": 1127,
+            "error_type": "assert",
+            "crash_function": "target_fz_parse_xml_from_html5",
+            "relevance": "same_file_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5362_xml.c_1272_sailor_cpp_cwe-476-unchecked-alloc-deref/logs/klee_run_1/test000006.ktest"
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memset.c
+Line: 15
+assembly.ll line: 279
+State: 5
+Stack: 
+	#000000279 in memset(symbolic, symbolic, symbolic) at runtime/Freestanding/memset.c:15
+	#100000096 in av_bprint_chars(139736648425472, symbolic, symbolic) at bprint.c:36
+	#200000184 in entry_func(139736648425472, symbolic, symbolic) at bprint.c:44
+	#300000246 in main() at driver.c:44
+Info: 
+	address: (Add w64 139719468556289
+          (ZExt w64 (ReadLSB w32 0 buf_len_sym)))
+	example: 139719468556304
+	range: [139719468556304, 139719468556304]
+	next: object at 139360838787072 of size 1
+		MO61[1] allocated at entry_func():  %5 = alloca i8, align 1

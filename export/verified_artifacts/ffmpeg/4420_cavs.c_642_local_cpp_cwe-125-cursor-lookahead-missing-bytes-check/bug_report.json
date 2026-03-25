@@ -1,0 +1,103 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 2,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "cavs.c",
+    "original_line": 642,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "637: {\n638:     int i;\n639: \n640:     /* copy predictors from top line (MB B and C) into cache */\n641:     for (i = 0; i < 3; i++) {\n642:         h->mv[MV_FWD_B2 + i] = h->top_mv[0][h->mbx * 2 + i];\n643:         h->mv[MV_BWD_B2 + i] = h->top_mv[1][h->mbx * 2 + i];\n644:     }\n645:     h->pred_mode_Y[1] = h->top_pred_Y[h->mbx * 2 + 0];\n646:     h->pred_mode_Y[2] = h->top_pred_Y[h->mbx * 2 + 1];\n647:     /* clear top predictors if MB B is not available */"
+  },
+  "klee_crash": {
+    "harness_file": "cavs.c",
+    "harness_line": 34,
+    "original_file": "cavs.c",
+    "original_line": 642,
+    "original_code": "h->mv[MV_FWD_B2 + i] = h->top_mv[0][h->mbx * 2 + i];",
+    "original_context": "    639: \n    640:     /* copy predictors from top line (MB B and C) into cache */\n    641:     for (i = 0; i < 3; i++) {\n>>> 642:         h->mv[MV_FWD_B2 + i] = h->top_mv[0][h->mbx * 2 + i];\n    643:         h->mv[MV_BWD_B2 + i] = h->top_mv[1][h->mbx * 2 + i];\n    644:     }\n    645:     h->pred_mode_Y[1] = h->top_pred_Y[h->mbx * 2 + 0];",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 205\nState: 2\nStack: \n\t#000000205 in memcpy(139367457554446, symbolic, 6) at runtime/Freestanding/memcpy.c:17\n\t#100000052 in ff_cavs_init_mb(139367457554432) at cavs.c:34\n\t#200000072 in entry_func(139367457554432) at cavs.c:42\n\t#300000164 in main() at driver.c:33\nInfo: \n\taddress: (Add w64 139230018600960\n          (Mul w64 6\n                   (SExt w64 (Mul w32 2\n                             "
+  },
+  "concrete_inputs": [
+    {
+      "name": "top_mv0_bytes",
+      "size": 48,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "top_mv1_bytes",
+      "size": 48,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "mbx",
+      "size": 4,
+      "data": "b' \\x00\\x00\\x00'"
+    },
+    {
+      "name": "top_mv0_bytes",
+      "size": 48,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "top_mv1_bytes",
+      "size": 48,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "mbx",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4420_cavs.c_642_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "cavs.c",
+      "harness_line": 34,
+      "original_file": "cavs.c",
+      "original_line": 642,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4420_cavs.c_642_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+    },
+    {
+      "harness_file": "cavs.c",
+      "harness_line": 35,
+      "original_file": "cavs.c",
+      "original_line": 642,
+      "error_type": "assert",
+      "crash_function": "ff_cavs_init_mb",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/4420_cavs.c_642_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

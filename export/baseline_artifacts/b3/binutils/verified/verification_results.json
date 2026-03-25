@@ -1,0 +1,149 @@
+[
+  {
+    "spec": "aix5ppc-core_307_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "memmove-vec-unaligned-erms.S",
+    "crash_line": 323,
+    "crash_func": "__memcpy_avx_unaligned_erms",
+    "original_bug_file": "memmove-vec-unaligned-erms.S",
+    "original_bug_func": "__memcpy_avx_unaligned_erms"
+  },
+  {
+    "spec": "archive_488_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "strtol_l.c:449",
+    "crash_line": 28,
+    "crash_func": "__GI_____strtol_l_internal",
+    "original_bug_file": "strtol_l.c:449",
+    "original_bug_func": "__GI_____strtol_l_internal"
+  },
+  {
+    "spec": "bfd_2807_integer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "bfd.c",
+    "original_bug_func": "bfd_record_phdr"
+  },
+  {
+    "spec": "coff-arm_1037_integer-overflow",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "coff-arm_1066_integer-overflow",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "coff-bfd_85_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coff-bfd.c",
+    "original_bug_func": "bfd_coff_get_auxent"
+  },
+  {
+    "spec": "coff-mips_766_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coff-mips.c",
+    "original_bug_func": "mips_relocate_hi"
+  },
+  {
+    "spec": "coff-mips_772_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coff-mips.c",
+    "original_bug_func": "mips_relocate_hi"
+  },
+  {
+    "spec": "coff-rs6000_4211_integer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coff-rs6000.c",
+    "original_bug_func": "xcoff_generate_rtinit"
+  },
+  {
+    "spec": "coff64-rs6000_1583_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coff64-rs6000.c",
+    "original_bug_func": "xcoff64_ppc_relocate_section"
+  },
+  {
+    "spec": "coffgen_64_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coffgen.c",
+    "original_bug_func": "extract_long_section_name"
+  },
+  {
+    "spec": "coffgen_346_integer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coffgen.c",
+    "original_bug_func": "coff_real_object_p"
+  },
+  {
+    "spec": "coffgen_645_integer-overflow",
+    "verdict": "NOT_REPRODUCIBLE"
+  },
+  {
+    "spec": "coffgen_1808_integer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "coffgen.c",
+    "original_bug_func": "_bfd_coff_read_string_table"
+  },
+  {
+    "spec": "cofflink_1292_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "cofflink.c",
+    "original_bug_func": "process_embedded_commands"
+  },
+  {
+    "spec": "cofflink_1716_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "cofflink.c",
+    "original_bug_func": "coff_renumber_symbols"
+  },
+  {
+    "spec": "cofflink_2265_out-of-bounds-read",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "cofflink.c",
+    "original_bug_func": "_bfd_coff_final_link"
+  },
+  {
+    "spec": "compress_659_heap-buffer-overflow",
+    "verdict": "CONFIRMED_IN_A",
+    "crash_file": "",
+    "crash_line": 0,
+    "crash_func": "",
+    "original_bug_file": "compress.c",
+    "original_bug_func": "bfd_compress_section_contents"
+  }
+]

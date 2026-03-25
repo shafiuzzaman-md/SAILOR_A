@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: mvs.c
+Line: 126
+assembly.ll line: 340
+State: 4
+Stack: 
+	#000000340 in ff_hevc_luma_mv_merge_mode(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, 138510119837696) at mvs.c:126
+	#100000477 in entry_func(138858012188672, 138840832319488, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic, 138510119837696) at mvs.c:136
+	#200000198 in main() at driver.c:94

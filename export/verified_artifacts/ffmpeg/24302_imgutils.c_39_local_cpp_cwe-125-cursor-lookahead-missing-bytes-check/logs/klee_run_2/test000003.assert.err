@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: imgutils.c
+Line: 37
+assembly.ll line: 179
+State: 3
+Stack: 
+	#000000179 in av_image_fill_max_pixsteps(138964985831424, 138962838347776, 139450317135872) at imgutils.c:37
+	#100000212 in entry_func(138964985831424, 138962838347776, 139450317135872) at imgutils.c:44
+	#200000081 in main() at driver.c:45

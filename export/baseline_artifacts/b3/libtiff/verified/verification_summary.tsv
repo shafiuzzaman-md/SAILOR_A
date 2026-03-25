@@ -1,0 +1,10 @@
+Spec	Verdict	OrigBugFile	OrigBugFunc	CrashFile	CrashFunc	CrashLine
+tif_overview_848_null-pointer-dereference	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	488
+xtiff_999_double-free	CONFIRMED_IN_A	xtiff.c	CreateXImage			0
+iptcutil_175_heap-buffer-overflow	CONFIRMED_IN_A	iptcutil.c	convertHTMLcodes			0
+mfs_file_342_out-of-bounds-read	NOT_REPRODUCIBLE					
+mfs_file_386_heap-buffer-overflow	CONFIRMED_IN_A	mfs_file.c	mfs_write			0
+mfs_file_401_heap-buffer-overflow	NOT_REPRODUCIBLE					
+tif_pdsdirread_400_out-of-bounds-read	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	265
+tif_pdsdirwrite_220_null-pointer-dereference	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	333
+ras2tif_95_buffer-overflow	CONFIRMED_IN_A	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	memmove-vec-unaligned-erms.S	__memcpy_avx_unaligned_erms	333

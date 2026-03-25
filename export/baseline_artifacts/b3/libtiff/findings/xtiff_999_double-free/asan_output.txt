@@ -1,0 +1,28 @@
+=================================================================
+==3817496==ERROR: AddressSanitizer: attempting double-free on 0x619000000080 in thread T0:
+    #0 0x64e9a6bb0a76 in free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+    #1 0x64e9a6bed041 in CreateXImage_bug /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:75:9
+    #2 0x64e9a6becff1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104:5
+    #3 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+
+0x619000000080 is located 0 bytes inside of 1024-byte region [0x619000000080,0x619000000480)
+freed by thread T0 here:
+    #0 0x64e9a6bb0a76 in free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+    #1 0x64e9a6bece81 in XDestroyImage /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:56:9
+    #2 0x64e9a6bed038 in CreateXImage_bug /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:73:9
+    #3 0x64e9a6becff1 in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:104:5
+    #4 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+
+previously allocated by thread T0 here:
+    #0 0x64e9a6bb0d22 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4d22) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+    #1 0x64e9a6beceef in main /app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer.c:83:32
+    #2 0x7d571ae2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d571ae2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64e9a6b2d314 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0x21314) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad)
+
+SUMMARY: AddressSanitizer: double-free (/app/se_runs/b3/libtiff_f324415_vul/findings/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: ab788a0f0358c8142868d69b9e72299c120519ad) in free
+==3817496==ABORTING

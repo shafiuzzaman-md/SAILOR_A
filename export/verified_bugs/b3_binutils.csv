@@ -1,0 +1,16 @@
+Project,BugID,SourceFile,SourceLine,BugType,CrashFunction,CrashFile,CrashLine
+binutils,B3-001,aix5ppc-core.c,307,SEGV,bfd_read,aix5ppc-core.c,26
+binutils,B3-002,archive.c,488,SEGV,__GI_____strtol_l_internal,strtol_l.c,449
+binutils,B3-003,bfd.c,2807,heap-buffer-overflow,bfd_record_phdr,bfd.c,99
+binutils,B3-004,coff-bfd.c,85,heap-buffer-overflow,bfd_coff_get_auxent,coff-bfd.c,110
+binutils,B3-005,coff-mips.c,766,heap-buffer-overflow,bfd_get_32,coff-mips.c,24
+binutils,B3-006,coff-mips.c,772,heap-buffer-overflow,bfd_get_32,coff-mips.c,29
+binutils,B3-007,coff-rs6000.c,4211,heap-buffer-overflow,xcoff_generate_rtinit,coff-rs6000.c,71
+binutils,B3-008,coff64-rs6000.c,1583,global-buffer-overflow,xcoff64_ppc_relocate_section,coff64-rs6000.c,76
+binutils,B3-009,coffgen.c,1808,heap-buffer-overflow,_bfd_coff_read_string_table,coffgen.c,135
+binutils,B3-010,coffgen.c,346,heap-buffer-overflow,bfd_coff_swap_scnhdr_in,coffgen.c,85
+binutils,B3-011,coffgen.c,64,heap-buffer-overflow,extract_long_section_name,coffgen.c,46
+binutils,B3-012,cofflink.c,1292,heap-buffer-overflow,startswith,cofflink.c,30
+binutils,B3-013,cofflink.c,1716,heap-buffer-overflow,bfd_coff_swap_aux_in,cofflink.c,75
+binutils,B3-014,cofflink.c,2265,heap-buffer-overflow,bfd_coff_swap_sym_in,cofflink.c,54
+binutils,B3-015,compress.c,659,heap-buffer-overflow,ZSTD_compress,compress.c,57

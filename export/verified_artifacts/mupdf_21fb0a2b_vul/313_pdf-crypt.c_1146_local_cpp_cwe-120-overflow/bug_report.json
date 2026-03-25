@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-crypt.c",
+        "original_line": 1146,
+        "function": "pdf_crypt_obj_imp",
+        "entry_point": "pdf_crypt_obj",
+        "spine": [
+            "pdf_crypt_obj",
+            "pdf_crypt_obj_imp"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "pdf-crypt.c",
+        "harness_line": 29,
+        "original_file": "pdf-crypt.c",
+        "original_line": 1146,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=2)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 200\nState: 1\nStack: \n\t#000000200 in memcpy(139178768658432, 139475121401856, 16) at runtime/Freestanding/memcpy.c:17\n\t#100000170 in pdf_crypt_obj_imp(139457941532672, 139440761663488, 139526661009408, 139187358593024, 32) at pdf-crypt.c:29\n\t#200000130 in pdf_crypt_obj(139457941532672, 139440761663488, 139526661009408, 0, 0) at pdf-crypt.c:42\n\t#300000083 in main() at driver.c:25\nInfo: \n\taddres"
+    },
+    "concrete_inputs": [
+        {
+            "name": "obj_str_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "pdf_compute_object_key",
+        "crash_file": "source/pdf/pdf-crypt.c",
+        "crash_line": 1064,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==18695==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000003c at pc 0x5568464de434 bp 0x7ffc87efb680 sp 0x7ffc87efb670\nREAD of size 4 at 0x50200000003c thread T0\n    #0 0x5568464de433 in pdf_compute_object_key source/pdf/pdf-crypt.c:1064\n    #1 0x5568464e12e5 in pdf_crypt_obj source/pdf/pdf-crypt.c:1187\n    #2 0x5568464db5b2 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/313_pdf-crypt.c_1146_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:25\n    #3 0x7f0be8719d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f0be8719e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5568464db3b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/313_pdf-crypt.c_1146_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x1483b4)\n\n0x50200000003c is located 8 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7f0be8ad0a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5568464db4a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/313_pdf-crypt.c_1146_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:9\n    #2 0x7f0be8719d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/pdf/pdf-crypt.c:1064 in pdf_compute_object_key\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 04[fa]fa fa 00 00 fa fa 00 fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/313_pdf-crypt.c_1146_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-crypt.c",
+            "harness_line": 29,
+            "original_file": "pdf-crypt.c",
+            "original_line": 1146,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/313_pdf-crypt.c_1146_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "pdf_compute_object_key",
+            "crash_file": "source/pdf/pdf-crypt.c",
+            "crash_line": 1064
+        }
+    ]
+}

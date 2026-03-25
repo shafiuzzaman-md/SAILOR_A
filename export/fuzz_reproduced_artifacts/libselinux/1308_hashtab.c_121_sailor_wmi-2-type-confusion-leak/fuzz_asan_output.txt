@@ -1,0 +1,33 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3742566331
+INFO: Loaded 1 modules   (9 inline 8-bit counters): 9 [0x56e375be1fa0, 0x56e375be1fa9), 
+INFO: Loaded 1 PC tables (9 PCs): 9 [0x56e375be1fb0,0x56e375be2040), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 40b max: 40b total: 40b rss: 29Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==102535==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x56e375b9fa73 bp 0x7ffdfa7d83b0 sp 0x7ffdfa7d8380 T0)
+==102535==The signal is caused by a READ memory access.
+==102535==Hint: address points to the zero page.
+    #0 0x56e375b9fa73 in hashtab_destroy /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/hashtab.c:219:7
+    #1 0x56e375b9e67d in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:46:5
+    #2 0x56e375ac480a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4380a) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #3 0x56e375ac3ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42ed5) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #4 0x56e375ac5ad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44ad8) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #5 0x56e375ac5f56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44f56) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #6 0x56e375ab3542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x32542) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #7 0x56e375ade9e6 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5d9e6) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+    #8 0x701c8b82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x701c8b82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x56e375aa7974 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1308_hashtab.c_121_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x26974) (BuildId: 1f58a9be27f0b2c93323455392af0dc5483bea72)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/hashtab.c:219:7 in hashtab_destroy
+==102535==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-b80de5d138758541c5f05265ad144ab9fa86d1db
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

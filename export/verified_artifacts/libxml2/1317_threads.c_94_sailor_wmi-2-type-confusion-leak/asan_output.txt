@@ -1,0 +1,26 @@
+=================================================================
+==2609011==ERROR: AddressSanitizer: attempting double-free on 0x506000000020 in thread T0:
+    #0 0x752086afc4d8 in free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52
+    #1 0x56d708e5cef3 in xmlFreeMutex /tmp/libxml2_upstream/threads.c:114
+    #2 0x56d708e5cdc8 in main /tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/driver.c:37
+    #3 0x75208662a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #4 0x75208662a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #5 0x56d708e5cc94 in _start (/tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/bin+0x55c94) (BuildId: 2c2b051b5b0334d85c485f5a3da91b7121e10887)
+
+0x506000000020 is located 0 bytes inside of 64-byte region [0x506000000020,0x506000000060)
+freed by thread T0 here:
+    #0 0x752086afc4d8 in free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52
+    #1 0x56d708e5cdbc in main /tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/driver.c:34
+    #2 0x75208662a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x75208662a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x56d708e5cc94 in _start (/tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/bin+0x55c94) (BuildId: 2c2b051b5b0334d85c485f5a3da91b7121e10887)
+
+previously allocated by thread T0 here:
+    #0 0x752086afd9c7 in malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:69
+    #1 0x56d708e5cd78 in main /tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/driver.c:24
+    #2 0x75208662a1c9 in __libc_start_call_main ../sysdeps/nptl/libc_start_call_main.h:58
+    #3 0x75208662a28a in __libc_start_main_impl ../csu/libc-start.c:360
+    #4 0x56d708e5cc94 in _start (/tmp/libxml2_upstream_verify_v5/1317_threads.c_94_sailor_wmi-2-type-confusion-leak/bin+0x55c94) (BuildId: 2c2b051b5b0334d85c485f5a3da91b7121e10887)
+
+SUMMARY: AddressSanitizer: double-free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:52 in free
+==2609011==ABORTING

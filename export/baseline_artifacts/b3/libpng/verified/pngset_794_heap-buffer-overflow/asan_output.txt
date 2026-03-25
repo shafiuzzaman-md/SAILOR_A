@@ -1,0 +1,54 @@
+About to call png_set_PLTE with num_palette=300 and bit_depth=16 (expect ASan heap-buffer-overflow)
+=================================================================
+==4080540==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x617000000380 at pc 0x574f19e7809e bp 0x7ffc1ba3a920 sp 0x7ffc1ba3a0f0
+WRITE of size 900 at 0x617000000380 thread T0
+    #0 0x574f19e7809d in __asan_memcpy (/app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer+0xa409d) (BuildId: e9b9ce433571ec5545b51664295480d465002694)
+    #1 0x574f19eb56bd in png_set_PLTE /app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer.c:107:5
+    #2 0x574f19eb513c in main /app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer.c:145:3
+    #3 0x76311002a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x76311002a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x574f19df5304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer+0x21304) (BuildId: e9b9ce433571ec5545b51664295480d465002694)
+
+0x617000000380 is located 0 bytes to the right of 768-byte region [0x617000000080,0x617000000380)
+allocated by thread T0 here:
+    #0 0x574f19e78efc in __interceptor_calloc (/app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer+0xa4efc) (BuildId: e9b9ce433571ec5545b51664295480d465002694)
+    #1 0x574f19eb5a5d in png_calloc /app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer.c:55:13
+    #2 0x574f19eb5649 in png_set_PLTE /app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer.c:103:35
+    #3 0x574f19eb513c in main /app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer.c:145:3
+    #4 0x76311002a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x76311002a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x574f19df5304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer+0x21304) (BuildId: e9b9ce433571ec5545b51664295480d465002694)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/export/baseline_artifacts/b3/libpng/verified/pngset_794_heap-buffer-overflow/reproducer+0xa409d) (BuildId: e9b9ce433571ec5545b51664295480d465002694) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c2e7fff8020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2e7fff8030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2e7fff8040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2e7fff8050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c2e7fff8060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c2e7fff8070:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2e7fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2e7fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2e7fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2e7fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c2e7fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4080540==ABORTING

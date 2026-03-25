@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: codec_par.c
+Line: 43
+assembly.ll line: 65
+State: 1
+Stack: 
+	#000000065 in avcodec_parameters_to_context(139243818004480, 139226638135296) at codec_par.c:43
+	#100000156 in entry_func(139243818004480, 139226638135296) at codec_par.c:51
+	#200000192 in main() at driver.c:22

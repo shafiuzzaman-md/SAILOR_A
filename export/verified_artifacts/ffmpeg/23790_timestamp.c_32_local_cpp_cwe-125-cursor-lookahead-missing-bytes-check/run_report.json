@@ -1,0 +1,103 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 43470,
+    "tokens_prompt": 36597,
+    "tokens_completion": 6873,
+    "turns": 5,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "timestamp.c",
+    "line": 31,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/23790_timestamp.c_32_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "timestamp.c",
+  "vul_line": "32",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "timestamp.c",
+      "original_line": 32,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "27:         double log = (fpclassify(val) == FP_ZERO ? -INFINITY : floor(log10(fabs(val))));\n28:         int precision = (isfinite(log) && log < 0) ? -log + 5 : 6;\n29:         int last = snprintf(buf, AV_TS_MAX_STRING_SIZE, \"%.*f\", precision, val);\n30:         last = FFMIN(last, AV_TS_MAX_STRING_SIZE - 1) - 1;\n31:         for (; last && buf[last] == '0'; last--);\n32:         for (; last && buf[last] != 'f' && (buf[last] < '0' || buf[0] > '9'); last--);\n33:         buf[last + 1] = '\\0';\n34:     }\n35:     return buf;\n36: }"
+    },
+    "klee_crash": {
+      "harness_file": "timestamp.c",
+      "harness_line": 41,
+      "original_file": "timestamp.c",
+      "original_line": 31,
+      "original_code": "for (; last && buf[last] == '0'; last--);",
+      "original_context": "    28:         int precision = (isfinite(log) && log < 0) ? -log + 5 : 6;\n    29:         int last = snprintf(buf, AV_TS_MAX_STRING_SIZE, \"%.*f\", precision, val);\n    30:         last = FFMIN(last, AV_TS_MAX_STRING_SIZE - 1) - 1;\n>>> 31:         for (; last && buf[last] == '0'; last--);\n    32:         for (; last && buf[last] != 'f' && (buf[last] < '0' || buf[0] > '9'); last--);\n    33:         buf[last + 1] = '\\0';\n    34:     }",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: timestamp.c\nLine: 41\nassembly.ll line: 205\nState: 2\nStack: \n\t#000000205 in av_ts_make_time_string2(138979067596800, symbolic, symbolic) at timestamp.c:41\n\t#100000353 in entry_func(138979067596800, symbolic, symbolic) at timestamp.c:51\n\t#200000042 in main() at driver.c:29\nInfo: \n\taddress: 138979067596799\n\tnext: object at 138979067596800 of size 1\n\t\tMO28[1] allocated at main():  %2 = alloca [1 x i8], align 1\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "buf",
+        "size": 1,
+        "data": "b'\\x00'"
+      },
+      {
+        "name": "ts",
+        "size": 8,
+        "data": "b'\\xff\\x00\\x00\\x00\\x00\\x00\\x00\\x80'"
+      },
+      {
+        "name": "tb",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\xff\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23790_timestamp.c_32_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "timestamp.c",
+        "harness_line": 41,
+        "original_file": "timestamp.c",
+        "original_line": 31,
+        "error_type": "ptr",
+        "crash_function": "av_ts_make_time_string2",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/23790_timestamp.c_32_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

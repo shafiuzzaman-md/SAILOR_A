@@ -1,0 +1,103 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 1
+  },
+  "vulnerability": {
+    "original_file": "packet.c",
+    "original_line": 504,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "499:     ret = packet_alloc(&pkt->buf, pkt->size);\n500:     if (ret < 0)\n501:         return ret;\n502:     av_assert1(!pkt->size || pkt->data);\n503:     if (pkt->size)\n504:         memcpy(pkt->buf->data, pkt->data, pkt->size);\n505: \n506:     pkt->data = pkt->buf->data;\n507: \n508:     return 0;\n509: }"
+  },
+  "klee_crash": {
+    "harness_file": "packet.c",
+    "harness_line": 31,
+    "original_file": "packet.c",
+    "original_line": 95,
+    "original_code": "return 0;",
+    "original_context": "    92: \n    93:     memset((*buf)->data + size, 0, AV_INPUT_BUFFER_PADDING_SIZE);\n    94: \n>>> 95:     return 0;\n    96: }\n    97: \n    98: int av_new_packet(AVPacket *pkt, int size)",
+    "error_type": "model",
+    "error_details": "Error: concretized symbolic size\nFile: packet.c\nLine: 31\nassembly.ll line: 197\nState: 2\nStack: \n\t#000000197 in packet_alloc(139516231876608, symbolic) at packet.c:31\n\t#100000123 in av_packet_make_refcounted(139516231876608) at packet.c:45\n\t#200000238 in entry_func(139516231876608) at packet.c:62\n\t#300000076 in main() at driver.c:35\nInfo: \n  size expr: (SExt w64 (ReadLSB w32 0 pkt_size))\n  concretization : 9\n  unbound example: 64\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "src_bytes",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "pkt_size",
+      "size": 4,
+      "data": "b'@\\x00\\x00\\x00'"
+    },
+    {
+      "name": "src_bytes",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "pkt_size",
+      "size": 4,
+      "data": "b'\\t\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "packet.c",
+      "harness_line": 31,
+      "original_file": "packet.c",
+      "original_line": 95,
+      "error_type": "model",
+      "crash_function": "packet_alloc",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    },
+    {
+      "harness_file": "packet.c",
+      "harness_line": 50,
+      "original_file": "packet.c",
+      "original_line": 504,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": [],
+  "secondary_bugs": [
+    {
+      "original_file": "packet.c",
+      "original_line": 95,
+      "error_type": "model",
+      "crash_function": "packet_alloc",
+      "relevance": "same_file_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ]
+}

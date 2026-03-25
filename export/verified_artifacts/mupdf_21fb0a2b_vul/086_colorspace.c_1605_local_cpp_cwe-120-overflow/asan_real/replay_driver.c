@@ -1,0 +1,26 @@
+#include "harness_types.h"
+#include <stdlib.h>
+#include <string.h>
+// klee removed for replay
+
+int main() {
+    // Allocate minimal concrete objects for parameters (not used by harness body)
+    fz_context *ctx = (fz_context*)calloc(1, sizeof(fz_context));
+    fz_pixmap *src = (fz_pixmap*)calloc(1, sizeof(fz_pixmap));
+    fz_pixmap *dst = (fz_pixmap*)calloc(1, sizeof(fz_pixmap));
+    fz_colorspace *is = (fz_colorspace*)calloc(1, sizeof(fz_colorspace));
+    fz_color_params params; memset(&params, 0, sizeof(params));
+
+    // Make fields symbolic to overapproximate, though harness doesn't use them
+    { static const unsigned char src_pixmap_data[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; memcpy(src, src_pixmap_data, (sizeof(*src) < sizeof(src_pixmap_data)) ? sizeof(*src) : sizeof(src_pixmap_data)); };
+    { static const unsigned char dst_pixmap_data[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; memcpy(dst, dst_pixmap_data, (sizeof(*dst) < sizeof(dst_pixmap_data)) ? sizeof(*dst) : sizeof(dst_pixmap_data)); };
+    { static const unsigned char is_colorspace_data[] = {0x00, 0x00, 0x00, 0x00}; memcpy(is, is_colorspace_data, (sizeof(*is) < sizeof(is_colorspace_data)) ? sizeof(*is) : sizeof(is_colorspace_data)); };
+
+    // Ensure pointers that could be dereferenced in other builds are valid
+    src->colorspace = is;
+    dst->colorspace = is;
+
+    int copy_spots = 0;
+    fz_convert_slow_pixmap_samples(ctx, src, dst, is, params, copy_spots);
+    return 0;
+}

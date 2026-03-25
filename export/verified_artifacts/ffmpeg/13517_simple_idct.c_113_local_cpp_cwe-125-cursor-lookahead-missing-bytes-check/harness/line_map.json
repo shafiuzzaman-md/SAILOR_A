@@ -1,0 +1,79 @@
+{
+  "simple_idct.c": {
+    "7": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 90,
+      "code": "#define BF(k) \\"
+    },
+    "8": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 91,
+      "code": "{\\"
+    },
+    "9": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 92,
+      "code": "int a0, a1;\\"
+    },
+    "10": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 93,
+      "code": "a0 = ptr[k];\\"
+    },
+    "11": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 94,
+      "code": "a1 = ptr[8 + k];\\"
+    },
+    "12": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 95,
+      "code": "ptr[k] = a0 + a1;\\"
+    },
+    "13": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 96,
+      "code": "ptr[8 + k] = a0 - a1;\\"
+    },
+    "14": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 97,
+      "code": "}"
+    },
+    "17": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 105,
+      "code": "void ff_simple_idct248_put(uint8_t *dest, ptrdiff_t line_size, int16_t *block)"
+    },
+    "18": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 106,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 108,
+      "code": "int16_t *ptr;"
+    },
+    "21": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 111,
+      "code": "ptr = block;"
+    },
+    "23": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 113,
+      "code": "BF(0);"
+    },
+    "26": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 122,
+      "code": "}"
+    },
+    "32": {
+      "orig_file": "simple_idct.c",
+      "orig_line": 122,
+      "code": "}"
+    }
+  }
+}

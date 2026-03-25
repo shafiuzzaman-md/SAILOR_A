@@ -1,0 +1,54 @@
+{
+  "cavs.c": {
+    "8": {
+      "orig_file": "cavs.c",
+      "orig_line": 184,
+      "code": "void ff_cavs_load_intra_pred_luma(AVSContext *h, uint8_t *top,"
+    },
+    "12": {
+      "orig_file": "cavs.c",
+      "orig_line": 189,
+      "code": "switch (block) {"
+    },
+    "13": {
+      "orig_file": "cavs.c",
+      "orig_line": 190,
+      "code": "case 0:"
+    },
+    "15": {
+      "orig_file": "cavs.c",
+      "orig_line": 196,
+      "code": "top[0]  = top[1];"
+    },
+    "18": {
+      "orig_file": "cavs.c",
+      "orig_line": 199,
+      "code": "break;"
+    },
+    "20": {
+      "orig_file": "cavs.c",
+      "orig_line": 199,
+      "code": "break;"
+    },
+    "21": {
+      "orig_file": "cavs.c",
+      "orig_line": 174,
+      "code": "}"
+    },
+    "22": {
+      "orig_file": "cavs.c",
+      "orig_line": 174,
+      "code": "}"
+    },
+    "27": {
+      "orig_file": "cavs.c",
+      "orig_line": 89,
+      "code": "return 0;"
+    },
+    "28": {
+      "orig_file": "cavs.c",
+      "orig_line": 90,
+      "code": "}"
+    }
+  }
+}

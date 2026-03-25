@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4131646==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5952c0461907 bp 0x7ffd77b89a70 sp 0x7ffd77b89a10 T0)
+==4131646==The signal is caused by a WRITE memory access.
+==4131646==Hint: address points to the zero page.
+    #0 0x5952c0461907 in BIO_read /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer.c:89:16
+    #1 0x5952c04616c6 in ASN1_item_d2i_bio /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer.c:111:11
+    #2 0x5952c04612a2 in app_http_post_asn1 /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer.c:168:11
+    #3 0x5952c0460e24 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer.c:182:11
+    #4 0x779d7702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x779d7702a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5952c03a1304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer+0x21304) (BuildId: 478ae93f3524febccc5b25d56b4dd978b409f02c)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/apps_2681_null-pointer-dereference/reproducer.c:89:16 in BIO_read
+==4131646==ABORTING

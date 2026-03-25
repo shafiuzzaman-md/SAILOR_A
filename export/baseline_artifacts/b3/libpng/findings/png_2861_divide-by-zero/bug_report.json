@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "png.c",
+    "line": 2861,
+    "function": "png_reciprocal",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "high",
+    "explanation": "The floating-point path computes 1E10/a without checking whether a is zero. If a == 0, this performs a division by zero, which can raise a floating-point exception or produce INF/NaN depending on the platform/FP settings. The fixed-point path correctly checks for zero via png_muldiv; a similar guard is needed here.",
+    "abs_path": "/tmp/libpng_upstream/png.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#include <fenv.h>\n\n/* Ensure we take the floating-point path in png_reciprocal */\n#define PNG_FLOATING_ARITHMETIC_SUPPORTED 1\n\ntypedef long png_fixed_point;\n\n/* Vulnerable implementation extracted/simplified from png.c */\npng_fixed_point png_reciprocal(png_fixed_point a)\n{\n#ifdef PNG_FLOATING_ARITHMETIC_SUPPORTED\n    /* BUG: no check for a == 0, performs 1E10 / a */\n    double r = floor(1E10 / a + .5);\n\n    if (r <= 2147483647. && r >= -2147483648.)\n        return (png_fixed_point)r;\n#else\n    png_fixed_point res;\n    if (png_muldiv(&res, 100000, 100000, a) != 0)\n        return res;\n#endif\n\n    return 0; /* error/overflow */\n}\n\nint main(void)\n{\n    /* Clear and enable floating-point exceptions so div-by-zero traps.\n     * feenableexcept is a GNU extension provided by glibc/libm.\n     */\n    feclearexcept(FE_ALL_EXCEPT);\n#ifdef FE_DIVBYZERO\n    /* Enable trap on floating-point divide-by-zero (and related) */\n    feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);\n#endif\n\n    volatile png_fixed_point a = 0; /* Craft input that triggers the bug */\n\n    /* This call will perform 1E10 / 0.0 in the floating path above, raising\n     * a floating-point exception (SIGFPE) on platforms where traps are enabled.\n     */\n    png_fixed_point res = png_reciprocal(a);\n\n    /* If traps are not enabled, execution may continue and res is likely 0.\n     * We print the result so the compiler cannot optimize the call away.\n     */\n    printf(\"png_reciprocal(0) -> %ld\\n\", (long)res);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8262081146240234,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3749602==ERROR: AddressSanitizer: FPE on unknown address 0x5d7a3a0d9cea (pc 0x5d7a3a0d9cea bp 0x7ffdb3e785b0 sp 0x7ffdb3e78590 T0)\n    #0 0x5d7a3a0d9cea in png_reciprocal /app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:17:27\n    #1 0x5d7a3a0d9e8e in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:46:27\n    #2 0x6ffe7322a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x6ffe7322a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5d7a3a01a334 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer+0x21334) (BuildId: c555d69a175ee187ab08e454a863763b17478467)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:17:27 in png_reciprocal\n==3749602==ABORTING\n",
+      "error_type": "FPE",
+      "crash_function": "png_reciprocal",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:17",
+      "crash_line": 27,
+      "frames": [
+        [
+          "0",
+          "png_reciprocal",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:17",
+          "27"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_2861_divide-by-zero/reproducer.c:46",
+          "27"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

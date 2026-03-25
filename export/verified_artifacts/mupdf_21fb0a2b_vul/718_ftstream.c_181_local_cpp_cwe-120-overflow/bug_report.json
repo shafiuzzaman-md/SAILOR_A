@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "ftstream.c",
+        "original_line": 181,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "176:     {\n177:       read_bytes = stream->size - stream->pos;\n178:       if ( read_bytes > count )\n179:         read_bytes = count;\n180: \n181:       FT_MEM_COPY( buffer, stream->base + stream->pos, read_bytes );\n182:     }\n183: \n184:     stream->pos += read_bytes;\n185: \n186:   Exit:"
+    },
+    "klee_crash": {
+        "harness_file": "ftstream.c",
+        "harness_line": 53,
+        "original_file": "ftstream.c",
+        "original_line": 181,
+        "original_code": "FT_MEM_COPY( buffer, stream->base + stream->pos, read_bytes );",
+        "original_context": "    178:       if ( read_bytes > count )\n    179:         read_bytes = count;\n    180: \n>>> 181:       FT_MEM_COPY( buffer, stream->base + stream->pos, read_bytes );\n    182:     }\n    183: \n    184:     stream->pos += read_bytes;",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 257\nState: 2\nStack: \n\t#000000257 in memcpy(138673425846272, 138879584276480, 64) at runtime/Freestanding/memcpy.c:17\n\t#100000189 in FT_Stream_TryRead(138810864799744, 138673425846272, symbolic) at ftstream.c:53\n\t#200000228 in harness_entry(138810864799744, 138673425846272, symbolic) at ftstream.c:65\n\t#300000093 in main() at driver.c:66\nInfo: \n\taddress: 138673425846280\n\tnext: object at 1383770"
+    },
+    "concrete_inputs": [
+        {
+            "name": "stream_base",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "dst_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "count",
+            "size": 8,
+            "data": "b'@\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "FT_Stream_TryRead",
+        "crash_file": "thirdparty/freetype/src/base/ftstream.c",
+        "crash_line": 173,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==36706==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000068 at pc 0x55d69969e38d bp 0x7ffe5dfb9300 sp 0x7ffe5dfb92f0\nREAD of size 8 at 0x503000000068 thread T0\n    #0 0x55d69969e38c in FT_Stream_TryRead thirdparty/freetype/src/base/ftstream.c:173\n    #1 0x55d69968cac2 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/718_ftstream.c_181_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:67\n    #2 0x7f6c525b2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f6c525b2e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55d69968c694 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/718_ftstream.c_181_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x2694)\n\n0x503000000068 is located 8 bytes to the right of 32-byte region [0x503000000040,0x503000000060)\nallocated by thread T0 here:\n    #0 0x7f6c52969a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55d69968c7ee in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/718_ftstream.c_181_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:41\n    #2 0x7f6c525b2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/freetype/src/base/ftstream.c:173 in FT_Stream_TryRead\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00 fa[fa]fa fa\n  0x0a067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/718_ftstream.c_181_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "ftstream.c",
+            "harness_line": 53,
+            "original_file": "ftstream.c",
+            "original_line": 181,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/718_ftstream.c_181_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "FT_Stream_TryRead",
+            "crash_file": "thirdparty/freetype/src/base/ftstream.c",
+            "crash_line": 173
+        }
+    ]
+}

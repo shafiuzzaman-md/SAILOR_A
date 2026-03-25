@@ -1,0 +1,6 @@
+Approach,Harnesses_or_Vulns,Compiled,SE_DETECTED,In_reproducer_c,In_test_tool,In_library,Real_Bugs,Notes
+B1: OSS-Fuzz+KLEE,12,11,11,0,0,0,0,All FP: xmlFuzzDataInit external call
+B2: LLM+KLEE no SA,28,2,2,2,0,0,0,All SE_DETECTED in harness.c/stubs
+B3: Pure LLM detect,136,—,107,89,13,5,5,5 unique library locations (parser/parserInternals/relaxng/list)
+B4: SA+LLM detect,—,—,—,—,—,—,4,TBD pending re-verification
+SAILOR-GPT5,—,—,582,—,—,—,11,11 unique verified bugs

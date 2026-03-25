@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-repair.c",
+        "original_line": 611,
+        "function": "pdf_repair_xref",
+        "entry_point": "pdf_repair_xref",
+        "spine": [
+            "pdf_repair_xref"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "pdf-repair.c",
+        "harness_line": 70,
+        "original_file": "pdf-repair.c",
+        "original_line": 611,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=7)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: use after free\nFile: pdf-repair.c\nLine: 70\nassembly.ll line: 128\nState: 1\nStack: \n\t#000000128 in pdf_repair_xref(138712122171392, 138780841648128) at pdf-repair.c:70\n\t#100000063 in main() at driver.c:24\nInfo: \n\taddress: 138849561124864\n\tnext: object at 138413621944320 of size 4\n\t\tMO52[4] allocated at pdf_repair_xref():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ctx",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "doc",
+            "size": 12,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "list_init",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "pdf_repair_xref",
+        "crash_file": "source/pdf/pdf-repair.c",
+        "crash_line": 367,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==32477==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000f4 at pc 0x560ecde970de bp 0x7ffc9c7d9f20 sp 0x7ffc9c7d9f10\nREAD of size 4 at 0x5020000000f4 thread T0\n    #0 0x560ecde970dd in pdf_repair_xref source/pdf/pdf-repair.c:367\n    #1 0x560ecde945bc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5748_pdf-repair.c_611_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:25\n    #2 0x7f12168c3d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f12168c3e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x560ecde943b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5748_pdf-repair.c_611_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_bin+0x1483b4)\n\n0x5020000000f4 is located 184 bytes to the right of 12-byte region [0x502000000030,0x50200000003c)\nallocated by thread T0 here:\n    #0 0x7f1216c7aa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x560ecde944a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5748_pdf-repair.c_611_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:9\n    #2 0x7f12168c3d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/pdf/pdf-repair.c:367 in pdf_repair_xref\nShadow bytes around the buggy address:\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 00 04 fa fa fa fa fa fa fa fa\n=>0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5748_pdf-repair.c_611_sailor_cpp_cwe-416-use-after-realloc/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-repair.c",
+            "harness_line": 70,
+            "original_file": "pdf-repair.c",
+            "original_line": 611,
+            "error_type": "ptr",
+            "crash_function": "pdf_repair_xref",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5748_pdf-repair.c_611_sailor_cpp_cwe-416-use-after-realloc/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "pdf_repair_xref",
+            "crash_file": "source/pdf/pdf-repair.c",
+            "crash_line": 367
+        }
+    ]
+}

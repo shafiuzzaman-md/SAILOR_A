@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/pds/tif_pdsdirwrite.c",
+    "line": 795,
+    "function": "TIFFWriteAnyArray",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "When n * TIFFDataWidth(type) exceeds the small stack buffer, w is allocated with _TIFFmalloc() but not checked. On allocation failure (e.g., large n), w remains NULL and is dereferenced in the per-type loops (e.g., bp[i] = ...), causing a NULL pointer dereference.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/pds/tif_pdsdirwrite.c"
+  },
+  "reproducer_code": "#include <stdint.h>\n#include <stdlib.h>\n#include <stdio.h>\n\n/* Minimal stand-ins for libtiff types */\ntypedef struct TIFF TIFF; /* opaque */\ntypedef uint16_t ttag_t;\n\ntypedef enum {\n    TIFF_NOTYPE = 0,\n    TIFF_BYTE   = 1,\n    TIFF_ASCII  = 2,\n    TIFF_SHORT  = 3,\n    TIFF_LONG   = 4,\n    TIFF_RATIONAL = 5,\n    TIFF_SBYTE  = 6,\n    TIFF_UNDEFINED = 7,\n    TIFF_SSHORT = 8,\n    TIFF_SLONG  = 9,\n    TIFF_SRATIONAL = 10,\n    TIFF_FLOAT  = 11,\n    TIFF_DOUBLE = 12,\n    TIFF_IFD    = 13\n} TIFFDataType;\n\ntypedef struct {\n    uint16_t tdir_tag;\n    int16_t  tdir_type;\n    uint32_t tdir_count;\n    uint32_t tdir_offset;\n} TIFFDirEntry;\n\n/* Stubs mimicking libtiff internals/public helpers */\nstatic uint32_t TIFFDataWidth(TIFFDataType type)\n{\n    switch (type) {\n        case TIFF_BYTE:\n        case TIFF_SBYTE:\n        case TIFF_UNDEFINED:\n            return 1;\n        case TIFF_SHORT:\n        case TIFF_SSHORT:\n            return 2;\n        case TIFF_LONG:\n        case TIFF_SLONG:\n        case TIFF_IFD:\n        case TIFF_FLOAT:\n            return 4;\n        case TIFF_RATIONAL:\n        case TIFF_SRATIONAL:\n        case TIFF_DOUBLE:\n            return 8;\n        default:\n            return 0;\n    }\n}\n\n/* Force allocation failure to deterministically hit the bug */\nstatic void* _TIFFmalloc(size_t s)\n{\n    (void)s;\n    return NULL; /* simulate OOM */\n}\n\nstatic void _TIFFfree(void* p)\n{\n    (void)p;\n}\n\n/* Writer stub; not reached before the crash */\nstatic int TIFFWriteByteArray(TIFF *tif, TIFFDirEntry *dir, char *v)\n{\n    (void)tif; (void)dir; (void)v;\n    return 1;\n}\n\n/* Vulnerable function (reduced to relevant parts) from contrib/pds/tif_pdsdirwrite.c */\nstatic int TIFFWriteAnyArray(TIFF *tif, TIFFDataType type, ttag_t tag,\n                             TIFFDirEntry *dir, uint32_t n, double *v)\n{\n    char buf[10 * sizeof(double)];\n    char *w = buf;\n    int i, status = 0;\n\n    if (n * TIFFDataWidth(type) > sizeof buf)\n        w = (char *)_TIFFmalloc(n * TIFFDataWidth(type));\n    switch (type)\n    {\n        case TIFF_BYTE:\n        {\n            unsigned char *bp = (unsigned char *)w;\n            for (i = 0; i < (int)n; i++)\n                bp[i] = (unsigned char)v[i]; /* NULL deref when w == NULL */\n            dir->tdir_tag = tag;\n            dir->tdir_type = (short)type;\n            dir->tdir_count = n;\n            if (!TIFFWriteByteArray(tif, dir, (char *)bp))\n                goto out;\n        }\n        break;\n        default:\n            break;\n    }\n    status = 1;\nout:\n    if (w != buf)\n        _TIFFfree(w);\n    return status;\n}\n\nint main(void)\n{\n    TIFF *tif = NULL; /* not dereferenced in this path */\n    TIFFDirEntry dir;\n\n    /* Choose n so that n * TIFFDataWidth(TIFF_BYTE) > sizeof(buf) to trigger _TIFFmalloc */\n    uint32_t n = 1000; /* 1000 * 1 > 80 (10 * sizeof(double)) */\n    double *v = (double *)malloc((size_t)n * sizeof(double));\n    if (!v) {\n        fprintf(stderr, \"malloc failed for v\\n\");\n        return 1;\n    }\n    for (uint32_t i = 0; i < n; i++) v[i] = (double)(i & 0xFF);\n\n    /* _TIFFmalloc is stubbed to return NULL, so w remains NULL and bp[i] dereferences NULL */\n    (void)TIFFWriteAnyArray(tif, TIFF_BYTE, (ttag_t)123, &dir, n, v);\n\n    free(v);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09530448913574219,
+      "output": ""
+    }
+  }
+}

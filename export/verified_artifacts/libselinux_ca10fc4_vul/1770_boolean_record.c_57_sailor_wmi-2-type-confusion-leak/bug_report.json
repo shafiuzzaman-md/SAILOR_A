@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "boolean",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "__interceptor_strlen",
+            "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+            "crash_line": 389
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "__interceptor_strlen",
+        "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+        "crash_line": 389,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4420==ERROR: AddressSanitizer: heap-use-after-free on address 0x506000000020 at pc 0x7fdbdd065aa7 bp 0x7ffef9c14e10 sp 0x7ffef9c145b8\nREAD of size 2 at 0x506000000020 thread T0\n    #0 0x7fdbdd065aa6 in __interceptor_strlen ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:389\n    #1 0x561195f93550 in strdup /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1770_boolean_record.c_57_sailor_wmi-2-type-confusion-leak/asan_real/smart_stubs.c:16\n    #2 0x561195f93736 in sepol_bool_key_create /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c:33\n    #3 0x561195f939aa in sepol_bool_key_extract /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/boolean_record.c:57\n    #4 0x561195f934ca in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1770_boolean_record.c_57_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:29\n    #5 0x7fdbdcd25d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #6 0x7fdbdcd25e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #7 0x561195f93304 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1770_boolean_record.c_57_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2304)\n\n0x506000000020 is located 0 bytes inside of 64-byte region [0x506000000020,0x506000000060)\nfreed by thread T0 here:\n    #0 0x7fdbdd0dc537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x561195f934b7 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1770_boolean_record.c_57_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:27\n    #2 0x7fdbdcd25d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7fdbdd0dc887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x561195f9340e "
+    }
+}

@@ -1,0 +1,48 @@
+#include <stdint.h>
+#include <stddef.h>
+#include "harness_types.h"
+// klee removed for replay
+#include <stdlib.h>
+#include <string.h>
+
+// Decls from harness
+extern int sepol_user_compare2(sepol_user_t *u1, sepol_user_t *u2);
+extern void sepol_user_free(sepol_user_t * user);
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 136) return 0;
+    // Allocate two user objects concretely
+    sepol_user_t *u1 = (sepol_user_t*)calloc(1, sizeof(sepol_user_t));
+    sepol_user_t *u2 = (sepol_user_t*)calloc(1, sizeof(sepol_user_t));
+
+    // Allocate concrete name buffers and make contents symbolic
+    char *n1 = (char*)malloc(64);
+    char *n2 = (char*)malloc(64);
+    { memcpy(n1, fuzz_data + 0, 64); };
+    { memcpy(n2, fuzz_data + 64, 64); };
+    // Ensure NUL-termination so strcmp doesn't run off
+    n1[63] = '\0';
+    n2[63] = '\0';
+
+    // Initialize fields
+    u1->name = n1;
+    u2->name = n2;
+    u1->roles = NULL;
+    u1->num_roles = 0;
+    u1->mls_level = NULL;
+    u1->mls_range = NULL;
+
+    // Phase 1: Free u1 to create a stale pointer (UAF setup)
+    sepol_user_free(u1);
+
+    // Optional reclaim to encourage address reuse by a different type (WMI-2 flavor)
+    // This is not required for KLEE to detect UAF, but helps model type confusion leak
+    sepol_user_key_t *reclaim = (sepol_user_key_t*)malloc(sizeof(sepol_user_key_t));
+    if (reclaim) {
+        { memcpy(reclaim, fuzz_data + 128, 8); };
+    }
+
+    // Phase 2: Use-after-free — dereference fields of stale u1 in compare2 via entry
+    sepol_user_compare2(u1, u2);
+    return 0;
+}

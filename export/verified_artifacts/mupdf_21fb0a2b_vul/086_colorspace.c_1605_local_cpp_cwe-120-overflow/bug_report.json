@@ -1,0 +1,131 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "colorspace.c",
+        "original_line": 1605,
+        "function": "memoize_spots",
+        "entry_point": "fz_convert_slow_pixmap_samples",
+        "spine": [
+            "fz_convert_slow_pixmap_samples",
+            "memoize_spots"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "colorspace.c",
+        "harness_line": 64,
+        "original_file": "colorspace.c",
+        "original_line": 1605,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=1)",
+        "original_context": "",
+        "error_type": "assert",
+        "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: colorspace.c\nLine: 64\nassembly.ll line: 100\nState: 1\nStack: \n\t#000000100 in memoize_spots(139267466665984, 139473625096192, 139456445227008, 139250286796800, 0) at colorspace.c:64\n\t#100000049 in fz_convert_slow_pixmap_samples(139267466665984, 139473625096192, 139456445227008, 139250286796800, 0, 0) at colorspace.c:37\n\t#200000166 in main() at driver.c:24\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "src_pixmap",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_pixmap",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "is_colorspace",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "s",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "src_m",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "src_pixmap",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "dst_pixmap",
+            "size": 48,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "is_colorspace",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "s",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "src_m",
+            "size": 8,
+            "data": "b'@\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_convert_slow_pixmap_samples",
+        "crash_file": "source/fitz/colorspace.c",
+        "crash_line": 1675,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3586==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x504000000080 at pc 0x55ec8c341cc7 bp 0x7fff5b79c9b0 sp 0x7fff5b79c9a0\nREAD of size 8 at 0x504000000080 thread T0\n    #0 0x55ec8c341cc6 in fz_convert_slow_pixmap_samples source/fitz/colorspace.c:1675\n    #1 0x55ec8c336d12 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/086_colorspace.c_1605_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:24\n    #2 0x7f11963d9d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f11963d9e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55ec8c3368b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/086_colorspace.c_1605_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x108b4)\n\n0x504000000080 is located 0 bytes to the right of 48-byte region [0x504000000050,0x504000000080)\nallocated by thread T0 here:\n    #0 0x7f1196790a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55ec8c336a3d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/086_colorspace.c_1605_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:10\n    #2 0x7f11963d9d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/colorspace.c:1675 in fz_convert_slow_pixmap_samples\nShadow bytes around the buggy address:\n  0x0a087fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff8000: fa fa 00 00 00 00 00 00 fa fa 00 00 00 00 00 00\n=>0x0a087fff8010:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8040: fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/086_colorspace.c_1605_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 64,
+            "original_file": "colorspace.c",
+            "original_line": 1605,
+            "error_type": "assert",
+            "crash_function": "memoize_spots",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/086_colorspace.c_1605_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "colorspace.c",
+            "harness_line": 60,
+            "original_file": "colorspace.c",
+            "original_line": 1605,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/086_colorspace.c_1605_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_convert_slow_pixmap_samples",
+            "crash_file": "source/fitz/colorspace.c",
+            "crash_line": 1675
+        }
+    ]
+}

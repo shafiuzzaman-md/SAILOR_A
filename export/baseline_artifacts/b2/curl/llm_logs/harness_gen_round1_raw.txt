@@ -1,0 +1,84 @@
+{
+  "harnesses": [
+    {
+      "name": "to_u32_oob_read",
+      "target_function": "to_u32",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\nuint32_t to_u32(const uint8_t b[4]) {\n  // Big-endian conversion with no bounds checks.\n  return ((uint32_t)b[0] << 24) |\n         ((uint32_t)b[1] << 16) |\n         ((uint32_t)b[2] << 8)  |\n         ((uint32_t)b[3]);\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  size_t len;\n  klee_make_symbolic(&len, sizeof(len), \"len\");\n  // Constrain to a small range so KLEE explores short buffers (<4) easily\n  klee_assume(len <= 8);\n  size_t alloc_len = (len == 0) ? 1 : len;\n  uint8_t *buf = (uint8_t*)malloc(alloc_len);\n  klee_make_symbolic(buf, alloc_len, \"buf\");\n\n  // Call even when len < 4 to trigger potential OOB read\n  volatile uint32_t r = to_u32(buf);\n  (void)r;\n  free(buf);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "to_u32 reads 4 bytes from b without bounds checks. If the provided buffer is smaller than 4, KLEE can detect an out-of-bounds read (CWE-125)."
+    },
+    {
+      "name": "to_u16_oob_read",
+      "target_function": "to_u16",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\nuint16_t to_u16(const uint8_t b[2]) {\n  // Big-endian 16-bit conversion with no bounds checks.\n  return (uint16_t)(((uint16_t)b[0] << 8) | (uint16_t)b[1]);\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  size_t len;\n  klee_make_symbolic(&len, sizeof(len), \"len\");\n  klee_assume(len <= 4);\n  size_t alloc_len = (len == 0) ? 1 : len;\n  uint8_t *buf = (uint8_t*)malloc(alloc_len);\n  klee_make_symbolic(buf, alloc_len, \"buf\");\n\n  volatile uint16_t r = to_u16(buf);\n  (void)r;\n  free(buf);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "to_u16 reads 2 bytes unconditionally. If the input is shorter than 2, KLEE can find an out-of-bounds read (CWE-125)."
+    },
+    {
+      "name": "fuzz_get_tlv_comn_oob_parse",
+      "target_function": "fuzz_get_tlv_comn",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\n#define TLV_RC_NO_ERROR 0\n#define TLV_RC_NO_MORE_TLVS 1\n\ntypedef struct fuzz_parse_state {\n  const uint8_t *data;\n  size_t data_len;\n  size_t data_pos;\n} FUZZ_PARSE_STATE;\n\ntypedef struct fuzz_data {\n  FUZZ_PARSE_STATE state;\n} FUZZ_DATA;\n\ntypedef struct tlv {\n  uint16_t type;\n  uint32_t length;\n  const uint8_t *value;\n} TLV;\n\nstatic uint16_t to_u16_be(const uint8_t *b) {\n  return (uint16_t)(((uint16_t)b[0] << 8) | (uint16_t)b[1]);\n}\n\nstatic uint32_t to_u32_be(const uint8_t *b) {\n  return ((uint32_t)b[0] << 24) |\n         ((uint32_t)b[1] << 16) |\n         ((uint32_t)b[2] << 8)  |\n         ((uint32_t)b[3]);\n}\n\nint fuzz_get_tlv_comn(FUZZ_DATA *fuzz, TLV *tlv) {\n  // BUG: Only checks that some data remains, not that the full header (6 bytes) is available.\n  if(fuzz->state.data_pos >= fuzz->state.data_len)\n    return TLV_RC_NO_MORE_TLVS;\n\n  size_t pos = fuzz->state.data_pos;\n  const uint8_t *base = fuzz->state.data;\n\n  // Potential OOB reads if fewer than 6 bytes remain\n  tlv->type = to_u16_be(base + pos); pos += 2;\n  tlv->length = to_u32_be(base + pos); pos += 4;\n  tlv->value = base + pos;\n\n  // BUG: No bounds checking for tlv->length; may overflow or skip past buffer\n  fuzz->state.data_pos = pos + tlv->length;\n  return TLV_RC_NO_ERROR;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz;\n  memset(&fuzz, 0, sizeof(fuzz));\n\n  size_t len;\n  klee_make_symbolic(&len, sizeof(len), \"len\");\n  klee_assume(len <= 8);\n  uint8_t *data = (uint8_t*)malloc(len ? len : 1);\n  klee_make_symbolic(data, (len ? len : 1), \"tlv_stream\");\n\n  size_t pos;\n  klee_make_symbolic(&pos, sizeof(pos), \"pos\");\n  klee_assume(pos <= len); // may equal len to hit edge cases\n\n  fuzz.state.data = data;\n  fuzz.state.data_len = len;\n  fuzz.state.data_pos = pos;\n\n  TLV tlv;\n  int rc = fuzz_get_tlv_comn(&fuzz, &tlv);\n  (void)rc;\n\n  free(data);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "The parser reads a 6-byte header without ensuring it's fully available, and advances by tlv->length without validation. This can cause out-of-bounds reads and pointer arithmetic overflows (CWE-125, CWE-823)."
+    },
+    {
+      "name": "fuzz_parse_tlv_stack_overflow",
+      "target_function": "fuzz_parse_tlv",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\ntypedef struct fuzz_data {\n  int verbose;\n} FUZZ_DATA;\n\ntypedef struct tlv {\n  uint16_t type;\n  uint32_t length;\n  const uint8_t *value;\n} TLV;\n\nint fuzz_parse_tlv(FUZZ_DATA *fuzz, TLV *tlv) {\n  (void)fuzz;\n  if(!tlv)\n    return -1;\n  if(tlv->type == 1) {\n    // BUG: copies tlv->length bytes into a small fixed-size buffer\n    char small[8];\n    memcpy(small, tlv->value, tlv->length); // CWE-121/122 potential\n    unsigned sum = 0;\n    size_t n = (tlv->length < sizeof(small)) ? tlv->length : sizeof(small);\n    for(size_t i = 0; i < n; i++) sum += (unsigned)(unsigned char)small[i];\n    return (int)sum;\n  }\n  return 0;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz;\n  fuzz.verbose = 0;\n\n  TLV tlv;\n  tlv.type = 1; // triggers the vulnerable path\n\n  uint32_t len;\n  klee_make_symbolic(&len, sizeof(len), \"tlv_len\");\n  klee_assume(len > 8);   // ensure overflow into small[8]\n  klee_assume(len <= 64); // cap allocation size\n\n  uint8_t *val = (uint8_t*)malloc(len);\n  klee_make_symbolic(val, len, \"tlv_value\");\n\n  tlv.length = len;\n  tlv.value = val;\n\n  (void)fuzz_parse_tlv(&fuzz, &tlv);\n\n  free(val);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Copies unbounded TLV value to a small stack buffer, leading to stack-based buffer overflow (CWE-121) or out-of-bounds write (CWE-787)."
+    },
+    {
+      "name": "fuzz_tlv_to_string_oob_write",
+      "target_function": "fuzz_tlv_to_string",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\ntypedef struct tlv {\n  uint16_t type;\n  uint32_t length;\n  const uint8_t *value;\n} TLV;\n\nchar *fuzz_tlv_to_string(TLV *tlv) {\n  if(!tlv) return NULL;\n  size_t len = tlv->length;\n  // BUG: allocate exactly 'len' bytes but still write a terminator\n  char *s = (char*)malloc(len);\n  if(!s) return NULL; // may lead to NULL deref in callers in real code\n  memcpy(s, tlv->value, len);\n  s[len] = '\\0'; // OOB write (CWE-787)\n  return s;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  TLV tlv;\n  uint32_t len;\n  klee_make_symbolic(&len, sizeof(len), \"len\");\n  klee_assume(len > 0);\n  klee_assume(len <= 64);\n\n  uint8_t *val = (uint8_t*)malloc(len);\n  klee_make_symbolic(val, len, \"val\");\n\n  tlv.type = 0;\n  tlv.length = len;\n  tlv.value = val;\n\n  char *s = fuzz_tlv_to_string(&tlv);\n  // free even if it may be invalid; KLEE will catch memory errors before\n  free(s);\n  free(val);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Allocates a buffer of length N then writes a NUL terminator at s[N], causing a 1-byte heap buffer overflow (CWE-122/CWE-787)."
+    },
+    {
+      "name": "fuzz_write_callback_heap_overflow",
+      "target_function": "fuzz_write_callback",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\n#define TEMP_WRITE_ARRAY_SIZE 10\n\ntypedef struct fuzz_data {\n  char write_array[TEMP_WRITE_ARRAY_SIZE];\n  size_t written_data;\n} FUZZ_DATA;\n\nsize_t fuzz_write_callback(void *contents, size_t size, size_t nmemb, void *ptr) {\n  FUZZ_DATA *fuzz = (FUZZ_DATA*)ptr;\n  size_t total = size * nmemb; // BUG: no overflow or bounds checks\n  // BUG: writes total bytes into a tiny fixed buffer\n  memcpy(fuzz->write_array, contents, total); // CWE-787\n  fuzz->written_data += total;\n  return nmemb;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz;\n  memset(&fuzz, 0, sizeof(fuzz));\n\n  unsigned char contents[64];\n  klee_make_symbolic(contents, sizeof(contents), \"contents\");\n\n  size_t size, nmemb;\n  klee_make_symbolic(&size, sizeof(size), \"size\");\n  klee_make_symbolic(&nmemb, sizeof(nmemb), \"nmemb\");\n  // Ensure sane ranges and that total exceeds TEMP_WRITE_ARRAY_SIZE\n  klee_assume(size >= 1 && size <= 16);\n  klee_assume(nmemb >= 1 && nmemb <= 16);\n  klee_assume(size * nmemb <= 64);\n  klee_assume(size * nmemb > TEMP_WRITE_ARRAY_SIZE);\n\n  (void)fuzz_write_callback(contents, size, nmemb, &fuzz);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Copies size*nmemb bytes into a buffer of size 10 without checks, causing buffer overflow (CWE-787). Also exposes integer-overflow risk on multiplication (CWE-190)."
+    },
+    {
+      "name": "fuzz_read_callback_oob_read",
+      "target_function": "fuzz_read_callback",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\ntypedef struct fuzz_data {\n  const uint8_t *upload1_data;\n  size_t upload1_data_len;\n  size_t upload1_data_written;\n} FUZZ_DATA;\n\nsize_t fuzz_read_callback(char *buffer, size_t size, size_t nitems, void *ptr) {\n  FUZZ_DATA *fuzz = (FUZZ_DATA*)ptr;\n  size_t total = size * nitems; // no overflow checks\n  // BUG: does not cap to remaining data, can read past upload1_data end\n  memcpy(buffer, fuzz->upload1_data + fuzz->upload1_data_written, total); // CWE-125\n  fuzz->upload1_data_written += total;\n  return nitems;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz;\n  memset(&fuzz, 0, sizeof(fuzz));\n\n  size_t up_len;\n  klee_make_symbolic(&up_len, sizeof(up_len), \"up_len\");\n  klee_assume(up_len >= 1 && up_len <= 16);\n  uint8_t *up = (uint8_t*)malloc(up_len);\n  klee_make_symbolic(up, up_len, \"upload\");\n\n  fuzz.upload1_data = up;\n  fuzz.upload1_data_len = up_len;\n  fuzz.upload1_data_written = 0;\n\n  size_t size;\n  klee_make_symbolic(&size, sizeof(size), \"size\");\n  klee_assume(size > up_len); // ensure read goes past end\n  size_t nitems = 1;\n\n  char *buf = (char*)malloc(size);\n  (void)fuzz_read_callback(buf, size, nitems, &fuzz);\n\n  free(buf);\n  free(up);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Performs memcpy of requested total bytes regardless of available upload data, causing out-of-bounds reads (CWE-125)."
+    },
+    {
+      "name": "fuzz_free_double_free",
+      "target_function": "fuzz_free",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\nvoid fuzz_free(void **ptr) {\n  if(ptr && *ptr) {\n    free(*ptr);\n    // BUG: does not NULL out *ptr, enabling double-free\n  }\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n\nint main() {\n  void *p = malloc(8);\n  klee_make_symbolic(p, 8, \"p_bytes\");\n  fuzz_free(&p);\n  // Double-free the same pointer since fuzz_free() didn't NULL it\n  fuzz_free(&p);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "fuzz_free frees the pointer but doesn't set it to NULL, enabling a subsequent double free (CWE-415). KLEE detects freeing a deallocated object."
+    },
+    {
+      "name": "fuzz_terminate_fuzz_data_double_free",
+      "target_function": "fuzz_terminate_fuzz_data",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\ntypedef struct fuzz_parse_state {\n  uint8_t *data;\n  size_t data_len;\n  size_t data_pos;\n} FUZZ_PARSE_STATE;\n\ntypedef struct fuzz_data {\n  FUZZ_PARSE_STATE state;\n  char *postfields;\n} FUZZ_DATA;\n\nint fuzz_initialize_fuzz_data(FUZZ_DATA *fuzz, const uint8_t *data, size_t data_len) {\n  if(!fuzz) return -1;\n  fuzz->state.data = (uint8_t*)malloc(data_len);\n  if(fuzz->state.data && data_len)\n    memcpy(fuzz->state.data, data, data_len);\n  fuzz->state.data_len = data_len;\n  fuzz->state.data_pos = 0;\n  fuzz->postfields = (char*)malloc(data_len);\n  if(fuzz->postfields && data_len)\n    memcpy(fuzz->postfields, data, data_len);\n  return 0;\n}\n\nvoid fuzz_terminate_fuzz_data(FUZZ_DATA *fuzz) {\n  if(!fuzz) return;\n  // BUG: frees without NULLing, repeated calls will double-free\n  free(fuzz->state.data);\n  free(fuzz->postfields);\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz;\n  memset(&fuzz, 0, sizeof(fuzz));\n\n  size_t len;\n  klee_make_symbolic(&len, sizeof(len), \"len\");\n  klee_assume(len <= 64);\n  uint8_t *data = (uint8_t*)malloc(len ? len : 1);\n  klee_make_symbolic(data, (len ? len : 1), \"init_data\");\n\n  (void)fuzz_initialize_fuzz_data(&fuzz, data, len);\n  fuzz_terminate_fuzz_data(&fuzz);\n  // Double free on second terminate\n  fuzz_terminate_fuzz_data(&fuzz);\n\n  free(data);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Destructor frees internal pointers without resetting them; calling it twice frees already-freed memory (CWE-415)."
+    },
+    {
+      "name": "fuzz_send_next_response_overflow",
+      "target_function": "fuzz_send_next_response",
+      "harness_c": "// harness.c\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdio.h>\n\n#define TLV_MAX_NUM_RESPONSES 11\n\ntypedef struct fuzz_response {\n  const uint8_t *data;\n  size_t data_len;\n} FUZZ_RESPONSE;\n\ntypedef struct fuzz_socket_manager {\n  FUZZ_RESPONSE responses[TLV_MAX_NUM_RESPONSES];\n  int response_index;\n} FUZZ_SOCKET_MANAGER;\n\ntypedef struct fuzz_data {\n  int verbose;\n} FUZZ_DATA;\n\nint fuzz_send_next_response(FUZZ_DATA *fuzz, FUZZ_SOCKET_MANAGER *sockman) {\n  (void)fuzz;\n  if(!sockman) return -1;\n  if(sockman->response_index < 0 || sockman->response_index >= TLV_MAX_NUM_RESPONSES)\n    return -1;\n  FUZZ_RESPONSE *r = &sockman->responses[sockman->response_index];\n  // BUG: copy into a small fixed buffer without size checks\n  char out[16];\n  memcpy(out, r->data, r->data_len); // CWE-787 if data_len > 16\n  sockman->response_index++;\n  return 0;\n}\n",
+      "driver_c": "// driver.c\n#include <klee/klee.h>\n#include \"harness.c\"\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\nint main() {\n  FUZZ_DATA fuzz; fuzz.verbose = 0;\n  FUZZ_SOCKET_MANAGER sm;\n  memset(&sm, 0, sizeof(sm));\n  sm.response_index = 0;\n\n  size_t rlen;\n  klee_make_symbolic(&rlen, sizeof(rlen), \"rlen\");\n  klee_assume(rlen >= 17 && rlen <= 64); // ensure overflow of 16-byte buffer\n\n  uint8_t *resp = (uint8_t*)malloc(rlen);\n  klee_make_symbolic(resp, rlen, \"resp\");\n\n  sm.responses[0].data = resp;\n  sm.responses[0].data_len = rlen;\n\n  (void)fuzz_send_next_response(&fuzz, &sm);\n\n  free(resp);\n  return 0;\n}\n",
+      "stubs_c": "// no stubs needed\n",
+      "reasoning": "Copies an arbitrarily long response into a fixed 16-byte buffer, causing a heap/stack overflow (CWE-787)."
+    }
+  ]
+}

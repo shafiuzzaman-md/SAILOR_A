@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3988978==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55d2b21abe75 bp 0x7fff58967b40 sp 0x7fff58967b10 T0)
+==3988978==The signal is caused by a READ memory access.
+==3988978==Hint: address points to the zero page.
+    #0 0x55d2b21abe75 in xmlSaveTree /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_679_null-pointer-dereference/reproducer.c:41:14
+    #1 0x55d2b21abdc1 in xmlDumpEntityDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_679_null-pointer-dereference/reproducer.c:73:5
+    #2 0x55d2b21abd46 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_679_null-pointer-dereference/reproducer.c:90:5
+    #3 0x7b19c162a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7b19c162a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x55d2b20ec304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_679_null-pointer-dereference/reproducer+0x21304) (BuildId: c39cbec4dcb42d2730397979c0495c69c35ea510)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_679_null-pointer-dereference/reproducer.c:41:14 in xmlSaveTree
+==3988978==ABORTING

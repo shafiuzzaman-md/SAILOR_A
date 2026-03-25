@@ -1,0 +1,69 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2345116757
+INFO: Loaded 1 modules   (10 inline 8-bit counters): 10 [0x574251de72a0, 0x574251de72aa), 
+INFO: Loaded 1 PC tables (10 PCs): 10 [0x574251de72b0,0x574251de7350), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 40b max: 40b total: 40b rss: 29Mb
+=================================================================
+==87358==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffeadcf7f88 at pc 0x574251da1e9c bp 0x7ffeadcf7e20 sp 0x7ffeadcf7e18
+READ of size 8 at 0x7ffeadcf7f88 thread T0
+    #0 0x574251da1e9b in fz_aes_crypt_ecb /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/crypt-aes.c:406:5
+    #1 0x574251da65d6 in fz_aes_crypt_cbc /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/crypt-aes.c:506:4
+    #2 0x574251d9e54e in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_harness.c:33:5
+    #3 0x574251cc481a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x4381a) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #4 0x574251cc3ee5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x42ee5) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #5 0x574251cc5ae8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x44ae8) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #6 0x574251cc5f66 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x44f66) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #7 0x574251cb3552 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x32552) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #8 0x574251cde9f6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x5d9f6) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+    #9 0x78d82a02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x78d82a02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x574251ca7984 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_bin+0x26984) (BuildId: 196d3eea1f7ff9727ff147bd9206cdfcae5621f0)
+
+Address 0x7ffeadcf7f88 is located in stack of thread T0 at offset 40 in frame
+    #0 0x574251d9e2bf in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/003_crypt-aes.c_511_local_cpp_cwe-120-overflow/fuzz_harness.c:17
+
+  This frame has 1 object(s):
+    [32, 36) 'ctx' (line 19) <== Memory access at offset 40 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/crypt-aes.c:406:5 in fz_aes_crypt_ecb
+Shadow bytes around the buggy address:
+  0x100055b96fa0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b96fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b96fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b96fd0: 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00
+  0x100055b96fe0: f3 f3 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+=>0x100055b96ff0: 04[f3]f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b97000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b97010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b97020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b97030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100055b97040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==87358==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-b80de5d138758541c5f05265ad144ab9fa86d1db
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

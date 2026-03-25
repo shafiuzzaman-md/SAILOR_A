@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "ftobjs.c",
+        "original_line": 5249,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "5244:         {\n5245:           if ( cur[0] != module )\n5246:           {\n5247:             FT_ASSERT( cur[0]->clazz );\n5248: \n5249:             if ( cur[0]->clazz->get_interface )\n5250:             {\n5251:               result = cur[0]->clazz->get_interface( cur[0], service_id );\n5252:               if ( result )\n5253:                 break;\n5254:             }"
+    },
+    "klee_crash": {
+        "harness_file": "ftobjs.c",
+        "harness_line": 40,
+        "original_file": "ftobjs.c",
+        "original_line": 5245,
+        "original_code": "if ( cur[0] != module )",
+        "original_context": "    5242: \n    5243:         for ( ; cur < limit; cur++ )\n    5244:         {\n>>> 5245:           if ( cur[0] != module )\n    5246:           {\n    5247:             FT_ASSERT( cur[0]->clazz );\n    5248: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: ftobjs.c\nLine: 40\nassembly.ll line: 156\nState: 1\nStack: \n\t#000000156 in ft_module_get_service(139124638441472, 138788557250560) at ftobjs.c:40\n\t#100000109 in entry_func(139124638441472, 138788557250560) at ftobjs.c:62\n\t#200000070 in main() at driver.c:42\nInfo: \n\taddress: 139073098833928\n\tnext: object at 138776746090496 of size 4\n\t\tMO20[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "service_id",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "ft_module_get_service",
+        "crash_file": "thirdparty/freetype/src/base/ftobjs.c",
+        "crash_line": 5232,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==12144==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000b0 at pc 0x555c4328b85d bp 0x7ffcc79d3290 sp 0x7ffcc79d3280\nREAD of size 8 at 0x5020000000b0 thread T0\n    #0 0x555c4328b85c in ft_module_get_service thirdparty/freetype/src/base/ftobjs.c:5232\n    #1 0x555c43280b16 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2318_ftobjs.c_5249_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:42\n    #2 0x7fa40e4f9d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fa40e4f9e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x555c43280694 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2318_ftobjs.c_5249_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x2694)\n\n0x5020000000b0 is located 56 bytes to the right of 8-byte region [0x502000000070,0x502000000078)\nallocated by thread T0 here:\n    #0 0x7fa40e8b0a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x555c43280a26 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2318_ftobjs.c_5249_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:31\n    #2 0x7fa40e4f9d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/freetype/src/base/ftobjs.c:5232 in ft_module_get_service\nShadow bytes around the buggy address:\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 00 00 fa fa 00 00 fa fa 00 fa fa fa 00 fa\n=>0x0a047fff8010: fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff803"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2318_ftobjs.c_5249_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "ftobjs.c",
+            "harness_line": 40,
+            "original_file": "ftobjs.c",
+            "original_line": 5245,
+            "error_type": "ptr",
+            "crash_function": "ft_module_get_service",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2318_ftobjs.c_5249_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "ft_module_get_service",
+            "crash_file": "thirdparty/freetype/src/base/ftobjs.c",
+            "crash_line": 5232
+        }
+    ]
+}

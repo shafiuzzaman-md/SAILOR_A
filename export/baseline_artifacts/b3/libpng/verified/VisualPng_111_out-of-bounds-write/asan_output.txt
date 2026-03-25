@@ -1,0 +1,44 @@
+=================================================================
+==4080355==ERROR: AddressSanitizer: global-buffer-overflow on address 0x654b8d0916a4 at pc 0x654b8c6b741b bp 0x7ffdff8adad0 sp 0x7ffdff8ad298
+WRITE of size 5001 at 0x654b8d0916a4 thread T0
+    #0 0x654b8c6b741a in strcpy (/app/export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer+0x8f41a) (BuildId: a29c375c9ad084b5f4e18f96397d13cb2c871301)
+    #1 0x654b8c708da4 in WinMain /app/export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer.c:30:13
+    #2 0x654b8c708e89 in main /app/export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer.c:52:5
+    #3 0x7704e8a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7704e8a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x654b8c649314 in _start (/app/export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer+0x21314) (BuildId: a29c375c9ad084b5f4e18f96397d13cb2c871301)
+
+0x654b8d0916a4 is located 0 bytes to the right of global variable 'szCmdFileName' defined in 'export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer.c:14:13' (0x654b8d0915a0) of size 260
+SUMMARY: AddressSanitizer: global-buffer-overflow (/app/export/baseline_artifacts/b3/libpng/verified/VisualPng_111_out-of-bounds-write/reproducer+0x8f41a) (BuildId: a29c375c9ad084b5f4e18f96397d13cb2c871301) in strcpy
+Shadow bytes around the buggy address:
+  0x0ca9f1a0a280: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a290: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a2a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a2b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a2c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0ca9f1a0a2d0: 00 00 00 00[04]f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9
+  0x0ca9f1a0a2e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a2f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a300: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a310: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0ca9f1a0a320: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4080355==ABORTING

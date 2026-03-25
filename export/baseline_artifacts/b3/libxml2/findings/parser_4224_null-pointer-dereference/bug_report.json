@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "parser.c",
+    "line": 4224,
+    "function": "xmlParseAttValueInternal",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "When (buf.mem == NULL) and outFlags != NULL, the code decrements *attlen without checking if attlen is NULL. If the caller provided attlen == NULL (which the API allows), this results in a NULL pointer dereference at '*attlen -= 1;'.",
+    "abs_path": "/tmp/libxml2_upstream/parser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal type redefs to emulate libxml2 internals */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlParserCtxt {\n    int dummy;\n} xmlParserCtxt, *xmlParserCtxtPtr;\n\ntypedef struct {\n    xmlChar *mem;   /* NULL signals the fast path using input buffer */\n    size_t size;\n} xmlSBuf;\n\n/* Global input buffer to satisfy CUR_PTR usage */\nstatic const xmlChar g_input[] = \"abcde\";\nstatic size_t g_pos = 3; /* CUR_PTR will point somewhere inside g_input */\n\n#define CUR_PTR ((const xmlChar*)(g_input + g_pos))\n\n/* Stubs for helper functions/macros used in the vulnerable function */\nstatic void xmlSBufAddCString(xmlSBuf *buf, const char *str, int len) {\n    (void)buf; (void)str; (void)len;\n}\n\nstatic void xmlSBufAddString(xmlSBuf *buf, const xmlChar *str, int len) {\n    (void)buf; (void)str; (void)len;\n}\n\nstatic void xmlSBufCleanup(xmlSBuf *buf, xmlParserCtxtPtr ctxt, const char *msg) {\n    (void)buf; (void)ctxt; (void)msg;\n}\n\n/* Vulnerable function reimplemented minimally to hit the bug site */\nstatic xmlChar *xmlParseAttValueInternal(xmlParserCtxtPtr ctxt, int normalize,\n                                         int *attlen, unsigned int *outFlags) {\n    (void)ctxt;\n    xmlChar *ret = NULL;\n    xmlSBuf buf;\n    buf.mem = NULL;   /* Force the (buf.mem == NULL) path */\n    buf.size = 0;\n\n    /* Set up state so that we take the buggy branch */\n    int inSpace = 1;      /* true */\n    int chunkSize = 2;    /* > 0 */\n    unsigned int attvalFlags = 0;\n\n    if ((buf.mem == NULL) && (outFlags != NULL)) {\n        ret = (xmlChar *) CUR_PTR - chunkSize;\n\n        if (attlen != NULL)\n            *attlen = chunkSize;\n        /* BUG: Missing attlen NULL-check before decrement */\n        if ((normalize) && (inSpace) && (chunkSize > 0)) {\n            attvalFlags |= 1; /* XML_ATTVAL_NORM_CHANGE (dummy) */\n            *attlen -= 1;     /* NULL deref when caller passed attlen == NULL */\n        }\n\n        /* Report potential error */\n        xmlSBufCleanup(&buf, ctxt, \"AttValue length too long\");\n    } else {\n        /* Not taken in this reproducer */\n    }\n\n    if (outFlags != NULL)\n        *outFlags = attvalFlags;\n\n    return ret;\n}\n\nint main(void) {\n    xmlParserCtxt ctxt;\n    memset(&ctxt, 0, sizeof(ctxt));\n\n    unsigned int outFlags = 0;\n\n    /* Pass attlen == NULL and outFlags != NULL to trigger the bug */\n    (void)xmlParseAttValueInternal(&ctxt, /*normalize=*/1,\n                                   /*attlen=*/NULL,\n                                   /*outFlags=*/&outFlags);\n\n    /* We should never reach here due to the NULL pointer dereference */\n    printf(\"If you see this, the bug did not trigger as expected.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8203306198120117,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3996328==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5bad07e0e0e0 bp 0x7ffc0b4c1910 sp 0x7ffc0b4c17e0 T0)\n==3996328==The signal is caused by a READ memory access.\n==3996328==Hint: address points to the zero page.\n    #0 0x5bad07e0e0e0 in xmlParseAttValueInternal /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:59:21\n    #1 0x5bad07e0dde1 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:81:11\n    #2 0x74a73782a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x74a73782a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bad07d4e304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer+0x21304) (BuildId: 074b3a31d10689eb0d729c2c4301745cad73ca19)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:59:21 in xmlParseAttValueInternal\n==3996328==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlParseAttValueInternal",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:59",
+      "crash_line": 21,
+      "frames": [
+        [
+          "0",
+          "xmlParseAttValueInternal",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:59",
+          "21"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_4224_null-pointer-dereference/reproducer.c:81",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

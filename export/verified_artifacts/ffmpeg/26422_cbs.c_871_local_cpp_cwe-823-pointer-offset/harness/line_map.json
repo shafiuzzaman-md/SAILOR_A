@@ -1,0 +1,84 @@
+{
+  "cbs.c": {
+    "3": {
+      "orig_file": "cbs.c",
+      "orig_line": 19,
+      "code": "#include <string.h>"
+    },
+    "16": {
+      "orig_file": "cbs.c",
+      "orig_line": 748,
+      "code": "CodedBitstreamUnit *units;"
+    },
+    "23": {
+      "orig_file": "cbs.c",
+      "orig_line": 86,
+      "code": "#endif"
+    },
+    "28": {
+      "orig_file": "cbs.c",
+      "orig_line": 102,
+      "code": "}"
+    },
+    "32": {
+      "orig_file": "cbs.c",
+      "orig_line": 92,
+      "code": "{"
+    },
+    "34": {
+      "orig_file": "cbs.c",
+      "orig_line": 863,
+      "code": "av_assert0(0 <= position && position < frag->nb_units"
+    },
+    "35": {
+      "orig_file": "cbs.c",
+      "orig_line": 864,
+      "code": "&& \"Unit to be deleted not in fragment.\");"
+    },
+    "37": {
+      "orig_file": "cbs.c",
+      "orig_line": 866,
+      "code": "cbs_unit_uninit(&frag->units[position]);"
+    },
+    "39": {
+      "orig_file": "cbs.c",
+      "orig_line": 868,
+      "code": "--frag->nb_units;"
+    },
+    "42": {
+      "orig_file": "cbs.c",
+      "orig_line": 871,
+      "code": "memmove(frag->units + position,"
+    },
+    "43": {
+      "orig_file": "cbs.c",
+      "orig_line": 872,
+      "code": "frag->units + position + 1,"
+    },
+    "44": {
+      "orig_file": "cbs.c",
+      "orig_line": 873,
+      "code": "(frag->nb_units - position) * sizeof(*frag->units));"
+    },
+    "47": {
+      "orig_file": "cbs.c",
+      "orig_line": 874,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "cbs.c",
+      "orig_line": 874,
+      "code": "}"
+    },
+    "53": {
+      "orig_file": "cbs.c",
+      "orig_line": 847,
+      "code": "return 0;"
+    },
+    "54": {
+      "orig_file": "cbs.c",
+      "orig_line": 848,
+      "code": "}"
+    }
+  }
+}

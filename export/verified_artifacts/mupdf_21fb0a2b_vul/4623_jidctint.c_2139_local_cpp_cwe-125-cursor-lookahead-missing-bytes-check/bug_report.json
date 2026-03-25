@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 2139,
+        "function": "jpeg_idct_13x13",
+        "entry_point": "jpeg_idct_13x13",
+        "spine": [
+            "jpeg_idct_13x13"
+        ],
+        "original_context": "2134: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n2135: \t\t\t     & RANGE_MASK];\n2136:     outptr[8]  = range_limit[(int) RIGHT_SHIFT(tmp24 - tmp14,\n2137: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n2138: \t\t\t     & RANGE_MASK];\n2139:     outptr[5]  = range_limit[(int) RIGHT_SHIFT(tmp25 + tmp15,\n2140: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n2141: \t\t\t     & RANGE_MASK];\n2142:     outptr[7]  = range_limit[(int) RIGHT_SHIFT(tmp25 - tmp15,\n2143: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n2144: \t\t\t     & RANGE_MASK];"
+    },
+    "klee_crash": {
+        "harness_file": "jidctint.c",
+        "harness_line": 72,
+        "original_file": "jidctint.c",
+        "original_line": 1910,
+        "original_code": "outptr[5]  = range_limit[(int) RIGHT_SHIFT(tmp25 + tmp15,",
+        "original_context": "    1907:     outptr[7]  = range_limit[(int) RIGHT_SHIFT(tmp24 - tmp14,\n    1908: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n    1909: \t\t\t     & RANGE_MASK];\n>>> 1910:     outptr[5]  = range_limit[(int) RIGHT_SHIFT(tmp25 + tmp15,\n    1911: \t\t\t\t\t       CONST_BITS+PASS1_BITS+3)\n    1912: \t\t\t     & RANGE_MASK];\n    1913:     outptr[6]  = range_limit[(int) RIGHT_SHIFT(tmp25 - tmp15,",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jidctint.c\nLine: 72\nassembly.ll line: 264\nState: 1\nStack: \n\t#000000264 in jpeg_idct_13x13(139384106016768, 139366926147584, 0, 139401285885952, 0) at jidctint.c:72\n\t#100000130 in main() at driver.c:59\nInfo: \n\taddress: 139358336212997\n\tnext: object at 139083726741504 of size 4\n\t\tMO89[4] allocated at jpeg_idct_13x13():  %23 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "range_limit",
+            "size": 2048,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "out_row",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_idct_13x13",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 1942,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==25825==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000001a8 at pc 0x55b645a8c67c bp 0x7ffdd7fe9170 sp 0x7ffdd7fe9160\nREAD of size 8 at 0x5020000001a8 thread T0\n    #0 0x55b645a8c67b in jpeg_idct_13x13 thirdparty/libjpeg/jidctint.c:1942\n    #1 0x55b645a82615 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4623_jidctint.c_2139_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:60\n    #2 0x7fb4c0a86d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fb4c0a86e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55b645a82304 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4623_jidctint.c_2139_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1304)\n\n0x5020000001a8 is located 308 bytes to the right of 4-byte region [0x502000000070,0x502000000074)\nallocated by thread T0 here:\n    #0 0x7fb4c0e3d887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55b645a82537 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4623_jidctint.c_2139_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:52\n    #2 0x7fb4c0a86d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jidctint.c:1942 in jpeg_idct_13x13\nShadow bytes around the buggy address:\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 00 fa fa fa 00 fa fa fa 00 fa fa fa 04 fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff8030: fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8050: fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4623_jidctint.c_2139_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jidctint.c",
+            "harness_line": 72,
+            "original_file": "jidctint.c",
+            "original_line": 1910,
+            "error_type": "ptr",
+            "crash_function": "jpeg_idct_13x13",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4623_jidctint.c_2139_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_idct_13x13",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 1942
+        }
+    ]
+}

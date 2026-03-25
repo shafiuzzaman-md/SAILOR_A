@@ -1,0 +1,101 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_generic.c",
+        "original_line": 730,
+        "function": "jbig2_decode_generic_template2",
+        "entry_point": "jbig2_decode_generic_region",
+        "spine": [
+            "jbig2_decode_generic_region",
+            "jbig2_decode_generic_template2"
+        ],
+        "original_context": "725:         uint32_t line_m1;\n726:         uint32_t line_m2;\n727:         uint32_t padded_width = (GBW + 7) & -8;\n728: \n729:         line_m1 = line1 ? line1[0] : 0;\n730:         line_m2 = line2 ? line2[0] << 4 : 0;\n731:         CONTEXT = ((line_m1 >> 3) & 0x7c) | ((line_m2 >> 3) & 0x380);\n732: \n733:         /* 6.2.5.7 3d */\n734:         for (x = 0; x < padded_width; x += 8) {\n735:             byte result = 0;"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_generic.c",
+        "harness_line": 30,
+        "original_file": "jbig2_generic.c",
+        "original_line": 730,
+        "original_code": "line_m2 = line2 ? line2[0] << 4 : 0;",
+        "original_context": "    727:         uint32_t padded_width = (GBW + 7) & -8;\n    728: \n    729:         line_m1 = line1 ? line1[0] : 0;\n>>> 730:         line_m2 = line2 ? line2[0] << 4 : 0;\n    731:         CONTEXT = ((line_m1 >> 3) & 0x7c) | ((line_m2 >> 3) & 0x380);\n    732: \n    733:         /* 6.2.5.7 3d */",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jbig2_generic.c\nLine: 30\nassembly.ll line: 140\nState: 2\nStack: \n\t#000000140 in jbig2_decode_generic_template2(0, 0, 0, 0, 0, 0) at jbig2_generic.c:30\n\t#100000100 in jbig2_decode_generic_region() at jbig2_generic.c:44\n\t#200000055 in main() at driver.c:38\nInfo: \n\taddress: (Add w64 139126346424320\n          (ZExt w64 (ReadLSB w32 0 off)))\n\texample: 139126346424321\n\trange: [139126346424321, 139126346424321]\n\tnext: object at 138827846197248 of size 4\n\t\t"
+    },
+    "concrete_inputs": [
+        {
+            "name": "buf_byte",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "off",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        },
+        {
+            "name": "buf_byte",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "off",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "jbig2_decode_generic_region",
+        "crash_file": "thirdparty/jbig2dec/jbig2_generic.c",
+        "crash_line": 1349,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==10593==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55991263ed78 bp 0x7ffde636e490 sp 0x7ffde636e350 T0)\n==10593==The signal is caused by a READ memory access.\n==10593==Hint: address points to the zero page.\n    #0 0x55991263ed78 in jbig2_decode_generic_region thirdparty/jbig2dec/jbig2_generic.c:1349\n    #1 0x55991263eba2 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2090_jbig2_generic.c_730_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:39\n    #2 0x7fa17c586d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fa17c586e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55991263e974 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2090_jbig2_generic.c_730_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xb974)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/jbig2dec/jbig2_generic.c:1349 in jbig2_decode_generic_region\n==10593==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2090_jbig2_generic.c_730_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_generic.c",
+            "harness_line": 30,
+            "original_file": "jbig2_generic.c",
+            "original_line": 730,
+            "error_type": "ptr",
+            "crash_function": "jbig2_decode_generic_template2",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2090_jbig2_generic.c_730_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "jbig2_generic.c",
+            "harness_line": 32,
+            "original_file": "jbig2_generic.c",
+            "original_line": 730,
+            "error_type": "assert",
+            "crash_function": "jbig2_decode_generic_template2",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2090_jbig2_generic.c_730_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "jbig2_decode_generic_region",
+            "crash_file": "thirdparty/jbig2dec/jbig2_generic.c",
+            "crash_line": 1349
+        }
+    ]
+}

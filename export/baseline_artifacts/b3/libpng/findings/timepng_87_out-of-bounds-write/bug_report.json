@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/timepng.c",
+    "line": 87,
+    "function": "read_by_row",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "display is declared as a png_byte (single byte) instead of a png_bytep (pointer): 'png_byte *row = NULL, display = NULL;'. Later it is assigned the result of malloc and then passed to png_read_row as a buffer pointer (line 125) and freed (line 135). This truncates the allocated pointer to a byte and then uses that byte value as a pointer, leading to writes to an invalid address (often near NULL) and undefined behavior, potentially crashing or corrupting memory.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/timepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for libpng types/APIs so we can compile/link standalone */\ntypedef unsigned char png_byte;\ntypedef png_byte* png_bytep;\ntypedef uint32_t png_uint_32;\n\ntypedef struct png_struct_def png_struct;  /* opaque in real libpng */\ntypedef struct png_info_def png_info;      /* opaque in real libpng */\nstruct png_struct_def { int dummy; };\nstruct png_info_def  { int dummy; };\n\n/* Stubs for the libpng read path used by the buggy function */\nstatic void png_read_info(png_struct* png_ptr, png_info* info_ptr) {\n  (void)png_ptr; (void)info_ptr;\n}\n\nstatic size_t png_get_rowbytes(png_struct* png_ptr, png_info* info_ptr) {\n  (void)png_ptr; (void)info_ptr;\n  /* Pick a reasonably sized row so the write is noticeable */\n  return 256;\n}\n\nstatic png_uint_32 png_get_image_height(png_struct* png_ptr, png_info* info_ptr) {\n  (void)png_ptr; (void)info_ptr;\n  return 2; /* two rows */\n}\n\nstatic int png_set_interlace_handling(png_struct* png_ptr) {\n  (void)png_ptr;\n  return 1; /* single pass */\n}\n\nstatic void png_start_read_image(png_struct* png_ptr) {\n  (void)png_ptr;\n}\n\nstatic void png_error(png_struct* png_ptr, const char* msg) {\n  (void)png_ptr;\n  fprintf(stderr, \"png_error: %s\\n\", msg ? msg : \"(null)\");\n  /* In libpng this does not return; we exit to simulate */\n  exit(1);\n}\n\n/* Our stub will write 'rowbytes' bytes into both buffers to simulate decoding */\nstatic void png_read_row(png_struct* png_ptr, png_bytep row, png_bytep display) {\n  (void)png_ptr;\n  size_t n = 256; /* must match png_get_rowbytes above */\n  for (size_t i = 0; i < n; ++i) {\n    row[i] = (png_byte)(i & 0xFF);\n    if (display) {\n      display[i] = (png_byte)(0xFF - (i & 0xFF));\n    }\n  }\n}\n\n/* Buggy function reproduced from contrib/libtests/timepng.c (trimmed) */\nstatic void read_by_row(png_struct *png_ptr, png_info *info_ptr,\n                        FILE *write_ptr, FILE *read_ptr)\n{\n  (void)write_ptr; (void)read_ptr; /* not used in this reproducer */\n\n  /* BUG: 'display' is declared as a single byte, not a pointer */\n  png_byte *row = NULL, display = 0;\n\n  png_read_info(png_ptr, info_ptr);\n\n  {\n    size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);\n\n    row = (png_byte*)malloc(rowbytes);\n    /* Truncates the pointer to a single byte! */\n    display = (png_byte)(uintptr_t)malloc(rowbytes);\n\n    if (row == NULL || display == 0)\n      png_error(png_ptr, \"OOM allocating row buffers\");\n\n    {\n      png_uint_32 height = png_get_image_height(png_ptr, info_ptr);\n      int passes = png_set_interlace_handling(png_ptr);\n      int pass;\n\n      png_start_read_image(png_ptr);\n\n      for (pass = 0; pass < passes; ++pass)\n      {\n        png_uint_32 y = height;\n        while (y-- > 0) {\n          /* The 'display' byte value is implicitly converted to a pointer here */\n          png_read_row(png_ptr, row, (png_bytep)(uintptr_t)display);\n        }\n      }\n    }\n  }\n}\n\nint main(void) {\n  png_struct png;\n  png_info info;\n\n  /* Call the buggy function; our stubs will cause writes into the bogus pointer */\n  read_by_row(&png, &info, NULL, NULL);\n\n  /* If we somehow survived, indicate completion */\n  puts(\"Done (unexpected)\");\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7600398063659668,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3725319==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000080 (pc 0x5714d40520ff bp 0x7fffb0ca46b0 sp 0x7fffb0ca4660 T0)\n==3725319==The signal is caused by a WRITE memory access.\n==3725319==Hint: address points to the zero page.\n    #0 0x5714d40520ff in png_read_row /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:55:18\n    #1 0x5714d4051ee7 in read_by_row /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:93:11\n    #2 0x5714d4051d8d in main /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:105:3\n    #3 0x705b7202a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x705b7202a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5714d3f92314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer+0x21314) (BuildId: 39e1c0d732d2e44d430fce3ed0fff02d38c381b8)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:55:18 in png_read_row\n==3725319==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "png_read_row",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:55",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "png_read_row",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:55",
+          "18"
+        ],
+        [
+          "1",
+          "read_by_row",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:93",
+          "11"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/timepng_87_out-of-bounds-write/reproducer.c:105",
+          "3"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

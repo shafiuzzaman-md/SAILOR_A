@@ -1,0 +1,37 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+snprintf_overflow	SE_DETECTED	TP	ptr	memcpy.c	29	sqlite3_snprintf		0	2845	BUG-016	
+snprintf_overflow_crash1	SE_DETECTED	TP	ptr	vsnprintf.c	69	sqlite3_snprintf		0	2845	BUG-021	
+create_filename_oob	SE_DETECTED	TP	ptr	harness.c	30	sqlite3_create_filename		0	2845	BUG-013	
+prepare_v2_read_overflow	SE_DETECTED	TP	ptr	memcpy.c	29	sqlite3_prepare_v2		0	2845		true
+get_table_off_by_one	SE_DETECTED	TP	model	harness.c	28	sqlite3_get_table		0	2845	BUG-012	
+get_table_off_by_one_crash1	SE_DETECTED	TP	ptr	harness.c	32	sqlite3_get_table		0	2845	BUG-014	
+bind_zeroblob_heap_overflow_and_index_oob	SE_DETECTED	TP	ptr	harness.c	23	sqlite3_bind_zeroblob		25	2845	BUG-011	
+bind_zeroblob_heap_overflow_and_index_oob_crash1	SE_DETECTED	TP	ptr	memset.c	28	sqlite3_bind_zeroblob		25	2845	BUG-017	
+realloc_use_after_free	SE_DETECTED	TP	ptr	memcpy.c	29	sqlite3_realloc		0	2845		true
+randomness_off_by_one	SE_DETECTED	TP	ptr	harness.c	10	sqlite3_randomness		0	2845	BUG-001	
+uri_parameter_oob_pointer	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	driver.c	12	sqlite3_uri_parameter		0	2845		
+errmsg_null_deref	SE_DETECTED	TP	ptr	harness.c	16	sqlite3_errmsg		0	2845	BUG-008	
+free_table_double_free	SE_DETECTED	TP	ptr	harness.c	10	sqlite3_free_table		0	2845		true
+compileoption_get_oob	SE_DETECTED	TP	ptr	harness.c	20	sqlite3_compileoption_get		36	2845	BUG-010	
+compileoption_used_null	SE_DETECTED	TP	ptr	strcmp.c	34	sqlite3_compileoption_used		0	2845	BUG-018	
+complete_semicolon_prevchar_oob	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	7	sqlite3_complete		0	2845		
+complete16_prevword_oob	HARNESS_ARTIFACT	HARNESS_ARTIFACT	user	driver.c	7	sqlite3_complete16		0	2845		
+vsnprintf_oob_term	SE_DETECTED	TP	ptr	harness.c	10	sqlite3_vsnprintf		3	2845		true
+malloc64_overflow_memset	SE_DETECTED	TP	model	harness.c	13	sqlite3_malloc64		0	2845	BUG-004	
+msize_header_prior_read_oob	SE_DETECTED	TP	ptr	harness.c	11	sqlite3_msize		0	2845	BUG-002	
+busy_timeout_null_deref	SE_DETECTED	TP	ptr	harness.c	12	sqlite3_busy_timeout		0	2845	BUG-003	
+bind_parameter_index_oob	SE_DETECTED	TP	ptr	harness.c	11	sqlite3_bind_parameter_index		0	2845		true
+result_zeroblob64_overflow	SE_DETECTED	TP	model	harness.c	16	sqlite3_result_zeroblob64		0	2845	BUG-007	
+realloc64_shrink_overflow	SE_DETECTED	TP	model	harness.c	14	sqlite3_realloc64		0	2845	BUG-005	
+realloc64_shrink_overflow_crash1	SE_DETECTED	TP	model	harness.c	35	sqlite3_realloc64		0	2845	BUG-015	
+realloc64_shrink_overflow_crash2	SE_DETECTED	TP	ptr	memcpy.c	29	sqlite3_realloc64		0	2845		true
+uri_int64_small_stack_copy	NO_BUG	FP			0	sqlite3_uri_int64		312	2845		
+uri_key_small_stack_copy	SE_DETECTED	TP	ptr	memcpy.c	29	sqlite3_uri_key		310	2845		true
+uri_key_small_stack_copy_crash1	SE_DETECTED	TP	ptr	harness.c	17	sqlite3_uri_key		310	2845	BUG-009	
+column_text16_off_by_one	SE_DETECTED	TP	ptr	harness.c	17	sqlite3_column_text16		1	2845		true
+bind_parameter_name_oob_read	SE_DETECTED	TP	ptr	harness.c	15	sqlite3_bind_parameter_name		1	2845	BUG-006	
+clear_bindings_oob_write	SE_DETECTED	TP	ptr	harness.c	15	sqlite3_clear_bindings		0	2845		true
+finalize_double_free	SE_DETECTED	TP	ptr	harness.c	12	sqlite3_finalize		0	2845		true
+filename_database_stack_overflow	SE_DETECTED	TP	ptr	harness.c	16	sqlite3_filename_database		0	2845		true
+set_errmsg_strcpy_overflow	SE_DETECTED	TP	ptr	strcpy.c	27	sqlite3_set_errmsg		0	2845	BUG-019	
+value_text16be_strlen_oobread	SE_DETECTED	TP	ptr	strlen.c	22	sqlite3_value_text16be		0	2845	BUG-020	

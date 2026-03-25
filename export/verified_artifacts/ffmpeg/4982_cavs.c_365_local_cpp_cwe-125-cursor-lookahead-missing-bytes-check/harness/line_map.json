@@ -1,0 +1,34 @@
+{
+  "cavs.c": {
+    "15": {
+      "orig_file": "cavs.c",
+      "orig_line": 362,
+      "code": "void ff_cavs_modify_mb_i(AVSContext *h, int *pred_mode_uv)"
+    },
+    "16": {
+      "orig_file": "cavs.c",
+      "orig_line": 363,
+      "code": "{"
+    },
+    "18": {
+      "orig_file": "cavs.c",
+      "orig_line": 365,
+      "code": "h->pred_mode_Y[3]             = h->pred_mode_Y[5];"
+    },
+    "21": {
+      "orig_file": "cavs.c",
+      "orig_line": 360,
+      "code": "}"
+    },
+    "26": {
+      "orig_file": "cavs.c",
+      "orig_line": 89,
+      "code": "return 0;"
+    },
+    "27": {
+      "orig_file": "cavs.c",
+      "orig_line": 90,
+      "code": "}"
+    }
+  }
+}

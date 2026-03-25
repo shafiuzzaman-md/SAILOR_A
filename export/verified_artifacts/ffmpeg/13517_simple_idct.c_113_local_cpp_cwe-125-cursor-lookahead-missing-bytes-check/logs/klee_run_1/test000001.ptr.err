@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: simple_idct.c
+Line: 23
+assembly.ll line: 81
+State: 1
+Stack: 
+	#000000081 in ff_simple_idct248_put(139075896320000, 16, 138938457366528) at simple_idct.c:23
+	#100000119 in entry_func(139075896320000, 16, 138938457366528) at simple_idct.c:30
+	#200000043 in main() at driver.c:24
+Info: 
+	address: 138938457366544
+	next: object at 138571237662720 of size 4
+		MO55[4] allocated at ff_simple_idct248_put():  %8 = alloca i32, align 4

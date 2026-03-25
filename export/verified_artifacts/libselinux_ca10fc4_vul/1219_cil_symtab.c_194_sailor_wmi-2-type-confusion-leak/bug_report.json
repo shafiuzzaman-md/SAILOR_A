@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cil",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cil_complex_symtab_hash",
+            "crash_file": "../cil/src/cil_symtab.c",
+            "crash_line": 154
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cil_complex_symtab_hash",
+        "crash_file": "../cil/src/cil_symtab.c",
+        "crash_line": 154,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3100==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x55e1ba1af6f5 bp 0x7ffc3f197af0 sp 0x7ffc3f197ae0\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x55e1ba1af6f4 in cil_complex_symtab_hash ../cil/src/cil_symtab.c:154\n    #1 0x55e1ba1afa38 in cil_complex_symtab_insert ../cil/src/cil_symtab.c:182\n    #2 0x55e1ba1aedf6 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1219_cil_symtab.c_194_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:32\n    #3 0x7f5700665d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f5700665e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55e1ba1aea44 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1219_cil_symtab.c_194_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2ea44)\n\n0x502000000040 is located 0 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f5700a1c887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55e1ba1aecce in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1219_cil_symtab.c_194_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:25\n    #2 0x7f5700665d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../cil/src/cil_symtab.c:154 in cil_complex_symtab_hash\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa 00 00[fa]fa 04 fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a0"
+    }
+}

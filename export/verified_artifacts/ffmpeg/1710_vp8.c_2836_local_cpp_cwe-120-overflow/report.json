@@ -1,0 +1,146 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 38 (sink assert at 39)\nCrash: CRASH: ptr at vp8.c:38\nOriginal: vp8.c:2820 \u2192 memcpy(&s->framep[0], &s->next_framep[0], sizeof(s->framep[0]) * 4);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at vp8.c:38 \u2192 vp8.c:2820\n"
+    ]
+  ],
+  "line_map": {
+    "vp8.c": {
+      "7": {
+        "orig_file": "vp8.c",
+        "orig_line": 462,
+        "code": "#define VP7_MVC_SIZE 17"
+      },
+      "8": {
+        "orig_file": "vp8.c",
+        "orig_line": 260,
+        "code": "#endif"
+      },
+      "10": {
+        "orig_file": "vp8.c",
+        "orig_line": 463,
+        "code": "#define VP8_MVC_SIZE 19"
+      },
+      "11": {
+        "orig_file": "vp8.c",
+        "orig_line": 260,
+        "code": "#endif"
+      },
+      "34": {
+        "orig_file": "vp8.c",
+        "orig_line": 269,
+        "code": "{"
+      },
+      "35": {
+        "orig_file": "vp8.c",
+        "orig_line": 136,
+        "code": "VP8Context *s = (VP8Context*)avctx->priv_data;",
+        "match_type": "fuzzy"
+      },
+      "38": {
+        "orig_file": "vp8.c",
+        "orig_line": 2820,
+        "code": "memcpy(&s->framep[0], &s->next_framep[0], sizeof(s->framep[0]) * 4);"
+      },
+      "41": {
+        "orig_file": "vp8.c",
+        "orig_line": 2858,
+        "code": "return 0;"
+      },
+      "42": {
+        "orig_file": "vp8.c",
+        "orig_line": 2859,
+        "code": "}"
+      },
+      "45": {
+        "orig_file": "vp8.c",
+        "orig_line": 2840,
+        "code": "int ff_vp8_decode_frame(AVCodecContext *avctx, AVFrame *frame,"
+      },
+      "46": {
+        "orig_file": "vp8.c",
+        "orig_line": 2841,
+        "code": "int *got_frame, AVPacket *avpkt)"
+      },
+      "47": {
+        "orig_file": "vp8.c",
+        "orig_line": 2842,
+        "code": "{"
+      },
+      "49": {
+        "orig_file": "vp8.c",
+        "orig_line": 2844,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "vp8.c",
+      "original_line": 2836,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "2831:         *got_frame = 1;\n2832:     }\n2833: \n2834:     return avpkt->size;\n2835: err:\n2836:     memcpy(&s->next_framep[0], &s->framep[0], sizeof(s->framep[0]) * 4);\n2837:     return ret;\n2838: }\n2839: \n2840: int ff_vp8_decode_frame(AVCodecContext *avctx, AVFrame *frame,\n2841:                         int *got_frame, AVPacket *avpkt)"
+    },
+    "klee_crash": {
+      "harness_file": "vp8.c",
+      "harness_line": 38,
+      "original_file": "vp8.c",
+      "original_line": 2820,
+      "original_code": "memcpy(&s->framep[0], &s->next_framep[0], sizeof(s->framep[0]) * 4);",
+      "original_context": "    2817:     }\n    2818: \n    2819:     ff_progress_frame_report(&curframe->tf, INT_MAX);\n>>> 2820:     memcpy(&s->framep[0], &s->next_framep[0], sizeof(s->framep[0]) * 4);\n    2821: \n    2822: skip_decode:\n    2823:     // if future frames don't use the updated probabilities,",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 152\nState: 1\nStack: \n\t#000000152 in memcpy(139803420700672, 139803420700736, 256) at runtime/Freestanding/memcpy.c:17\n\t#100000122 in vp78_decode_frame(139528542793728, 139511362924544, 139230042566656, 139545722662912) at vp8.c:38\n\t#200000086 in ff_vp8_decode_frame(139528542793728, 139511362924544, 139230042566656, 139545722662912) at vp8.c:48\n\t#300000053 in main() at driver.c:34\nInfo: \n\taddr"
+    },
+    "concrete_inputs": [
+      {
+        "name": "vp8_ctx_small",
+        "size": 80,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "vp8.c",
+        "harness_line": 38,
+        "original_file": "vp8.c",
+        "original_line": 2820,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1710_vp8.c_2836_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

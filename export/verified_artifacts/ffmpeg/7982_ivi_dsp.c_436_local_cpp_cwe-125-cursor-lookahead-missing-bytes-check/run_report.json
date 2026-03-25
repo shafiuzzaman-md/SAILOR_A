@@ -1,0 +1,128 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 113682,
+    "tokens_prompt": 103034,
+    "tokens_completion": 10648,
+    "turns": 10,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "assert",
+    "file": "ivi_dsp.c",
+    "line": 442,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "ivi_dsp.c",
+  "vul_line": "436",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 2,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ivi_dsp.c",
+      "original_line": 436,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "431:     int     t0, t1, t2, t3, t4;\n432: \n433:     /* apply the InvHaar4 to all rows */\n434: #define COMPENSATE(x) (x)\n435:     for (i = 0; i < 4; i++) {\n436:         if (!in[0] && !in[1] && !in[2] && !in[3]) {\n437:             memset(out, 0, 4 * sizeof(out[0]));\n438:         } else {\n439:             INV_HAAR4(in[0], in[1], in[2], in[3],\n440:                       out[0], out[1], out[2], out[3],\n441:                       t0, t1, t2, t3, t4);"
+    },
+    "klee_crash": {
+      "harness_file": "ivi_dsp.c",
+      "harness_line": 17,
+      "original_file": "ivi_dsp.c",
+      "original_line": 442,
+      "original_code": "}",
+      "original_context": "    439:             INV_HAAR4(in[0], in[1], in[2], in[3],\n    440:                       out[0], out[1], out[2], out[3],\n    441:                       t0, t1, t2, t3, t4);\n>>> 442:         }\n    443:         in  += 4;\n    444:         out += pitch;\n    445:     }",
+      "error_type": "assert",
+      "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: ivi_dsp.c\nLine: 17\nassembly.ll line: 137\nState: 1\nStack: \n\t#000000137 in ff_ivi_row_haar4(139645538267136, 139576818790400, 4, 139559638921216) at ivi_dsp.c:17\n\t#100000162 in ivi_entry(139645538267136, 139576818790400, 4, 139559638921216) at ivi_dsp.c:22\n\t#200000073 in main() at driver.c:31\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "in_buf",
+        "size": 12,
+        "data": "b'\\xff\\x00\\x00\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff'"
+      },
+      {
+        "name": "out_buf",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "flags_buf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "in_buf",
+        "size": 12,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "out_buf",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "flags_buf",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ivi_dsp.c",
+        "harness_line": 17,
+        "original_file": "ivi_dsp.c",
+        "original_line": 442,
+        "error_type": "assert",
+        "crash_function": "ff_ivi_row_haar4",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      },
+      {
+        "harness_file": "ivi_dsp.c",
+        "harness_line": 11,
+        "original_file": "ivi_dsp.c",
+        "original_line": 436,
+        "error_type": "ptr",
+        "crash_function": "ff_ivi_row_haar4",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

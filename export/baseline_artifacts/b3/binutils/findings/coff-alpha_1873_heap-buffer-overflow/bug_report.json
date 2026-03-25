@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-alpha.c",
+    "line": 1873,
+    "function": "alpha_relocate_section",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "Calls _bfd_relocate_contents with a write pointer computed as contents + (r_vaddr - input_section->vma) without verifying that r_vaddr falls within the section bounds, permitting out-of-bounds writes to the contents buffer for malformed relocation records.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-alpha.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types/structures used by coff-alpha.c */\ntypedef uint64_t bfd_vma;\n\ntypedef struct reloc_howto_struct {\n  int pc_relative;\n  int size; /* bytes written by relocation */\n} reloc_howto_type;\n\ntypedef struct asection_struct {\n  bfd_vma vma;\n  bfd_vma output_offset;\n  struct asection_struct *output_section;\n} asection;\n\n/* Stub for _bfd_relocate_contents that writes to the provided pointer. */\nstatic int _bfd_relocate_contents(const reloc_howto_type *howto,\n                                  void *input_bfd,\n                                  bfd_vma relocation,\n                                  void *where)\n{\n  /* Simulate a relocation write by storing 'size' bytes at 'where'. */\n  (void)input_bfd; /* unused in this stub */\n  unsigned char *p = (unsigned char *)where;\n  /* Write a recognizable pattern to trigger ASan on OOB. */\n  int bytes = howto && howto->size > 0 ? howto->size : 8;\n  for (int i = 0; i < bytes; i++) {\n    p[i] = (unsigned char)(0xA0 + (relocation + i) % 0x1F);\n  }\n  return 0; /* bfd_reloc_ok in real code */\n}\n\n/* This function mimics the vulnerable call site in coff-alpha.c:alpha_relocate_section.\n * It computes the relocation write address as contents + (r_vaddr - input_section->vma)\n * without validating that r_vaddr is within the section bounds, then calls\n * _bfd_relocate_contents to perform the write. */\nstatic void vulnerable_alpha_relocate_section(unsigned char *contents,\n                                              size_t contents_size,\n                                              bfd_vma r_vaddr,\n                                              const asection *input_section)\n{\n  reloc_howto_type howto;\n  howto.pc_relative = 0;\n  howto.size = 8; /* write 8 bytes, similar to a 64-bit relocation */\n\n  bfd_vma relocation = 0x12345678; /* arbitrary addend/result */\n\n  /* Vulnerable address computation (mirrors the real bug): */\n  unsigned char *where = contents + (r_vaddr - input_section->vma);\n\n  /* This call will perform an out-of-bounds write if r_vaddr falls\n   * outside [input_section->vma, input_section->vma + contents_size). */\n  (void)_bfd_relocate_contents(&howto, NULL, relocation, (void *)where);\n}\n\nint main(void)\n{\n  /* Allocate a small heap buffer that represents the section contents. */\n  const size_t section_size = 16; /* small to make OOB easier to hit redzone */\n  unsigned char *contents = (unsigned char *)malloc(section_size);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  memset(contents, 0, section_size);\n\n  /* Set up a fake input section with some VMA. */\n  asection input_section;\n  input_section.vma = 0x4000; /* arbitrary non-zero VMA */\n  input_section.output_offset = 0;\n  input_section.output_section = NULL;\n\n  /* Choose an r_vaddr just past the end of the section so that:\n   *   where = contents + (r_vaddr - input_section->vma) = contents + section_size\n   * which lands in the heap redzone and triggers a heap-buffer-overflow under ASan. */\n  bfd_vma r_vaddr = input_section.vma + section_size; /* exact end => OOB for an 8-byte write */\n\n  /* Trigger the vulnerable path. */\n  vulnerable_alpha_relocate_section(contents, section_size, r_vaddr, &input_section);\n\n  /* Clean up. The ASan report should have already been produced by now. */\n  free(contents);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09843635559082031,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/cmp.c",
+    "line": 2545,
+    "function": "save_cert_or_delete",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The result of sk_X509_new_null() is not checked for NULL before being passed to X509_add_cert(). On allocation failure, 'certs' is NULL and X509_add_cert() will dereference it, causing a crash.",
+    "abs_path": "/tmp/openssl_upstream/apps/cmp.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n\n/* Minimal stand-ins for OpenSSL types and APIs used by the vulnerable code */\n\ntypedef struct x509_st {\n    int dummy;\n} X509;\n\n/* Model the OPENSSL STACK_OF(X509) type */\nstruct stack_st_X509 {\n    int dummy;\n};\n#define STACK_OF(type) struct stack_st_##type\n\n/* Flags used by X509_add_cert */\n#define X509_ADD_FLAG_UP_REF 1\n\n/* Stubs mirroring the OpenSSL API surface used by save_cert_or_delete */\nstatic STACK_OF(X509) *sk_X509_new_null(void)\n{\n    /* Simulate allocation failure to trigger the bug: return NULL */\n    return NULL;\n}\n\nstatic void sk_X509_free(STACK_OF(X509) *sk)\n{\n    (void)sk; /* nothing to free in stub */\n}\n\n/* This function will dereference the 'sk' argument (stack) to emulate OpenSSL behavior.\n * Passing a NULL 'sk' will cause a null-pointer-dereference just like the real bug. */\nint X509_add_cert(STACK_OF(X509) *sk, X509 *cert, int flags)\n{\n    (void)cert;\n    (void)flags;\n    /* Intentional dereference of potentially NULL 'sk' to reproduce the crash */\n    int touch = sk->dummy; /* boom if sk == NULL */\n    (void)touch;\n    return 1;\n}\n\n/* save_free_certs is called after X509_add_cert() on success; not reached in this PoC */\nstatic int save_free_certs(STACK_OF(X509) *certs, const char *file, const char *desc)\n{\n    (void)certs;\n    (void)file;\n    (void)desc;\n    return 1;\n}\n\n/* delete_file is called only when cert == NULL branch is taken; we still stub it */\nstatic int delete_file(const char *file, const char *desc)\n{\n    (void)file;\n    (void)desc;\n    return 1;\n}\n\n/* BIO_snprintf used in the other branch; provide a simple wrapper */\nint BIO_snprintf(char *buf, size_t n, const char *format, ...)\n{\n    va_list ap;\n    va_start(ap, format);\n    int ret = vsnprintf(buf, n, format, ap);\n    va_end(ap);\n    return ret;\n}\n\n/* Vulnerable function extracted/simplified from apps/cmp.c */\nstatic int save_cert_or_delete(X509 *cert, const char *file, const char *desc)\n{\n    if (file == NULL)\n        return 1;\n    if (cert == NULL) {\n        char desc_cert[80];\n\n        BIO_snprintf(desc_cert, sizeof(desc_cert), \"%s certificate\", desc);\n        return delete_file(file, desc_cert);\n    } else {\n        STACK_OF(X509) *certs = sk_X509_new_null();\n\n        /* BUG: certs may be NULL on allocation failure; not checked before use */\n        if (!X509_add_cert(certs, cert, X509_ADD_FLAG_UP_REF)) {\n            sk_X509_free(certs);\n            return 0;\n        }\n        return save_free_certs(certs, file, desc) >= 0;\n    }\n}\n\n/* Minimal constructor for a dummy X509 object */\nstatic X509 *X509_new(void)\n{\n    X509 *x = (X509 *)malloc(sizeof(*x));\n    if (x)\n        x->dummy = 0x1234;\n    return x;\n}\n\nint main(void)\n{\n    /* Create a non-NULL cert and provide a non-NULL file path to hit the buggy branch */\n    X509 *cert = X509_new();\n    if (!cert) {\n        fprintf(stderr, \"Failed to allocate dummy X509 cert\\n\");\n        return 1;\n    }\n\n    /* This call will attempt to add cert to a NULL stack (sk_X509_new_null returns NULL),\n       triggering a null-pointer dereference inside X509_add_cert. */\n    (void)save_cert_or_delete(cert, \"output.pem\", \"test\");\n\n    /* Not reached due to crash */\n    free(cert);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7686188220977783,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4123946==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c51320e4cf4 bp 0x7ffe442d4fd0 sp 0x7ffe442d4fa0 T0)\n==4123946==The signal is caused by a READ memory access.\n==4123946==Hint: address points to the zero page.\n    #0 0x5c51320e4cf4 in X509_add_cert /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40:21\n    #1 0x5c51320e51bd in save_cert_or_delete /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:86:14\n    #2 0x5c51320e4f98 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:114:11\n    #3 0x7e5e4f62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7e5e4f62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5c5132025304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer+0x21304) (BuildId: 62e1369eeafcba0cae959ef69010cc3d10d6ef1d)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40:21 in X509_add_cert\n==4123946==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "X509_add_cert",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40",
+      "crash_line": 21,
+      "frames": [
+        [
+          "0",
+          "X509_add_cert",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40",
+          "21"
+        ],
+        [
+          "1",
+          "save_cert_or_delete",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:86",
+          "14"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:114",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

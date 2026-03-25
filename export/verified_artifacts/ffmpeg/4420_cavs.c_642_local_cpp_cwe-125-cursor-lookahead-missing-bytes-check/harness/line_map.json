@@ -1,0 +1,54 @@
+{
+  "cavs.c": {
+    "29": {
+      "orig_file": "cavs.c",
+      "orig_line": 636,
+      "code": "void ff_cavs_init_mb(AVSContext *h)"
+    },
+    "30": {
+      "orig_file": "cavs.c",
+      "orig_line": 637,
+      "code": "{"
+    },
+    "31": {
+      "orig_file": "cavs.c",
+      "orig_line": 638,
+      "code": "int i;"
+    },
+    "33": {
+      "orig_file": "cavs.c",
+      "orig_line": 641,
+      "code": "for (i = 0; i < 3; i++) {"
+    },
+    "34": {
+      "orig_file": "cavs.c",
+      "orig_line": 642,
+      "code": "h->mv[MV_FWD_B2 + i] = h->top_mv[0][h->mbx * 2 + i];"
+    },
+    "36": {
+      "orig_file": "cavs.c",
+      "orig_line": 643,
+      "code": "h->mv[MV_BWD_B2 + i] = h->top_mv[1][h->mbx * 2 + i];"
+    },
+    "37": {
+      "orig_file": "cavs.c",
+      "orig_line": 644,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "cavs.c",
+      "orig_line": 644,
+      "code": "}"
+    },
+    "43": {
+      "orig_file": "cavs.c",
+      "orig_line": 710,
+      "code": "return 0;"
+    },
+    "44": {
+      "orig_file": "cavs.c",
+      "orig_line": 711,
+      "code": "}"
+    }
+  }
+}

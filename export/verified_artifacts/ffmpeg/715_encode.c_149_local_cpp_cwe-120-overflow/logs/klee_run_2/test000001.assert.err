@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: encode.c
+Line: 29
+assembly.ll line: 122
+State: 1
+Stack: 
+	#000000122 in encode_receive_packet_internal(139675291901952, 139658112032768) at encode.c:29
+	#100000099 in avcodec_receive_packet(139675291901952, 139658112032768) at encode.c:35
+	#200000072 in main() at driver.c:40

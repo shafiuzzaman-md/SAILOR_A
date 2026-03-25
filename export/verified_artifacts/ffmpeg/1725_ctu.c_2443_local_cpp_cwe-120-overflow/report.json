@@ -1,0 +1,170 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 63 (sink assert at 66)\nCrash: CRASH: ptr at ctu.c:63\nOriginal: ctu.c:2443 \u2192 memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at ctu.c:63 \u2192 ctu.c:2443\n"
+    ]
+  ],
+  "line_map": {
+    "ctu.c": {
+      "48": {
+        "orig_file": "ctu.c",
+        "orig_line": 56,
+        "code": "}"
+      },
+      "51": {
+        "orig_file": "ctu.c",
+        "orig_line": 2430,
+        "code": "static void ctu_get_pred(VVCLocalContext *lc, const int rs)"
+      },
+      "52": {
+        "orig_file": "ctu.c",
+        "orig_line": 2431,
+        "code": "{"
+      },
+      "53": {
+        "orig_file": "ctu.c",
+        "orig_line": 2432,
+        "code": "const VVCFrameContext *fc       = lc->fc;"
+      },
+      "54": {
+        "orig_file": "ctu.c",
+        "orig_line": 2433,
+        "code": "const H266RawSliceHeader *rsh   = lc->sc->sh.r;"
+      },
+      "55": {
+        "orig_file": "ctu.c",
+        "orig_line": 2434,
+        "code": "CTU *ctu                        = fc->tab.ctus + rs;"
+      },
+      "57": {
+        "orig_file": "ctu.c",
+        "orig_line": 2437,
+        "code": "ctu->has_dmvr = 0;"
+      },
+      "59": {
+        "orig_file": "ctu.c",
+        "orig_line": 2439,
+        "code": "if (IS_I(rsh))"
+      },
+      "60": {
+        "orig_file": "ctu.c",
+        "orig_line": 2440,
+        "code": "return;"
+      },
+      "62": {
+        "orig_file": "ctu.c",
+        "orig_line": 2442,
+        "code": "for (int lx = 0; lx < 2; lx++)"
+      },
+      "63": {
+        "orig_file": "ctu.c",
+        "orig_line": 2443,
+        "code": "memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);"
+      },
+      "67": {
+        "orig_file": "ctu.c",
+        "orig_line": 2449,
+        "code": "}"
+      },
+      "70": {
+        "orig_file": "ctu.c",
+        "orig_line": 2455,
+        "code": "int ff_vvc_coding_tree_unit(VVCLocalContext *lc,"
+      },
+      "71": {
+        "orig_file": "ctu.c",
+        "orig_line": 2456,
+        "code": "const int ctu_idx, const int rs, const int rx, const int ry)"
+      },
+      "72": {
+        "orig_file": "ctu.c",
+        "orig_line": 2457,
+        "code": "{"
+      },
+      "74": {
+        "orig_file": "ctu.c",
+        "orig_line": 2481,
+        "code": "ctu_get_pred(lc, rs);"
+      },
+      "75": {
+        "orig_file": "ctu.c",
+        "orig_line": 2483,
+        "code": "return 0;"
+      },
+      "76": {
+        "orig_file": "ctu.c",
+        "orig_line": 2484,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "ctu.c",
+      "original_line": 2443,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "2438: \n2439:     if (IS_I(rsh))\n2440:         return;\n2441: \n2442:     for (int lx = 0; lx < 2; lx++)\n2443:         memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);\n2444: \n2445:     while (cu) {\n2446:         if (has_inter_luma(cu)) {\n2447:             cu_get_max_y(cu, ctu->max_y, fc);\n2448:             ctu->has_dmvr |= cu->pu.dmvr_flag;"
+    },
+    "klee_crash": {
+      "harness_file": "ctu.c",
+      "harness_line": 63,
+      "original_file": "ctu.c",
+      "original_line": 2443,
+      "original_code": "memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);",
+      "original_context": "    2440:         return;\n    2441: \n    2442:     for (int lx = 0; lx < 2; lx++)\n>>> 2443:         memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);\n    2444: \n    2445:     while (cu) {\n    2446:         if (has_inter_luma(cu)) {",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 243\nState: 1\nStack: \n\t#000000243 in memset(139048620666884, 255, 128) at runtime/Freestanding/memset.c:15\n\t#100000119 in ctu_get_pred(138842462236672, 0) at ctu.c:63\n\t#200000041 in ff_vvc_coding_tree_unit(138842462236672, 0, 0, 0, 0) at ctu.c:74\n\t#300000213 in main() at driver.c:27\nInfo: \n\taddress: 139048620666948\n\tnext: object at 138474168791040 of size 4\n\t\tMO56[4] allocated at ff_vvc_coding"
+    },
+    "concrete_inputs": [
+      {
+        "name": "IS_I_ret",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "ctu.c",
+        "harness_line": 63,
+        "original_file": "ctu.c",
+        "original_line": 2443,
+        "error_type": "ptr",
+        "crash_function": "memset",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1725_ctu.c_2443_local_cpp_cwe-120-overflow/logs/klee_run_3/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

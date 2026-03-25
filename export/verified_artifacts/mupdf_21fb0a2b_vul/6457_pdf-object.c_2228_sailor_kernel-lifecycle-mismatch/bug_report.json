@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "pdf-object.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "pdf_dict_put_val_null",
+            "crash_file": "source/pdf/pdf-object.c",
+            "crash_line": 2224
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "pdf_dict_put_val_null",
+        "crash_file": "source/pdf/pdf-object.c",
+        "crash_line": 2224,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==36018==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000024 at pc 0x55e2e491bcea bp 0x7ffd244c9ea0 sp 0x7ffd244c9e90\nREAD of size 4 at 0x502000000024 thread T0\n    #0 0x55e2e491bce9 in pdf_dict_put_val_null source/pdf/pdf-object.c:2224\n    #1 0x55e2e490c9b0 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6457_pdf-object.c_2228_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:39\n    #2 0x7fccc1872d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fccc1872e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55e2e490c3b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6457_pdf-object.c_2228_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x1483b4)\n\n0x502000000024 is located 4 bytes to the right of 16-byte region [0x502000000010,0x502000000020)\nallocated by thread T0 here:\n    #0 0x7fccc1c29a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55e2e490c51d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6457_pdf-object.c_2228_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:13\n    #2 0x7fccc1872d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/pdf/pdf-object.c:2224 in pdf_dict_put_val_null\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00[fa]fa 04 fa fa fa 04 fa fa fa fd fa\n  0x0a047fff8010: fa fa 04 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa"
+    }
+}

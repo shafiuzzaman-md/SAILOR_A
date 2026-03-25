@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/gregbook/readpng2.c",
+    "line": 418,
+    "function": "readpng2_row_callback",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "medium",
+    "explanation": "png_progressive_combine_row() writes the full row into mainprog_ptr->row_pointers[row_num]. If the buffers were allocated using the truncated int value stored at line 369, they will be smaller than the actual row size, leading to a heap-based buffer overflow when libpng combines/copies the row.",
+    "abs_path": "/tmp/libpng_upstream/contrib/gregbook/readpng2.c"
+  },
+  "reproducer_code": "// Standalone reproducer for heap-buffer-overflow in contrib/gregbook/readpng2.c:readpng2_row_callback\n// It mimics the truncated row allocation and calls png_progressive_combine_row\n// which writes a full row into an undersized buffer.\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n// Minimal libpng-like type aliases\ntypedef unsigned char png_byte;\ntypedef uint32_t png_uint_32;\n\ntypedef struct png_struct_s png_struct; // forward decl\n\n// Minimal main program info struct as used by readpng2.c\ntypedef struct mainprog_info_s {\n    png_byte **row_pointers;                        // array of row buffers\n    int pass;                                       // current pass\n    void (*mainprog_init)(void);                    // not used in this reproducer\n    void (*mainprog_display_row)(png_uint_32 row);  // called after combining\n    void (*mainprog_finish_display)(void);          // not used in this reproducer\n} mainprog_info;\n\n// Minimal png_struct to carry the progressive ptr and the full row size\nstruct png_struct_s {\n    void *progressive_ptr;   // user pointer (mainprog_info*)\n    size_t full_rowbytes;    // actual full row size libpng would write\n};\n\n// Stubs for the libpng API used by readpng2.c\nstatic void *png_get_progressive_ptr(png_struct *png_ptr) {\n    return png_ptr->progressive_ptr;\n}\n\n// This mimics libpng writing the full row size into the destination row buffer.\n// In the real bug, this writes more than was allocated when an earlier int\n// truncation caused a smaller allocation.\nstatic void png_progressive_combine_row(png_struct *png_ptr,\n                                        png_byte *old_row,\n                                        png_byte *new_row) {\n    size_t n = png_ptr->full_rowbytes;\n    // Deliberately write full_rowbytes bytes to trigger overflow if old_row is smaller\n    for (size_t i = 0; i < n; i++) {\n        old_row[i] = new_row ? new_row[i] : 0; // behave like copy of full row\n    }\n}\n\n// Dummy callbacks used by mainprog_info\nstatic void dummy_init(void) { }\nstatic void dummy_display_row(png_uint_32 row) { (void)row; }\nstatic void dummy_finish(void) { }\n\n// The vulnerable callback from contrib/gregbook/readpng2.c (trimmed to essentials)\nstatic void readpng2_row_callback(png_struct *png_ptr, png_byte *new_row,\n                                  png_uint_32 row_num, int pass) {\n    mainprog_info *mainprog_ptr;\n\n    if (!new_row)\n        return;\n\n    // retrieve the pointer to our special-purpose struct so we can access\n    // the old rows and image-display callback function\n    mainprog_ptr = (mainprog_info *)png_get_progressive_ptr(png_ptr);\n\n    // save the pass number for optional use by the front end\n    mainprog_ptr->pass = pass;\n\n    // have libpng either combine the new row data with the existing row data\n    // from previous passes (if interlaced) or else just copy the new row\n    // into the main program's image buffer\n    png_progressive_combine_row(png_ptr, mainprog_ptr->row_pointers[row_num], new_row);\n\n    // finally, call the display routine in the main program with the number\n    // of the row we just updated\n    (*mainprog_ptr->mainprog_display_row)(row_num);\n\n    return;\n}\n\nint main(void) {\n    // Simulate an image of height 1 and a very large true row size (e.g., after color/bit depth expansion)\n    const png_uint_32 height = 1;\n    const size_t full_rowbytes = 1024; // \"real\" row size libpng will write\n\n    // Simulate the bug: allocate destination row using a truncated int value (too small)\n    // In the real code, this happens when size_t rowbytes is stored in an int and truncated.\n    int truncated_rowbytes = 16; // much smaller than full_rowbytes\n\n    // Allocate the main program structure and its row pointers\n    mainprog_info *mp = (mainprog_info *)calloc(1, sizeof(*mp));\n    if (!mp) {\n        fprintf(stderr, \"alloc mainprog_info failed\\n\");\n        return 1;\n    }\n\n    mp->row_pointers = (png_byte **)calloc(height, sizeof(png_byte *));\n    if (!mp->row_pointers) {\n        fprintf(stderr, \"alloc row_pointers failed\\n\");\n        return 1;\n    }\n\n    // Undersized allocation due to truncation\n    mp->row_pointers[0] = (png_byte *)malloc((size_t)truncated_rowbytes);\n    if (!mp->row_pointers[0]) {\n        fprintf(stderr, \"alloc row 0 failed\\n\");\n        return 1;\n    }\n\n    // Prepare a new_row buffer with the full amount of data libpng would provide\n    png_byte *new_row = (png_byte *)malloc(full_rowbytes);\n    if (!new_row) {\n        fprintf(stderr, \"alloc new_row failed\\n\");\n        return 1;\n    }\n    memset(new_row, 0x41, full_rowbytes);\n\n    // Set up dummy callbacks\n    mp->mainprog_init = dummy_init;\n    mp->mainprog_display_row = dummy_display_row;\n    mp->mainprog_finish_display = dummy_finish;\n\n    // Create a minimal png_struct carrying the progressive pointer and the true row size\n    png_struct png;\n    png.progressive_ptr = (void *)mp;\n    png.full_rowbytes = full_rowbytes;\n\n    // Trigger the vulnerable path: combine/copy full row into undersized buffer\n    // This should cause an ASan heap-buffer-overflow in png_progressive_combine_row\n    readpng2_row_callback(&png, new_row, 0 /*row_num*/, 0 /*pass*/);\n\n    // Cleanup (likely not reached if ASan aborts on overflow)\n    free(new_row);\n    free(mp->row_pointers[0]);\n    free(mp->row_pointers);\n    free(mp);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.767632246017456,
+      "output": "=================================================================\n==3711206==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000040 at pc 0x57ab5f19f5a4 bp 0x7fffc144c230 sp 0x7fffc144c228\nWRITE of size 1 at 0x602000000040 thread T0\n    #0 0x57ab5f19f5a3 in png_progressive_combine_row /app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:45:20\n    #1 0x57ab5f19f416 in readpng2_row_callback /app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:72:5\n    #2 0x57ab5f19f1c1 in main /app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:130:5\n    #3 0x75f55842a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x75f55842a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x57ab5f0df304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer+0x21304) (BuildId: 372b53881d032e6607537b251ac0285e0133d133)\n\n0x602000000040 is located 0 bytes to the right of 16-byte region [0x602000000030,0x602000000040)\nallocated by thread T0 here:\n    #0 0x57ab5f162d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 372b53881d032e6607537b251ac0285e0133d133)\n    #1 0x57ab5f19eefe in main /app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:104:39\n    #2 0x75f55842a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x75f55842a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x57ab5f0df304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer+0x21304) (BuildId: 372b53881d032e6607537b251ac0285e0133d133)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:45:20 in png_progressive_combine_row\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 fa fa fa 00 00[fa]fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3711206==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_progressive_combine_row",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:45",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "png_progressive_combine_row",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:45",
+          "20"
+        ],
+        [
+          "1",
+          "readpng2_row_callback",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:72",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:130",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng2_418_heap-buffer-overflow/reproducer.c:104",
+          "39"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

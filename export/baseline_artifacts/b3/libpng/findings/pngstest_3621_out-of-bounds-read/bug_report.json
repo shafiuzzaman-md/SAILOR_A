@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngstest.c",
+    "line": 3621,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "--tmpfile handling copies the prefix with strncpy(tmpf, argv[c], sizeof(tmpf)-1) after only checking strlen(argv[c]) >= sizeof(tmpf). If the prefix length is exactly sizeof(tmpf)-1, tmpf is not NUL-terminated. Subsequent use of tmpf as a C string can read past the end of the buffer, causing an out-of-bounds read.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngstest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/*\n Reproducer for pngstest.c --tmpfile handling bug (CWE-125, OOB read)\n The original code does:\n   if (strlen(argv[++c]) >= sizeof tmpf) ...\n   strncpy(tmpf, argv[c], sizeof(tmpf)-1);  // if len == sizeof(tmpf)-1 -> no NUL terminator\n   ... later uses tmpf as a C string\n This reproducer mimics that logic and then uses tmpf as a C string to\n trigger an out-of-bounds read under ASan.\n*/\n\n#define TMPF_SIZE 16  /* Size of tmpf[] buffer; exact value in pngstest.c is not required to reproduce */\n\nstatic size_t manual_strlen(const char *s)\n{\n    /* Manual strlen to ensure ASan-instrumented byte-by-byte reads */\n    size_t i = 0;\n    while (s[i] != '\\0')\n        i++;\n    return i;\n}\n\nstatic int pngstest_like_main(int argc, char **argv)\n{\n    /* Simulate only the relevant --tmpfile handling from pngstest.c */\n    char tmpf[TMPF_SIZE];\n\n    if (argc < 3 || strcmp(argv[1], \"--tmpfile\") != 0) {\n        fprintf(stderr, \"usage: %s --tmpfile <prefix>\\n\", argv[0]);\n        return 1;\n    }\n\n    /* Fill tmpf with non-zero bytes so lack of NUL is guaranteed */\n    memset(tmpf, 'A', sizeof(tmpf));\n\n    /* Vulnerable logic: reject only strictly >= sizeof(tmpf),\n     * then copy up to sizeof(tmpf)-1 bytes WITHOUT appending NUL. */\n    if (strlen(argv[2]) >= sizeof(tmpf)) {\n        fprintf(stderr, \"%s: %s is too long for a temp file prefix\\n\", argv[0], argv[2]);\n        return 99;\n    }\n\n    /* If argv[2] length == sizeof(tmpf)-1, tmpf is NOT NUL-terminated */\n    strncpy(tmpf, argv[2], sizeof(tmpf) - 1);\n\n    /* Subsequent use of tmpf as a C string causes an OOB read.\n     * We trigger it deterministically by scanning for a NUL byte. */\n    size_t n1 = manual_strlen(tmpf);            /* ASan should flag OOB here */\n    size_t n2 = strlen(tmpf);                   /* And/or here via interceptor */\n\n    /* Prevent optimizations and show that we used the values */\n    printf(\"manual_strlen(tmpf)=%zu, strlen(tmpf)=%zu\\n\", n1, n2);\n\n    return 0;\n}\n\nint main(void)\n{\n    /* Craft argv so that prefix length is exactly TMPF_SIZE-1. */\n    static char prefix[TMPF_SIZE];\n    /* Fill with 'B' characters; ensure the source string length is TMPF_SIZE-1 */\n    memset(prefix, 'B', TMPF_SIZE - 1);\n    prefix[TMPF_SIZE - 1] = '\\0';\n\n    char *argv[] = { (char*)\"reproducer\", (char*)\"--tmpfile\", prefix, NULL };\n    int argc = 3;\n\n    return pngstest_like_main(argc, argv);\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09663152694702148,
+      "output": ""
+    }
+  }
+}

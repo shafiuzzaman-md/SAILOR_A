@@ -1,0 +1,93 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 171443,
+    "tokens_prompt": 148437,
+    "tokens_completion": 23006,
+    "turns": 15,
+    "klee_runs": 3
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "frame.c",
+    "line": 370,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/3103_frame.c_370_local_cpp_cwe-120-overflow.json",
+  "vul_file": "frame.c",
+  "vul_line": "370",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "frame.c",
+      "original_line": 370,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "365:                                             sd_src->size);\n366:             if (!sd_dst) {\n367:                 frame_side_data_wipe(dst);\n368:                 return AVERROR(ENOMEM);\n369:             }\n370:             memcpy(sd_dst->data, sd_src->data, sd_src->size);\n371:         } else {\n372:             AVBufferRef *ref = av_buffer_ref(sd_src->buf);\n373:             sd_dst = av_frame_new_side_data_from_buf(dst, sd_src->type, ref);\n374:             if (!sd_dst) {\n375:                 av_buffer_unref(&ref);"
+    },
+    "klee_crash": {
+      "harness_file": "frame.c",
+      "harness_line": 84,
+      "original_file": "frame.c",
+      "original_line": 370,
+      "original_code": "memcpy(sd_dst->data, sd_src->data, sd_src->size);",
+      "original_context": "    367:                 frame_side_data_wipe(dst);\n    368:                 return AVERROR(ENOMEM);\n    369:             }\n>>> 370:             memcpy(sd_dst->data, sd_src->data, sd_src->size);\n    371:         } else {\n    372:             AVBufferRef *ref = av_buffer_ref(sd_src->buf);\n    373:             sd_dst = av_frame_new_side_data_from_buf(dst, sd_src->type, ref);",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 386\nState: 1\nStack: \n\t#000000386 in memcpy(139778009776128, 139571851345920, 256) at runtime/Freestanding/memcpy.c:17\n\t#100000215 in frame_copy_props(139485952000000, 139503131869184) at frame.c:84\n\t#200000103 in av_frame_copy_props(139485952000000, 139503131869184) at frame.c:61\n\t#300000078 in main() at driver.c:53\nInfo: \n\taddress: 139571851345952\n\tnext: object at 139134838423552 of size 4\n\t"
+    },
+    "concrete_inputs": [
+      {
+        "name": "srcbuf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3103_frame.c_370_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "frame.c",
+        "harness_line": 84,
+        "original_file": "frame.c",
+        "original_line": 370,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3103_frame.c_370_local_cpp_cwe-120-overflow/logs/klee_run_3/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

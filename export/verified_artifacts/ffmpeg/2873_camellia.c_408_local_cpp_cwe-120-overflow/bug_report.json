@@ -1,0 +1,83 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "camellia.c",
+    "original_line": 408,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "403:         } else {\n404:             if (iv) {\n405:                 for (i = 0; i < 16; i++)\n406:                     dst[i] = src[i] ^ iv[i];\n407:                 camellia_encrypt(cs, dst, dst);\n408:                 memcpy(iv, dst, 16);\n409:             } else {\n410:                 camellia_encrypt(cs, dst, src);\n411:             }\n412:         }\n413:         src = src + 16;"
+  },
+  "klee_crash": {
+    "harness_file": "camellia.c",
+    "harness_line": 18,
+    "original_file": "camellia.c",
+    "original_line": 408,
+    "original_code": "memcpy(iv, dst, 16);",
+    "original_context": "    405:                 for (i = 0; i < 16; i++)\n    406:                     dst[i] = src[i] ^ iv[i];\n    407:                 camellia_encrypt(cs, dst, dst);\n>>> 408:                 memcpy(iv, dst, 16);\n    409:             } else {\n    410:                 camellia_encrypt(cs, dst, src);\n    411:             }",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 190\nState: 1\nStack: \n\t#000000190 in memcpy(139679573151744, 139748292628480, 16) at runtime/Freestanding/memcpy.c:17\n\t#100000038 in av_camellia_crypt(140023170535424, 139748292628480, 139731112759296, 1, 139679573151744, 0) at camellia.c:18\n\t#200000075 in entry_func(140023170535424, 139748292628480, 139731112759296, 1, 139679573151744, 0) at camellia.c:25\n\t#300000149 in main() at driver.c:31\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "cs",
+      "size": 280,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "dst",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "src",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "iv",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2873_camellia.c_408_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "camellia.c",
+      "harness_line": 18,
+      "original_file": "camellia.c",
+      "original_line": 408,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2873_camellia.c_408_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

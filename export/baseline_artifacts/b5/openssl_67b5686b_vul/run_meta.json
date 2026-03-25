@@ -1,0 +1,12 @@
+{
+  "baseline": "B5",
+  "project": "openssl_67b5686b_vul",
+  "targets": 134,
+  "timeout_per_target": 600,
+  "jobs": 16,
+  "total_findings_reported": 0,
+  "total_validated": 0,
+  "confirmed": 0,
+  "unique": 0,
+  "elapsed": 20.409254789352417
+}

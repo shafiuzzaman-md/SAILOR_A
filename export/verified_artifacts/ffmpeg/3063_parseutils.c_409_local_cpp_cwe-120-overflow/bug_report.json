@@ -1,0 +1,83 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "parseutils.c",
+    "original_line": 409,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "404:                         color_table_compare);\n405:         if (!entry) {\n406:             av_log(log_ctx, AV_LOG_ERROR, \"Cannot find color '%s'\\n\", color_string2);\n407:             return AVERROR(EINVAL);\n408:         }\n409:         memcpy(rgba_color, entry->rgb_color, 3);\n410:     }\n411: \n412:     if (tail) {\n413:         double alpha;\n414:         const char *alpha_string = tail;"
+  },
+  "klee_crash": {
+    "harness_file": "parseutils.c",
+    "harness_line": 16,
+    "original_file": "parseutils.c",
+    "original_line": 409,
+    "original_code": "memcpy(rgba_color, entry->rgb_color, 3);",
+    "original_context": "    406:             av_log(log_ctx, AV_LOG_ERROR, \"Cannot find color '%s'\\n\", color_string2);\n    407:             return AVERROR(EINVAL);\n    408:         }\n>>> 409:         memcpy(rgba_color, entry->rgb_color, 3);\n    410:     }\n    411: \n    412:     if (tail) {",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 176\nState: 1\nStack: \n\t#000000176 in memcpy(139754127970304, 139771307839488, 3) at runtime/Freestanding/memcpy.c:17\n\t#100000117 in av_parse_color(139754127970304, 139736948101120, symbolic, 0) at parseutils.c:16\n\t#200000147 in entry_func(139754127970304, 139736948101120, symbolic, 0) at parseutils.c:25\n\t#300000064 in main() at driver.c:28\nInfo: \n\taddress: 139754127970306\n\tnext: object at 1394"
+  },
+  "concrete_inputs": [
+    {
+      "name": "rgba_buf",
+      "size": 2,
+      "data": "b'\\x00\\x00'"
+    },
+    {
+      "name": "color_string",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "slen",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "entry_rgb",
+      "size": 3,
+      "data": "b'\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3063_parseutils.c_409_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "parseutils.c",
+      "harness_line": 16,
+      "original_file": "parseutils.c",
+      "original_line": 409,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3063_parseutils.c_409_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

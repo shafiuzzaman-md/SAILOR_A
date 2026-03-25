@@ -1,0 +1,17 @@
+Error: memory error: out of bound pointer
+File: imgutils.c
+Line: 35
+assembly.ll line: 175
+State: 1
+Stack: 
+	#000000175 in av_image_fill_max_pixsteps(138964985831424, 138962838347776, 139450317135872) at imgutils.c:35
+	#100000212 in entry_func(138964985831424, 138962838347776, 139450317135872) at imgutils.c:44
+	#200000081 in main() at driver.c:45
+Info: 
+	address: (Add w64 138962838347776
+          (Mul w64 4
+                   (SExt w64 (ReadLSB w32 0 bad_plane))))
+	example: 138960690864128
+	range: [138960690864128, 138960690864140]
+	next: object at 138944584736768 of size 4
+		MO29[4] allocated at main():  %7 = alloca i32, align 4

@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "string_buffer.c",
+        "original_line": 90,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "85: }\n86: \n87: void gumbo_string_buffer_append_string(struct GumboInternalParser* parser,\n88:     GumboStringPiece* str, GumboStringBuffer* output) {\n89:   maybe_resize_string_buffer(parser, str->length, output);\n90:   memcpy(output->data + output->length, str->data, str->length);\n91:   output->length += str->length;\n92: }\n93: \n94: char* gumbo_string_buffer_to_string(\n95:     struct GumboInternalParser* parser, GumboStringBuffer* input) {"
+    },
+    "klee_crash": {
+        "harness_file": "string_buffer.c",
+        "harness_line": 24,
+        "original_file": "string_buffer.c",
+        "original_line": 97,
+        "original_code": "memcpy(buffer, input->data, input->length);",
+        "original_context": "    94: char* gumbo_string_buffer_to_string(\n    95:     struct GumboInternalParser* parser, GumboStringBuffer* input) {\n    96:   char* buffer = gumbo_parser_allocate(parser, input->length + 1);\n>>> 97:   memcpy(buffer, input->data, input->length);\n    98:   buffer[input->length] = '\\0';\n    99:   return buffer;\n    100: }",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 141\nState: 1\nStack: \n\t#000000141 in memcpy(139044834496512, 138907395543040, 20) at runtime/Freestanding/memcpy.c:17\n\t#100000083 in gumbo_string_buffer_to_string(0, 138976115019776) at string_buffer.c:24\n\t#200000115 in entry_func(0, 138976115019776) at string_buffer.c:33\n\t#300000044 in main() at driver.c:27\nInfo: \n\taddress: 138907395543048\n\tnext: object at 138611042799616 of size 4\n\t\tMO22[4] "
+    },
+    "concrete_inputs": [
+        {
+            "name": "src_bytes",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "gumbo_parser_allocate",
+        "crash_file": "thirdparty/gumbo-parser/src/util.c",
+        "crash_line": 35,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==11874==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55a38afb89e8 bp 0x7fffcbd70e30 sp 0x7fffcbd70e30 T0)\n==11874==The signal is caused by a READ memory access.\n==11874==Hint: address points to the zero page.\n    #0 0x55a38afb89e8 in gumbo_parser_allocate thirdparty/gumbo-parser/src/util.c:35\n    #1 0x55a38afb88e8 in gumbo_string_buffer_to_string thirdparty/gumbo-parser/src/string_buffer.c:96\n    #2 0x55a38afb83ed in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/227_string_buffer.c_90_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:28\n    #3 0x7efc7f0c6d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7efc7f0c6e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55a38afb8254 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/227_string_buffer.c_90_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x1254)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/gumbo-parser/src/util.c:35 in gumbo_parser_allocate\n==11874==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/227_string_buffer.c_90_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "string_buffer.c",
+            "harness_line": 24,
+            "original_file": "string_buffer.c",
+            "original_line": 97,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/227_string_buffer.c_90_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "gumbo_parser_allocate",
+            "crash_file": "thirdparty/gumbo-parser/src/util.c",
+            "crash_line": 35
+        }
+    ]
+}

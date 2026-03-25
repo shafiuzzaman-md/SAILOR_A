@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jfdctint.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "jpeg_fdct_10x5",
+            "crash_file": "thirdparty/libjpeg/jfdctint.c",
+            "crash_line": 2929
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "jpeg_fdct_10x5",
+        "crash_file": "thirdparty/libjpeg/jfdctint.c",
+        "crash_line": 2929,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==22981==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffe72c2d690 at pc 0x55a77d44baa8 bp 0x7ffe72c2d5c0 sp 0x7ffe72c2d5b0\nWRITE of size 4 at 0x7ffe72c2d690 thread T0\n    #0 0x55a77d44baa7 in jpeg_fdct_10x5 thirdparty/libjpeg/jfdctint.c:2929\n    #1 0x55a77d4404a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3947_jfdctint.c_2929_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:24\n    #2 0x7febab442d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7febab442e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55a77d440264 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3947_jfdctint.c_2929_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1264)\n\nAddress 0x7ffe72c2d690 is located in stack of thread T0 at offset 48 in frame\n    #0 0x55a77d440338 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3947_jfdctint.c_2929_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:8\n\n  This frame has 3 object(s):\n    [48, 50) 'data_buf' (line 10) <== Memory access at offset 48 partially overflows this variable\n    [64, 72) 'rows' (line 17)\n    [96, 112) 'row_storage' (line 13)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow thirdparty/libjpeg/jfdctint.c:2929 in jpeg_fdct_10x5\nShadow bytes around the buggy address:\n  0x10004e57da80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004e57da90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004e57daa0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004e57dab0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10004e57dac0: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1\n=>0x10004e57dad0: f1 f1[02]"
+    }
+}

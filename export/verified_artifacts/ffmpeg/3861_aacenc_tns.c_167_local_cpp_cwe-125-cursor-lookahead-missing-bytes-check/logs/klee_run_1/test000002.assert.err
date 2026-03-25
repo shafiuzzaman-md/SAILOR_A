@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: aacenc_tns.c
+Line: 32
+assembly.ll line: 34
+State: 22
+Stack: 
+	#000000034 in ff_aac_search_for_tns(139051431112704, 139120150589440) at aacenc_tns.c:32
+	#100000054 in entry_func(139051431112704, 139120150589440) at aacenc_tns.c:37
+	#200000083 in main() at driver.c:20

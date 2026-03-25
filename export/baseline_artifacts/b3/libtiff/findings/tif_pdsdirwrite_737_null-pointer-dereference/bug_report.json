@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/pds/tif_pdsdirwrite.c",
+    "line": 737,
+    "function": "TIFFWriteRationalArray",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "_TIFFmalloc() allocates t for 2*n uint32_t elements without checking for failure. If allocation returns NULL, t is dereferenced in t[2 * i + 0] = ..., leading to a NULL pointer dereference.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/pds/tif_pdsdirwrite.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <stdarg.h>\n\n/* Minimal type re-declarations to match the vulnerable function's signature */\ntypedef uint16_t ttag_t;\n\ntypedef enum {\n    TIFF_RATIONAL = 5,\n    TIFF_SRATIONAL = 10\n} TIFFDataType;\n\ntypedef struct {\n    /* Only the members used by the vulnerable code */\n    const char *tif_name;\n} TIFF;\n\ntypedef struct {\n    ttag_t tdir_tag;\n    short tdir_type;\n    uint32_t tdir_count;\n    uint32_t tdir_offset;\n} TIFFDirEntry;\n\n/* Stubs for internal/libtiff functions used by the vulnerable function */\nstatic void * _TIFFmalloc(size_t size)\n{\n    /* Force allocation failure to trigger NULL dereference */\n    (void)size;\n    return NULL;\n}\n\nstatic void _TIFFfree(void *p)\n{\n    /* No-op (would normally call free) */\n    (void)p;\n}\n\nstatic int TIFFWriteData(TIFF *tif, TIFFDirEntry *dir, char *data)\n{\n    /* Stubbed out, not reached due to crash */\n    (void)tif; (void)dir; (void)data;\n    return 1;\n}\n\nstruct TIFFFieldFake { const char *field_name; };\nstatic const struct TIFFFieldFake* _TIFFFieldWithTag(TIFF *tif, ttag_t tag)\n{\n    (void)tif; (void)tag;\n    static const struct TIFFFieldFake f = { \"fake_field\" };\n    return &f;\n}\n\nstatic void TIFFWarning(const char *name, const char *fmt, ...)\n{\n    va_list ap;\n    fprintf(stderr, \"TIFFWarning: %s: \", name ? name : \"(null)\");\n    va_start(ap, fmt);\n    vfprintf(stderr, fmt, ap);\n    va_end(ap);\n    fprintf(stderr, \"\\n\");\n}\n\n/* Vulnerable function copied/adapted from contrib/pds/tif_pdsdirwrite.c */\nstatic int TIFFWriteRationalArray(TIFF *tif, TIFFDataType type, ttag_t tag,\n                                  TIFFDirEntry *dir, uint32_t n, float *v)\n{\n    uint32_t i;\n    uint32_t *t;\n    int status;\n\n    dir->tdir_tag = tag;\n    dir->tdir_type = (short)type;\n    dir->tdir_count = n;\n    t = (uint32_t *)_TIFFmalloc(2 * n * sizeof(uint32_t));\n    for (i = 0; i < n; i++)\n    {\n        float fv = v[i];\n        int sign = 1;\n        uint32_t den;\n\n        if (fv < 0)\n        {\n            if (type == TIFF_RATIONAL)\n            {\n                TIFFWarning(tif->tif_name,\n                            \"%s: Information lost writing value (%g) as (unsigned) RATIONAL\",\n                            _TIFFFieldWithTag(tif, tag)->field_name, v[i]);\n                fv = 0;\n            }\n            else\n                fv = -fv, sign = -1;\n        }\n        den = 1L;\n        if (fv > 0)\n        {\n            while (fv < 1L << (31 - 3) && den < 1L << (31 - 3))\n                fv *= 1 << 3, den *= 1L << 3;\n        }\n        /* NULL pointer dereference when _TIFFmalloc() returns NULL */\n        t[2 * i + 0] = sign * (fv + 0.5);\n        t[2 * i + 1] = den;\n    }\n    status = TIFFWriteData(tif, dir, (char *)t);\n    _TIFFfree((char *)t);\n    return (status);\n}\n\nint main(void)\n{\n    TIFF tif;\n    tif.tif_name = \"repro.tif\";\n\n    TIFFDirEntry dir;\n    float values[1] = { 1.2345f }; /* Positive to avoid warning path */\n\n    /* n > 0 ensures the loop runs and dereferences t */\n    (void)TIFFWriteRationalArray(&tif, TIFF_RATIONAL, (ttag_t)256, &dir, 1, values);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08719158172607422,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "users.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "__interceptor_strdup",
+            "crash_file": "../../../../src/libsanitizer/asan/asan_interceptors.cpp",
+            "crash_line": 450
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "__interceptor_strdup",
+        "crash_file": "../../../../src/libsanitizer/asan/asan_interceptors.cpp",
+        "crash_line": 450,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4467==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7fe95337217c bp 0x7ffdfa9724f0 sp 0x7ffdfa971c78 T0)\n==4467==The signal is caused by a READ memory access.\n==4467==Hint: address points to the zero page.\n    #0 0x7fe95337217c  (/lib/x86_64-linux-gnu/libc.so.6+0x1b217c)\n    #1 0x7fe9535478ce in __interceptor_strdup ../../../../src/libsanitizer/asan/asan_interceptors.cpp:450\n    #2 0x563d0bc992c0 in sepol_user_modify /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/users.c:246\n    #3 0x563d0bc96c09 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1780_users.c_194_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:42\n    #4 0x7fe9531e9d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #5 0x7fe9531e9e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #6 0x563d0bc967a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/1780_users.c_194_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x127a4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV (/lib/x86_64-linux-gnu/libc.so.6+0x1b217c) \n==4467==ABORTING\n"
+    }
+}

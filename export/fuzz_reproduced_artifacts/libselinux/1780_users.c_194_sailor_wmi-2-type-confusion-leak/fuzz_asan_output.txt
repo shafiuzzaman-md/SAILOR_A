@@ -1,0 +1,35 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1890369459
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x574b804fb420, 0x574b804fb423), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x574b804fb428,0x574b804fb458), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 256b max: 256b total: 256b rss: 30Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==102660==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x574b803d6990 bp 0x7ffc899f45b0 sp 0x7ffc899f3d68 T0)
+==102660==The signal is caused by a READ memory access.
+==102660==Hint: address points to the zero page.
+    #0 0x574b803d6990 in __sanitizer::internal_strlen(char const*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x109990) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #1 0x574b803a9b15 in __interceptor_strdup (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xdcb15) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #2 0x574b803fdac6 in sepol_user_modify /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/users.c:246:10
+    #3 0x574b803fb454 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:45:5
+    #4 0x574b8032184a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5484a) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #5 0x574b80320f15 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x53f15) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #6 0x574b80322b18 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x55b18) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #7 0x574b80322f96 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x55f96) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #8 0x574b80310582 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x43582) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #9 0x574b8033ba26 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x6ea26) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+    #10 0x7c8d04a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x7c8d04a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x574b803049b4 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x379b4) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1780_users.c_194_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x109990) (BuildId: ea7de2e3920e49a720c6212234fbe4b0a45594ba) in __sanitizer::internal_strlen(char const*)
+==102660==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-b376885ac8452b6cbf9ced81b1080bfd570d9b91
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

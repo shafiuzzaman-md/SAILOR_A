@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "shell.c",
+    "line": 466,
+    "function": "xmllintShellGrep",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "Calls xmlStrstr(node->content, ...) for XML_TEXT_NODE without verifying node->content is non-NULL. If a text node with NULL content is encountered, xmlStrstr will dereference a NULL pointer and crash.",
+    "abs_path": "/tmp/libxml2_upstream/shell.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal libxml-like type and macro definitions */\ntypedef unsigned char xmlChar;\n\n#ifndef ATTRIBUTE_UNUSED\n#define ATTRIBUTE_UNUSED\n#endif\n\n#define XML_ELEMENT_NODE 1\n#define XML_ATTRIBUTE_NODE 2\n#define XML_TEXT_NODE 3\n#define XML_ENTITY_REF_NODE 5\n#define XML_COMMENT_NODE 8\n#define XML_DOCUMENT_NODE 9\n#define XML_HTML_DOCUMENT_NODE 13\n\nstruct _xmlNode;\n\ntypedef struct _xmlDoc {\n    struct _xmlNode *children;\n} *xmlDocPtr;\n\ntypedef struct _xmlNode {\n    struct _xmlNode *next;\n    struct _xmlNode *prev;\n    struct _xmlNode *parent;\n    struct _xmlNode *children;\n    unsigned short type;\n    xmlChar *name;\n    xmlChar *content;\n} xmlNode, *xmlNodePtr;\n\n/* Shell context holding an output FILE* like xmllint */\ntypedef struct _xmllintShellCtxt {\n    FILE *output;\n} xmllintShellCtxt, *xmllintShellCtxtPtr;\n\n/* Stubs for functions used by xmllintShellGrep */\nstatic xmlChar *xmlGetNodePath(xmlNodePtr node ATTRIBUTE_UNUSED) {\n    return (xmlChar*)\"/fake/path\";\n}\n\nstatic int xmllintShellList(xmllintShellCtxtPtr ctxt ATTRIBUTE_UNUSED,\n                            char *arg ATTRIBUTE_UNUSED,\n                            xmlNodePtr node ATTRIBUTE_UNUSED,\n                            xmlNodePtr node2 ATTRIBUTE_UNUSED) {\n    /* No-op stub */\n    return 0;\n}\n\n/* Minimal xmlStrstr that dereferences the haystack, so passing NULL crashes */\nstatic const xmlChar *xmlStrstr(const xmlChar *haystack, const xmlChar *needle) {\n    if (needle == NULL)\n        return NULL;\n    /* This loop will immediately dereference 'haystack' (NULL in our trigger) */\n    for (const xmlChar *h = haystack; *h; h++) {\n        const xmlChar *h2 = h;\n        const xmlChar *n = needle;\n        while (*h2 && *n && (*h2 == *n)) {\n            h2++; n++;\n        }\n        if (*n == 0)\n            return h;\n    }\n    return NULL;\n}\n\n/* Vulnerable function copied and minimally adapted */\nstatic int\nxmllintShellGrep(xmllintShellCtxtPtr ctxt ATTRIBUTE_UNUSED,\n            char *arg, xmlNodePtr node, xmlNodePtr node2 ATTRIBUTE_UNUSED)\n{\n    if (!ctxt)\n        return (0);\n    if (node == NULL)\n        return (0);\n    if (arg == NULL)\n        return (0);\n#ifdef LIBXML_REGEXP_ENABLED\n    if ((xmlStrchr((xmlChar *) arg, '?')) ||\n        (xmlStrchr((xmlChar *) arg, '*')) ||\n        (xmlStrchr((xmlChar *) arg, '.')) ||\n        (xmlStrchr((xmlChar *) arg, '['))) {\n    }\n#endif\n    while (node != NULL) {\n        if (node->type == XML_COMMENT_NODE) {\n            if (xmlStrstr(node->content, (xmlChar *) arg)) {\n                fprintf(ctxt->output, \"%s : \", (char*)xmlGetNodePath(node));\n                xmllintShellList(ctxt, NULL, node, NULL);\n            }\n        } else if (node->type == XML_TEXT_NODE) {\n            /* Vulnerable line: node->content may be NULL for a text node */\n            if (xmlStrstr(node->content, (xmlChar *) arg)) {\n                fprintf(ctxt->output, \"%s : \", (char*)xmlGetNodePath(node->parent));\n                xmllintShellList(ctxt, NULL, node->parent, NULL);\n            }\n        }\n\n        /* Browse the full subtree, deep first */\n        if ((node->type == XML_DOCUMENT_NODE) ||\n            (node->type == XML_HTML_DOCUMENT_NODE)) {\n            node = ((xmlDocPtr) node)->children;\n        } else if ((node->children != NULL)\n                   && (node->type != XML_ENTITY_REF_NODE)) {\n            /* deep first */\n            node = node->children;\n        } else if (node->next != NULL) {\n            /* then siblings */\n            node = node->next;\n        } else {\n            /* go up to parents->next if needed */\n            while (node != NULL) {\n                if (node->parent != NULL) {\n                    node = node->parent;\n                }\n                if (node->next != NULL) {\n                    node = node->next;\n                    break;\n                }\n                if (node->parent == NULL) {\n                    node = NULL;\n                    break;\n                }\n            }\n        }\n    }\n    return (0);\n}\n\nint main(void) {\n    /* Set up a shell context with a valid output stream */\n    xmllintShellCtxt ctxt;\n    ctxt.output = stdout;\n\n    /* Create a parent element node */\n    xmlNodePtr parent = (xmlNodePtr)calloc(1, sizeof(xmlNode));\n    if (!parent) return 1;\n    parent->type = XML_ELEMENT_NODE;\n\n    /* Create a text node with NULL content to trigger the bug */\n    xmlNodePtr text = (xmlNodePtr)calloc(1, sizeof(xmlNode));\n    if (!text) return 1;\n    text->type = XML_TEXT_NODE;\n    text->content = NULL;           /* Critical: NULL content */\n    text->parent = parent;          /* So xmlGetNodePath(parent) is reachable */\n    parent->children = text;\n\n    /* Non-NULL search argument */\n    char arg[] = \"needle\";\n\n    /* Call the vulnerable function: this will dereference NULL via xmlStrstr */\n    xmllintShellGrep(&ctxt, arg, text, NULL);\n\n    /* Cleanup (never reached if crash occurs) */\n    free(text);\n    free(parent);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.5991325378417969,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4064260==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5dfbfefa57b0 bp 0x7ffe68fa2dd0 sp 0x7ffe68fa2d30 T0)\n==4064260==The signal is caused by a READ memory access.\n==4064260==Hint: address points to the zero page.\n    #0 0x5dfbfefa57b0 in xmlStrstr /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:59:5\n    #1 0x5dfbfefa529b in xmllintShellGrep /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:97:17\n    #2 0x5dfbfefa4fef in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:156:5\n    #3 0x7722fa42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7722fa42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5dfbfeee5304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer+0x21304) (BuildId: 14f6960b55aef7b1fd9a55110e7d8d860b2cee37)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:59:5 in xmlStrstr\n==4064260==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlStrstr",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:59",
+      "crash_line": 5,
+      "frames": [
+        [
+          "0",
+          "xmlStrstr",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:59",
+          "5"
+        ],
+        [
+          "1",
+          "xmllintShellGrep",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:97",
+          "17"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/shell_466_null-pointer-dereference/reproducer.c:156",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

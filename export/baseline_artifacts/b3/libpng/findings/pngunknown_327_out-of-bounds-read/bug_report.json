@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngunknown.c",
+    "line": 327,
+    "function": "find",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "memcmp(chunk_info[i].name, name, 4) unconditionally reads 4 bytes from the caller-provided 'name'. If 'name' points to a string shorter than 4 bytes (e.g., via command-line input), this reads past the buffer, causing an out-of-bounds read.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngunknown.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n/* Minimal stand-in for the chunk_info table used by pngunknown.c */\ntypedef struct {\n    const char *name; /* only the name field is used by find() */\n} chunk_info_t;\n\nstatic chunk_info_t chunk_info[] = {\n    { \"IHDR\" },\n    { \"IDAT\" },\n    { \"IEND\" },\n    { \"tEXt\" },\n    { \"zTXt\" },\n    { \"iTXt\" },\n};\n\n#define NINFO ((int)(sizeof(chunk_info)/sizeof(chunk_info[0])))\n\n/* Vulnerable function as in contrib/libtests/pngunknown.c:find */\nstatic int find(const char *name)\n{\n    int i = NINFO;\n    while (--i >= 0)\n    {\n        /* BUG: unconditionally compares 4 bytes from caller-provided name */\n        if (memcmp(chunk_info[i].name, name, 4) == 0)\n            break;\n    }\n    return i;\n}\n\nint main(void)\n{\n    /* Create a too-short buffer to trigger OOB read in memcmp(..., name, 4) */\n    char *short_name = (char *)malloc(1); /* only 1 byte allocated */\n    if (!short_name) {\n        perror(\"malloc\");\n        return 1;\n    }\n    short_name[0] = 'I'; /* e.g., starts like \"I...\" but only 1 byte long */\n\n    /* This call will cause memcmp to read 4 bytes from short_name, which is\n       an out-of-bounds read for this 1-byte allocation. ASan should flag it. */\n    int idx = find(short_name);\n\n    /* Prevent optimizing away the call */\n    printf(\"find returned %d (expected -1)\\n\", idx);\n\n    free(short_name);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.768972635269165,
+      "output": "=================================================================\n==3720532==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x591504cdbe80 bp 0x7fff6fb5b160 sp 0x7fff6fb5a910\nREAD of size 4 at 0x602000000011 thread T0\n    #0 0x591504cdbe7f in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long) (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3be7f) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)\n    #1 0x591504cdc230 in memcmp (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3c230) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)\n    #2 0x591504d80de9 in find /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:28:13\n    #3 0x591504d80d3f in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:46:15\n    #4 0x78cd7d02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x78cd7d02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x591504cc1314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x21314) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x591504d44d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)\n    #1 0x591504d80cc8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:37:32\n    #2 0x78cd7d02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78cd7d02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x591504cc1314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x21314) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer+0x3be7f) (BuildId: 103b65fa4b8ab32dec7ea7d6e912e7b8264f37a2) in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long)\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3720532==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "2",
+          "find",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:28",
+          "13"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:46",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngunknown_327_out-of-bounds-read/reproducer.c:37",
+          "32"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

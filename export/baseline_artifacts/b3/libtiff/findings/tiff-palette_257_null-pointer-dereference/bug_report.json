@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/dbs/tiff-palette.c",
+    "line": 257,
+    "function": "main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "scan_line is allocated at line 246 without checking for NULL. If malloc fails, it is dereferenced at line 257 (and similarly in other bit-depth cases), causing a NULL pointer dereference.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/dbs/tiff-palette.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <stddef.h>\n\n// Force malloc() to fail inside the included vulnerable program\nstatic void *failing_malloc(size_t size) {\n    (void)size;\n    return NULL; // Simulate allocation failure (OOM)\n}\n\n// Redirect malloc used in the included source to our failing allocator\n#define malloc(SZ) failing_malloc(SZ)\n\n// Rename main from the vulnerable program so we can call it from our own main\n#define main tiff_palette_main\n\n// Include the actual vulnerable program from the project\n#include \"/tmp/libtiff_upstream/contrib/dbs/tiff-palette.c\"\n\n// Restore names for our file\n#undef main\n#undef malloc\n\nint main(void) {\n    // Prepare argv to satisfy the vulnerable program's expected CLI:\n    // argv[0] = program name\n    // argv[1] = \"-depth\"\n    // argv[2] = bit-depth (use 8 to hit the write at line 257)\n    // argv[3] = output TIFF path\n    char *argv[] = {\n        (char *)\"repro\",\n        (char *)\"-depth\",\n        (char *)\"8\",\n        (char *)\"/tmp/out.tif\",\n        NULL\n    };\n\n    // Call the vulnerable main; malloc() inside it returns NULL, leading to\n    // a NULL pointer dereference when writing to scan_line.\n    return tiff_palette_main(4, argv);\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-palette_257_null-pointer-dereference/reproducer.c:19:\nIn file included from /tmp/libtiff_upstream/contrib/dbs/tiff-palette.c:29:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

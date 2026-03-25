@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-i386.c",
+    "line": 510,
+    "function": "coff_pe_i386_relocate_section",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "medium",
+    "explanation": "Writes a 16-bit value into contents at contents + (rel->r_vaddr - input_section->vma) without validating that rel->r_vaddr lies within the current section\u2019s bounds. A malformed COFF file can set r_vaddr outside [input_section->vma, input_section->vma + input_section->size), causing an out-of-bounds write past the heap-allocated section buffer.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-i386.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used in the vulnerable code path. */\ntypedef uint64_t bfd_vma;\ntypedef unsigned char bfd_byte;\ntypedef int bfd_boolean;\n\nstruct bfd {}; /* Unused in this reproducer */\nstruct bfd_link_info {}; /* Unused in this reproducer */\n\ntypedef struct asection {\n  bfd_vma vma;\n  bfd_vma size;\n  struct asection *output_section;\n  struct asection *next;\n} asection;\n\nstruct internal_reloc {\n  bfd_vma r_vaddr; /* relocation target VA */\n  int r_symndx;\n  unsigned short r_type;\n};\n\nstruct internal_syment {}; /* Unused */\n\n/* Little-endian 16-bit write like bfd_putl16. */\nstatic inline void bfd_putl16(unsigned int val, bfd_byte *p) {\n  p[0] = (bfd_byte)(val & 0xff);\n  p[1] = (bfd_byte)((val >> 8) & 0xff);\n}\n\n/* Stub for _bfd_coff_generic_relocate_section; not used meaningfully here. */\nstatic bfd_boolean _bfd_coff_generic_relocate_section(\n    struct bfd *output_bfd,\n    struct bfd_link_info *info,\n    struct bfd *input_bfd,\n    asection *input_section,\n    bfd_byte *contents,\n    struct internal_reloc *relocs,\n    struct internal_syment *syms,\n    asection **sections) {\n  (void)output_bfd; (void)info; (void)input_bfd; (void)input_section;\n  (void)contents; (void)relocs; (void)syms; (void)sections;\n  return 1;\n}\n\n/* Simplified version of coff_pe_i386_relocate_section that preserves the\n * vulnerable write at: contents + (rel->r_vaddr - input_section->vma).\n * This reproducer intentionally omits the missing bounds check to demonstrate\n * the heap-buffer-overflow.\n */\nbfd_boolean coff_pe_i386_relocate_section(\n    struct bfd *output_bfd,\n    struct bfd_link_info *info,\n    struct bfd *input_bfd,\n    asection *input_section,\n    bfd_byte *contents,\n    struct internal_reloc *relocs,\n    struct internal_syment *syms,\n    asection **sections) {\n  (void)output_bfd; (void)info; (void)input_bfd; (void)syms; (void)sections;\n\n  /* In the real code, idx is found by walking output_bfd->sections to find\n   * the output section index of the referenced section. Any small value will do. */\n  unsigned int idx = 0;\n\n  /* Trigger the vulnerable write for the first relocation entry. */\n  struct internal_reloc *rel = &relocs[0];\n\n  /* Vulnerable out-of-bounds write (no validation that r_vaddr is within the\n   * [input_section->vma, input_section->vma + input_section->size) range). */\n  bfd_putl16(idx, contents + (size_t)(rel->r_vaddr - input_section->vma));\n\n  return _bfd_coff_generic_relocate_section(output_bfd, info, input_bfd,\n                                            input_section, contents,\n                                            relocs, syms, sections);\n}\n\nint main(void) {\n  /* Set up a tiny section buffer to make ASan detect an OOB quickly. */\n  const size_t sec_size = 16;\n  bfd_byte *contents = (bfd_byte *)malloc(sec_size);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  memset(contents, 0xAA, sec_size);\n\n  /* Create an input section with some base vma. */\n  asection input_sec;\n  input_sec.vma = 0x1000;\n  input_sec.size = sec_size;\n  input_sec.output_section = NULL;\n  input_sec.next = NULL;\n\n  /* Craft a relocation whose r_vaddr points outside the input section's bounds.\n   * This ensures contents + (r_vaddr - vma) points past the heap buffer. */\n  struct internal_reloc rel;\n  rel.r_vaddr = input_sec.vma + sec_size + 8; /* 8 bytes past the end */\n  rel.r_symndx = 0;\n  rel.r_type = 0;\n\n  /* Unused placeholders to satisfy function signature. */\n  struct bfd out_bfd_obj, in_bfd_obj;\n  struct bfd_link_info link_info;\n  struct internal_syment symtab_dummy;\n  asection *sections_dummy = NULL;\n\n  /* Call the vulnerable function. Under ASan, this should report a\n   * heap-buffer-overflow when it performs the 16-bit write out-of-bounds. */\n  (void)coff_pe_i386_relocate_section(&out_bfd_obj, &link_info, &in_bfd_obj,\n                                      &input_sec, contents, &rel,\n                                      &symtab_dummy, &sections_dummy);\n\n  /* If we somehow didn't crash, clean up. */\n  free(contents);\n  printf(\"Completed without ASan report (unexpected).\\n\");\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7652709484100342,
+      "output": "=================================================================\n==3594678==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000028 at pc 0x5855ff095df3 bp 0x7fff560c7380 sp 0x7fff560c7378\nWRITE of size 1 at 0x602000000028 thread T0\n    #0 0x5855ff095df2 in bfd_putl16 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31:8\n    #1 0x5855ff095d60 in coff_pe_i386_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:75:3\n    #2 0x5855ff096234 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:114:9\n    #3 0x7e1f9362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7e1f9362a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5855fefd6314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0x21314) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)\n\n0x602000000028 is located 8 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x5855ff059d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0xa4d22) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)\n    #1 0x5855ff095fb5 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:85:36\n    #2 0x7e1f9362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7e1f9362a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5855fefd6314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer+0x21314) (BuildId: 85df16bfc1c0078d3ed2dc0df7cef1e99dd238ad)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31:8 in bfd_putl16\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00 00 fa[fa]fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3594678==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "bfd_putl16",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31",
+      "crash_line": 8,
+      "frames": [
+        [
+          "0",
+          "bfd_putl16",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:31",
+          "8"
+        ],
+        [
+          "1",
+          "coff_pe_i386_relocate_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:75",
+          "3"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:114",
+          "9"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_510_heap-buffer-overflow/reproducer.c:85",
+          "36"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/addtiffo/tif_overview.c",
+    "line": 871,
+    "function": "TIFFBuildOverviews",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "high",
+    "explanation": "nOXSize is computed as (nXSize + panOvList[i] - 1) / panOvList[i] without validating panOvList[i]. If an overview factor of 0 is provided in panOvList, this results in a divide-by-zero.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/addtiffo/tif_overview.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n\n/*\n   Minimal, self-contained stand-in for the vulnerable function from\n   contrib/addtiffo/tif_overview.c. We replicate the core logic that\n   triggers the divide-by-zero when an overview factor of 0 is supplied.\n*/\n\ntypedef struct TIFF TIFF; /* Opaque placeholder; we don't use it here. */\n\n/*\n   Stand-in for contrib/addtiffo/tif_overview.c:TIFFBuildOverviews()\n   Only the relevant portion is reproduced to trigger the bug.\n*/\nint TIFFBuildOverviews(TIFF *hTIFF, int nOverviews, const uint32_t *panOvList)\n{\n    /* Typical image sizes; actual values don't matter for the crash. */\n    uint32_t nXSize = 1024;\n    uint32_t nYSize = 768;\n\n    /* Loop over requested overview factors. */\n    for (int i = 0; i < nOverviews; i++)\n    {\n        /*\n           Vulnerable computation from the original code:\n             nOXSize = (nXSize + panOvList[i] - 1) / panOvList[i];\n             nOYSize = (nYSize + panOvList[i] - 1) / panOvList[i];\n           If panOvList[i] == 0, this divides by zero.\n        */\n        uint32_t nOXSize = (nXSize + panOvList[i] - 1) / panOvList[i];\n        uint32_t nOYSize = (nYSize + panOvList[i] - 1) / panOvList[i];\n\n        /* Prevent unused variable warnings */\n        (void)nOXSize;\n        (void)nOYSize;\n    }\n\n    return 0;\n}\n\nint main(void)\n{\n    /* Craft an overview list with a zero factor to trigger the bug. */\n    uint32_t panOvList[1];\n    panOvList[0] = 0; /* This is the invalid overview factor causing divide-by-zero */\n\n    TIFF *tif = NULL; /* Not used by our minimal stand-in */\n\n    /* Call the vulnerable function: this should raise SIGFPE (divide-by-zero). */\n    (void)TIFFBuildOverviews(tif, 1, panOvList);\n\n    /* If we got here (which we shouldn't), print something. */\n    puts(\"Unexpectedly survived divide-by-zero\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6044807434082031,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3809917==ERROR: AddressSanitizer: FPE on unknown address 0x56ed325add87 (pc 0x56ed325add87 bp 0x7ffd2b644a90 sp 0x7ffd2b644a20 T0)\n    #0 0x56ed325add87 in TIFFBuildOverviews /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32:56\n    #1 0x56ed325adf78 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:52:11\n    #2 0x7f0c3d62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7f0c3d62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x56ed324ee304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer+0x20304) (BuildId: 709494650f02a23563a1daf170de714dc1ca206f)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32:56 in TIFFBuildOverviews\n==3809917==ABORTING\n",
+      "error_type": "FPE",
+      "crash_function": "TIFFBuildOverviews",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32",
+      "crash_line": 56,
+      "frames": [
+        [
+          "0",
+          "TIFFBuildOverviews",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:32",
+          "56"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_871_divide-by-zero/reproducer.c:52",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

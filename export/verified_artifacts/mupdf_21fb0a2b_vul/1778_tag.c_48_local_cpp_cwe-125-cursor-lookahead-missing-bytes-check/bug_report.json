@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "tag.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "gumbo_tag_from_original_text",
+            "crash_file": "thirdparty/gumbo-parser/src/tag.c",
+            "crash_line": 48
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "gumbo_tag_from_original_text",
+        "crash_file": "thirdparty/gumbo-parser/src/tag.c",
+        "crash_line": 48,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==8386==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000011 at pc 0x557199fe7a9a bp 0x7ffe428e7be0 sp 0x7ffe428e7bd0\nREAD of size 1 at 0x502000000011 thread T0\n    #0 0x557199fe7a99 in gumbo_tag_from_original_text thirdparty/gumbo-parser/src/tag.c:48\n    #1 0x557199fe74d1 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1778_tag.c_48_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:20\n    #2 0x7f32a865fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f32a865fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x557199fe72b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1778_tag.c_48_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x52b4)\n\n0x502000000011 is located 0 bytes to the right of 1-byte region [0x502000000010,0x502000000011)\nallocated by thread T0 here:\n    #0 0x7f32a8a16887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x557199fe7409 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1778_tag.c_48_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:10\n    #2 0x7f32a865fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/gumbo-parser/src/tag.c:48 in gumbo_tag_from_original_text\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa "
+    }
+}

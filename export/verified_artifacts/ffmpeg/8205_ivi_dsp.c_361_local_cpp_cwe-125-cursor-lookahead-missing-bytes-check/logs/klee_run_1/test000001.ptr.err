@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: ivi_dsp.c
+Line: 33
+assembly.ll line: 145
+State: 1
+Stack: 
+	#000000145 in ff_ivi_inverse_haar_8x8(139732228927488, 139800948404224, 1, 139241528913920) at ivi_dsp.c:33
+	#100000294 in ivi_entry(139732228927488, 139800948404224, 1, 139241528913920) at ivi_dsp.c:55
+	#200000057 in main() at driver.c:28
+Info: 
+	address: 139732228927552
+	next: object at 139225959657472 of size 4
+		MO70[4] allocated at ff_ivi_inverse_haar_8x8():  %15 = alloca i32, align 4

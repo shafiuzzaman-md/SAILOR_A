@@ -1,0 +1,16 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080564==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7095c59894c9 bp 0x7ffc6f77f6c0 sp 0x7ffc6f77ee88 T0)
+==4080564==The signal is caused by a WRITE memory access.
+==4080564==Hint: address points to the zero page.
+    #0 0x7095c59894c9 in __memset_avx2_unaligned_erms string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:244
+    #1 0x65437f67b337 in __asan_memset (/app/export/baseline_artifacts/b3/libxml2/verified/testdict_506_null-pointer-dereference/reproducer+0xa4337) (BuildId: cd09de12be01f64eda3d69ebba55396ca936d1ae)
+    #2 0x65437f6b7e9a in pool_new /app/export/baseline_artifacts/b3/libxml2/verified/testdict_506_null-pointer-dereference/reproducer.c:55:5
+    #3 0x65437f6b7d63 in main /app/export/baseline_artifacts/b3/libxml2/verified/testdict_506_null-pointer-dereference/reproducer.c:70:11
+    #4 0x7095c582a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7095c582a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x65437f5f8304 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/testdict_506_null-pointer-dereference/reproducer+0x21304) (BuildId: cd09de12be01f64eda3d69ebba55396ca936d1ae)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:244 in __memset_avx2_unaligned_erms
+==4080564==ABORTING

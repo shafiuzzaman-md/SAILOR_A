@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/readpng.c",
+    "line": 95,
+    "function": "read_png",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "display is mistakenly declared as a png_byte (byte) at line 37 instead of a png_bytep (pointer). It is then assigned malloc(rowbytes) at line 65, which truncates the pointer to a byte, and passed to png_read_row as the third argument at line 95, where a pointer is expected. This results in writes through an invalid pointer, causing memory corruption or a crash. The same mistake also leads to calling free(display) on an invalid pointer in the cleanup paths.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/readpng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal libpng-like typedefs and API stubs to mimic the real code path */\ntypedef unsigned char png_byte;      /* byte */\ntypedef unsigned char* png_bytep;    /* byte pointer */\ntypedef uint32_t png_uint_32;\n\ntypedef struct png_struct_def { int dummy; } *png_structp;\ntypedef struct png_info_def { int dummy; } *png_infop;\n\nenum { PNG_HANDLE_CHUNK_ALWAYS = 3 };\n\n/* Public API stubs */\npng_structp png_create_read_struct(const char *ver, void *error_ptr,\n                                   void *error_fn, void *warn_fn) {\n    (void)ver; (void)error_ptr; (void)error_fn; (void)warn_fn;\n    png_structp p = (png_structp)malloc(sizeof(*p));\n    return p;\n}\n\npng_infop png_create_info_struct(png_structp png_ptr) {\n    (void)png_ptr;\n    png_infop p = (png_infop)malloc(sizeof(*p));\n    return p;\n}\n\nvoid png_destroy_read_struct(png_structp *png_ptr, png_infop *info_ptr,\n                             png_infop *end_info) {\n    if (png_ptr && *png_ptr) { free(*png_ptr); *png_ptr = NULL; }\n    if (info_ptr && *info_ptr) { free(*info_ptr); *info_ptr = NULL; }\n    (void)end_info;\n}\n\nvoid png_error(png_structp png_ptr, const char *msg) {\n    (void)png_ptr;\n    fprintf(stderr, \"png_error: %s\\n\", msg);\n    /* In real libpng this longjmps; for our stub, just abort. */\n    abort();\n}\n\nvoid png_set_keep_unknown_chunks(png_structp png_ptr, int keep, void *list, int num) {\n    (void)png_ptr; (void)keep; (void)list; (void)num;\n}\n\nvoid png_read_info(png_structp png_ptr, png_infop info_ptr) {\n    (void)png_ptr; (void)info_ptr;\n}\n\nsize_t png_get_rowbytes(png_structp png_ptr, png_infop info_ptr) {\n    (void)png_ptr; (void)info_ptr;\n    /* Return a non-zero row size to trigger allocations */\n    return 1024;\n}\n\npng_uint_32 png_get_image_height(png_structp png_ptr, png_infop info_ptr) {\n    (void)png_ptr; (void)info_ptr;\n    return 1; /* single row is sufficient to trigger the bug */\n}\n\nint png_set_interlace_handling(png_structp png_ptr) {\n    (void)png_ptr;\n    return 1; /* single pass */\n}\n\nvoid png_start_read_image(png_structp png_ptr) { (void)png_ptr; }\n\n/* The critical function that will be called with an invalid pointer for 'display' */\nvoid png_read_row(png_structp png_ptr, png_bytep row, png_bytep display) {\n    (void)png_ptr;\n    /* Simulate libpng writing a row and an optional display row */\n    if (row) {\n        row[0] = 0xAA;\n    }\n    if (display) {\n        /* This write will target an invalid pointer due to truncation. */\n        display[0] = 0xBB;\n    }\n}\n\nvoid png_read_end(png_structp png_ptr, png_infop info_ptr) { (void)png_ptr; (void)info_ptr; }\n\n/* ------------------ Reproducer of the buggy function ------------------ */\n\n/* This mimics contrib/libtests/readpng.c:read_png with the specific bug:\n * 'display' is a png_byte (byte) instead of a png_bytep (pointer).\n */\nint read_png(FILE *file) {\n    (void)file; /* Unused in this stub-based reproducer */\n\n    png_structp png_ptr = png_create_read_struct(\"1.6.0\", NULL, NULL, NULL);\n    png_infop info_ptr = png_create_info_struct(png_ptr);\n\n    png_bytep row = NULL;\n    png_byte display; /* BUG: should be png_bytep */\n\n    png_set_keep_unknown_chunks(png_ptr, PNG_HANDLE_CHUNK_ALWAYS, NULL, 0);\n    png_read_info(png_ptr, info_ptr);\n\n    {\n        size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);\n\n        /* Allocate buffers */\n        row = (png_bytep)malloc(rowbytes);\n        /* BUG: pointer value truncated to a single byte */\n        display = (png_byte)(uintptr_t)malloc(rowbytes);\n\n        /* Only check row for NULL to ensure we don't exit early by chance\n         * if the low byte of the pointer happens to be 0. */\n        if (row == NULL) png_error(png_ptr, \"OOM allocating row buffer\");\n\n        {\n            png_uint_32 height = png_get_image_height(png_ptr, info_ptr);\n            int passes = png_set_interlace_handling(png_ptr);\n            int pass;\n\n            png_start_read_image(png_ptr);\n\n            for (pass = 0; pass < passes; ++pass) {\n                png_uint_32 y = height;\n                while (y-- > 0) {\n                    /* Pass the truncated value back as a pointer: invalid! */\n                    png_read_row(png_ptr, row, (png_bytep)(uintptr_t)display);\n                }\n            }\n        }\n    }\n\n    png_read_end(png_ptr, info_ptr);\n    png_destroy_read_struct(&png_ptr, &info_ptr, NULL);\n\n    /* Free the valid row; also attempt to free the invalid pointer, which would\n     * be another bug, but we likely crash earlier during png_read_row. */\n    free(row);\n    free((void*)(uintptr_t)display);\n\n    return 1;\n}\n\nint main(void) {\n    /* Exit code 0 on success. */\n    return !read_png(stdin);\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8093235492706299,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3724337==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000080 (pc 0x5f923ed38fe7 bp 0x7ffc4dba5610 sp 0x7ffc4dba55d0 T0)\n==3724337==The signal is caused by a WRITE memory access.\n==3724337==Hint: address points to the zero page.\n    #0 0x5f923ed38fe7 in png_read_row /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78:20\n    #1 0x5f923ed3940f in read_png /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:124:21\n    #2 0x5f923ed39561 in main /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:143:13\n    #3 0x78539a22a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x78539a22a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5f923ec79304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer+0x21304) (BuildId: 2d20feecfb278bf3ca6e3174816a698ef3e6f605)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78:20 in png_read_row\n==3724337==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "png_read_row",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "png_read_row",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:78",
+          "20"
+        ],
+        [
+          "1",
+          "read_png",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:124",
+          "21"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/readpng_95_out-of-bounds-write/reproducer.c:143",
+          "13"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

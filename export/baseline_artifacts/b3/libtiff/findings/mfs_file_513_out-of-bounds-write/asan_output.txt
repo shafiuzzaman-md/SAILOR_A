@@ -1,0 +1,1 @@
+mfs_close(14) returned 0

@@ -1,0 +1,94 @@
+{
+  "ctu.c": {
+    "48": {
+      "orig_file": "ctu.c",
+      "orig_line": 56,
+      "code": "}"
+    },
+    "51": {
+      "orig_file": "ctu.c",
+      "orig_line": 2430,
+      "code": "static void ctu_get_pred(VVCLocalContext *lc, const int rs)"
+    },
+    "52": {
+      "orig_file": "ctu.c",
+      "orig_line": 2431,
+      "code": "{"
+    },
+    "53": {
+      "orig_file": "ctu.c",
+      "orig_line": 2432,
+      "code": "const VVCFrameContext *fc       = lc->fc;"
+    },
+    "54": {
+      "orig_file": "ctu.c",
+      "orig_line": 2433,
+      "code": "const H266RawSliceHeader *rsh   = lc->sc->sh.r;"
+    },
+    "55": {
+      "orig_file": "ctu.c",
+      "orig_line": 2434,
+      "code": "CTU *ctu                        = fc->tab.ctus + rs;"
+    },
+    "57": {
+      "orig_file": "ctu.c",
+      "orig_line": 2437,
+      "code": "ctu->has_dmvr = 0;"
+    },
+    "59": {
+      "orig_file": "ctu.c",
+      "orig_line": 2439,
+      "code": "if (IS_I(rsh))"
+    },
+    "60": {
+      "orig_file": "ctu.c",
+      "orig_line": 2440,
+      "code": "return;"
+    },
+    "62": {
+      "orig_file": "ctu.c",
+      "orig_line": 2442,
+      "code": "for (int lx = 0; lx < 2; lx++)"
+    },
+    "63": {
+      "orig_file": "ctu.c",
+      "orig_line": 2443,
+      "code": "memset(ctu->max_y[lx], -1, sizeof(ctu->max_y[0][0]) * rsh->num_ref_idx_active[lx]);"
+    },
+    "67": {
+      "orig_file": "ctu.c",
+      "orig_line": 2449,
+      "code": "}"
+    },
+    "70": {
+      "orig_file": "ctu.c",
+      "orig_line": 2455,
+      "code": "int ff_vvc_coding_tree_unit(VVCLocalContext *lc,"
+    },
+    "71": {
+      "orig_file": "ctu.c",
+      "orig_line": 2456,
+      "code": "const int ctu_idx, const int rs, const int rx, const int ry)"
+    },
+    "72": {
+      "orig_file": "ctu.c",
+      "orig_line": 2457,
+      "code": "{"
+    },
+    "74": {
+      "orig_file": "ctu.c",
+      "orig_line": 2481,
+      "code": "ctu_get_pred(lc, rs);"
+    },
+    "75": {
+      "orig_file": "ctu.c",
+      "orig_line": 2483,
+      "code": "return 0;"
+    },
+    "76": {
+      "orig_file": "ctu.c",
+      "orig_line": 2484,
+      "code": "}"
+    }
+  }
+}

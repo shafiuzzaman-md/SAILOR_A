@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cil",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "",
+            "crash_file": "",
+            "crash_line": 0
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "",
+        "crash_file": "",
+        "crash_line": 0,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==2777==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000050 at pc 0x55981812f09e bp 0x7ffd80cdbb40 sp 0x7ffd80cdbb30\nREAD of size 8 at 0x503000000050 thread T0\n"
+    }
+}

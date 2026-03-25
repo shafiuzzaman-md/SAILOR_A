@@ -1,0 +1,2 @@
+Formatted: -21474.83648
+Formatted (control): -1234.56789

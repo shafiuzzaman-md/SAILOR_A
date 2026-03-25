@@ -1,0 +1,18 @@
+=================================================================
+==353913==ERROR: AddressSanitizer: negative-size-param: (size=-8)
+    #0 0x7f854ed94c87 in __interceptor_memset ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:799
+    #1 0x556810b29394 in av_aes_ctr_increment_iv /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow//harness/aes_ctr.c:34
+    #2 0x556810b293fb in entry_func /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow//harness/aes_ctr.c:43
+    #3 0x556810b2951f in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow//harness/driver.c:22
+    #4 0x7f854ea2dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #5 0x7f854ea2de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #6 0x556810b291c4 in _start (/home/user/user/ffmpeg_verify_v2/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow_bin+0x11c4)
+
+0x502000000020 is located 0 bytes to the right of 16-byte region [0x502000000010,0x502000000020)
+allocated by thread T0 here:
+    #0 0x7f854ee0f887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x556810b2947c in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2939_aes_ctr.c_103_local_cpp_cwe-120-overflow//harness/driver.c:13
+    #2 0x7f854ea2dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: negative-size-param ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:799 in __interceptor_memset
+==353913==ABORTING

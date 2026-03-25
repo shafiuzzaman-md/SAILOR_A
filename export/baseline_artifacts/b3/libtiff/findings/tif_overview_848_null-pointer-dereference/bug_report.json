@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/addtiffo/tif_overview.c",
+    "line": 848,
+    "function": "TIFFBuildOverviews",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "_TIFFmalloc results for panRed2/panGreen2/panBlue2 are not checked for NULL before memcpy. If allocation fails, memcpy to a NULL destination at lines 848-850 will dereference NULL.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/addtiffo/tif_overview.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n\n/* Minimal stand-ins for libtiff types and tags */\ntypedef struct { int dummy; } TIFF;\n#define TIFFTAG_ROWSPERSTRIP 278\n#define TIFFTAG_TILEWIDTH    322\n#define TIFFTAG_TILELENGTH   323\n#define TIFFTAG_COLORMAP     320\n\n/* Global fake colormap buffers (256 entries each, as for 8bpp palette) */\nstatic uint16_t gRed[256];\nstatic uint16_t gGreen[256];\nstatic uint16_t gBlue[256];\n\n/* Stubbed _TIFFmalloc that forces allocation failure to trigger the bug */\nstatic void* _TIFFmalloc(size_t s) {\n    (void)s;\n    return NULL; /* Force failure so memcpy() will dereference NULL dest */\n}\n\n/* Stubbed warning handler setter used by the vulnerable function */\nstatic void* TIFFSetWarningHandler(void* new_handler) {\n    (void)new_handler;\n    return NULL; /* return previous handler (unused here) */\n}\n\n/* Stubbed TIFFGetField that supplies the values the vulnerable code expects */\nstatic int TIFFGetField(TIFF* tif, uint32_t tag, ...) {\n    (void)tif;\n    va_list ap;\n    va_start(ap, tag);\n    if (tag == TIFFTAG_ROWSPERSTRIP) {\n        /* Return 0 so the code path assumes tiled image */\n        uint32_t* p = va_arg(ap, uint32_t*);\n        if (p) *p = 0;\n        va_end(ap);\n        return 0;\n    } else if (tag == TIFFTAG_TILEWIDTH) {\n        uint32_t* p = va_arg(ap, uint32_t*);\n        if (p) *p = 16;\n        va_end(ap);\n        return 1;\n    } else if (tag == TIFFTAG_TILELENGTH) {\n        uint32_t* p = va_arg(ap, uint32_t*);\n        if (p) *p = 16;\n        va_end(ap);\n        return 1;\n    } else if (tag == TIFFTAG_COLORMAP) {\n        /* Provide pointers to our global colormap buffers */\n        uint16_t** pr = va_arg(ap, uint16_t**);\n        uint16_t** pg = va_arg(ap, uint16_t**);\n        uint16_t** pb = va_arg(ap, uint16_t**);\n        if (pr) *pr = gRed;\n        if (pg) *pg = gGreen;\n        if (pb) *pb = gBlue;\n        va_end(ap);\n        return 1; /* Indicate a palette is present */\n    }\n    va_end(ap);\n    return 0;\n}\n\n/* A minimal reproduction of the vulnerable portion of contrib/addtiffo/tif_overview.c */\nstatic int TIFFBuildOverviews_repro(TIFF* hTIFF) {\n    void* pfnWarning;\n    uint32_t nBlockXSize = 0, nBlockYSize = 0;\n    int bTiled = 0;\n    uint32_t nXSize = 16, nYSize = 16; /* arbitrary */\n\n    /* Turn off warnings (stub) */\n    pfnWarning = TIFFSetWarningHandler(NULL);\n    (void)pfnWarning;\n\n    /* Decide between strips/tiles (force tiles via stub) */\n    if (TIFFGetField(hTIFF, TIFFTAG_ROWSPERSTRIP, &nBlockYSize)) {\n        nBlockXSize = nXSize;\n        bTiled = 0;\n    } else {\n        TIFFGetField(hTIFF, TIFFTAG_TILEWIDTH, &nBlockXSize);\n        TIFFGetField(hTIFF, TIFFTAG_TILELENGTH, &nBlockYSize);\n        bTiled = 1;\n    }\n    (void)bTiled; /* not used further in this minimal repro */\n\n    /* Capture the palette if there is one */\n    uint16_t *panRedMap, *panGreenMap, *panBlueMap;\n    if (TIFFGetField(hTIFF, TIFFTAG_COLORMAP, &panRedMap, &panGreenMap, &panBlueMap)) {\n        uint16_t *panRed2, *panGreen2, *panBlue2;\n        int nBitsPerPixel = 8; /* 8bpp palette => 256 colors */\n        int nColorCount = 1 << nBitsPerPixel; /* 256 */\n\n        /* Vulnerable allocations: results are not checked for NULL */\n        panRed2   = (uint16_t*)_TIFFmalloc(2 * (size_t)nColorCount);\n        panGreen2 = (uint16_t*)_TIFFmalloc(2 * (size_t)nColorCount);\n        panBlue2  = (uint16_t*)_TIFFmalloc(2 * (size_t)nColorCount);\n\n        /* NULL-pointer-dereference when allocation fails */\n        memcpy(panRed2,   panRedMap,   2 * (size_t)nColorCount);\n        memcpy(panGreen2, panGreenMap, 2 * (size_t)nColorCount);\n        memcpy(panBlue2,  panBlueMap,  2 * (size_t)nColorCount);\n\n        /* Not reached if crash occurs as expected */\n        panRedMap = panRed2;\n        panGreenMap = panGreen2;\n        panBlueMap = panBlue2;\n    } else {\n        panRedMap = panGreenMap = panBlueMap = NULL;\n    }\n\n    return 0;\n}\n\nint main(void) {\n    /* Initialize fake palette data (256 entries per channel) */\n    for (int i = 0; i < 256; ++i) {\n        gRed[i] = (uint16_t)i;\n        gGreen[i] = (uint16_t)(255 - i);\n        gBlue[i] = (uint16_t)((i * 2) & 0xFF);\n    }\n\n    TIFF fake;\n    /* Call the function that contains the vulnerable logic */\n    (void)TIFFBuildOverviews_repro(&fake);\n    \n    /* If the bug didn't trigger (it should), return non-zero */\n    return 1;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7815337181091309,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3810781==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000020 (pc 0x754bc4f88c37 bp 0x7ffc43a06ed0 sp 0x7ffc43a06698 T0)\n==3810781==The signal is caused by a WRITE memory access.\n==3810781==Hint: address points to the zero page.\n    #0 0x754bc4f88c37 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:488\n    #1 0x5aeeffd260d5 in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 0a2f6c8d07c68f6108fa135fe17a7baba132c905)\n    #2 0x5aeeffd6329d in TIFFBuildOverviews_repro /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer.c:102:9\n    #3 0x5aeeffd62edc in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer.c:127:11\n    #4 0x754bc4e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x754bc4e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5aeeffca3304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer+0x21304) (BuildId: 0a2f6c8d07c68f6108fa135fe17a7baba132c905)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:488 in __memcpy_avx_unaligned_erms\n==3810781==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 488,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "488"
+        ],
+        [
+          "2",
+          "TIFFBuildOverviews_repro",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer.c:102",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_overview_848_null-pointer-dereference/reproducer.c:127",
+          "11"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

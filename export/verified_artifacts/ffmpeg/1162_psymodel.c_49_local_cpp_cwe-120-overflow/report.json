@@ -1,0 +1,220 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 36 (sink assert at 40)\nCrash: CRASH: ptr at psymodel.c:36\nOriginal: psymodel.c:49 \u2192 memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at psymodel.c:36 \u2192 psymodel.c:49\n"
+    ]
+  ],
+  "line_map": {
+    "psymodel.c": {
+      "3": {
+        "orig_file": "psymodel.c",
+        "orig_line": 22,
+        "code": "#include <string.h>"
+      },
+      "29": {
+        "orig_file": "psymodel.c",
+        "orig_line": 31,
+        "code": "av_cold int ff_psy_init(FFPsyContext *ctx, AVCodecContext *avctx, int num_lens,"
+      },
+      "30": {
+        "orig_file": "psymodel.c",
+        "orig_line": 32,
+        "code": "const uint8_t **bands, const int* num_bands,"
+      },
+      "31": {
+        "orig_file": "psymodel.c",
+        "orig_line": 33,
+        "code": "int num_groups, const uint8_t *group_map)"
+      },
+      "32": {
+        "orig_file": "psymodel.c",
+        "orig_line": 34,
+        "code": "{"
+      },
+      "36": {
+        "orig_file": "psymodel.c",
+        "orig_line": 49,
+        "code": "memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);"
+      },
+      "37": {
+        "orig_file": "psymodel.c",
+        "orig_line": 50,
+        "code": "memcpy(ctx->num_bands, num_bands, sizeof(ctx->num_bands[0]) *  num_lens);"
+      },
+      "41": {
+        "orig_file": "psymodel.c",
+        "orig_line": 70,
+        "code": "return 0;"
+      },
+      "42": {
+        "orig_file": "psymodel.c",
+        "orig_line": 71,
+        "code": "}"
+      },
+      "46": {
+        "orig_file": "psymodel.c",
+        "orig_line": 32,
+        "code": "const uint8_t **bands, const int* num_bands,"
+      },
+      "49": {
+        "orig_file": "psymodel.c",
+        "orig_line": 47,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "psymodel.c",
+      "original_line": 49,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "44:     if (!ctx->ch || !ctx->group || !ctx->bands || !ctx->num_bands) {\n45:         ff_psy_end(ctx);\n46:         return AVERROR(ENOMEM);\n47:     }\n48: \n49:     memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);\n50:     memcpy(ctx->num_bands, num_bands, sizeof(ctx->num_bands[0]) *  num_lens);\n51: \n52:     /* assign channels to groups (with virtual channels for coupling) */\n53:     for (i = 0; i < num_groups; i++) {\n54:         /* NOTE: Add 1 to handle the AAC chan_config without modification."
+    },
+    "klee_crash": {
+      "harness_file": "psymodel.c",
+      "harness_line": 36,
+      "original_file": "psymodel.c",
+      "original_line": 49,
+      "original_code": "memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);",
+      "original_context": "    46:         return AVERROR(ENOMEM);\n    47:     }\n    48: \n>>> 49:     memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);\n    50:     memcpy(ctx->num_bands, num_bands, sizeof(ctx->num_bands[0]) *  num_lens);\n    51: \n    52:     /* assign channels to groups (with virtual channels for coupling) */",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 292\nState: 1\nStack: \n\t#000000292 in memcpy(139445976449024, 139566235533312, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000215 in ff_psy_init(139583415402496, 139308537495552, symbolic, 139566235533312, 139514695925760, 0, 139299947560960) at psymodel.c:36\n\t#200000263 in entry_func(139583415402496, 139308537495552, symbolic, 139566235533312, 139514695925760, 0, 139299947560960) at psy"
+    },
+    "concrete_inputs": [
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "bands_src_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "num_bands_src",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "num_lens",
+        "size": 4,
+        "data": "b'\\x05\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1162_psymodel.c_49_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "psymodel.c",
+        "harness_line": 36,
+        "original_file": "psymodel.c",
+        "original_line": 49,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1162_psymodel.c_49_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

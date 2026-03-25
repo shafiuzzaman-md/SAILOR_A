@@ -1,0 +1,43 @@
+=================================================================
+==3632145==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000001f80 at pc 0x5b394498719c bp 0x7ffe538fd330 sp 0x7ffe538fd328
+READ of size 8 at 0x603000001f80 thread T0
+    #0 0x5b394498719b in coff_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111:13
+    #1 0x5b39449879dd in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:173:9
+    #2 0x7445b342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7445b342a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5b39448c7314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer+0x21314) (BuildId: 95a1007e1a2055cb49263e02fd4793f0f0517537)
+
+Address 0x603000001f80 is a wild pointer inside of access range of size 0x000000000008.
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_3026_out-of-bounds-read/reproducer.c:111:13 in coff_relocate_section
+Shadow bytes around the buggy address:
+  0x0c067fff83a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff83b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff83c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff83d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff83e0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c067fff83f0:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8400: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8410: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8420: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8430: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8440: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3632145==ABORTING

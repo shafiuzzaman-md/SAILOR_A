@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 5014,
+    "function": "automataTest",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-787",
+    "confidence": "medium",
+    "explanation": "Similarly, the 'to' index from the input is used without validation: states[to] = xmlAutomataNewState(am). A large 'to' value in the automata input will write past the end of the states[] array, leading to a stack out-of-bounds write.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n\n/* Minimal type stubs to mirror the libxml2 automata types used in runtest.c */\ntypedef struct _xmlAutomata xmlAutomata;\ntypedef struct _xmlAutomataState xmlAutomataState;\n\nstruct _xmlAutomata { int dummy; };\nstruct _xmlAutomataState { int dummy; };\n\n/* Stubbed functions used by runtest.c automataTest() */\nstatic xmlAutomataState *xmlAutomataNewState(xmlAutomata *am) {\n    /* Return a non-NULL pointer; allocate so ASan doesn't complain about wild ptr */\n    (void)am;\n    xmlAutomataState *st = (xmlAutomataState *)malloc(sizeof(xmlAutomataState));\n    return st ? st : (xmlAutomataState *)0x1;\n}\n\nstatic void xmlAutomataNewCountTrans(xmlAutomata *am,\n                                     xmlAutomataState *from,\n                                     xmlAutomataState *to,\n                                     const unsigned char *val,\n                                     int min, int max, void *data) {\n    /* No-op stub; included only to mirror the call in the vulnerable code path */\n    (void)am; (void)from; (void)to; (void)val; (void)min; (void)max; (void)data;\n}\n\n/* scanNumber implementation matching the behavior used in runtest.c */\nstatic int scanNumber(char **pptr) {\n    int ret = 0;\n    char *p = *pptr;\n    /* Parse consecutive digits only; do not skip leading spaces here */\n    while (*p >= '0' && *p <= '9') {\n        ret = ret * 10 + (*p - '0');\n        p++;\n    }\n    *pptr = p;\n    return ret;\n}\n\n/* A minimized reproduction of the 'c ' branch from runtest.c:automataTest() */\nstatic void trigger_overflow_with_c_expr(const char *expr) {\n    /* Small stack array to make the overflow obvious to ASan */\n    xmlAutomataState *states[8];\n    memset(states, 0, sizeof(states));\n\n    /* Non-NULL automaton so the condition (am != NULL) is satisfied */\n    xmlAutomata dummy_am; xmlAutomata *am = &dummy_am;\n\n    if (!(am != NULL && expr[0] == 'c' && expr[1] == ' ')) {\n        fprintf(stderr, \"Expression must start with 'c ' for this reproducer.\\n\");\n        return;\n    }\n\n    char *ptr = (char *)&expr[2];\n    int from, to;\n    int min, max;\n\n    /* from = scanNumber(&ptr); */\n    from = scanNumber(&ptr);\n    if (*ptr != ' ') {\n        fprintf(stderr, \"Bad line %s\\n\", expr);\n        return;\n    }\n    if (states[from] == NULL)\n        states[from] = xmlAutomataNewState(am);  /* in-bounds for from=0 */\n\n    ptr++;\n\n    /* to = scanNumber(&ptr); */\n    to = scanNumber(&ptr);\n    if (*ptr != ' ') {\n        fprintf(stderr, \"Bad line %s\\n\", expr);\n        return;\n    }\n\n    /* VULNERABILITY: No bounds check on 'to' before indexing 'states' */\n    if (states[to] == NULL)\n        states[to] = xmlAutomataNewState(am);    /* stack OOB write here */\n\n    ptr++;\n\n    /* Continue mirroring the original logic (not necessary for the overflow) */\n    min = scanNumber(&ptr);\n    if (*ptr != ' ') {\n        fprintf(stderr, \"Bad line %s\\n\", expr);\n        return;\n    }\n    ptr++;\n    max = scanNumber(&ptr);\n    if (*ptr != ' ') {\n        fprintf(stderr, \"Bad line %s\\n\", expr);\n        return;\n    }\n    ptr++;\n\n    /* Stub call, just to be faithful to the control flow */\n    xmlAutomataNewCountTrans(am, states[from], states[0], (const unsigned char *)ptr, min, max, NULL);\n\n    /* Cleanup some allocated states to avoid leaks when ASan doesn't abort earlier */\n    for (size_t i = 0; i < sizeof(states)/sizeof(states[0]); i++) {\n        free(states[i]);\n    }\n}\n\nint main(void) {\n    /* Craft an expression that matches the vulnerable 'c ' branch.\n       Use from=0 (in-bounds), to=1000000 (way out-of-bounds for states[8]),\n       then min=1, max=2 and a trailing value + space as expected by the parser. */\n    const char *expr = \"c 0 1000000 1 2 X \";\n\n    /* This call will trigger a stack-buffer-overflow in the states[] array\n       at the write: states[to] = xmlAutomataNewState(am); */\n    trigger_overflow_with_c_expr(expr);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6130023002624512,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4043185==ERROR: AddressSanitizer: SEGV on unknown address 0x7ffe611ce160 (pc 0x5bd93cf6224d bp 0x7ffe60a2d170 sp 0x7ffe60a2cf40 T0)\n==4043185==The signal is caused by a READ memory access.\n    #0 0x5bd93cf6224d in trigger_overflow_with_c_expr /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:80:20\n    #1 0x5bd93cf61cc2 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:116:5\n    #2 0x775f8862a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x775f8862a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5bd93cea2304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer+0x21304) (BuildId: c9581821109296b295748d64fa256f3419a13685)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:80:20 in trigger_overflow_with_c_expr\n==4043185==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "trigger_overflow_with_c_expr",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:80",
+      "crash_line": 20,
+      "frames": [
+        [
+          "0",
+          "trigger_overflow_with_c_expr",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:80",
+          "20"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_5014_stack-buffer-overflow/reproducer.c:116",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

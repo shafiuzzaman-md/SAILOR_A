@@ -1,0 +1,75 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2182514483
+INFO: Loaded 1 modules   (8 inline 8-bit counters): 8 [0x5da687adbf60, 0x5da687adbf68), 
+INFO: Loaded 1 PC tables (8 PCs): 8 [0x5da687adbf68,0x5da687adbfe8), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 7b max: 7b total: 7b rss: 30Mb
+=================================================================
+==90764==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000097 at pc 0x5da6879a1e9d bp 0x7fff73bb5bd0 sp 0x7fff73bb5bc8
+READ of size 1 at 0x602000000097 thread T0
+    #0 0x5da6879a1e9c in _cmsAdjustEndianess64 /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/lcms2/src/cmsplugin.c:95:13
+    #1 0x5da6879a14e2 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:19:5
+    #2 0x5da6878c791a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4f91a) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #3 0x5da6878c6fe5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4efe5) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #4 0x5da6878c8be8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x50be8) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #5 0x5da6878c9066 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x51066) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #6 0x5da6878b6652 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x3e652) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #7 0x5da6878e1af6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x69af6) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #8 0x7ae35a02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7ae35a02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5da6878aaa84 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32a84) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+
+0x602000000097 is located 0 bytes to the right of 7-byte region [0x602000000090,0x602000000097)
+allocated by thread T0 here:
+    #0 0x5da687965442 in malloc (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xed442) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #1 0x5da6879a1485 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:15:45
+    #2 0x5da6878c791a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4f91a) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #3 0x5da6878c6fe5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4efe5) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #4 0x5da6878c8be8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x50be8) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #5 0x5da6878c9066 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x51066) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #6 0x5da6878b6652 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x3e652) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #7 0x5da6878e1af6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x69af6) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+    #8 0x7ae35a02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7ae35a02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5da6878aaa84 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/2297_cmsplugin.c_95_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32a84) (BuildId: 14f78550c0baecaaad14b91aeb2e7f6031f798c9)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/lcms2/src/cmsplugin.c:95:13 in _cmsAdjustEndianess64
+Shadow bytes around the buggy address:
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 07 fa fa fa 07 fa fa fa 00 fa
+=>0x0c047fff8010: fa fa[07]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==90764==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-77ce0377defbd11b77b1f4ad54ca40ea5ef28490
+Base64: AAAAAAAAAA==

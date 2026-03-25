@@ -1,0 +1,53 @@
+#include <stddef.h>
+// Combined reproducer for 064_aacenc_pred.c_249_local_cpp_cwe-120-overflow
+// Original harness: driver.c + smart_stubs.c + sliced source
+
+// === smart_stubs.c ===
+/* Smart stubs — auto-generated from path + vulnerability analysis */
+/* Symbolic stubs model the environment: KLEE explores return values */
+/* that both REACH the sink AND TRIGGER the vulnerability */
+#include <stdlib.h>
+#include <string.h>
+/* PROACTIVE: assertion (auto-detected external) */
+int assertion() { return 0; }
+
+/* PROACTIVE: state (auto-detected external) */
+int state() { return 0; }
+
+// === driver.c ===
+#include "harness_types.h"
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
+
+// harness_entry is defined in harness/aacenc_pred.c
+int harness_entry(struct AACEncContext *s, struct SingleChannelElement *sce);
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 64) return 0;
+    // Allocate SingleChannelElement and sub-objects concretely
+    struct SingleChannelElement *sce = calloc(1, sizeof(*sce));
+    if (!sce) return 0;
+
+    // Ensure predictor is not initialized so memcpy path is taken
+    sce->ics.predictor_initialized = 0;
+
+    // predictor_state (unused by slice but must be non-null)
+    sce->predictor_state = calloc(1, sizeof(*sce->predictor_state));
+
+    // Allocate coeffs with full 1024 floats (source buffer)
+    size_t src_count = 1024;
+    sce->coeffs = malloc(src_count * sizeof(float));
+    if (!sce->coeffs) return 0;
+    memcpy(sce->coeffs, fuzz_data + (0), src_count * sizeof(float));
+
+    // Allocate prcoeffs too small to trigger overflow during memcpy
+    size_t dst_count = 16; // intentionally smaller than 1024
+    sce->prcoeffs = malloc(dst_count * sizeof(float));
+    if (!sce->prcoeffs) return 0;
+    memcpy(sce->prcoeffs, fuzz_data + (src_count * sizeof(float)), dst_count * sizeof(float));
+
+    // Call entry (s is unused in slice; pass NULL)
+    harness_entry(NULL, sce);
+    return 0;
+}

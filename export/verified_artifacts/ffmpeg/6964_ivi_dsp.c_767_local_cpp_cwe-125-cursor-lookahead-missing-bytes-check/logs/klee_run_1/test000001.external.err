@@ -1,0 +1,7 @@
+Error: failed external call: klee_malloc
+File: driver.c
+Line: 11
+assembly.ll line: 19
+State: 1
+Stack: 
+	#000000019 in main() at driver.c:11

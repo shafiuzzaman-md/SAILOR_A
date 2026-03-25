@@ -1,0 +1,120 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "font.c",
+        "original_line": 2352,
+        "function": "fz_extract_ttf_from_ttc",
+        "entry_point": "fz_extract_ttf_from_ttc",
+        "spine": [
+            "fz_extract_ttf_from_ttc"
+        ],
+        "original_context": "2347: \t\tuint32_t sum = 0;\n2348: \t\tuint32_t j;\n2349: \t\tsize_t len = fz_buffer_storage(ctx, buf, &data);\n2350: \n2351: \t\t/* First off, blat the old checksum */\n2352: \t\tmemset(data+csumpos, 0, 4);\n2353: \n2354: \t\t/* Calculate the new sum. */\n2355: \t\tfor (j = 0; j < len; j += 4)\n2356: \t\t{\n2357: \t\t\tuint32_t v = (data[j]<<24) | (data[j+1]<<16) | (data[j+2]<<8) | (data[j+3]);"
+    },
+    "klee_crash": {
+        "harness_file": "font.c",
+        "harness_line": 29,
+        "original_file": "font.c",
+        "original_line": 2352,
+        "original_code": "memset(data+csumpos, 0, 4);",
+        "original_context": "    2349: \t\tsize_t len = fz_buffer_storage(ctx, buf, &data);\n    2350: \n    2351: \t\t/* First off, blat the old checksum */\n>>> 2352: \t\tmemset(data+csumpos, 0, 4);\n    2353: \n    2354: \t\t/* Calculate the new sum. */\n    2355: \t\tfor (j = 0; j < len; j += 4)",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 153\nState: 2\nStack: \n\t#000000153 in memset(symbolic, 0, 4) at runtime/Freestanding/memset.c:15\n\t#100000116 in fz_extract_ttf_from_ttc(139171126415360, 139153946546176) at font.c:29\n\t#200000056 in main() at driver.c:22\nInfo: \n\taddress: (Add w64 139377284845568\n          (ZExt w64 (ReadLSB w32 0 csumpos)))\n\texample: 139377284845632\n\trange: [139377284845632, 139381579812863]\n\tnext: object at 138"
+    },
+    "concrete_inputs": [
+        {
+            "name": "ctx",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "font",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "data_bytes",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "csumpos",
+            "size": 4,
+            "data": "b'@\\x00\\x00\\x00'"
+        },
+        {
+            "name": "ctx",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "font",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "data_bytes",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "csumpos",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_extract_ttf_from_ttc",
+        "crash_file": "source/fitz/font.c",
+        "crash_line": 2255,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==27500==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000058 at pc 0x55cf5315fbc0 bp 0x7ffc7a568f00 sp 0x7ffc7a568ef0\nREAD of size 8 at 0x502000000058 thread T0\n    #0 0x55cf5315fbbf in fz_extract_ttf_from_ttc source/fitz/font.c:2255\n    #1 0x55cf531505ab in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/465_font.c_2352_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:23\n    #2 0x7f2980c55d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f2980c55e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55cf531503a4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/465_font.c_2352_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x1483a4)\n\n0x502000000058 is located 36 bytes to the right of 4-byte region [0x502000000030,0x502000000034)\nallocated by thread T0 here:\n    #0 0x7f298100c887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55cf5315048c in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/465_font.c_2352_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:17\n    #2 0x7f2980c55d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/font.c:2255 in fz_extract_ttf_from_ttc\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 04 fa fa fa fa[fa]fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a04"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/465_font.c_2352_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "font.c",
+            "harness_line": 29,
+            "original_file": "font.c",
+            "original_line": 2352,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/465_font.c_2352_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "font.c",
+            "harness_line": 32,
+            "original_file": "font.c",
+            "original_line": 2352,
+            "error_type": "assert",
+            "crash_function": "fz_extract_ttf_from_ttc",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/465_font.c_2352_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_extract_ttf_from_ttc",
+            "crash_file": "source/fitz/font.c",
+            "crash_line": 2255
+        }
+    ]
+}

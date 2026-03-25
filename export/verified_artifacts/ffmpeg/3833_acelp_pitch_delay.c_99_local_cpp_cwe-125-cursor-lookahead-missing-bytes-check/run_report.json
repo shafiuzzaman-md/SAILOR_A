@@ -1,0 +1,98 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 74117,
+    "tokens_prompt": 67446,
+    "tokens_completion": 6671,
+    "turns": 8,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "acelp_pitch_delay.c",
+    "line": 98,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "acelp_pitch_delay.c",
+  "vul_line": "99",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "acelp_pitch_delay.c",
+      "original_line": 99,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "94:                energy_mean)) /\n95:         sqrtf(fixed_mean_energy ? fixed_mean_energy : 1.0);\n96: \n97:     // update quantified prediction error energy history\n98:     memmove(&prediction_error[0], &prediction_error[1],\n99:             3 * sizeof(prediction_error[0]));\n100:     prediction_error[3] = 20.0 * log10f(fixed_gain_factor);\n101: \n102:     return val;\n103: }\n104: "
+    },
+    "klee_crash": {
+      "harness_file": "acelp_pitch_delay.c",
+      "harness_line": 20,
+      "original_file": "acelp_pitch_delay.c",
+      "original_line": 98,
+      "original_code": "memmove(&prediction_error[0], &prediction_error[1],",
+      "original_context": "    95:         sqrtf(fixed_mean_energy ? fixed_mean_energy : 1.0);\n    96: \n    97:     // update quantified prediction error energy history\n>>> 98:     memmove(&prediction_error[0], &prediction_error[1],\n    99:             3 * sizeof(prediction_error[0]));\n    100:     prediction_error[3] = 20.0 * log10f(fixed_gain_factor);\n    101: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memmove.c\nLine: 21\nassembly.ll line: 174\nState: 1\nStack: \n\t#000000174 in memmove(139744894115840, 139744894115844, 12) at runtime/Freestanding/memmove.c:21\n\t#100000039 in ff_amr_set_fixed_gain(1065353216, 1065353216, 139744894115840, 0, 139727714246656) at acelp_pitch_delay.c:20\n\t#200000072 in entry_func(1065353216, 1065353216, 139744894115840, 0, 139727714246656) at acelp_pitch_delay.c:32\n\t#300000128 in main() at driver.c:28\nI"
+    },
+    "concrete_inputs": [
+      {
+        "name": "prediction_error",
+        "size": 12,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pred_table",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "acelp_pitch_delay.c",
+        "harness_line": 20,
+        "original_file": "acelp_pitch_delay.c",
+        "original_line": 98,
+        "error_type": "ptr",
+        "crash_function": "memmove",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3833_acelp_pitch_delay.c_99_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

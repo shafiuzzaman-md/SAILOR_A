@@ -1,0 +1,7 @@
+Spec	Verdict	OrigBugFile	OrigBugFunc	CrashFile	CrashFunc	CrashLine
+cmp_mock_srv_346_out-of-bounds-read	NOT_REPRODUCIBLE					
+opt_76_out-of-bounds-read	NOT_REPRODUCIBLE					
+opt_1217_out-of-bounds-read	CONFIRMED_IN_A	strlen-avx2.S	__strlen_avx2	strlen-avx2.S	__strlen_avx2	76
+list_1125_null-pointer-dereference	CONFIRMED_IN_A	list.c	list_objects			0
+mac_125_use-after-free	CONFIRMED_IN_A	mac.c	mac_main			0
+ocsp_476_double-free	NOT_REPRODUCIBLE					

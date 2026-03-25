@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "crypt-aes.c",
+        "original_line": 475,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "470: \t\t\t( FSb[ ( Y1 >> 16 ) & 0xFF ] << 16 ) ^\n471: \t\t\t( FSb[ ( Y2 >> 24 ) & 0xFF ] << 24 );\n472: \t}\n473: \n474: \tPUT_ULONG_LE( X0, output, 0 );\n475: \tPUT_ULONG_LE( X1, output, 4 );\n476: \tPUT_ULONG_LE( X2, output, 8 );\n477: \tPUT_ULONG_LE( X3, output, 12 );\n478: }\n479: \n480: /*"
+    },
+    "klee_crash": {
+        "harness_file": "crypt-aes.c",
+        "harness_line": 25,
+        "original_file": "crypt-aes.c",
+        "original_line": 475,
+        "original_code": "PUT_ULONG_LE( X1, output, 4 );",
+        "original_context": "    472: \t}\n    473: \n    474: \tPUT_ULONG_LE( X0, output, 0 );\n>>> 475: \tPUT_ULONG_LE( X1, output, 4 );\n    476: \tPUT_ULONG_LE( X2, output, 8 );\n    477: \tPUT_ULONG_LE( X3, output, 12 );\n    478: }",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: crypt-aes.c\nLine: 25\nassembly.ll line: 50\nState: 1\nStack: \n\t#000000050 in fz_aes_crypt_ecb(139621277052928, symbolic, 139415118622720, 139346399145984) at crypt-aes.c:25\n\t#100000096 in entry_func(139621277052928, symbolic, 139415118622720, 139346399145984) at crypt-aes.c:34\n\t#200000130 in main() at driver.c:28\nInfo: \n\taddress: 139346399145989\n\tnext: object at 139046825177088 of size 4\n\t\tMO59[4] allocated at fz_aes_crypt_ecb():  %6 = alloca i32, ali"
+    },
+    "concrete_inputs": [
+        {
+            "name": "mode",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "input",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "output",
+            "size": 5,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "fz_aes_crypt_ecb",
+        "crash_file": "source/fitz/crypt-aes.c",
+        "crash_line": 408,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3854==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55d38e96ba95 bp 0x7ffc1157e9b0 sp 0x7ffc1157e940 T0)\n==3854==The signal is caused by a READ memory access.\n==3854==Hint: address points to the zero page.\n    #0 0x55d38e96ba95 in fz_aes_crypt_ecb source/fitz/crypt-aes.c:408\n    #1 0x55d38e96964e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1040_crypt-aes.c_475_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:28\n    #2 0x7f2335c9cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f2335c9ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55d38e969354 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1040_crypt-aes.c_475_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x2354)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV source/fitz/crypt-aes.c:408 in fz_aes_crypt_ecb\n==3854==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1040_crypt-aes.c_475_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "crypt-aes.c",
+            "harness_line": 25,
+            "original_file": "crypt-aes.c",
+            "original_line": 475,
+            "error_type": "ptr",
+            "crash_function": "fz_aes_crypt_ecb",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1040_crypt-aes.c_475_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "fz_aes_crypt_ecb",
+            "crash_file": "source/fitz/crypt-aes.c",
+            "crash_line": 408
+        }
+    ]
+}

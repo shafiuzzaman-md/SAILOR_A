@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4005700==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55b40e677352 bp 0x7fffbe3d5070 sp 0x7fffbe3d4d40 T0)
+==4005700==The signal is caused by a READ memory access.
+==4005700==Hint: address points to the zero page.
+    #0 0x55b40e677352 in PyObject_CallMethod /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37:31
+    #1 0x55b40e676e95 in pythonEntityDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:70:18
+    #2 0x55b40e676dc2 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:92:5
+    #3 0x7ef7d662a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7ef7d662a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x55b40e5b7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer+0x21304) (BuildId: 37b0112ca212cd7c3b0654ea41a0a76975b311e3)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1161_null-pointer-dereference/reproducer.c:37:31 in PyObject_CallMethod
+==4005700==ABORTING

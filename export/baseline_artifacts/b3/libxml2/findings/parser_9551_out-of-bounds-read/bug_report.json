@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "parser.c",
+    "line": 9551,
+    "function": "xmlParseContentInternal",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Directly accesses cur[1] without ensuring at least two bytes are available in the input buffer. If the current position is the last byte (e.g., input ends with '<'), cur[1] reads one byte past the buffer end, causing an out-of-bounds read.",
+    "abs_path": "/tmp/libxml2_upstream/parser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal type re-declarations to mimic libxml2 internals */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlParserInput {\n    const xmlChar *cur;\n    const xmlChar *end;\n} xmlParserInput, *xmlParserInputPtr;\n\nstruct _xmlSAXHandler {\n    void (*cdataBlock)(void *, const xmlChar *, int);\n    void (*characters)(void *, const xmlChar *, int);\n};\n\ntypedef struct _xmlParserCtxt {\n    struct _xmlSAXHandler *sax;\n    void *userData;\n    int disableSAX;\n    int options;\n    int nameNr;\n    int spaceNr;\n    int nodeNr;\n    xmlParserInputPtr input;\n} xmlParserCtxt, *xmlParserCtxtPtr;\n\n/* Macros used by the vulnerable function */\n#define GROW do { } while (0)\n#define PARSER_STOPPED(ctxt) 0\n#define CUR_PTR (ctxt->input->cur)\n#define NXT(i)  (*(ctxt->input->cur + (i)))\n/* Keep this as 0 to avoid extra buffer accesses in dead branches */\n#define CMP9(ptr, c1,c2,c3,c4,c5,c6,c7,c8,c9) 0\n\n/* Stubbed callees (not reached in this reproducer) */\nstatic void xmlParsePI(xmlParserCtxtPtr ctxt)            { (void)ctxt; }\nstatic void xmlParseCDSect(xmlParserCtxtPtr ctxt)        { (void)ctxt; }\nstatic void xmlParseComment(xmlParserCtxtPtr ctxt)       { (void)ctxt; }\nstatic void xmlParseElementEnd(xmlParserCtxtPtr ctxt)    { (void)ctxt; }\nstatic void xmlParseElementStart(xmlParserCtxtPtr ctxt)  { (void)ctxt; }\nstatic void xmlParseReference(xmlParserCtxtPtr ctxt)     { (void)ctxt; }\n\n/* Vulnerable function re-implemented with the problematic check */\nstatic void xmlParseContentInternal(xmlParserCtxtPtr ctxt) {\n    int oldNameNr = ctxt->nameNr;\n    int oldSpaceNr = ctxt->spaceNr;\n    int oldNodeNr = ctxt->nodeNr;\n    (void)oldNameNr; (void)oldSpaceNr; (void)oldNodeNr;\n\n    GROW;\n    while ((ctxt->input->cur < ctxt->input->end) && (PARSER_STOPPED(ctxt) == 0)) {\n        const xmlChar *cur = ctxt->input->cur;\n\n        /* First case : a Processing Instruction. Vulnerable access below. */\n        if ((*cur == '<') && (cur[1] == '?')) {\n            xmlParsePI(ctxt);\n        }\n        /* Second case : CDATA section */\n        else if (CMP9(CUR_PTR, '<','!','[','C','D','A','T','A','[')) {\n            xmlParseCDSect(ctxt);\n        }\n        /* Third case : comment */\n        else if ((*cur == '<') && (NXT(1) == '!') && (NXT(2) == '-') && (NXT(3) == '-')) {\n            xmlParseComment(ctxt);\n        }\n        /* Fourth case : sub-element */\n        else if (*cur == '<') {\n            if (NXT(1) == '/') {\n                if (ctxt->nameNr <= oldNameNr)\n                    break;\n                xmlParseElementEnd(ctxt);\n            } else {\n                xmlParseElementStart(ctxt);\n            }\n        }\n        /* Fifth case : reference */\n        else if (*cur == '&') {\n            xmlParseReference(ctxt);\n        } else {\n            /* For this reproducer, bail out if nothing matched */\n            break;\n        }\n        /* Prevent infinite loops for the minimal stub */\n        break;\n    }\n}\n\nint main(void) {\n    /* Allocate a 1-byte buffer containing only '<'. No following byte is present. */\n    xmlChar *buf = (xmlChar *)malloc(1);\n    if (!buf) {\n        fprintf(stderr, \"malloc failed\\n\");\n        return 1;\n    }\n    buf[0] = '<';\n\n    xmlParserInput input;\n    input.cur = buf;           /* points to the single '<' byte */\n    input.end = buf + 1;       /* end is exactly one past the single byte */\n\n    xmlParserCtxt ctxt;\n    memset(&ctxt, 0, sizeof(ctxt));\n    ctxt.input = &input;\n    ctxt.nameNr = 0;\n    ctxt.spaceNr = 0;\n    ctxt.nodeNr = 0;\n\n    /* This call will enter the while loop, see '<' at the last byte,\n       and evaluate cur[1] without bounds checking, causing OOB read. */\n    xmlParseContentInternal(&ctxt);\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7702040672302246,
+      "output": "=================================================================\n==3997667==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x64585707b3d0 bp 0x7ffe5c312930 sp 0x7ffe5c312928\nREAD of size 1 at 0x602000000011 thread T0\n    #0 0x64585707b3cf in xmlParseContentInternal /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:58:31\n    #1 0x64585707b015 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:113:5\n    #2 0x7359f102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7359f102a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x645856fbb304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer+0x21304) (BuildId: 3e9d6c25f2cfe703f01e84cb670c20209aa770c1)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x64585703ed12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 3e9d6c25f2cfe703f01e84cb670c20209aa770c1)\n    #1 0x64585707adac in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:93:31\n    #2 0x7359f102a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7359f102a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x645856fbb304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer+0x21304) (BuildId: 3e9d6c25f2cfe703f01e84cb670c20209aa770c1)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:58:31 in xmlParseContentInternal\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3997667==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "xmlParseContentInternal",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:58",
+      "crash_line": 31,
+      "frames": [
+        [
+          "0",
+          "xmlParseContentInternal",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:58",
+          "31"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:113",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/parser_9551_out-of-bounds-read/reproducer.c:93",
+          "31"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

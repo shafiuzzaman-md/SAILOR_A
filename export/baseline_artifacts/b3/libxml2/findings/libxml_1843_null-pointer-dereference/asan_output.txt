@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4008618==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c75585f01ba bp 0x7ffead531f90 sp 0x7ffead531e80 T0)
+==4008618==The signal is caused by a READ memory access.
+==4008618==Hint: address points to the zero page.
+    #0 0x5c75585f01ba in libxml_xmlFreeValidCtxt /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1843_null-pointer-dereference/reproducer.c:65:43
+    #1 0x5c75585f03ba in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1843_null-pointer-dereference/reproducer.c:88:11
+    #2 0x7a75b3c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7a75b3c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5c7558530304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1843_null-pointer-dereference/reproducer+0x21304) (BuildId: d529c5fc474f3709de8f1c6f18704d67460d9b33)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_1843_null-pointer-dereference/reproducer.c:65:43 in libxml_xmlFreeValidCtxt
+==4008618==ABORTING

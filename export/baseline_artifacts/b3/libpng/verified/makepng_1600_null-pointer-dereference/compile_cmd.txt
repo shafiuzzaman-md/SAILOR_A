@@ -1,0 +1,1 @@
+clang -fsanitize=address -g -O0 export/baseline_artifacts/b3/libpng/verified/makepng_1600_null-pointer-dereference/reproducer.c -I /tmp/libpng_upstream -I /tmp/libpng_upstream/build /tmp/libpng_upstream/build/libpng.a -lz -lm -lm -ldl -lpthread -lz -o export/baseline_artifacts/b3/libpng/verified/makepng_1600_null-pointer-dereference/reproducer

@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 1753,
+    "function": "htmlTokenizerTest",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The result of xmlMalloc(size + 1) is not checked. If allocation fails (returns NULL), the subsequent fread(data, 1, size, input) writes to a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <fcntl.h>\n#include <errno.h>\n\n/* Stub out libxml2 allocation wrappers used by runtest.c */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    /* Simulate allocation failure to trigger the bug path */\n    return NULL;\n}\n\nvoid xmlFree(void *ptr) {\n    (void)ptr;\n}\n\n/* Minimal reproduction of the vulnerable code sequence from htmlTokenizerTest */\nstatic void trigger_htmlTokenizerTest_like_bug(const char *filename) {\n    FILE *input = fopen(filename, \"rb\");\n    if (!input) {\n        perror(\"fopen\");\n        exit(1);\n    }\n\n    unsigned testNum, dataState, size;\n    char startTag[31];\n\n    /* Parse the header line exactly like the original code */\n    if (fscanf(input, \"%u %30s %u %u%*1[\\n]\", &testNum, startTag, &dataState, &size) >= 4) {\n        char *data;\n\n        /* This call returns NULL due to our stub above */\n        data = (char *)xmlMalloc(size + 1);\n\n        /* Vulnerable call: fread writes into a NULL pointer when allocation fails */\n        /* This should crash with a NULL pointer dereference under ASan */\n        if (fread(data, 1, size, input) != size) {\n            /* If it didn't crash (unexpected), bail out with an error */\n            fprintf(stderr, \"Unexpected: fread did not read expected size (read error or short read)\\n\");\n            fclose(input);\n            exit(2);\n        }\n\n        /* Not reached; included for completeness */\n        xmlFree(data);\n    } else {\n        fprintf(stderr, \"Input format error\\n\");\n        fclose(input);\n        exit(3);\n    }\n\n    fclose(input);\n}\n\nint main(void) {\n    /* Create a temporary input file that matches the expected format: \n       \"<testNum> <startTag> <dataState> <size>\\n\" followed by <size> bytes of data. */\n    char tmpl[] = \"/tmp/libxml2_htmltok_repro.XXXXXX\";\n    int fd = mkstemp(tmpl);\n    if (fd == -1) {\n        perror(\"mkstemp\");\n        return 1;\n    }\n\n    FILE *f = fdopen(fd, \"wb\");\n    if (!f) {\n        perror(\"fdopen\");\n        close(fd);\n        unlink(tmpl);\n        return 1;\n    }\n\n    unsigned size = 16; /* any non-zero size triggers the bug when xmlMalloc returns NULL */\n    const char *header = \"1 start 0 16\\n\"; /* testNum=1, startTag=\\\"start\\\", dataState=0, size=16 */\n    const char payload[] = \"1234567890ABCDEF\"; /* 16 bytes */\n\n    if (fwrite(header, 1, strlen(header), f) != strlen(header)) {\n        perror(\"fwrite header\");\n        fclose(f);\n        unlink(tmpl);\n        return 1;\n    }\n    if (fwrite(payload, 1, size, f) != size) {\n        perror(\"fwrite payload\");\n        fclose(f);\n        unlink(tmpl);\n        return 1;\n    }\n\n    fflush(f);\n    fclose(f);\n\n    /* Trigger the vulnerable sequence */\n    trigger_htmlTokenizerTest_like_bug(tmpl);\n\n    /* Clean up (likely not reached due to crash) */\n    unlink(tmpl);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.0862617492675781,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4024066==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7d2dc5388aec bp 0x7ffe09143820 sp 0x7ffe091437d8 T0)\n==4024066==The signal is caused by a WRITE memory access.\n==4024066==Hint: address points to the zero page.\n    #0 0x7d2dc5388aec in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:344\n    #1 0x7d2dc5293eaa in __GI_memcpy libio/../string/bits/string_fortified.h:29:10\n    #2 0x7d2dc5293eaa in __GI__IO_file_xsgetn libio/./libio/fileops.c:1296:4\n    #3 0x7d2dc528649a in _IO_fread libio/./libio/iofread.c:38:16\n    #4 0x58a7a1250f33 in fread (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer+0x3cf33) (BuildId: 4f738f1d149e5c4edd29902a0c935e178ff1ce63)\n    #5 0x58a7a12f531b in trigger_htmlTokenizerTest_like_bug /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:39:13\n    #6 0x58a7a12f500c in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:96:5\n    #7 0x7d2dc522a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #8 0x7d2dc522a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #9 0x58a7a1235354 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer+0x21354) (BuildId: 4f738f1d149e5c4edd29902a0c935e178ff1ce63)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:344 in __memcpy_avx_unaligned_erms\n==4024066==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 344,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "344"
+        ],
+        [
+          "1",
+          "__GI_memcpy",
+          "libio/../string/bits/string_fortified.h:29",
+          "10"
+        ],
+        [
+          "2",
+          "__GI__IO_file_xsgetn",
+          "libio/./libio/fileops.c:1296",
+          "4"
+        ],
+        [
+          "3",
+          "_IO_fread",
+          "libio/./libio/iofread.c:38",
+          "16"
+        ],
+        [
+          "5",
+          "trigger_htmlTokenizerTest_like_bug",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:39",
+          "13"
+        ],
+        [
+          "6",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_1753_null-pointer-dereference/reproducer.c:96",
+          "5"
+        ],
+        [
+          "7",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "8",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

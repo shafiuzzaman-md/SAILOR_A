@@ -1,0 +1,86 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "draw-blend.c",
+        "original_line": 1289,
+        "function": "fz_blend_knockout",
+        "entry_point": "fz_blend_pixmap_knockout",
+        "spine": [
+            "fz_blend_pixmap_knockout",
+            "fz_blend_knockout"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "draw-blend.c",
+        "harness_line": 33,
+        "original_file": "draw-blend.c",
+        "original_line": 1289,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 330\nState: 1\nStack: \n\t#000000330 in memcpy(139480280059904, 139342841106432, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000169 in fz_blend_knockout(139480280059904, 1, 139342841106432, 0, symbolic, 1, 139248351825920) at draw-blend.c:33\n\t#200000064 in fz_blend_pixmap_knockout(139205402152960, 139256941760512, 139274121629696, 139291301498880) at draw-blend.c:51\n\t#300000294 in main() a"
+    },
+    "concrete_inputs": [
+        {
+            "name": "src_buf",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "hp_buf",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "n",
+            "size": 4,
+            "data": "b'!\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_pixmap_bbox_no_ctx",
+        "crash_file": "source/fitz/pixmap.c",
+        "crash_line": 220,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3569==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000068 at pc 0x55f2b5de98d7 bp 0x7fffb4ac4ef0 sp 0x7fffb4ac4ee0\nREAD of size 4 at 0x502000000068 thread T0\n    #0 0x55f2b5de98d6 in fz_pixmap_bbox_no_ctx source/fitz/pixmap.c:220\n    #1 0x55f2b5ddfdb7 in fz_blend_pixmap_knockout source/fitz/draw-blend.c:1331\n    #2 0x55f2b5dd9e3e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/021_draw-blend.c_1289_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:58\n    #3 0x7f1538d4ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f1538d4ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55f2b5dd9904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/021_draw-blend.c_1289_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10904)\n\n0x502000000068 is located 8 bytes to the left of 16-byte region [0x502000000070,0x502000000080)\nallocated by thread T0 here:\n    #0 0x7f1539101a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55f2b5dd9aa3 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/021_draw-blend.c_1289_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:26\n    #2 0x7f1538d4ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/pixmap.c:220 in fz_pixmap_bbox_no_ctx\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa fa 00 00 fa[fa]00 00\n  0x0a047fff8010: fa fa 00 00 fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/021_draw-blend.c_1289_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "draw-blend.c",
+            "harness_line": 33,
+            "original_file": "draw-blend.c",
+            "original_line": 1289,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/021_draw-blend.c_1289_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_pixmap_bbox_no_ctx",
+            "crash_file": "source/fitz/pixmap.c",
+            "crash_line": 220
+        }
+    ]
+}

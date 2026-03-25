@@ -1,0 +1,68 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "rtpenc_vp9.c",
+    "original_line": 45,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "40:         if (len == size) {\n41:             /* mark the last fragment */\n42:             rtp_ctx->buf[0] |= 0x04;\n43:         }\n44: \n45:         memcpy(rtp_ctx->buf_ptr, buf, len);\n46:         ff_rtp_send_data(ctx, rtp_ctx->buf, len + RTP_VP9_DESC_REQUIRED_SIZE, size == len);\n47: \n48:         size            -= len;\n49:         buf             += len;\n50: "
+  },
+  "klee_crash": {
+    "harness_file": "rtpenc_vp9.c",
+    "harness_line": 50,
+    "original_file": "rtpenc_vp9.c",
+    "original_line": 45,
+    "original_code": "memcpy(rtp_ctx->buf_ptr, buf, len);",
+    "original_context": "    42:             rtp_ctx->buf[0] |= 0x04;\n    43:         }\n    44: \n>>> 45:         memcpy(rtp_ctx->buf_ptr, buf, len);\n    46:         ff_rtp_send_data(ctx, rtp_ctx->buf, len + RTP_VP9_DESC_REQUIRED_SIZE, size == len);\n    47: \n    48:         size            -= len;",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 213\nState: 1\nStack: \n\t#000000213 in memcpy(139300448038913, 139437886992384, 39) at runtime/Freestanding/memcpy.c:17\n\t#100000159 in ff_rtp_send_vp9(139231728562176, 139437886992384, 50) at rtpenc_vp9.c:50\n\t#200000184 in sail_entry(139231728562176, 139437886992384, 50) at rtpenc_vp9.c:63\n\t#300000055 in main() at driver.c:36\nInfo: \n\taddress: 139300448038928\n\tnext: object at 138932154593280 of s"
+  },
+  "concrete_inputs": [
+    {
+      "name": "vp9_input",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2775_rtpenc_vp9.c_45_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "rtpenc_vp9.c",
+      "harness_line": 50,
+      "original_file": "rtpenc_vp9.c",
+      "original_line": 45,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2775_rtpenc_vp9.c_45_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

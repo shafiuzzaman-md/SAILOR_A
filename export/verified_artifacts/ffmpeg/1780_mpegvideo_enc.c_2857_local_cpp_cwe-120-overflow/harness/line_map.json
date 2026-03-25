@@ -1,0 +1,125 @@
+{
+  "mpegvideo_enc.c": {
+    "1": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 36,
+      "code": "#include <stdint.h>"
+    },
+    "4": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 79,
+      "code": "#include <limits.h>"
+    },
+    "10": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 303,
+      "code": "#endif"
+    },
+    "40": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 307,
+      "code": "}"
+    },
+    "55": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 307,
+      "code": "}"
+    },
+    "58": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2835,
+      "code": "int ff_mpv_reallocate_putbitbuffer(MpegEncContext *s, size_t threshold, size_t size_increase)"
+    },
+    "59": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2836,
+      "code": "{"
+    },
+    "63": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2842,
+      "code": "uint8_t *new_buffer = NULL;"
+    },
+    "64": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2843,
+      "code": "int new_buffer_size = 0;"
+    },
+    "66": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2850,
+      "code": "emms_c();"
+    },
+    "69": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2852,
+      "code": "av_fast_padded_malloc(&new_buffer, &new_buffer_size,"
+    },
+    "70": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2853,
+      "code": "(size_t)s->avctx->internal->byte_buffer_size + size_increase);",
+      "match_type": "fuzzy"
+    },
+    "71": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2854,
+      "code": "if (!new_buffer)"
+    },
+    "72": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2855,
+      "code": "return AVERROR(ENOMEM);"
+    },
+    "75": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2857,
+      "code": "memcpy(new_buffer, s->avctx->internal->byte_buffer, s->avctx->internal->byte_buffer_size);"
+    },
+    "78": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2858,
+      "code": "av_free(s->avctx->internal->byte_buffer);"
+    },
+    "79": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2859,
+      "code": "s->avctx->internal->byte_buffer      = new_buffer;"
+    },
+    "80": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2860,
+      "code": "s->avctx->internal->byte_buffer_size = new_buffer_size;"
+    },
+    "81": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2861,
+      "code": "rebase_put_bits(&s->pb, new_buffer, new_buffer_size);"
+    },
+    "82": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2862,
+      "code": "s->ptr_lastgob   = s->pb.buf + lastgob_pos;"
+    },
+    "84": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2866,
+      "code": "return 0;"
+    },
+    "85": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2867,
+      "code": "}"
+    },
+    "90": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2866,
+      "code": "return 0;"
+    },
+    "91": {
+      "orig_file": "mpegvideo_enc.c",
+      "orig_line": 2867,
+      "code": "}"
+    }
+  }
+}

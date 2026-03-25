@@ -1,0 +1,29 @@
+{
+  "vc1_mc.c": {
+    "25": {
+      "orig_file": "vc1_mc.c",
+      "orig_line": 110,
+      "code": "MpegEncContext *s = &v->s;"
+    },
+    "27": {
+      "orig_file": "vc1_mc.c",
+      "orig_line": 847,
+      "code": "int fieldmv = v->blk_mv_type[s->block_index[0]];"
+    },
+    "31": {
+      "orig_file": "vc1_mc.c",
+      "orig_line": 835,
+      "code": "}"
+    },
+    "36": {
+      "orig_file": "vc1_mc.c",
+      "orig_line": 164,
+      "code": "return 0;"
+    },
+    "37": {
+      "orig_file": "vc1_mc.c",
+      "orig_line": 165,
+      "code": "}"
+    }
+  }
+}

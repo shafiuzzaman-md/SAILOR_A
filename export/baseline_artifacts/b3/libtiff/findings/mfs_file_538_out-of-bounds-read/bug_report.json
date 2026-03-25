@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 538,
+    "function": "extend_mem_file",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Calls realloc(buf[fd], size) without validating fd. If fd is out of range, this reads an out-of-bounds pointer from the buf array, leading to undefined behavior.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal re-declaration of the data structures from contrib/mfs/mfs_file.c */\n#define MAX_BUFFS 4\n\nstatic int fds[MAX_BUFFS];\nstatic char *buf[MAX_BUFFS];\nstatic int buf_size[MAX_BUFFS];\nstatic int buf_off[MAX_BUFFS];\n\n/* Initialize the fake in-memory FS state (as in mem_init) */\nstatic void mem_init(void)\n{\n    int i;\n    for (i = 0; i < MAX_BUFFS; i++) {\n        fds[i] = -1;\n        buf[i] = (char *)NULL;\n        buf_size[i] = 0;\n        buf_off[i] = 0;\n    }\n}\n\n/* Vulnerable function (copied from the provided context) */\nstatic int extend_mem_file(int fd, int size)\n{\n    void *new_mem;\n    int ret;\n\n    /* BUG: no bounds check on fd before indexing buf[fd] */\n    if ((new_mem = realloc(buf[fd], size)) == (void *)NULL)\n        ret = -1;\n    else {\n        buf[fd] = (char *)new_mem;\n        ret = 0;\n    }\n\n    return ret;\n}\n\nint main(void)\n{\n    mem_init();\n\n    /* Seed some valid entries to resemble a realistic state */\n    for (int i = 0; i < MAX_BUFFS; i++) {\n        fds[i] = i; /* mark as open */\n        buf[i] = (char *)malloc(8);\n        if (buf[i]) memset(buf[i], 'A', 8);\n        buf_size[i] = 8;\n        buf_off[i] = 0;\n    }\n\n    /* Trigger: use an out-of-range fd so buf[fd] is an OOB read */\n    int fd = MAX_BUFFS;       /* one past the end => OOB */\n    int new_size = 16;\n\n    /* This call will read buf[MAX_BUFFS] (out-of-bounds) and pass it to realloc,\n       which ASan will flag as an out-of-bounds read on a global array. */\n    int ret = extend_mem_file(fd, new_size);\n\n    /* Likely not reached if ASan aborts on error, but keeps compiler from\n       optimizing away the call. */\n    printf(\"extend_mem_file returned %d\\n\", ret);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09654498100280762,
+      "output": ""
+    }
+  }
+}

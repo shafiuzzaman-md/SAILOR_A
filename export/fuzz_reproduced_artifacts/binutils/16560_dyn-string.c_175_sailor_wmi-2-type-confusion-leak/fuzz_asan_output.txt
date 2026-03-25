@@ -1,0 +1,32 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2986309078
+INFO: Loaded 1 modules   (5 inline 8-bit counters): 5 [0x55b6bb0ea120, 0x55b6bb0ea125), 
+INFO: Loaded 1 PC tables (5 PCs): 5 [0x55b6bb0ea128,0x55b6bb0ea178), 
+INFO:        3 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 3 min: 1b max: 92b total: 94b rss: 29Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3358253==ERROR: AddressSanitizer: SEGV on unknown address 0x00027fff8000 (pc 0x55b6bb0a5d29 bp 0x7ffe442b31c0 sp 0x7ffe442b31b0 T0)
+==3358253==The signal is caused by a READ memory access.
+    #0 0x55b6bb0a5d29 in dyn_string_clear /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libiberty/./dyn-string.c:175:12
+    #1 0x55b6bb0a5961 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:45:5
+    #2 0x55b6bafce383 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x3e383) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #3 0x55b6bafcdad9 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x3dad9) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #4 0x55b6bafcf748 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x3f748) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #5 0x55b6bafcfc32 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x3fc32) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #6 0x55b6bafbdf82 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x2df82) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #7 0x55b6bafe7c72 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x57c72) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+    #8 0x7f6ada18fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #9 0x7f6ada18fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x55b6bafb29c4 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/16560_dyn-string.c_175_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0x229c4) (BuildId: 57ceee0d6dc2e17e90ed48a81fc2144bb3a2c262)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libiberty/./dyn-string.c:175:12 in dyn_string_clear
+==3358253==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x42,
+B
+artifact_prefix='./'; Test unit written to ./crash-ae4f281df5a5d0ff3cad6371f76d5c29b6d953ec
+Base64: Qg==

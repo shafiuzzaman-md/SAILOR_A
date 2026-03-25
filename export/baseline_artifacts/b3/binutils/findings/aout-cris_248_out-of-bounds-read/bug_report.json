@@ -1,0 +1,48 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/aout-cris.c",
+    "line": 248,
+    "function": "MY (swap_ext_reloc_in)",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "r_type is decoded from two bits (0..3). Values 0..2 are valid, but when r_type == 3 the code only logs an error and continues to set cache_ptr->howto = howto_table_ext + r_type. This indexes past the end of the howto_table_ext table (which holds only the 3 valid entries), causing an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/aout-cris.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for OOB read in MY(swap_ext_reloc_in)\n// Compile with: clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Minimal stub types to mimic BFD structures used by the vulnerable function.\ntypedef size_t bfd_size_type;\n\ntypedef struct howto {\n  int val;\n} howto;\n\n// arelent with a howto pointer as in BFD\ntypedef struct arelent {\n  long address;\n  howto *howto;\n} arelent;\n\ntypedef struct asymbol {\n  int dummy;\n} asymbol;\n\n// aout data scaffolding used (but not actually needed) by the vulnerable code\nstruct aoutdata { int dummy; };\nstruct aout_data_struct { struct aoutdata a; };\nstruct tdata_union { struct aout_data_struct *aout_data; };\n\ntypedef struct bfd {\n  struct tdata_union tdata;\n} bfd;\n\n// External reloc record layout (only fields accessed in the snippet)\nstruct reloc_ext_external {\n  unsigned char r_address[4];\n  unsigned char r_index[3];\n  unsigned char r_type[1];\n  unsigned char r_addend[4];\n};\n\n// Global howto table with only 3 valid entries (indices 0..2)\nstatic howto howto_table_ext[3] = {\n  { 0x11111111 },\n  { 0x22222222 },\n  { 0x33333333 }\n};\n\n// Bit masks/shifts to decode r_type/r_extern. We keep this simple for the repro.\n#define RELOC_EXT_BITS_EXTERN_LITTLE 0x80\n#define RELOC_EXT_BITS_TYPE_LITTLE   0x03\n#define RELOC_EXT_BITS_TYPE_SH_LITTLE 0\n\n// Helpers/macros used by the function body\nstatic inline int32_t get_sword_le(const unsigned char *p) {\n  return (int32_t)((uint32_t)p[0] | ((uint32_t)p[1] << 8) |\n                   ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24));\n}\n\n#define GET_SWORD(abfd, field) get_sword_le((const unsigned char*)(field))\n#define MOVE_ADDRESS(V) do { (void)(V); /* stub: original mutates via macros */ } while (0)\n\n// Error stubs\nstatic void _bfd_error_handler(const char *fmt, const void *abfd, unsigned int x) {\n  (void)abfd;\n  fprintf(stderr, \"_bfd_error_handler: \");\n  fprintf(stderr, fmt, abfd, x);\n  fprintf(stderr, \"\\n\");\n}\n\nenum { bfd_error_wrong_format = 1 };\nstatic void bfd_set_error(int err) {\n  fprintf(stderr, \"bfd_set_error: %d\\n\", err);\n}\n\n// Vulnerable function modeled after MY(swap_ext_reloc_in)\nstatic void cris_swap_ext_reloc_in(\n    bfd *abfd,\n    struct reloc_ext_external *bytes,\n    arelent *cache_ptr,\n    asymbol **symbols,\n    bfd_size_type symcount)\n{\n  (void)symbols; (void)symcount; // Unused in this minimal repro\n\n  unsigned int r_index;\n  int r_extern;\n  unsigned int r_type;\n  struct aoutdata *su = &(abfd->tdata.aout_data->a);\n  (void)su; // Unused but kept to mirror original code shape\n\n  cache_ptr->address = (GET_SWORD (abfd, bytes->r_address));\n\n  // Build r_index from 3 bytes (little-endian as per original)\n  r_index = (((unsigned int) bytes->r_index[2] << 16)\n           | ((unsigned int) bytes->r_index[1] << 8)\n           |  bytes->r_index[0]);\n\n  r_extern = (0 != (bytes->r_type[0] & RELOC_EXT_BITS_EXTERN_LITTLE));\n\n  r_type = ((bytes->r_type[0] & RELOC_EXT_BITS_TYPE_LITTLE)\n          >> RELOC_EXT_BITS_TYPE_SH_LITTLE);\n\n  if (r_type > 2)\n    {\n      _bfd_error_handler(\"%pB: unsupported relocation type imported: %#x\", abfd, r_type);\n      bfd_set_error(bfd_error_wrong_format);\n    }\n\n  // BUG: No clamp or early return; this can point past the end when r_type==3\n  cache_ptr->howto = howto_table_ext + r_type;\n\n  if (r_extern && r_index > symcount)\n    {\n      _bfd_error_handler(\"%pB: bad relocation record imported: %d\", abfd, r_index);\n      bfd_set_error(bfd_error_wrong_format);\n      r_extern = 0;\n      r_index = 0; // N_ABS in real code\n    }\n\n  MOVE_ADDRESS (GET_SWORD (abfd, bytes->r_addend));\n}\n\nint main(void) {\n  // Allocate minimal bfd and aout scaffolding\n  bfd *abfd = (bfd*)calloc(1, sizeof(bfd));\n  if (!abfd) return 1;\n  abfd->tdata.aout_data = (struct aout_data_struct*)calloc(1, sizeof(struct aout_data_struct));\n  if (!abfd->tdata.aout_data) return 1;\n\n  // Prepare a relocation record with r_type == 3 (out of valid range 0..2)\n  struct reloc_ext_external rec;\n  memset(&rec, 0, sizeof(rec));\n  rec.r_type[0] = 0x03; // extern bit 0, type bits == 3 => triggers the bug\n\n  // Prepare cache entry and symbols\n  arelent rel;\n  memset(&rel, 0, sizeof(rel));\n  asymbol *syms = NULL;\n\n  // Call the vulnerable function\n  cris_swap_ext_reloc_in(abfd, &rec, &rel, &syms, 10);\n\n  // Force dereference of the out-of-bounds howto pointer to trigger ASan report\n  // When r_type==3, rel.howto points one past the 3-element howto_table_ext.\n  // This read should be in a redzone and flagged as global-buffer-overflow.\n  printf(\"Triggered value: %x\\n\", rel.howto->val);\n\n  free(abfd->tdata.aout_data);\n  free(abfd);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6795969009399414,
+      "output": "_bfd_error_handler: 0x602000000010B: unsupported relocation type imported: 0x3\nbfd_set_error: 1\n=================================================================\n==3575518==ERROR: AddressSanitizer: global-buffer-overflow on address 0x653aa0e3fb6c at pc 0x653aa0e08fa0 bp 0x7fffff5d8fd0 sp 0x7fffff5d8fc8\nREAD of size 4 at 0x653aa0e3fb6c thread T0\n    #0 0x653aa0e08f9f in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149:46\n    #1 0x7e6b60a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #2 0x7e6b60a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #3 0x653aa0d49304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer+0x21304) (BuildId: db8f92069a3944f5742f87d086b821df4d9e156b)\n\n0x653aa0e3fb6c is located 0 bytes to the right of global variable 'howto_table_ext' defined in '/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:45:14' (0x653aa0e3fb60) of size 12\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149:46 in main\nShadow bytes around the buggy address:\n  0x0ca7d41bff10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ca7d41bff20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ca7d41bff30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ca7d41bff40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ca7d41bff50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0ca7d41bff60: 00 00 00 00 00 00 00 00 00 00 00 00 00[04]f9 f9\n  0x0ca7d41bff70: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0ca7d41bff80: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0ca7d41bff90: f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9 f9\n  0x0ca7d41bffa0: f9 f9 f9 f9 f9 f9 f9 f9 00 00 00 00 00 00 00 00\n  0x0ca7d41bffb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3575518==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149",
+      "crash_line": 46,
+      "frames": [
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_248_out-of-bounds-read/reproducer.c:149",
+          "46"
+        ],
+        [
+          "1",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "2",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

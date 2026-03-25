@@ -1,0 +1,43 @@
+=================================================================
+==3828328==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5ea3fec9b540 at pc 0x5ea3fe312cf6 bp 0x7fff007a0d40 sp 0x7fff007a0d38
+READ of size 4 at 0x5ea3fec9b540 thread T0
+    #0 0x5ea3fe312cf5 in mfs_close /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21:9
+    #1 0x5ea3fe312de2 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:43:15
+    #2 0x791b2422a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x791b2422a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5ea3fe253304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer+0x21304) (BuildId: 175518ba133fde743ff5eac20924516946cc0e3b)
+
+0x5ea3fec9b540 is located 0 bytes to the right of global variable 'fds' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:8:12' (0x5ea3fec9b520) of size 32
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_506_out-of-bounds-read/reproducer.c:21:9 in mfs_close
+Shadow bytes around the buggy address:
+  0x0bd4ffd8b650: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b660: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b670: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0bd4ffd8b6a0: 00 00 00 00 00 00 00 00[f9]f9 f9 f9 00 00 00 00
+  0x0bd4ffd8b6b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b6c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b6d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b6e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0bd4ffd8b6f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3828328==ABORTING

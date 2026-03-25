@@ -1,0 +1,88 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 4033118875
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x596c19b85280, 0x596c19b85286), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x596c19b85288,0x596c19b852e8), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 24b max: 24b total: 24b rss: 29Mb
+=================================================================
+==102546==ERROR: AddressSanitizer: heap-use-after-free on address 0x6030000001f8 at pc 0x596c19b41d6a bp 0x7ffc25f73af0 sp 0x7ffc25f73ae8
+READ of size 4 at 0x6030000001f8 thread T0
+    #0 0x596c19b41d69 in cil_list_item_destroy /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/cil/src/cil_list.c:93:3
+    #1 0x596c19b41539 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:32:5
+    #2 0x596c19a6781a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4381a) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #3 0x596c19a66ee5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42ee5) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #4 0x596c19a68ae8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44ae8) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #5 0x596c19a68f66 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44f66) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #6 0x596c19a56552 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x32552) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #7 0x596c19a819f6 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5d9f6) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #8 0x70fca702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x70fca702a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x596c19a4a984 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x26984) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+
+0x6030000001f8 is located 8 bytes inside of 24-byte region [0x6030000001f0,0x603000000208)
+freed by thread T0 here:
+    #0 0x596c19b05096 in __interceptor_free (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xe1096) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #1 0x596c19b414ce in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:24:5
+    #2 0x596c19a6781a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4381a) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #3 0x596c19a66ee5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42ee5) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #4 0x596c19a68ae8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44ae8) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #5 0x596c19a68f66 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44f66) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #6 0x596c19a56552 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x32552) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #7 0x596c19a819f6 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5d9f6) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #8 0x70fca702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x70fca702a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x596c19a4a984 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x26984) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+
+previously allocated by thread T0 here:
+    #0 0x596c19b05342 in malloc (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xe1342) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #1 0x596c19b41424 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:14:55
+    #2 0x596c19a6781a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4381a) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #3 0x596c19a66ee5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x42ee5) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #4 0x596c19a68ae8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44ae8) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #5 0x596c19a68f66 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x44f66) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #6 0x596c19a56552 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x32552) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #7 0x596c19a819f6 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5d9f6) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+    #8 0x70fca702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x70fca702a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x596c19a4a984 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/1354_cil_list.c_93_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x26984) (BuildId: 6b6c1115a7dac51d74e0cac20dffcb1d2d270e78)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/cil/src/cil_list.c:93:3 in cil_list_item_destroy
+Shadow bytes around the buggy address:
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+  0x0c067fff8010: 03 fa fa fa 00 00 00 00 fa fa 00 00 00 fa fa fa
+  0x0c067fff8020: 00 00 00 00 fa fa 00 00 00 00 fa fa fd fd fd fd
+=>0x0c067fff8030: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa fd[fd]
+  0x0c067fff8040: fd fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==102546==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-d3399b7262fb56cb9ed053d68db9291c410839c4
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "ebitmap.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "ebitmap_cpy",
+            "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/ebitmap.c",
+            "crash_line": 285
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "ebitmap_cpy",
+        "crash_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/ebitmap.c",
+        "crash_line": 285,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==5720==ERROR: AddressSanitizer: heap-use-after-free on address 0x503000000040 at pc 0x560568791699 bp 0x7fff2ba47120 sp 0x7fff2ba47110\nREAD of size 4 at 0x503000000040 thread T0\n    #0 0x560568791698 in ebitmap_cpy /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/ebitmap.c:285\n    #1 0x56056878fa3c in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2690_ebitmap.c_285_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:35\n    #2 0x7f5aa5a64d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f5aa5a64e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x56056878f7a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2690_ebitmap.c_285_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x117a4)\n\n0x503000000040 is located 0 bytes inside of 24-byte region [0x503000000040,0x503000000058)\nfreed by thread T0 here:\n    #0 0x7f5aa5e1b537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x56056878f981 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2690_ebitmap.c_285_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:24\n    #2 0x7f5aa5a64d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7f5aa5e1b887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x56056878f8a4 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/2690_ebitmap.c_285_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:16\n    #2 0x7f5aa5a64d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/ebitmap.c:285 in ebitmap_cpy\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff"
+    }
+}

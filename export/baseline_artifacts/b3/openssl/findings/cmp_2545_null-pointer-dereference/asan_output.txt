@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4123946==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5c51320e4cf4 bp 0x7ffe442d4fd0 sp 0x7ffe442d4fa0 T0)
+==4123946==The signal is caused by a READ memory access.
+==4123946==Hint: address points to the zero page.
+    #0 0x5c51320e4cf4 in X509_add_cert /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40:21
+    #1 0x5c51320e51bd in save_cert_or_delete /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:86:14
+    #2 0x5c51320e4f98 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:114:11
+    #3 0x7e5e4f62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7e5e4f62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5c5132025304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer+0x21304) (BuildId: 62e1369eeafcba0cae959ef69010cc3d10d6ef1d)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_2545_null-pointer-dereference/reproducer.c:40:21 in X509_add_cert
+==4123946==ABORTING

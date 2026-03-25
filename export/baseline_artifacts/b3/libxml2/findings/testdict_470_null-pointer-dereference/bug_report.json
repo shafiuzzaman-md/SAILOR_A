@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testdict.c",
+    "line": 470,
+    "function": "gen_random_string",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlMalloc may return NULL, but the code writes to str[j] without checking, causing a NULL pointer dereference on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/testdict.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stddef.h>\n#include <stdint.h>\n\n/* Minimal libxml2-like typedefs and API stubs */\ntypedef unsigned char xmlChar;\n\n/* Simulate allocation failure: xmlMalloc returns NULL */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    return NULL; /* Force failure to trigger NULL dereference */\n}\n\nvoid xmlFree(void *ptr) {\n    free(ptr);\n}\n\n/* From the provided source context */\n#define ATTRIBUTE_NO_SANITIZE_INTEGER\n#define HASH_ROL(x,n) (((x) << (n)) | (((x) & 0xFFFFFFFFu) >> (32 - (n))))\n\nstatic unsigned rng_state[2] = { 123, 456 };\n\nATTRIBUTE_NO_SANITIZE_INTEGER\nstatic unsigned my_rand(unsigned max) {\n    unsigned s0 = rng_state[0];\n    unsigned s1 = rng_state[1];\n    unsigned result = HASH_ROL(s0 * 0x9E3779BBu, 5) * 5u;\n\n    s1 ^= s0;\n    rng_state[0] = HASH_ROL(s0, 26) ^ s1 ^ (s1 << 9);\n    rng_state[1] = HASH_ROL(s1, 13);\n\n    /* In the original code, max is always > 0 */\n    return ((result & 0xFFFFFFFFu) % max);\n}\n\nstatic xmlChar *\ngen_random_string(xmlChar id) {\n    unsigned size = my_rand(64) + 1;   /* size in [1,64] */\n    unsigned id_pos = my_rand(size);   /* position within size */\n    size_t j;\n\n    xmlChar *str = (xmlChar *)xmlMalloc(size + 1);\n    /* BUG: str may be NULL (from xmlMalloc failure), but it's dereferenced unconditionally */\n    for (j = 0; j < size; j++) {\n        str[j] = (xmlChar)('a' + my_rand(26)); /* NULL dereference here if str == NULL */\n    }\n    str[id_pos] = id;\n    str[size] = 0;\n\n    /* Generate QName in 75% of cases */\n    if (size > 3 && my_rand(4) > 0) {\n        unsigned colon_pos = my_rand(size - 3) + 1;\n\n        if (colon_pos >= id_pos)\n            colon_pos++;\n        str[colon_pos] = ':';\n    }\n\n    return str;\n}\n\nint main(void) {\n    /* Calling gen_random_string will attempt to write to str even if allocation failed */\n    xmlChar id = (xmlChar)'X';\n    (void)gen_random_string(id);\n    /* We should never reach here; ASan should report a NULL pointer dereference */\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6774098873138428,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4072541==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64f508adeda8 bp 0x7fffb4709d80 sp 0x7fffb4709d20 T0)\n==4072541==The signal is caused by a WRITE memory access.\n==4072541==Hint: address points to the zero page.\n    #0 0x64f508adeda8 in gen_random_string /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49:16\n    #1 0x64f508adeceb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:69:11\n    #2 0x727ca502a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x727ca502a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x64f508a1f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer+0x20304) (BuildId: 6f9ef42154853d3a4b5ec7871151e364317c1762)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49:16 in gen_random_string\n==4072541==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "gen_random_string",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "gen_random_string",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:69",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

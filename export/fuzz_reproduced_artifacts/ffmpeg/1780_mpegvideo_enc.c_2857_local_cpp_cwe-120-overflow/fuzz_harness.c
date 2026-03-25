@@ -1,0 +1,61 @@
+#include <stdint.h>
+#include <stddef.h>
+// Combined reproducer for 1780_mpegvideo_enc.c_2857_local_cpp_cwe-120-overflow
+// Original harness: driver.c + smart_stubs.c + sliced source
+
+// === smart_stubs.c ===
+/* Smart stubs — auto-generated from path + vulnerability analysis */
+/* Symbolic stubs model the environment: KLEE explores return values */
+/* that both REACH the sink AND TRIGGER the vulnerability */
+#include <stdlib.h>
+#include <string.h>
+/* PROACTIVE: AVERROR (auto-detected external) */
+int AVERROR() { return 0; }
+
+/* PROACTIVE: FUNCTION (auto-detected external) */
+int FUNCTION() { return 0; }
+
+/* PROACTIVE: increase (auto-detected external) */
+int increase() { return 0; }
+
+// === driver.c ===
+#include "harness_types.h"
+#include <stdlib.h>
+#include <string.h>
+#ifndef BYTEBUF_SZ
+#define BYTEBUF_SZ 128
+#endif
+
+int entry_func(MpegEncContext *s, size_t threshold, size_t size_increase);
+
+int LLVMFuzzerTestOneInput(const uint8_t *fuzz_data, size_t fuzz_size) {
+    if (fuzz_size < 64) return 0;
+    // Allocate top-level context
+    MpegEncContext *s = (MpegEncContext *)calloc(1, sizeof(MpegEncContext));
+
+    // Allocate AVCodecContext and internal buffer holder
+    AVCodecContext *avctx = (AVCodecContext *)calloc(1, sizeof(AVCodecContext));
+    AVCodecInternal *aci = (AVCodecInternal *)calloc(1, sizeof(AVCodecInternal));
+
+    // Concrete byte buffer with symbolic contents
+    aci->byte_buffer = (uint8_t *)malloc(BYTEBUF_SZ);
+    aci->byte_buffer_size = BYTEBUF_SZ;
+    if (!s || !avctx || !aci || !aci->byte_buffer) return 0; // bail if OOM in concrete allocs
+
+    memcpy(aci->byte_buffer, fuzz_data + (0), BYTEBUF_SZ);
+
+    // Wire up the context
+    avctx->internal = aci;
+    s->avctx = avctx;
+    s->pb.buf = aci->byte_buffer;  // consistent with original code path
+    s->slice_context_count = 1;    // typical value; not used in neutralized path
+
+    // Arguments (concrete). Harness neutralizes guards; size_increase participates in min_size calc
+    size_t threshold = 16;
+    size_t size_increase = 32;
+
+    // Call entry (must be direct pass-through to vulnerable function)
+    entry_func(s, threshold, size_increase);
+
+    return 0;
+}

@@ -1,0 +1,89 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3982536413
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x64024b9dd5b0, 0x64024b9dd5b6), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x64024b9dd5b8,0x64024b9dd618), 
+INFO:        1 files found in artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 32b max: 32b total: 32b rss: 29Mb
+=================================================================
+==104379==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000030 at pc 0x64024b99987f bp 0x7ffd13a4f460 sp 0x7ffd13a4f458
+READ of size 8 at 0x602000000030 thread T0
+    #0 0x64024b99987e in sepol_user_key_unpack /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/user_record.c:59:13
+    #1 0x64024b99947b in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:31:5
+    #2 0x64024b8bf82a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4482a) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #3 0x64024b8beef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x43ef5) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #4 0x64024b8c0af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45af8) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #5 0x64024b8c0f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45f76) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #6 0x64024b8ae562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x33562) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #7 0x64024b8d9a06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5ea06) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #8 0x72d6c962a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x72d6c962a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x64024b8a2994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x27994) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+
+0x602000000030 is located 0 bytes inside of 8-byte region [0x602000000030,0x602000000038)
+freed by thread T0 here:
+    #0 0x64024b95d0a6 in __interceptor_free (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xe20a6) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #1 0x64024b999acd in sepol_user_key_free /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/user_record.c:81:2
+    #2 0x64024b999472 in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:28:5
+    #3 0x64024b8bf82a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4482a) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #4 0x64024b8beef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x43ef5) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #5 0x64024b8c0af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45af8) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #6 0x64024b8c0f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45f76) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #7 0x64024b8ae562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x33562) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #8 0x64024b8d9a06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5ea06) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #9 0x72d6c962a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x72d6c962a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x64024b8a2994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x27994) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+
+previously allocated by thread T0 here:
+    #0 0x64024b95d352 in malloc (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0xe2352) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #1 0x64024b99935e in LLVMFuzzerTestOneInput /app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_harness.c:15:49
+    #2 0x64024b8bf82a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x4482a) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #3 0x64024b8beef5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x43ef5) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #4 0x64024b8c0af8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45af8) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #5 0x64024b8c0f76 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x45f76) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #6 0x64024b8ae562 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x33562) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #7 0x64024b8d9a06 in main (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x5ea06) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+    #8 0x72d6c962a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x72d6c962a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x64024b8a2994 in _start (/app/artifacts/libselinux_ca10fc4_vul/ossfuzz_artifacts/2709_user_record.c_59_sailor_wmi-2-type-confusion-leak/fuzz_bin+0x27994) (BuildId: 8f3260891d0fd8b619bdccf54a8786c9ee797943)
+
+SUMMARY: AddressSanitizer: heap-use-after-free /app/dataset/ca10fc4/libselinux_ca10fc4_vul/libsepol/src/user_record.c:59:13 in sepol_user_key_unpack
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa[fd]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==104379==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-de8a847bff8c343d69b853a215e6ee775ef2ef96
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4133359==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5f223b2dc111 bp 0x7ffd6376a760 sp 0x7ffd6376a720 T0)
+==4133359==The signal is caused by a READ memory access.
+==4133359==Hint: address points to the zero page.
+    #0 0x5f223b2dc111 in X509_NAME_cmp /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_261_null-pointer-dereference/reproducer.c:35:48
+    #1 0x5f223b2dbf93 in refcert_cmp /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_261_null-pointer-dereference/reproducer.c:66:35
+    #2 0x5f223b2dbe95 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_261_null-pointer-dereference/reproducer.c:89:15
+    #3 0x74b5c662a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x74b5c662a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5f223b21c314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_261_null-pointer-dereference/reproducer+0x21314) (BuildId: 6b8112e21bccb441b8aa2c109681d11e22b8131d)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_261_null-pointer-dereference/reproducer.c:35:48 in X509_NAME_cmp
+==4133359==ABORTING

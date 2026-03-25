@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "warp.c",
+        "original_line": 303,
+        "function": "fz_warp_pixmap",
+        "entry_point": "fz_warp_pixmap",
+        "spine": [
+            "fz_warp_pixmap"
+        ],
+        "original_context": "298: \t\tcorner10.x = (int)(points[1].x * 256 + 128);\n299: \t\tcorner10.y = (int)(points[1].y * 256 + 128);\n300: \t\tcorner01.x = (int)(points[3].x * 256 + 128);\n301: \t\tcorner01.y = (int)(points[3].y * 256 + 128);\n302: \t\tcorner11.x = (int)(points[2].x * 256 + 128);\n303: \t\tcorner11.y = (int)(points[2].y * 256 + 128);\n304: \n305: \t\t/* We have a bresenham pair for how to move the start\n306: \t\t * and end of the row each y step. */\n307: \t\trow_bres = init_ip2_bresenham(corner00, corner01,\n308: \t\t\t\t\tcorner10, corner11, height);"
+    },
+    "klee_crash": {
+        "harness_file": "warp.c",
+        "harness_line": 33,
+        "original_file": "warp.c",
+        "original_line": 300,
+        "original_code": "corner01.x = (int)(points[3].x * 256 + 128);",
+        "original_context": "    297: \t\tcorner00.y = (int)(points[0].y * 256 + 128);\n    298: \t\tcorner10.x = (int)(points[1].x * 256 + 128);\n    299: \t\tcorner10.y = (int)(points[1].y * 256 + 128);\n>>> 300: \t\tcorner01.x = (int)(points[3].x * 256 + 128);\n    301: \t\tcorner01.y = (int)(points[3].y * 256 + 128);\n    302: \t\tcorner11.x = (int)(points[2].x * 256 + 128);\n    303: \t\tcorner11.y = (int)(points[2].y * 256 + 128);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: warp.c\nLine: 33\nassembly.ll line: 123\nState: 1\nStack: \n\t#000000123 in fz_warp_pixmap(139450101743616, 139656260173824, 139170928869376, 8, 8) at warp.c:33\n\t#100000046 in main() at driver.c:34\nInfo: \n\taddress: 139170928869400\n\tnext: object at 139150527774720 of size 4\n\t\tMO42[4] allocated at fz_warp_pixmap():  %9 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "pts2",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_warp_pixmap",
+        "crash_file": "source/fitz/warp.c",
+        "crash_line": 287,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3684==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50400000003a at pc 0x55df3eb56692 bp 0x7ffe0a43ed70 sp 0x7ffe0a43ed60\nREAD of size 1 at 0x50400000003a thread T0\n    #0 0x55df3eb56691 in fz_warp_pixmap source/fitz/warp.c:287\n    #1 0x55df3eb54af5 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1000_warp.c_303_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:35\n    #2 0x7fb9176bbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fb9176bbe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55df3eb54904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1000_warp.c_303_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x10904)\n\n0x50400000003a is located 2 bytes to the right of 40-byte region [0x504000000010,0x504000000038)\nallocated by thread T0 here:\n    #0 0x7fb917a72a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55df3eb54a74 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1000_warp.c_303_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:27\n    #2 0x7fb9176bbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/warp.c:287 in fz_warp_pixmap\nShadow bytes around the buggy address:\n  0x0a087fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a087fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a087fff8000: fa fa 00 00 00 00 00[fa]fa fa fa fa fa fa fa fa\n  0x0a087fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1000_warp.c_303_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "warp.c",
+            "harness_line": 33,
+            "original_file": "warp.c",
+            "original_line": 300,
+            "error_type": "ptr",
+            "crash_function": "fz_warp_pixmap",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1000_warp.c_303_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_warp_pixmap",
+            "crash_file": "source/fitz/warp.c",
+            "crash_line": 287
+        }
+    ]
+}

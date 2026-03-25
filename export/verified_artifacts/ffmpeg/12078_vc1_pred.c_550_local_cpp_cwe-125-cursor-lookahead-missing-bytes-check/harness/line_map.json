@@ -1,0 +1,49 @@
+{
+  "vc1_pred.c": {
+    "24": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 212,
+      "code": "void ff_vc1_pred_mv(VC1Context *v, int n, int dmv_x, int dmv_y,"
+    },
+    "25": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 213,
+      "code": "int mv1, int r_x, int r_y, uint8_t* is_intra,"
+    },
+    "26": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 214,
+      "code": "int pred_flag, int dir)"
+    },
+    "27": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 215,
+      "code": "{"
+    },
+    "28": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 216,
+      "code": "MpegEncContext *s = &v->s;"
+    },
+    "33": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 550,
+      "code": "pos_c   = s->block_index[2] - 2 * wrap + 2;"
+    },
+    "37": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 553,
+      "code": "}"
+    },
+    "41": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 471,
+      "code": "{"
+    },
+    "44": {
+      "orig_file": "vc1_pred.c",
+      "orig_line": 465,
+      "code": "}"
+    }
+  }
+}

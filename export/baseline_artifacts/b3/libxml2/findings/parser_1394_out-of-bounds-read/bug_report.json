@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "parser.c",
+    "line": 1394,
+    "function": "xmlCheckLanguageID",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "At label region_m49, the code unconditionally reads nxt[1] and nxt[2] to check for a 3-digit region (M.49). If the input ends after a single digit (e.g., \"en-1\"), nxt points to the last character and nxt[2] accesses one byte past the NUL terminator, causing an out-of-bounds read.",
+    "abs_path": "/tmp/libxml2_upstream/parser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-in for libxml2's xmlChar */\ntypedef unsigned char xmlChar;\n\n/*\n * Minimal reproduction of libxml2's xmlCheckLanguageID vulnerable logic\n * including the region_m49 block that reads nxt[1] and nxt[2] unconditionally.\n */\nint xmlCheckLanguageID(const xmlChar *lang) {\n    const xmlChar *cur = lang;\n    const xmlChar *nxt = cur;\n\n    /* parse primary language subtag: 1-8 alpha */\n    if (!(((nxt[0] >= 'A') && (nxt[0] <= 'Z')) ||\n          ((nxt[0] >= 'a') && (nxt[0] <= 'z'))))\n        return 0;\n\n    while (((nxt[0] >= 'A') && (nxt[0] <= 'Z')) ||\n           ((nxt[0] >= 'a') && (nxt[0] <= 'z')))\n        nxt++;\n\n    if ((nxt - cur < 1) || (nxt - cur > 8))\n        return 0;\n\n    if (nxt[0] == 0)\n        return 1;\n    if (nxt[0] != '-')\n        return 0;\n\n    nxt++;\n    cur = nxt;\n\n    /* now we can have region or variant */\n    if ((nxt[0] >= '0') && (nxt[0] <= '9'))\n        goto region_m49;\n\n    while (((nxt[0] >= 'A') && (nxt[0] <= 'Z')) ||\n           ((nxt[0] >= 'a') && (nxt[0] <= 'z')))\n        nxt++;\n\n    if ((nxt - cur >= 5) && (nxt - cur <= 8))\n        goto variant;\n    if (nxt - cur != 2)\n        return 0;\n    /* we parsed a region */\nregion:\n    if (nxt[0] == 0)\n        return 1;\n    if (nxt[0] != '-')\n        return 0;\n\n    nxt++;\n    cur = nxt;\n    /* now we can just have a variant */\n    while (((nxt[0] >= 'A') && (nxt[0] <= 'Z')) ||\n           ((nxt[0] >= 'a') && (nxt[0] <= 'z')))\n        nxt++;\n\n    if ((nxt - cur < 5) || (nxt - cur > 8))\n        return 0;\n\n    /* we parsed a variant */\nvariant:\n    if (nxt[0] == 0)\n        return 1;\n    if (nxt[0] != '-')\n        return 0;\n    /* extensions and private use subtags not checked */\n    return 1;\n\nregion_m49:\n    /* Vulnerable read: assumes there are at least 3 digits available. */\n    if (((nxt[1] >= '0') && (nxt[1] <= '9')) &&\n        ((nxt[2] >= '0') && (nxt[2] <= '9'))) {\n        nxt += 3;\n        goto region;\n    }\n    return 0;\n}\n\nint main(void) {\n    /* Use heap allocation so ASan redzones catch the out-of-bounds read. */\n    const char *lit = \"en-1\"; /* primary=\\\"en\\\", then a single digit to trigger region_m49 */\n    size_t len = strlen(lit);\n    xmlChar *buf = (xmlChar *)malloc(len + 1);\n    if (!buf) {\n        perror(\"malloc\");\n        return 1;\n    }\n    memcpy(buf, lit, len + 1);\n\n    /* This call will read buf[5] (one byte past the NUL at buf[4]) in region_m49. */\n    int ret = xmlCheckLanguageID(buf);\n\n    printf(\"xmlCheckLanguageID(\\\"%s\\\") returned %d\\n\", (char *)buf, ret);\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0029325485229492188,
+      "output": "xmlCheckLanguageID(\"en-1\") returned 0\n"
+    }
+  }
+}

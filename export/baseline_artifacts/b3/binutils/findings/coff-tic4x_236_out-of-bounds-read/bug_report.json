@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-tic4x.c",
+    "line": 236,
+    "function": "tic4x_reloc_processing",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "Uses obj_convert(abfd)[reloc->r_symndx] as an index into the 'symbols' array without validating that the mapped value is within the bounds of the 'symbols' array. A crafted COFF file can cause the conversion table to contain a negative or overly large index, making 'relent->sym_ptr_ptr' point outside the array and then be dereferenced (ptr = *(relent->sym_ptr_ptr)), resulting in an out-of-bounds read.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-tic4x.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stub types to mirror the BFD structures used */\ntypedef struct asymbol {\n  int dummy;\n} asymbol;\n\ntypedef struct asection {\n  asymbol symbol;\n  uintptr_t vma;\n  struct asection *output_section;\n  uintptr_t output_offset;\n} asection;\n\ntypedef struct arelent {\n  uintptr_t address;\n  asymbol **sym_ptr_ptr;\n  void *howto;\n} arelent;\n\nstruct internal_reloc {\n  long r_vaddr;\n  long r_symndx;\n  long r_type;\n};\n\ntypedef struct bfd {\n  int *conv_table;\n  int conv_table_size;\n} bfd;\n\n/* Global absolute section pointer stub */\nstatic asection abs_section;\nstatic asection *bfd_abs_section_ptr = &abs_section;\n\n/* Stubs for functions/macros used in the vulnerable function */\nstatic inline int *obj_convert(bfd *abfd) { return abfd->conv_table; }\nstatic inline int obj_conv_table_size(bfd *abfd) { return abfd->conv_table_size; }\n\nstatic void _bfd_error_handler(const char *fmt, ...) {\n  /* No-op: we don't need actual error handling for the repro */\n  (void)fmt;\n}\n\n#define CALC_ADDEND(abfd, ptr, reloc, relent) do { (void)(abfd); (void)(ptr); (void)(reloc); (void)(relent); } while (0)\n\nstatic void tic4x_lookup_howto(bfd *abfd, arelent *relent, struct internal_reloc *rel) {\n  (void)abfd; (void)relent; (void)rel;\n  /* No-op stub */\n}\n\n/* Vulnerable function, adapted from bfd/coff-tic4x.c */\nstatic void\ntic4x_reloc_processing(arelent *relent,\n                       struct internal_reloc *reloc,\n                       asymbol **symbols,\n                       bfd *abfd,\n                       asection *section)\n{\n  asymbol *ptr;\n\n  relent->address = (uintptr_t)reloc->r_vaddr;\n\n  if (reloc->r_symndx != -1 && symbols != NULL)\n    {\n      if (reloc->r_symndx < 0 || reloc->r_symndx >= obj_conv_table_size(abfd))\n        {\n          _bfd_error_handler(\"warning: illegal symbol index %ld in relocs\", reloc->r_symndx);\n          relent->sym_ptr_ptr = &bfd_abs_section_ptr->symbol;\n          ptr = NULL;\n        }\n      else\n        {\n          /* Vulnerable access: no bounds check that mapped index is within 'symbols' array. */\n          relent->sym_ptr_ptr = (symbols + obj_convert(abfd)[reloc->r_symndx]);\n          ptr = *(relent->sym_ptr_ptr); /* OOB read happens here if index is out of range */\n        }\n    }\n  else\n    {\n      relent->sym_ptr_ptr = &section->symbol;\n      ptr = *(relent->sym_ptr_ptr);\n    }\n\n  CALC_ADDEND(abfd, ptr, *reloc, relent);\n\n  /* Use section->vma as in original function. */\n  relent->address -= section->vma;\n\n  tic4x_lookup_howto(abfd, relent, reloc);\n}\n\nint main(void) {\n  /* Prepare a tiny 'symbols' array with 1 entry. */\n  size_t symbols_count = 1;\n  asymbol **symbols = (asymbol **)malloc(symbols_count * sizeof(asymbol *));\n  if (!symbols) {\n    perror(\"malloc symbols\");\n    return 1;\n  }\n  asymbol sym0 = {0};\n  symbols[0] = &sym0;\n\n  /* Create a bfd with a conversion table of size 1 that maps index 0 -> 100, far beyond symbols size. */\n  bfd abfd = {0};\n  abfd.conv_table_size = 1;\n  abfd.conv_table = (int *)malloc(sizeof(int) * abfd.conv_table_size);\n  if (!abfd.conv_table) {\n    perror(\"malloc conv_table\");\n    return 1;\n  }\n  abfd.conv_table[0] = 100; /* Mapped index is out of bounds for 'symbols' (size 1). */\n\n  /* Minimal section stub. */\n  asection sec = {0};\n  sec.vma = 0;\n  sec.output_section = &sec;\n  sec.output_offset = 0;\n\n  /* Internal relocation: r_symndx within conv table, but mapped index is invalid. */\n  struct internal_reloc reloc = {0};\n  reloc.r_vaddr = 0x1234;\n  reloc.r_symndx = 0; /* Valid wrt conv_table_size (1), but mapped to 100. */\n  reloc.r_type = 0;\n\n  arelent relent = {0};\n\n  /* This call will perform an out-of-bounds read from the 'symbols' array. */\n  tic4x_reloc_processing(&relent, &reloc, symbols, &abfd, &sec);\n\n  /* Clean up (not reached if ASan aborts on OOB). */\n  free(abfd.conv_table);\n  free(symbols);\n\n  /* Print something to avoid optimizing away code paths (though -O0 is used). */\n  printf(\"Done. address=%p\\n\", (void *)relent.address);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8397696018218994,
+      "output": "=================================================================\n==3608648==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000330 at pc 0x55d264d6b689 bp 0x7ffdf70fb380 sp 0x7ffdf70fb378\nREAD of size 8 at 0x602000000330 thread T0\n    #0 0x55d264d6b688 in tic4x_reloc_processing /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79:17\n    #1 0x55d264d6b222 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:132:3\n    #2 0x7eba9f42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7eba9f42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x55d264cab314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0x21314) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)\n\n0x602000000330 is located 764 bytes to the right of 4-byte region [0x602000000030,0x602000000034)\nallocated by thread T0 here:\n    #0 0x55d264d2ed22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0xa4d22) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)\n    #1 0x55d264d6af69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:110:28\n    #2 0x7eba9f42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7eba9f42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x55d264cab314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0x21314) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79:17 in tic4x_reloc_processing\nShadow bytes around the buggy address:\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0c047fff8060: fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa\n  0x0c047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3608648==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "tic4x_reloc_processing",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "tic4x_reloc_processing",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79",
+          "17"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:132",
+          "3"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:110",
+          "28"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

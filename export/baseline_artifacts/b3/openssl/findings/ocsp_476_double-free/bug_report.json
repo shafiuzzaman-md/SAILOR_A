@@ -1,0 +1,123 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/ocsp.c",
+    "line": 476,
+    "function": "ocsp_main",
+    "bug_type": "double-free",
+    "cwe": "CWE-415",
+    "confidence": "medium",
+    "explanation": "In the -issuer option handling, the loaded certificate 'issuer' is pushed onto the 'issuers' stack (sk_X509_push(issuers, issuer)) but 'issuer' is not set to NULL afterwards. If later cleanup frees both the individual 'issuer' pointer and also frees the elements of 'issuers' (common in OpenSSL apps via sk_X509_pop_free), the same X509 object will be freed twice, causing a double free.",
+    "abs_path": "/tmp/openssl_upstream/apps/ocsp.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for the OpenSSL types/APIs used in the vulnerable path */\n\ntypedef struct x509_st {\n    int dummy;\n} X509;\n\n#define FORMAT_UNDEF 0\n\n/* Simple stack for X509 pointers */\ntypedef struct {\n    size_t num;\n    size_t cap;\n    X509 **data;\n} STACK_OF_X509;\n\nstatic STACK_OF_X509 *sk_X509_new_null(void) {\n    STACK_OF_X509 *sk = (STACK_OF_X509 *)calloc(1, sizeof(*sk));\n    if (!sk) return NULL;\n    sk->cap = 4;\n    sk->data = (X509 **)calloc(sk->cap, sizeof(X509 *));\n    if (!sk->data) {\n        free(sk);\n        return NULL;\n    }\n    return sk;\n}\n\nstatic int sk_X509_push(STACK_OF_X509 *sk, X509 *x) {\n    if (!sk) return 0;\n    if (sk->num == sk->cap) {\n        size_t newcap = sk->cap * 2;\n        X509 **ndata = (X509 **)realloc(sk->data, newcap * sizeof(X509 *));\n        if (!ndata) return 0;\n        sk->data = ndata;\n        sk->cap = newcap;\n    }\n    sk->data[sk->num++] = x;\n    return 1;\n}\n\nstatic void sk_X509_pop_free(STACK_OF_X509 *sk, void (*freefunc)(X509 *)) {\n    if (!sk) return;\n    for (size_t i = 0; i < sk->num; i++) {\n        if (sk->data[i])\n            freefunc(sk->data[i]);\n    }\n    free(sk->data);\n    free(sk);\n}\n\n/* Stubbed cert loader returns a freshly malloc'd X509 to simulate a real cert */\nstatic X509 *load_cert(const char *path, int fmt, const char *desc) {\n    (void)path; (void)fmt; (void)desc;\n    X509 *x = (X509 *)malloc(sizeof(X509));\n    return x; /* Non-NULL to simulate successful load */\n}\n\n/* Free function matching OpenSSL's X509_free semantics */\nstatic void X509_free(X509 *x) {\n    free(x);\n}\n\n/* Reproducer of the vulnerable logic from apps/ocsp.c around OPT_ISSUER */\nstatic int ocsp_main(int argc, char **argv) {\n    (void)argc;\n    (void)argv;\n\n    X509 *issuer = NULL;\n    STACK_OF_X509 *issuers = NULL;\n\n    /* Simulate handling of: -issuer <file> */\n    issuer = load_cert(\"dummy.pem\", FORMAT_UNDEF, \"issuer certificate\");\n    if (issuer == NULL)\n        goto end;\n\n    if (issuers == NULL) {\n        issuers = sk_X509_new_null();\n        if (issuers == NULL)\n            goto end;\n    }\n\n    if (!sk_X509_push(issuers, issuer))\n        goto end;\n\n    /* Vulnerability: issuer is pushed onto issuers but not set to NULL */\n    /* In later cleanup both issuer and elements of issuers are freed */\n\nend:\n    /* This cleanup order is sufficient to trigger double-free */\n    if (issuers)\n        sk_X509_pop_free(issuers, X509_free);\n\n    /* issuer is the same pointer we just freed via sk_X509_pop_free */\n    X509_free(issuer); /* ASan should report double-free here */\n\n    return 0;\n}\n\nint main(void) {\n    /* Minimal argv to conceptually match an invocation with -issuer */\n    char *argv[] = { (char *)\"repro\", (char *)\"-issuer\", (char *)\"dummy.pem\", NULL };\n    return ocsp_main(3, argv);\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7081801891326904,
+      "output": "=================================================================\n==4145703==ERROR: AddressSanitizer: attempting double-free on 0x602000000010 in thread T0:\n    #0 0x5ab0a1960a66 in free (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0xa4a66) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n    #1 0x5ab0a199d484 in X509_free /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:64:5\n    #2 0x5ab0a199cec4 in ocsp_main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:98:5\n    #3 0x5ab0a199cd92 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106:12\n    #4 0x7352ef02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7352ef02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5ab0a18dd304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0x21304) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n\n0x602000000010 is located 0 bytes inside of 4-byte region [0x602000000010,0x602000000014)\nfreed by thread T0 here:\n    #0 0x5ab0a1960a66 in free (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0xa4a66) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n    #1 0x5ab0a199d484 in X509_free /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:64:5\n    #2 0x5ab0a199d416 in sk_X509_pop_free /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:49:13\n    #3 0x5ab0a199cebb in ocsp_main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:95:9\n    #4 0x5ab0a199cd92 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106:12\n    #5 0x7352ef02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7352ef02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5ab0a18dd304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0x21304) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n\npreviously allocated by thread T0 here:\n    #0 0x5ab0a1960d12 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0xa4d12) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n    #1 0x5ab0a199ceec in load_cert /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:58:23\n    #2 0x5ab0a199ce43 in ocsp_main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:76:14\n    #3 0x5ab0a199cd92 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106:12\n    #4 0x7352ef02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7352ef02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5ab0a18dd304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0x21304) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0)\n\nSUMMARY: AddressSanitizer: double-free (/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer+0xa4a66) (BuildId: 910dcffc67b793f7e483002a6eb5f3475c4c9dd0) in free\n==4145703==ABORTING\n",
+      "error_type": "attempting",
+      "frames": [
+        [
+          "1",
+          "X509_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:64",
+          "5"
+        ],
+        [
+          "2",
+          "ocsp_main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:98",
+          "5"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "X509_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:64",
+          "5"
+        ],
+        [
+          "2",
+          "sk_X509_pop_free",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:49",
+          "13"
+        ],
+        [
+          "3",
+          "ocsp_main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:95",
+          "9"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106",
+          "12"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "load_cert",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:58",
+          "23"
+        ],
+        [
+          "2",
+          "ocsp_main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:76",
+          "14"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/ocsp_476_double-free/reproducer.c:106",
+          "12"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "half2float.c": {
+    "19": {
+      "orig_file": "half2float.c",
+      "orig_line": 30,
+      "code": "}"
+    },
+    "22": {
+      "orig_file": "half2float.c",
+      "orig_line": 39,
+      "code": "void ff_init_half2float_tables(Half2FloatTables *t)"
+    },
+    "23": {
+      "orig_file": "half2float.c",
+      "orig_line": 40,
+      "code": "{"
+    },
+    "24": {
+      "orig_file": "half2float.c",
+      "orig_line": 41,
+      "code": "#if !HAVE_FAST_FLOAT16"
+    },
+    "26": {
+      "orig_file": "half2float.c",
+      "orig_line": 51,
+      "code": "t->exponenttable[0] = 0;"
+    },
+    "29": {
+      "orig_file": "half2float.c",
+      "orig_line": 66,
+      "code": "#endif"
+    },
+    "30": {
+      "orig_file": "half2float.c",
+      "orig_line": 67,
+      "code": "}"
+    }
+  }
+}

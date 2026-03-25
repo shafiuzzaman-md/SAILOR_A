@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3595125==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x5d5c94cae416 bp 0x7ffd93847510 sp 0x7ffd93847440 T0)
+==3595125==The signal is caused by a READ memory access.
+==3595125==Hint: address points to the zero page.
+    #0 0x5d5c94cae416 in coff_i386_rtype_to_howto /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84:28
+    #1 0x5d5c94cae062 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:117:5
+    #2 0x7175da62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7175da62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5d5c94bee304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer+0x20304) (BuildId: 451d91d78680d13dc9d71eddf801a582b2d592bf)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-i386_626_null-pointer-dereference/reproducer.c:84:28 in coff_i386_rtype_to_howto
+==3595125==ABORTING

@@ -1,0 +1,29 @@
+{
+  "aacenc_tns.c": {
+    "28": {
+      "orig_file": "aacenc_tns.c",
+      "orig_line": 161,
+      "code": "void ff_aac_search_for_tns(AACEncContext *s, SingleChannelElement *sce)"
+    },
+    "29": {
+      "orig_file": "aacenc_tns.c",
+      "orig_line": 162,
+      "code": "{"
+    },
+    "33": {
+      "orig_file": "aacenc_tns.c",
+      "orig_line": 156,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "aacenc_tns.c",
+      "orig_line": 59,
+      "code": "return 0;"
+    },
+    "39": {
+      "orig_file": "aacenc_tns.c",
+      "orig_line": 63,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3989311==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55c90b404115 bp 0x7fff0f0d5fa0 sp 0x7fff0f0d5f70 T0)
+==3989311==The signal is caused by a WRITE memory access.
+==3989311==Hint: address points to the zero page.
+    #0 0x55c90b404115 in xmlSaveTree /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:30:8
+    #1 0x55c90b403f10 in xmlDumpEntityDeclScan /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:63:5
+    #2 0x55c90b403e90 in xmlHashScan /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:57:5
+    #3 0x55c90b403cf8 in xmlDumpEntitiesTable /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:74:5
+    #4 0x55c90b404055 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:85:5
+    #5 0x7538dcc2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7538dcc2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x55c90b344304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer+0x21304) (BuildId: 83b4ddb50716d61d75a9174531f70c3b959a89e2)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/entities_715_null-pointer-dereference/reproducer.c:30:8 in xmlSaveTree
+==3989311==ABORTING

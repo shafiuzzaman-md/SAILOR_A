@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 255
+State: 1
+Stack: 
+	#000000255 in memcpy(138918626615296, 138884266876928, 8) at runtime/Freestanding/memcpy.c:17
+	#100000108 in tea_crypt_block(139038885699584, 138901446746112, 138884266876928, 138918626615296, 1) at tea.c:42
+	#200000226 in av_tea_crypt(139038885699584, 138901446746112, 138884266876928, 138918626615296, 1) at tea.c:56
+	#300000050 in main() at driver.c:24
+Info: 
+	address: 138918626615300
+	next: object at 138601335906304 of size 4
+		MO79[4] allocated at tea_crypt_block():  %13 = alloca i32, align 4

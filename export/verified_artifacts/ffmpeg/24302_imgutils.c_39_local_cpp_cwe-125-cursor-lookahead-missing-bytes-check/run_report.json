@@ -1,0 +1,153 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 107062,
+    "tokens_prompt": 92161,
+    "tokens_completion": 14901,
+    "turns": 10,
+    "klee_runs": 2
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "imgutils.c",
+    "line": 45,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/24302_imgutils.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "imgutils.c",
+  "vul_line": "39",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 3,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "imgutils.c",
+      "original_line": 39,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "34: \n35: void av_image_fill_max_pixsteps(int max_pixsteps[4], int max_pixstep_comps[4],\n36:                                 const AVPixFmtDescriptor *pixdesc)\n37: {\n38:     int i;\n39:     memset(max_pixsteps, 0, 4*sizeof(max_pixsteps[0]));\n40:     if (max_pixstep_comps)\n41:         memset(max_pixstep_comps, 0, 4*sizeof(max_pixstep_comps[0]));\n42: \n43:     for (i = 0; i < 4; i++) {\n44:         const AVComponentDescriptor *comp = &(pixdesc->comp[i]);"
+    },
+    "klee_crash": {
+      "harness_file": "imgutils.c",
+      "harness_line": 32,
+      "original_file": "imgutils.c",
+      "original_line": 45,
+      "original_code": "if (comp->step > max_pixsteps[comp->plane]) {",
+      "original_context": "    42: \n    43:     for (i = 0; i < 4; i++) {\n    44:         const AVComponentDescriptor *comp = &(pixdesc->comp[i]);\n>>> 45:         if (comp->step > max_pixsteps[comp->plane]) {\n    46:             max_pixsteps[comp->plane] = comp->step;\n    47:             if (max_pixstep_comps)\n    48:                 max_pixstep_comps[comp->plane] = i;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: imgutils.c\nLine: 32\nassembly.ll line: 148\nState: 2\nStack: \n\t#000000148 in av_image_fill_max_pixsteps(138964985831424, 138962838347776, 139450317135872) at imgutils.c:32\n\t#100000212 in entry_func(138964985831424, 138962838347776, 139450317135872) at imgutils.c:44\n\t#200000081 in main() at driver.c:45\nInfo: \n\taddress: (Add w64 138964985831424\n          (Mul w64 4\n                   (SExt w64 (ReadLSB w32 0 bad_plane))))\n\texample: 138969280798720\n\trang"
+    },
+    "concrete_inputs": [
+      {
+        "name": "pixdesc",
+        "size": 56,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "bad_plane",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00@'"
+      },
+      {
+        "name": "pos_step",
+        "size": 4,
+        "data": "b'\\x01\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pixdesc",
+        "size": 56,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "bad_plane",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\xe0'"
+      },
+      {
+        "name": "pos_step",
+        "size": 4,
+        "data": "b'\\x01\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pixdesc",
+        "size": 56,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "bad_plane",
+        "size": 4,
+        "data": "b'\\x00\\x00\\x00\\xb0'"
+      },
+      {
+        "name": "pos_step",
+        "size": 4,
+        "data": "b'\\x01\\xe0\\x9dN'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/24302_imgutils.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "imgutils.c",
+        "harness_line": 32,
+        "original_file": "imgutils.c",
+        "original_line": 45,
+        "error_type": "ptr",
+        "crash_function": "av_image_fill_max_pixsteps",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/24302_imgutils.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+      },
+      {
+        "harness_file": "imgutils.c",
+        "harness_line": 35,
+        "original_file": "imgutils.c",
+        "original_line": 48,
+        "error_type": "ptr",
+        "crash_function": "av_image_fill_max_pixsteps",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/24302_imgutils.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000002.ktest"
+      },
+      {
+        "harness_file": "imgutils.c",
+        "harness_line": 37,
+        "original_file": "imgutils.c",
+        "original_line": 49,
+        "error_type": "assert",
+        "crash_function": "av_image_fill_max_pixsteps",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/24302_imgutils.c_39_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000003.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,2 @@
+SAX.notationDecl(MyNotation, (null), system-identifier)
+SAX.notationDecl(MyNotation, public-identifier, (null))

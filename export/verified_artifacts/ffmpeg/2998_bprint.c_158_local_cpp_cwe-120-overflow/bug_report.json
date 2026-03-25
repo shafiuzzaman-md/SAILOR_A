@@ -1,0 +1,113 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 2,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "bprint.c",
+    "original_line": 158,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "153:         if (av_bprint_alloc(buf, n))\n154:             break;\n155:     }\n156:     if (room) {\n157:         real_n = FFMIN(n, room - 1);\n158:         memset(buf->str + buf->len, c, real_n);\n159:     }\n160:     av_bprint_grow(buf, n);\n161: }\n162: \n163: void av_bprint_append_data(AVBPrint *buf, const char *data, unsigned size)"
+  },
+  "klee_crash": {
+    "harness_file": "bprint.c",
+    "harness_line": 37,
+    "original_file": "bprint.c",
+    "original_line": 158,
+    "original_code": "memset(buf->str + buf->len, c, real_n);",
+    "original_context": "    155:     }\n    156:     if (room) {\n    157:         real_n = FFMIN(n, room - 1);\n>>> 158:         memset(buf->str + buf->len, c, real_n);\n    159:     }\n    160:     av_bprint_grow(buf, n);\n    161: }",
+    "error_type": "assert",
+    "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: bprint.c\nLine: 37\nassembly.ll line: 97\nState: 2\nStack: \n\t#000000097 in av_bprint_chars(139736648425472, symbolic, symbolic) at bprint.c:37\n\t#100000184 in entry_func(139736648425472, symbolic, symbolic) at bprint.c:44\n\t#200000246 in main() at driver.c:44\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "buf_len_sym",
+      "size": 4,
+      "data": "b'\\x0f\\x00\\x00\\x00'"
+    },
+    {
+      "name": "fill_char",
+      "size": 1,
+      "data": "b'\\x00'"
+    },
+    {
+      "name": "fill_len",
+      "size": 4,
+      "data": "b'\\xff\\x00\\x00\\x00'"
+    },
+    {
+      "name": "av_bprint_room",
+      "size": 4,
+      "data": "b'\\x01\\x00\\x00\\x00'"
+    },
+    {
+      "name": "buf_len_sym",
+      "size": 4,
+      "data": "b'\\x0f\\x00\\x00\\x00'"
+    },
+    {
+      "name": "fill_char",
+      "size": 1,
+      "data": "b'\\x00'"
+    },
+    {
+      "name": "fill_len",
+      "size": 4,
+      "data": "b'\\xc8\\x01\\x00\\x00'"
+    },
+    {
+      "name": "av_bprint_room",
+      "size": 4,
+      "data": "b'h\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2998_bprint.c_158_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "bprint.c",
+      "harness_line": 37,
+      "original_file": "bprint.c",
+      "original_line": 158,
+      "error_type": "assert",
+      "crash_function": "av_bprint_chars",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2998_bprint.c_158_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+    },
+    {
+      "harness_file": "bprint.c",
+      "harness_line": 36,
+      "original_file": "bprint.c",
+      "original_line": 158,
+      "error_type": "ptr",
+      "crash_function": "memset",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2998_bprint.c_158_local_cpp_cwe-120-overflow/logs/klee_run_2/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

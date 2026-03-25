@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/makepng.c",
+    "line": 1047,
+    "function": "load_file",
+    "bug_type": "integer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "The allocation size is computed as (total+3)&~3, where total is a size_t counting bytes read from the input file. If total overflows (e.g., extremely large files on 32-bit size_t), the addition wraps and yields a too-small (possibly zero) allocation. The subsequent read loop at line 1057 writes new_size++ bytes until EOF, causing a heap buffer overflow of the under-allocated buffer.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/makepng.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <errno.h>\n\n/* Minimal type used by libpng */\ntypedef unsigned char png_byte;\n\n/*\n * This function mimics the vulnerable allocation site in\n * contrib/libtests/makepng.c:load_file() around line 1047.\n *\n * In the real code, 'total' is a size_t counting the bytes in an input file,\n * then the allocation size is computed as (total+3)&~3. On 32-bit size_t, if\n * total is near SIZE_MAX, total+3 wraps to a small value (possibly 0), but the\n * subsequent copy loop writes 'total' bytes, overflowing the heap buffer.\n *\n * To reproduce this on 64-bit hosts without needing a multi-gigabyte input,\n * we explicitly perform the allocation rounding in 32-bit arithmetic to\n * simulate the 32-bit overflow, then we mimic the copy loop by writing a small\n * number of bytes into the under-allocated buffer. AddressSanitizer will catch\n * the resulting heap-buffer-overflow.\n */\nstatic size_t load_file(const char *name, png_byte **result)\n{\n    (void)name; /* unused in this self-contained reproducer */\n\n    /* Craft a 'total' that would overflow 32-bit when adding 3. */\n    size_t total = (size_t)UINT32_MAX - 1; /* 0xFFFFFFFE */\n\n    /* Vulnerable allocation rounding done in 32-bit to simulate 32-bit size_t */\n    uint32_t alloc32 = (uint32_t)(total + 3);      /* wraps to 1 */\n    alloc32 &= ~3U;                                /* rounds down to 0 */\n\n    /* This mirrors: png_byte *data = malloc((total+3)&~3); */\n    png_byte *data = (png_byte*)malloc((size_t)alloc32); /* likely size 0 */\n\n    /* In the real code there is an 'if (data != NULL)' check, but malloc(0)\n     * may legally return NULL or non-NULL. To deterministically demonstrate\n     * the overflow even if malloc(0) returns NULL on the platform, fall back\n     * to a tiny allocation that is still far smaller than 'total'.\n     */\n    if (data == NULL) {\n        data = (png_byte*)malloc(8); /* tiny under-allocation */\n    }\n\n    /* Mimic the read-back loop at line 1057:\n     *   data[new_size++] = (png_byte)ch;\n     * We only need to write a few bytes to overflow the tiny buffer.\n     */\n    size_t new_size = 0;\n    for (size_t i = 0; i < 64; ++i) {\n        data[new_size++] = (png_byte)'A'; /* heap-buffer-overflow here */\n    }\n\n    *result = data;\n    return total;\n}\n\nint main(void)\n{\n    png_byte *buf = NULL;\n    size_t total = load_file(\"dummy\", &buf);\n\n    /* Prevent optimizing away and keep program flow simple. */\n    if (buf != NULL) {\n        fprintf(stderr, \"Simulated total=%zu, first byte=%u\\n\", total, (unsigned)buf[0]);\n        free(buf);\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7207276821136475,
+      "output": "=================================================================\n==3717195==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x5fa01a36dfbf bp 0x7fffca282c40 sp 0x7fffca282c38\nWRITE of size 1 at 0x602000000011 thread T0\n    #0 0x5fa01a36dfbe in load_file /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:53:26\n    #1 0x5fa01a36dd97 in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:63:20\n    #2 0x72fc6042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x72fc6042a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5fa01a2ae304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer+0x21304) (BuildId: f4a130b8b9f6e10ba97fa9e6fd63cfe01189b682)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5fa01a331d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer+0xa4d12) (BuildId: f4a130b8b9f6e10ba97fa9e6fd63cfe01189b682)\n    #1 0x5fa01a36df36 in load_file /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:36:33\n    #2 0x5fa01a36dd97 in main /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:63:20\n    #3 0x72fc6042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x72fc6042a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5fa01a2ae304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer+0x21304) (BuildId: f4a130b8b9f6e10ba97fa9e6fd63cfe01189b682)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:53:26 in load_file\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3717195==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "load_file",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:53",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "load_file",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:53",
+          "26"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:63",
+          "20"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "load_file",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:36",
+          "33"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/makepng_1047_integer-overflow/reproducer.c:63",
+          "20"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

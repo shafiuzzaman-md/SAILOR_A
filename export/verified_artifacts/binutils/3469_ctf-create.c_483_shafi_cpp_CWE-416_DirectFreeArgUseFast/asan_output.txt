@@ -1,0 +1,19 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3354610==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x55858af3a881 bp 0x7ffeb2ff6dc0 sp 0x7ffeb2ff6da0 T0)
+==3354610==The signal is caused by a READ memory access.
+==3354610==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.
+    #0 0x55858af3a881 in ctf_list_append /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:41
+    #1 0x55858af2f52d in ctf_err_warn /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-subr.c:279
+    #2 0x55858af2fac4 in ctf_assert_fail_internal /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-subr.c:381
+    #3 0x55858aeffefe in ctf_assert_internal ctf-inlines.h:88
+    #4 0x55858af02c08 in ctf_add_encoded /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-create.c:517
+    #5 0x55858aeffd59 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer.c:52
+    #6 0x7f992c493d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #7 0x7f992c493e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #8 0x55858aeffa84 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3469_ctf-create.c_483_sailor_cpp_CWE-416_DirectFreeArgUseFast/reproducer_bin+0xba84)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libctf/ctf-util.c:41 in ctf_list_append
+==3354610==ABORTING

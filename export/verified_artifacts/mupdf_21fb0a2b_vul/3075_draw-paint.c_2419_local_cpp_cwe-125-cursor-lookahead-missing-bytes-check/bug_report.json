@@ -1,0 +1,81 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "draw-paint.c",
+        "original_line": 2419,
+        "function": "paint_span_alpha_not_solid",
+        "entry_point": "fz_paint_pixmap_alpha",
+        "spine": [
+            "fz_paint_pixmap_alpha",
+            "paint_span_alpha_not_solid"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "draw-paint.c",
+        "harness_line": 48,
+        "original_file": "draw-paint.c",
+        "original_line": 2419,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: draw-paint.c\nLine: 48\nassembly.ll line: 132\nState: 1\nStack: \n\t#000000132 in paint_span_alpha_not_solid(139592984817664, 139610164686848, 4, 1, 1) at draw-paint.c:48\n\t#100000090 in fz_paint_pixmap_alpha(139730423771136, 139747603640320, 1) at draw-paint.c:65\n\t#200000229 in main() at driver.c:55\nInfo: \n\taddress: 139610164686851\n\tnext: object at 139310053847040 of size 4\n\t\tMO117[4] allocated at paint_span_alpha_not_solid():  %10 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "src_buf",
+            "size": 1,
+            "data": "b'\\x00'"
+        },
+        {
+            "name": "dst_buf",
+            "size": 1,
+            "data": "b'\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_pixmap_bbox_no_ctx",
+        "crash_file": "source/fitz/pixmap.c",
+        "crash_line": 222,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==17484==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000090 at pc 0x558640ec5ced bp 0x7ffd5ce645e0 sp 0x7ffd5ce645d0\nREAD of size 4 at 0x503000000090 thread T0\n    #0 0x558640ec5cec in fz_pixmap_bbox_no_ctx source/fitz/pixmap.c:222\n    #1 0x558640eb4f3a in fz_paint_pixmap_alpha source/fitz/draw-paint.c:2440\n    #2 0x558640ea7d43 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:55\n    #3 0x7f492c95fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f492c95fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x558640ea78d4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x108d4)\n\n0x503000000090 is located 0 bytes to the right of 32-byte region [0x503000000070,0x503000000090)\nallocated by thread T0 here:\n    #0 0x7f492cd16a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x558640ea79c6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:27\n    #2 0x7f492c95fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/pixmap.c:222 in fz_pixmap_bbox_no_ctx\nShadow bytes around the buggy address:\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 00 fa fa 00 00\n=>0x0a067fff8010: 00 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "draw-paint.c",
+            "harness_line": 48,
+            "original_file": "draw-paint.c",
+            "original_line": 2419,
+            "error_type": "ptr",
+            "crash_function": "paint_span_alpha_not_solid",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/3075_draw-paint.c_2419_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_pixmap_bbox_no_ctx",
+            "crash_file": "source/fitz/pixmap.c",
+            "crash_line": 222
+        }
+    ]
+}

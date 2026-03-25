@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/cmp_mock_srv.c",
+    "line": 262,
+    "function": "refcert_cmp",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "Potential NULL dereference by calling ASN1_INTEGER_cmp(serial, ref_serial) when serial may be NULL. The function checks ref_serial instead of serial before calling ASN1_INTEGER_cmp. Reachable from process_cert_request (KUR) and process_rr when the request omits the serial field.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/cmp_mock_srv.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Minimal stub types to emulate OpenSSL structures */\ntypedef struct asn1_integer_st {\n    int value;\n} ASN1_INTEGER;\n\ntypedef struct x509_name_st {\n    int dummy;\n} X509_NAME;\n\ntypedef struct x509_st {\n    X509_NAME *issuer;\n    ASN1_INTEGER *serial;\n} X509;\n\n/* Stub implementations of the OpenSSL API used by refcert_cmp */\nstatic const X509_NAME *X509_get_issuer_name(const X509 *x)\n{\n    return x ? x->issuer : NULL;\n}\n\nstatic const ASN1_INTEGER *X509_get0_serialNumber(const X509 *x)\n{\n    return x ? x->serial : NULL;\n}\n\nstatic int X509_NAME_cmp(const X509_NAME *a, const X509_NAME *b)\n{\n    /* Return 0 when equal (same pointer), non-zero otherwise */\n    return (a == b) ? 0 : 1;\n}\n\n/* Intentionally dereferences inputs (no NULL checks) to mimic OpenSSL behavior */\nstatic int ASN1_INTEGER_cmp(const ASN1_INTEGER *a, const ASN1_INTEGER *b)\n{\n    /* This will crash with a NULL \"a\" as in the vulnerable path */\n    if (a->value == b->value)\n        return 0;\n    return (a->value < b->value) ? -1 : 1;\n}\n\n/* Vulnerable function exactly mirroring the bug: checks ref_serial instead of serial */\nstatic int refcert_cmp(const X509 *refcert,\n                       const X509_NAME *issuer, const ASN1_INTEGER *serial)\n{\n    const X509_NAME *ref_issuer;\n    const ASN1_INTEGER *ref_serial;\n\n    if (refcert == NULL)\n        return 1;\n    ref_issuer = X509_get_issuer_name(refcert);\n    ref_serial = X509_get0_serialNumber(refcert);\n    return (ref_issuer == NULL || X509_NAME_cmp(issuer, ref_issuer) == 0)\n        && (ref_serial == NULL || ASN1_INTEGER_cmp(serial, ref_serial) == 0);\n}\n\nint main(void)\n{\n    /* Build a reference cert with non-NULL issuer and serial */\n    X509_NAME *issuer = (X509_NAME *)malloc(sizeof(*issuer));\n    ASN1_INTEGER *ref_serial = (ASN1_INTEGER *)malloc(sizeof(*ref_serial));\n    X509 *refcert = (X509 *)malloc(sizeof(*refcert));\n\n    if (!issuer || !ref_serial || !refcert) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n\n    ref_serial->value = 12345; /* any non-zero value */\n    refcert->issuer = issuer;  /* ensure issuer matches to pass first clause */\n    refcert->serial = ref_serial; /* ensure ref_serial is non-NULL */\n\n    /* Simulate a request omitting the serial field: pass serial == NULL. */\n    const ASN1_INTEGER *missing_serial = NULL;\n\n    /* Triggers the bug: right side evaluates ASN1_INTEGER_cmp(NULL, ref_serial) */\n    int res = refcert_cmp(refcert, issuer, missing_serial);\n\n    /* Should not reach here due to crash */\n    printf(\"refcert_cmp returned: %d\\n\", res);\n\n    /* Cleanup (unreached on crash) */\n    free(refcert);\n    free(ref_serial);\n    free(issuer);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7084312438964844,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4133937==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5745b2643071 bp 0x7fff25fd9cc0 sp 0x7fff25fd9c60 T0)\n==4133937==The signal is caused by a READ memory access.\n==4133937==Hint: address points to the zero page.\n    #0 0x5745b2643071 in ASN1_INTEGER_cmp /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:40:12\n    #1 0x5745b2642ef0 in refcert_cmp /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:57:35\n    #2 0x5745b2642e16 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:80:15\n    #3 0x7131d2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7131d2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5745b2583304 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer+0x21304) (BuildId: 5147f9e4a4271f83fcc6cf67e08080b40e4465a7)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:40:12 in ASN1_INTEGER_cmp\n==4133937==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "ASN1_INTEGER_cmp",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:40",
+      "crash_line": 12,
+      "frames": [
+        [
+          "0",
+          "ASN1_INTEGER_cmp",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:40",
+          "12"
+        ],
+        [
+          "1",
+          "refcert_cmp",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:57",
+          "35"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/cmp_mock_srv_262_null-pointer-dereference/reproducer.c:80",
+          "15"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

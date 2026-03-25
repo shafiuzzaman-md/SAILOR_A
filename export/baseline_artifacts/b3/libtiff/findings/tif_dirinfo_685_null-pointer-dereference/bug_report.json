@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_dirinfo.c",
+    "line": 685,
+    "function": "_TIFFPrintFieldInfo",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "fprintf is called with \"%s\" and fip->field_name, but anonymous fields created by _TIFFCreateAnonField() have field_name == NULL. Passing a NULL pointer to \"%s\" is undefined behavior and can crash. This occurs when printing a directory that contains such anonymous fields.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_dirinfo.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <tiffio.h>\n\n/* Forward declarations of internal libtiff functions involved in the bug */\nextern const TIFFField *_TIFFCreateAnonField(TIFF *tif, uint32_t tag, TIFFDataType type);\nextern int _TIFFMergeFieldInfo(TIFF *tif, const TIFFField *info, uint32_t n);\nextern void _TIFFPrintFieldInfo(TIFF *tif, FILE *fd);\n\n/* Minimal stubbed I/O callbacks for TIFFClientOpen to avoid filesystem I/O */\nstatic tmsize_t mem_read(thandle_t fd, void *buf, tmsize_t size) {\n    (void)fd; (void)buf; (void)size; return 0; /* nothing to read */\n}\nstatic tmsize_t mem_write(thandle_t fd, void *buf, tmsize_t size) {\n    (void)fd; (void)buf; return size; /* pretend we wrote everything */\n}\nstatic toff_t mem_seek(thandle_t fd, toff_t off, int whence) {\n    (void)fd; (void)whence; return off; /* naive seek */\n}\nstatic int mem_close(thandle_t fd) {\n    (void)fd; return 0;\n}\nstatic toff_t mem_size(thandle_t fd) {\n    (void)fd; return 0;\n}\nstatic int mem_map(thandle_t fd, void **base, toff_t *size) {\n    (void)fd; if (base) *base = NULL; if (size) *size = 0; return 0; /* fail mapping */\n}\nstatic void mem_unmap(thandle_t fd, void *base, toff_t size) {\n    (void)fd; (void)base; (void)size;\n}\n\nint main(void) {\n    /* Create a TIFF handle using in-memory stubs (no real file I/O) */\n    TIFF *tif = TIFFClientOpen(\"mem\", \"w\", NULL,\n                               mem_read, mem_write, mem_seek,\n                               mem_close, mem_size, mem_map, mem_unmap);\n    if (!tif) {\n        fprintf(stderr, \"Failed to open in-memory TIFF\\n\");\n        return 1;\n    }\n\n    /* Create an anonymous field: field_name will be NULL */\n    const uint32_t unknown_tag = 65000; /* pick a tag unlikely to be predefined */\n    const TIFFField *anon = _TIFFCreateAnonField(tif, unknown_tag, TIFF_LONG);\n    if (!anon) {\n        fprintf(stderr, \"Failed to create anonymous field\\n\");\n        TIFFClose(tif);\n        return 1;\n    }\n\n    /* Merge the anonymous field into the TIFF's field list */\n    (void)_TIFFMergeFieldInfo(tif, anon, 1);\n\n    /* Trigger the vulnerable code path: prints field_name via %s, which is NULL */\n    _TIFFPrintFieldInfo(tif, stdout);\n\n    /* Normally unreachable if crash occurs */\n    TIFFClose(tif);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_dirinfo_685_null-pointer-dereference/reproducer.c:3:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

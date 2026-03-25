@@ -1,0 +1,93 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 61752,
+    "tokens_prompt": 55748,
+    "tokens_completion": 6004,
+    "turns": 7,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "aacenc_ltp.c",
+    "line": 58,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/6933_aacenc_ltp.c_58_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check.json",
+  "vul_file": "aacenc_ltp.c",
+  "vul_line": "58",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "aacenc_ltp.c",
+      "original_line": 58,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "53: void ff_aac_ltp_insert_new_frame(AACEncContext *s)\n54: {\n55:     int i, ch, tag, chans, cur_channel, start_ch = 0;\n56:     ChannelElement *cpe;\n57:     SingleChannelElement *sce;\n58:     for (i = 0; i < s->chan_map[0]; i++) {\n59:         cpe = &s->cpe[i];\n60:         tag      = s->chan_map[i+1];\n61:         chans    = tag == TYPE_CPE ? 2 : 1;\n62:         for (ch = 0; ch < chans; ch++) {\n63:             sce = &cpe->ch[ch];"
+    },
+    "klee_crash": {
+      "harness_file": "aacenc_ltp.c",
+      "harness_line": 16,
+      "original_file": "aacenc_ltp.c",
+      "original_line": 58,
+      "original_code": "for (i = 0; i < s->chan_map[0]; i++) {",
+      "original_context": "    55:     int i, ch, tag, chans, cur_channel, start_ch = 0;\n    56:     ChannelElement *cpe;\n    57:     SingleChannelElement *sce;\n>>> 58:     for (i = 0; i < s->chan_map[0]; i++) {\n    59:         cpe = &s->cpe[i];\n    60:         tag      = s->chan_map[i+1];\n    61:         chans    = tag == TYPE_CPE ? 2 : 1;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: aacenc_ltp.c\nLine: 16\nassembly.ll line: 29\nState: 1\nStack: \n\t#000000029 in ff_aac_ltp_insert_new_frame(139561984561152) at aacenc_ltp.c:16\n\t#100000054 in aac_entry(139561984561152) at aacenc_ltp.c:24\n\t#200000079 in main() at driver.c:22\nInfo: \n\taddress: 139836862468224\n\tnext: object at 139263484334080 of size 4\n\t\tMO38[4] allocated at ff_aac_ltp_insert_new_frame():  %3 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "chan_map_buf",
+        "size": 128,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6933_aacenc_ltp.c_58_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "aacenc_ltp.c",
+        "harness_line": 16,
+        "original_file": "aacenc_ltp.c",
+        "original_line": 58,
+        "error_type": "ptr",
+        "crash_function": "ff_aac_ltp_insert_new_frame",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6933_aacenc_ltp.c_58_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

@@ -1,0 +1,74 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3498382321
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x561d7348ae00, 0x561d7348ae03), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x561d7348ae08,0x561d7348ae38), 
+INFO:        3 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 3 min: 64b max: 106b total: 234b rss: 32Mb
+=================================================================
+==3358392==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000078 at pc 0x561d7304ae12 bp 0x7fff672670a0 sp 0x7fff67267098
+READ of size 4 at 0x602000000078 thread T0
+    #0 0x561d7304ae11 in bfd_get_format /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:2339:14
+    #1 0x561d73090db0 in _bfd_elf_free_cached_info /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:10203:8
+    #2 0x561d7304aa45 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_harness.c:29:5
+    #3 0x561d72f73523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd5523) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #4 0x561d72f72c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd4c79) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #5 0x561d72f748e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd68e8) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #6 0x561d72f74dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #7 0x561d72f63122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xc5122) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #8 0x561d72f8ce12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xeee12) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #9 0x7f889b2edd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x7f889b2ede3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #11 0x561d72f57b64 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xb9b64) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+
+0x602000000078 is located 64 bytes to the right of 8-byte region [0x602000000030,0x602000000038)
+allocated by thread T0 here:
+    #0 0x561d7300fd88 in __interceptor_calloc (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0x171d88) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #1 0x561d7304a981 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_harness.c:20:24
+    #2 0x561d72f73523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd5523) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #3 0x561d72f72c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd4c79) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #4 0x561d72f748e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd68e8) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #5 0x561d72f74dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #6 0x561d72f63122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xc5122) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #7 0x561d72f8ce12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/18275_elf.c_10123_sailor_kernel-lifecycle-mismatch/ossfuzz/fuzz_bin+0xeee12) (BuildId: 04478607f058531f073ca57590d39c5843000766)
+    #8 0x7f889b2edd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:2339:14 in bfd_get_format
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa 00 fa fa fa fa fa fa fa fa[fa]
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3358392==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-c8d7d0ef0eedfa82d2ea1aa592845b9a6d4b02b7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==

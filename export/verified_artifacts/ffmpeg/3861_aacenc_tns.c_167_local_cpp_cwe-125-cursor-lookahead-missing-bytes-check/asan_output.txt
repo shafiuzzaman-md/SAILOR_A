@@ -1,0 +1,15 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==358894==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x55963add9306 bp 0x7ffc3e80c170 sp 0x7ffc3e80c150 T0)
+==358894==The signal is caused by a READ memory access.
+==358894==Hint: address points to the zero page.
+    #0 0x55963add9306 in ff_aac_search_for_tns /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/aacenc_tns.c:30
+    #1 0x55963add9347 in entry_func /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/aacenc_tns.c:37
+    #2 0x55963add94c5 in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/driver.c:20
+    #3 0x7f7f60546d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7f7f60546e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x55963add91c4 in _start (/home/user/user/ffmpeg_verify_v2/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_bin+0x11c4)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/aacenc_tns.c:30 in ff_aac_search_for_tns
+==358894==ABORTING

@@ -1,0 +1,81 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-cmap.c",
+        "original_line": 706,
+        "function": "add_mrange",
+        "entry_point": "pdf_map_one_to_many",
+        "spine": [
+            "pdf_map_one_to_many",
+            "add_mrange"
+        ],
+        "original_context": "701: \t\tcmap->dict = fz_realloc_array(ctx, cmap->dict, new_cap, int);\n702: \t\tcmap->dcap = new_cap;\n703: \t}\n704: \tout_pos = cmap->dlen;\n705: \tcmap->dict[out_pos] = len;\n706: \tmemcpy(&cmap->dict[out_pos+1], out, sizeof(int)*len);\n707: \tcmap->dlen += len + 1;\n708: \n709: \tadd_range(ctx, cmap, low, low, out_pos, 1, 1);\n710: }\n711: "
+    },
+    "klee_crash": {
+        "harness_file": "pdf-cmap.c",
+        "harness_line": 51,
+        "original_file": "pdf-cmap.c",
+        "original_line": 706,
+        "original_code": "memcpy(&cmap->dict[out_pos+1], out, sizeof(int)*len);",
+        "original_context": "    703: \t}\n    704: \tout_pos = cmap->dlen;\n    705: \tcmap->dict[out_pos] = len;\n>>> 706: \tmemcpy(&cmap->dict[out_pos+1], out, sizeof(int)*len);\n    707: \tcmap->dlen += len + 1;\n    708: \n    709: \tadd_range(ctx, cmap, low, low, out_pos, 1, 1);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 238\nState: 1\nStack: \n\t#000000238 in memcpy(139107892416516, 139125072285696, 1024) at runtime/Freestanding/memcpy.c:17\n\t#100000202 in add_mrange(138781474902016, 138850194378752, symbolic, 139125072285696, 256) at pdf-cmap.c:51\n\t#200000098 in pdf_map_one_to_many(138781474902016, 138850194378752, symbolic, 139125072285696, 256) at pdf-cmap.c:34\n\t#300000059 in main() at driver.c:26\nInfo: \n\taddr"
+    },
+    "concrete_inputs": [
+        {
+            "name": "values",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "low",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_format_string",
+        "crash_file": "source/fitz/printf.c",
+        "crash_line": 547,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==7340==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000048 at pc 0x5583b523771e bp 0x7ffe6e5da270 sp 0x7ffe6e5da260\nREAD of size 1 at 0x502000000048 thread T0\n    #0 0x5583b523771d in fz_format_string source/fitz/printf.c:547\n    #1 0x5583b52378c1 in fz_vsnprintf source/fitz/printf.c:602\n    #2 0x5583b522f6a8 in fz_vwarn source/fitz/error.c:108\n    #3 0x5583b522f99d in fz_warn source/fitz/error.c:129\n    #4 0x5583b522d879 in pdf_map_one_to_many source/pdf/pdf-cmap.c:766\n    #5 0x5583b522abfc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/158_pdf-cmap.c_706_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:26\n    #6 0x7f60a73c5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #7 0x7f60a73c5e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #8 0x5583b522a904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/158_pdf-cmap.c_706_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10904)\n\n0x502000000048 is located 8 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f60a777ca57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x5583b522aa74 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/158_pdf-cmap.c_706_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:9\n    #2 0x7f60a73c5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/printf.c:547 in fz_format_string\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/158_pdf-cmap.c_706_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-cmap.c",
+            "harness_line": 51,
+            "original_file": "pdf-cmap.c",
+            "original_line": 706,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/158_pdf-cmap.c_706_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_format_string",
+            "crash_file": "source/fitz/printf.c",
+            "crash_line": 547
+        }
+    ]
+}

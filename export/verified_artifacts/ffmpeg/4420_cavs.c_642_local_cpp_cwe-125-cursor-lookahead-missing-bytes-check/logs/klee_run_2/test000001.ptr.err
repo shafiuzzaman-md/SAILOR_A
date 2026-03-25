@@ -1,0 +1,19 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 205
+State: 2
+Stack: 
+	#000000205 in memcpy(139367457554446, symbolic, 6) at runtime/Freestanding/memcpy.c:17
+	#100000052 in ff_cavs_init_mb(139367457554432) at cavs.c:34
+	#200000072 in entry_func(139367457554432) at cavs.c:42
+	#300000164 in main() at driver.c:33
+Info: 
+	address: (Add w64 139230018600960
+          (Mul w64 6
+                   (SExt w64 (Mul w32 2
+                                      (ReadLSB w32 0 mbx)))))
+	example: 139230018601344
+	range: [139230018601008, 139230018602160]
+	next: object at 138724286201856 of size 4
+		MO66[4] allocated at ff_cavs_init_mb():  %3 = alloca i32, align 4

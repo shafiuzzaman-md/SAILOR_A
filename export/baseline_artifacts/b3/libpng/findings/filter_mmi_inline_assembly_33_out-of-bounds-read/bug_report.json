@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_mmi_inline_assembly.c",
+    "line": 33,
+    "function": "png_read_filter_row_up_mmi",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The loop unconditionally loads 8 bytes from prev_row per iteration (ldc1) and decrements istop by 8, but does not handle a remainder. If rowbytes is not a multiple of 8, the last iteration reads past the end of prev_row.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_mmi_inline_assembly.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal redeclarations from libpng */\ntypedef unsigned char png_byte;\ntypedef struct {\n    size_t rowbytes;\n} png_row_info;\n\n/* Reimplementation of the vulnerable function logic in portable C.\n * It mimics the MIPS inline assembly's behavior of processing 8 bytes per\n * iteration unconditionally, without handling any remainder. This causes\n * an out-of-bounds read from prev_row when rowbytes is not a multiple of 8. */\nvoid png_read_filter_row_up_mmi(png_row_info *row_info, png_byte *row,\n                                const png_byte *prev_row)\n{\n    int istop = (int)row_info->rowbytes;\n    while (istop > 0) {\n        /* Unconditionally read 8 bytes from both row and prev_row. */\n        uint64_t rp, pp;\n        /* Using memcpy ensures an 8-byte read regardless of remaining bytes,\n         * which ASan will check and report as OOB when insufficient. */\n        memcpy(&rp, row, 8);\n        memcpy(&pp, prev_row, 8);  /* OOB read occurs here when <8 bytes remain */\n\n        rp += pp; /* Not byte-wise add like paddb, but irrelevant for triggering OOB */\n        memcpy(row, &rp, 8);       /* Also writes 8 bytes */\n\n        row      += 8;\n        prev_row += 8;\n        istop    -= 8;\n    }\n}\n\nint main(void)\n{\n    /* Choose a rowbytes that is NOT a multiple of 8 to force a remainder.\n     * Two 8-byte iterations will be done for 13 bytes: second iteration\n     * reads bytes [8..15] from prev_row, which is OOB by 3 bytes. */\n    const size_t rowbytes = 13; /* 13 % 8 = 5 remainder */\n\n    /* Allocate prev_row with exactly rowbytes, so the second 8-byte load\n     * goes past the allocation and ASan reports an out-of-bounds read. */\n    png_byte *prev_row = (png_byte *)malloc(rowbytes);\n    if (!prev_row) {\n        perror(\"malloc prev_row\");\n        return 1;\n    }\n\n    /* Allocate row with extra padding so the 8-byte store in the final\n     * iteration does not itself trigger an OOB write first. This isolates\n     * the OOB read from prev_row as the primary report. */\n    png_byte *row = (png_byte *)malloc(rowbytes + 8);\n    if (!row) {\n        perror(\"malloc row\");\n        free(prev_row);\n        return 1;\n    }\n\n    /* Initialize buffers with known data. */\n    for (size_t i = 0; i < rowbytes; ++i) {\n        prev_row[i] = (png_byte)(i & 0xFF);\n        row[i] = (png_byte)((0x80 + i) & 0xFF);\n    }\n    /* Initialize the padding region of row to avoid uninitialized warnings. */\n    memset(row + rowbytes, 0xAA, 8);\n\n    png_row_info info;\n    info.rowbytes = rowbytes;\n\n    /* Call the vulnerable function. With rowbytes=13, it will perform:\n     * - Iteration 1: read/write 8 bytes OK\n     * - Iteration 2: attempt to read/write another 8 bytes\n     *   -> prev_row read goes beyond its 13-byte allocation (OOB read) */\n    png_read_filter_row_up_mmi(&info, row, prev_row);\n\n    /* Clean up (the program may already have crashed/aborted due to ASan). */\n    free(row);\n    free(prev_row);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6524317264556885,
+      "output": "=================================================================\n==3733391==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000001d at pc 0x5a1fed820ffb bp 0x7ffc8fb448b0 sp 0x7ffc8fb44080\nREAD of size 8 at 0x60200000001d thread T0\n    #0 0x5a1fed820ffa in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 3d9d15b238c29386baff8ba4002b3ff587289467)\n    #1 0x5a1fed85ddf2 in png_read_filter_row_up_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:26:9\n    #2 0x5a1fed85e191 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:77:5\n    #3 0x722e9da2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x722e9da2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5a1fed79e314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer+0x21314) (BuildId: 3d9d15b238c29386baff8ba4002b3ff587289467)\n\n0x60200000001d is located 0 bytes to the right of 13-byte region [0x602000000010,0x60200000001d)\nallocated by thread T0 here:\n    #0 0x5a1fed821d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 3d9d15b238c29386baff8ba4002b3ff587289467)\n    #1 0x5a1fed85dfc4 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:46:38\n    #2 0x722e9da2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x722e9da2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5a1fed79e314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer+0x21314) (BuildId: 3d9d15b238c29386baff8ba4002b3ff587289467)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 3d9d15b238c29386baff8ba4002b3ff587289467) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00[05]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3733391==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_read_filter_row_up_mmi",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:26",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:77",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_33_out-of-bounds-read/reproducer.c:46",
+          "38"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

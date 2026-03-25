@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/corefile.c",
+    "line": 126,
+    "function": "core_file_matches_executable_p",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "Dereferences core_bfd->format and exec_bfd->format without NULL checks; passing a NULL core_bfd or exec_bfd will cause a crash.",
+    "abs_path": "/tmp/binutils_upstream/bfd/corefile.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdbool.h>\n#include <stdlib.h>\n\n/* Minimal re-declarations to mirror the vulnerable code's expectations. */\ntypedef enum {\n  bfd_object = 0,\n  bfd_core = 1\n} bfd_format;\n\ntypedef struct bfd {\n  bfd_format format;\n} bfd;\n\ntypedef enum {\n  bfd_error_no_error = 0,\n  bfd_error_invalid_operation,\n  bfd_error_wrong_format\n} bfd_error_type;\n\n/* Stub for bfd_set_error used by the vulnerable function. */\nvoid bfd_set_error(bfd_error_type err) {\n  (void)err; /* no-op stub */\n}\n\n/* Stub for BFD_SEND macro used by the vulnerable function. */\n#define BFD_SEND(abfd, method, args) (false)\n\n/* Vulnerable function replicated from bfd/corefile.c\n   It dereferences core_bfd->format and exec_bfd->format without NULL checks. */\nbool core_file_matches_executable_p(bfd *core_bfd, bfd *exec_bfd) {\n  if (core_bfd->format != bfd_core || exec_bfd->format != bfd_object) {\n    bfd_set_error(bfd_error_wrong_format);\n    return false;\n  }\n  return BFD_SEND(core_bfd, _core_file_matches_executable_p, (core_bfd, exec_bfd));\n}\n\nint main(void) {\n  /* Trigger the NULL dereference by passing NULL pointers. */\n  bfd *core_bfd = NULL;\n  bfd *exec_bfd = NULL;\n\n  /* This call will dereference core_bfd->format at the top of the function,\n     causing a NULL pointer dereference (ASan will report it). */\n  bool res = core_file_matches_executable_p(core_bfd, exec_bfd);\n\n  /* This line will not be reached due to the crash, but keeps the compiler happy. */\n  printf(\"Result: %d\\n\", (int)res);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7399163246154785,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3634372==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64fb449c8d01 bp 0x7ffcd7b15370 sp 0x7ffcd7b15330 T0)\n==3634372==The signal is caused by a READ memory access.\n==3634372==Hint: address points to the zero page.\n    #0 0x64fb449c8d01 in core_file_matches_executable_p /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32:24\n    #1 0x64fb449c8dab in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:46:14\n    #2 0x700f55c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x700f55c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x64fb44909304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer+0x20304) (BuildId: 3ace66b933f36b5e99daa8ad8524e765f3aaf432)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32:24 in core_file_matches_executable_p\n==3634372==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "core_file_matches_executable_p",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32",
+      "crash_line": 24,
+      "frames": [
+        [
+          "0",
+          "core_file_matches_executable_p",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:32",
+          "24"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_126_null-pointer-dereference/reproducer.c:46",
+          "14"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

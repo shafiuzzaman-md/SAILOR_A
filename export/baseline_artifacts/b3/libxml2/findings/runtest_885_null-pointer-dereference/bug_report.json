@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 885,
+    "function": "notationDeclDebug",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "fprintf is called with \"%s\" format specifiers for publicId and systemId without NULL checks. In XML notation declarations, one of these identifiers may be absent (NULL), causing a NULL pointer dereference inside fprintf.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n\n/* Minimal typedefs/macros to mirror the original code context */\ntypedef unsigned char xmlChar;\n#ifndef ATTRIBUTE_UNUSED\n#define ATTRIBUTE_UNUSED\n#endif\n\n/* Globals as in runtest.c */\nstatic int callbacks = 0;\nstatic int quiet = 0;\nstatic FILE *SAXdebug = NULL;\n\n/* Vulnerable function copied/adapted from the source context */\nstatic void\nnotationDeclDebug(void *ctx ATTRIBUTE_UNUSED, const xmlChar *name,\n                  const xmlChar *publicId, const xmlChar *systemId)\n{\n    callbacks++;\n    if (quiet)\n        return;\n    /* BUG: publicId and systemId are used with %s without NULL checks */\n    fprintf(SAXdebug, \"SAX.notationDecl(%s, %s, %s)\\n\",\n            (char *) name, (char *) publicId, (char *) systemId);\n}\n\nint main(void) {\n    /* Direct output to stdout like the original debug stream */\n    SAXdebug = stdout;\n\n    /* Craft inputs to simulate a notation declaration where one identifier is absent.\n     * According to XML, either publicId or systemId may be missing (NULL). */\n    const xmlChar *name = (const xmlChar *)\"MyNotation\";\n    const xmlChar *publicId = NULL;              /* Absent publicId */\n    const xmlChar *systemId = (const xmlChar *)\"system-identifier\"; /* Present systemId */\n\n    /* This call will pass a NULL pointer to fprintf with a %s specifier, triggering UB\n     * and typically a null-pointer-dereference crash on many libc implementations. */\n    notationDeclDebug(NULL, name, publicId, systemId);\n\n    /* Also try with systemId NULL to increase likelihood of hitting the bug across libcs. */\n    publicId = (const xmlChar *)\"public-identifier\";\n    systemId = NULL; /* Absent systemId */\n    notationDeclDebug(NULL, name, publicId, systemId);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0031325817108154297,
+      "output": "SAX.notationDecl(MyNotation, (null), system-identifier)\nSAX.notationDecl(MyNotation, public-identifier, (null))\n"
+    }
+  }
+}

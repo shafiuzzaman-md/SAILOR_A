@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "adler32.c",
+        "original_line": 118,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "113:         MOD(sum2);\n114:     }\n115: \n116:     /* do remaining bytes (less than NMAX, still just one modulo) */\n117:     if (len) {                  /* avoid modulos if none remaining */\n118:         while (len >= 16) {\n119:             len -= 16;\n120:             DO16(buf);\n121:             buf += 16;\n122:         }\n123:         while (len--) {"
+    },
+    "klee_crash": {
+        "harness_file": "adler32.c",
+        "harness_line": 77,
+        "original_file": "adler32.c",
+        "original_line": 120,
+        "original_code": "DO16(buf);",
+        "original_context": "    117:     if (len) {                  /* avoid modulos if none remaining */\n    118:         while (len >= 16) {\n    119:             len -= 16;\n>>> 120:             DO16(buf);\n    121:             buf += 16;\n    122:         }\n    123:         while (len--) {",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: adler32.c\nLine: 77\nassembly.ll line: 478\nState: 1\nStack: \n\t#000000478 in adler32(symbolic, 138672188182528, symbolic) at adler32.c:77\n\t#100000646 in entry_func(symbolic, 138672188182528, symbolic) at adler32.c:95\n\t#200000699 in main() at driver.c:30\nInfo: \n\taddress: 138672188182536\n\tnext: object at 138372614213632 of size 4\n\t\tMO56[4] allocated at adler32():  %7 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "adler_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "len",
+            "size": 4,
+            "data": "b'\\x10\\x00\\x00\\x00'"
+        },
+        {
+            "name": "adler",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "adler32_z",
+        "crash_file": "thirdparty/zlib/adler32.c",
+        "crash_line": 118,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==14228==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000018 at pc 0x5566c416aea9 bp 0x7fff57779000 sp 0x7fff57778ff0\nREAD of size 1 at 0x502000000018 thread T0\n    #0 0x5566c416aea8 in adler32_z thirdparty/zlib/adler32.c:118\n    #1 0x5566c416a425 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2650_adler32.c_118_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:30\n    #2 0x7fdcaed9cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fdcaed9ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5566c416a1e4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2650_adler32.c_118_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x11e4)\n\n0x502000000018 is located 0 bytes to the right of 8-byte region [0x502000000010,0x502000000018)\nallocated by thread T0 here:\n    #0 0x7fdcaf153887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5566c416a35e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/2650_adler32.c_118_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:15\n    #2 0x7fdcaed9cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/zlib/adler32.c:118 in adler32_z\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2650_adler32.c_118_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "adler32.c",
+            "harness_line": 77,
+            "original_file": "adler32.c",
+            "original_line": 120,
+            "error_type": "ptr",
+            "crash_function": "adler32",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/2650_adler32.c_118_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "adler32_z",
+            "crash_file": "thirdparty/zlib/adler32.c",
+            "crash_line": 118
+        }
+    ]
+}

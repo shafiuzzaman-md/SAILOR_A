@@ -1,0 +1,33 @@
+029_memdb.c_786_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	259	77575	8	1	model	memdb.c	200	unknown	unknown	false	no_asan	1	
+031_memdb.c_824_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	282	90302	8	2	ptr	memdb.c	824	unknown	unknown	false	no_asan	0	
+032_memdb.c_826_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	766	140711	10	1	assert	memdb.c	827	unknown	unknown	false	no_asan	0	
+045_memdb.c_588_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	186	41237	5	1	ptr	memdb.c	588	unknown	unknown	false	no_asan	0	
+060_memdb.c_266_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	244	77017	7	1	ptr	memdb.c	266	unknown	unknown	false	no_asan	0	
+058_memdb.c_261_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	376	120264	11	1	assert	memdb.c	261	unknown	unknown	false	no_asan	0	
+1046_memdb.c_576_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check	FP_UNTARGETED	FP	FOUND_UNTARGETED	0	0	451	126519	12	2			0			false		0	
+057_memdb.c_319_local_cpp_cwe-120-overflow	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	459	122351	9	2	ptr	memdb.c	319	unknown	unknown	false	no_asan	0	
+056_memdb.c_316_local_cpp_cwe-120-overflow	FP_UNTARGETED	FP	FOUND_UNTARGETED	0	0	479	84972	8	2			0			false		0	
+059_memdb.c_262_local_cpp_cwe-120-overflow	INCONCLUSIVE_LOW_COVERAGE	INCONCLUSIVE_LOW_COVERAGE	INCONCLUSIVE	0	0	895	112556	11	2			0			false		0	KLEE ran but no spine functions reached (only 0 completed paths — insufficient coverage)
+2717_memdb.c_316_local_cpp_cwe-787-oob-write	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	357	98672	9	1	ptr	memdb.c	316	unknown	unknown	false	no_asan	0	
+2718_memdb.c_319_local_cpp_cwe-787-oob-write	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	535	59599	6	1	ptr	memdb.c	319	unknown	unknown	false	no_asan	0	
+2957_memdb.c_316_local_cpp_cwe-823-pointer-offset	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	337	122610	10	2	ptr	memdb.c	316	unknown	unknown	false	no_asan	0	
+2958_memdb.c_319_local_cpp_cwe-823-pointer-offset	SE_DETECTED	LIKELY_TP	FOUND_LIKELY_TP	1	0	595	82848	7	1	ptr	memdb.c	319	unknown	unknown	false	no_asan	1	
+7562_memdb.c_584_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7563_memdb.c_585_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7564_memdb.c_586_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	398	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7565_memdb.c_587_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	401	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7566_memdb.c_587_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	398	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7567_memdb.c_588_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7568_memdb.c_589_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7569_memdb.c_590_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7570_memdb.c_596_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	401	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7571_memdb.c_600_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+7572_memdb.c_604_sailor_cpp_cwe-416-use-after-realloc	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8798_memdb.c_703_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8795_memdb.c_727_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8796_memdb.c_724_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8797_memdb.c_711_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8800_memdb.c_688_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	401	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8802_memdb.c_672_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	399	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8801_memdb.c_681_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	400	0	60	0			0			false		0	Agent never reached successful KLEE execution
+8799_memdb.c_695_sailor_wmi-2-type-confusion-leak	BUILD_ERROR	FP	BUILD_ERROR	0	0	403	0	60	0			0			false		0	Agent never reached successful KLEE execution

@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coffgen.c",
+    "line": 2596,
+    "function": "coff_find_nearest_line_with_names",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "medium",
+    "explanation": "After positioning s within the raw symbol table, the code only checks that s is within bounds, then if s->u.syment.n_numaux is nonzero it reads (s+1)->u.auxent. There is no check that s+1 is still within the array, so a crafted file can place s at the last entry while claiming n_numaux != 0, causing an out-of-bounds read of the aux entry.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coffgen.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD COFF-related types to reproduce the bug. */\ntypedef uint64_t bfd_vma;\n\n/* N_DEBUG sentinel (value not important for this repro as long as n_scnum != N_DEBUG). */\n#define N_DEBUG -2\n\n/* Minimal internal auxent layout used by the vulnerable code. */\nunion internal_auxent {\n  struct {\n    struct {\n      struct {\n        unsigned short x_lnno; /* lineno field read by the bug */\n      } x_lnsz;\n    } x_misc;\n  } x_sym;\n};\n\n/* Minimal internal syment layout with only fields used in the code. */\nstruct internal_syment {\n  short n_scnum;         /* section number */\n  unsigned char n_numaux;/* number of aux entries */\n};\n\n/* The raw symbol/aux entry type used in the BFD COFF reader. */\ntypedef struct combined_entry_type {\n  int is_sym; /* whether this is a symbol entry (vs aux) */\n  union {\n    struct internal_syment syment;\n    union internal_auxent  auxent;\n  } u;\n} combined_entry_type;\n\n/* Minimal COFF symbol wrapper used by the line code. */\ntypedef struct coff_symbol_type {\n  struct {\n    const char *name;\n    bfd_vma value;\n  } symbol;\n  combined_entry_type *native; /* points into raw sym table */\n} coff_symbol_type;\n\n/* Minimal line number entry used by the code. */\nstruct internal_lineno {\n  unsigned short line_number; /* 0 => function entry with pointer to symbol */\n  union {\n    bfd_vma offset; /* not used when line_number == 0 */\n    void *sym;      /* points to coff_symbol_type when line_number == 0 */\n  } u;\n};\n\n/* Minimal section type needed by the function. */\ntypedef struct asection {\n  struct internal_lineno *lineno;\n  size_t lineno_count;\n  void *owner;\n  void *used_by_bfd;\n} asection;\n\n/* Globals to mimic obj_raw_syments/obj_raw_syment_count. */\nstatic combined_entry_type *g_raw_syms = NULL;\nstatic size_t g_raw_syms_count = 0;\n\nstatic inline combined_entry_type *obj_raw_syments(void *abfd) {\n  (void)abfd;\n  return g_raw_syms;\n}\n\nstatic inline size_t obj_raw_syment_count(void *abfd) {\n  (void)abfd;\n  return g_raw_syms_count;\n}\n\n/* Vulnerable function re-implemented to mirror the buggy logic. */\nstatic void coff_find_nearest_line_with_names(\n    void *abfd,\n    asection *section,\n    bfd_vma offset,\n    const char **functionname_ptr,\n    unsigned int *line_ptr)\n{\n  size_t i = 0;\n  struct internal_lineno *l;\n  unsigned int line_base = 0;\n  bfd_vma last_value = 0;\n\n  if (section->lineno != NULL) {\n    l = &section->lineno[i];\n    for (; i < section->lineno_count; i++) {\n      if (l->line_number == 0) {\n        coff_symbol_type *coff = (coff_symbol_type *)(l->u.sym);\n        if (coff->symbol.value > offset)\n          break;\n        *functionname_ptr = coff->symbol.name;\n        last_value = coff->symbol.value;\n        if (coff->native) {\n          combined_entry_type *s = coff->native;\n\n          /* BFD_ASSERT(s->is_sym); */\n          s = s + 1 + s->u.syment.n_numaux;\n\n          /* In XCOFF a debugging symbol can follow the function symbol. */\n          if (((size_t)((char *)s - (char *)obj_raw_syments(abfd)) <\n               obj_raw_syment_count(abfd) * sizeof(*s)) &&\n              s->u.syment.n_scnum == N_DEBUG)\n          {\n            s = s + 1 + s->u.syment.n_numaux;\n          }\n\n          /* S should now point to the .bf of the function. */\n          if (((size_t)((char *)s - (char *)obj_raw_syments(abfd)) <\n               obj_raw_syment_count(abfd) * sizeof(*s)) &&\n              s->u.syment.n_numaux)\n          {\n            /* The linenumber is stored in the auxent. This is the buggy read: */\n            union internal_auxent *a = &((s + 1)->u.auxent);\n            line_base = a->x_sym.x_misc.x_lnsz.x_lnno;\n            *line_ptr = line_base;\n          }\n        }\n      } else {\n        if (l->u.offset > offset)\n          break;\n        *line_ptr = l->line_number + line_base - 1;\n      }\n      l++;\n    }\n\n    if (i >= section->lineno_count && last_value != 0 && offset - last_value > 0x100) {\n      *functionname_ptr = NULL;\n      *line_ptr = 0;\n    }\n  }\n}\n\nint main(void) {\n  /* Prepare a raw symbol table of exactly 3 entries. */\n  g_raw_syms_count = 3;\n  g_raw_syms = (combined_entry_type *)calloc(g_raw_syms_count, sizeof(*g_raw_syms));\n  if (!g_raw_syms) {\n    perror(\"calloc\");\n    return 1;\n  }\n\n  /* Layout:\n   *  - coff->native will point to entry 0.\n   *  - First step: s = s + 1 + s->u.syment.n_numaux.\n   *    Set entry 0's n_numaux = 1, so s moves to entry 2 (last valid).\n   *  - Ensure entry 2 has n_numaux != 0 to pass the check and then\n   *    the code reads (s + 1)->u.auxent, which is OOB.\n   */\n\n  /* Entry 0: a symbol with one aux so we skip to entry 2. */\n  g_raw_syms[0].is_sym = 1;\n  g_raw_syms[0].u.syment.n_scnum = 1;     /* Not N_DEBUG */\n  g_raw_syms[0].u.syment.n_numaux = 1;    /* Causes skip by +2 from entry 0 */\n\n  /* Entry 1: contents don't matter for the repro. */\n  g_raw_syms[1].is_sym = 1;\n  g_raw_syms[1].u.syment.n_scnum = 1;\n  g_raw_syms[1].u.syment.n_numaux = 0;\n\n  /* Entry 2: last valid entry; set n_numaux != 0 to trigger aux read. */\n  g_raw_syms[2].is_sym = 1;\n  g_raw_syms[2].u.syment.n_scnum = 1;     /* Not N_DEBUG */\n  g_raw_syms[2].u.syment.n_numaux = 1;    /* Nonzero so code reads (s+1)->auxent (OOB) */\n\n  /* Set up a COFF symbol and a line number entry pointing to it. */\n  coff_symbol_type coffsym;\n  coffsym.symbol.name = \"func\";\n  coffsym.symbol.value = 0;      /* <= offset so we don't break early */\n  coffsym.native = &g_raw_syms[0]; /* Start from entry 0 */\n\n  struct internal_lineno line;\n  line.line_number = 0;          /* Means l->u.sym is used */\n  line.u.sym = &coffsym;\n\n  asection sec;\n  memset(&sec, 0, sizeof(sec));\n  sec.lineno = &line;\n  sec.lineno_count = 1;\n  sec.owner = &sec; /* Non-NULL owner; unused in this path */\n\n  const char *funcname = NULL;\n  unsigned int line_no = 0;\n  bfd_vma offset = 0;             /* Matches coffsym.symbol.value check */\n\n  /* abfd is opaque for our stubs. */\n  void *abfd = &sec;\n\n  /* This call triggers the out-of-bounds read at (s + 1)->u.auxent. */\n  coff_find_nearest_line_with_names(abfd, &sec, offset, &funcname, &line_no);\n\n  /* If ASan didn't abort yet, print something (unlikely if repro succeeded). */\n  printf(\"Function: %s, Line: %u\\n\", funcname ? funcname : \"(null)\", line_no);\n\n  free(g_raw_syms);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7283725738525391,
+      "output": "=================================================================\n==3620933==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60300000005c at pc 0x596a7e0c3be9 bp 0x7ffd6527f230 sp 0x7ffd6527f228\nREAD of size 2 at 0x60300000005c thread T0\n    #0 0x596a7e0c3be8 in coff_find_nearest_line_with_names /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:121:48\n    #1 0x596a7e0c3483 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:196:3\n    #2 0x7c723162a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c723162a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x596a7e003314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer+0x21314) (BuildId: cad0b33620f20914c7251051e50b18cda2e0c7bb)\n\n0x60300000005c is located 4 bytes to the right of 24-byte region [0x603000000040,0x603000000058)\nallocated by thread T0 here:\n    #0 0x596a7e086f0c in __interceptor_calloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer+0xa4f0c) (BuildId: cad0b33620f20914c7251051e50b18cda2e0c7bb)\n    #1 0x596a7e0c2e22 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:143:39\n    #2 0x7c723162a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c723162a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x596a7e003314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer+0x21314) (BuildId: cad0b33620f20914c7251051e50b18cda2e0c7bb)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:121:48 in coff_find_nearest_line_with_names\nShadow bytes around the buggy address:\n  0x0c067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00[fa]fa fa fa fa\n  0x0c067fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3620933==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "coff_find_nearest_line_with_names",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:121",
+      "crash_line": 48,
+      "frames": [
+        [
+          "0",
+          "coff_find_nearest_line_with_names",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:121",
+          "48"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:196",
+          "3"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_2596_out-of-bounds-read/reproducer.c:143",
+          "39"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

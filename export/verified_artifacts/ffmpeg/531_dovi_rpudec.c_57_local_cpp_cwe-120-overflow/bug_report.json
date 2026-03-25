@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "dovi_rpudec.c",
+    "original_line": 57,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "52:         const DOVIExt *ext = s->ext_blocks;\n53:         size_t ext_sz = FFMIN(sizeof(AVDOVIDmData), dovi->ext_block_size);\n54:         for (int i = 0; i < ext->num_static; i++)\n55:             memcpy(av_dovi_get_ext(dovi, dovi->num_ext_blocks++), &ext->dm_static[i], ext_sz);\n56:         for (int i = 0; i < ext->num_dynamic; i++)\n57:             memcpy(av_dovi_get_ext(dovi, dovi->num_ext_blocks++), &ext->dm_dynamic[i], ext_sz);\n58:     }\n59: \n60:     *out_metadata = dovi;\n61:     return dovi_size;\n62: }"
+  },
+  "klee_crash": {
+    "harness_file": "dovi_rpudec.c",
+    "harness_line": 35,
+    "original_file": "dovi_rpudec.c",
+    "original_line": 87,
+    "original_code": "return 0;",
+    "original_context": "    84:         return AVERROR(ENOMEM);\n    85:     }\n    86: \n>>> 87:     return 0;\n    88: }\n    89: \n    90: static inline uint64_t get_ue_coef(GetBitContext *gb, const AVDOVIRpuDataHeader *hdr)",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 149\nState: 1\nStack: \n\t#000000149 in memcpy(139143953563648, 139620694933504, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000037 in ff_dovi_rpu_parse(139689414410240, 139620694933504, symbolic, symbolic) at dovi_rpudec.c:35\n\t#200000066 in dovi_entry(139689414410240, 139620694933504, symbolic, symbolic) at dovi_rpudec.c:44\n\t#300000110 in main() at driver.c:32\nInfo: \n\taddress: 13914395356"
+  },
+  "concrete_inputs": [
+    {
+      "name": "rpu_buf",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "rpu_size",
+      "size": 8,
+      "data": "b'!\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "err_recognition",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/531_dovi_rpudec.c_57_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "dovi_rpudec.c",
+      "harness_line": 35,
+      "original_file": "dovi_rpudec.c",
+      "original_line": 87,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/531_dovi_rpudec.c_57_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

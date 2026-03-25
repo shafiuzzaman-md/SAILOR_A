@@ -1,0 +1,50 @@
+=================================================================
+==3608648==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000330 at pc 0x55d264d6b689 bp 0x7ffdf70fb380 sp 0x7ffdf70fb378
+READ of size 8 at 0x602000000330 thread T0
+    #0 0x55d264d6b688 in tic4x_reloc_processing /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79:17
+    #1 0x55d264d6b222 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:132:3
+    #2 0x7eba9f42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7eba9f42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x55d264cab314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0x21314) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)
+
+0x602000000330 is located 764 bytes to the right of 4-byte region [0x602000000030,0x602000000034)
+allocated by thread T0 here:
+    #0 0x55d264d2ed22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0xa4d22) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)
+    #1 0x55d264d6af69 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:110:28
+    #2 0x7eba9f42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7eba9f42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x55d264cab314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer+0x21314) (BuildId: d3671bb0f2f482520ae3e8a8470477cf0f209bdb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-tic4x_236_out-of-bounds-read/reproducer.c:79:17 in tic4x_reloc_processing
+Shadow bytes around the buggy address:
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+=>0x0c047fff8060: fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3608648==ABORTING

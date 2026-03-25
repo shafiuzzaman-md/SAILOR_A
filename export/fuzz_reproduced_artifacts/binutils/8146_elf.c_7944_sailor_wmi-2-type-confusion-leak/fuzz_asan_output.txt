@@ -1,0 +1,34 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1918002981
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x559f423fae00, 0x559f423fae03), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x559f423fae08,0x559f423fae38), 
+INFO:        4 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 4 min: 56b max: 201b total: 441b rss: 32Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3358229==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x559f41fbb5e2 bp 0x7fff8e6447a0 sp 0x7fff8e644790 T0)
+==3358229==The signal is caused by a READ memory access.
+==3358229==Hint: address points to the zero page.
+    #0 0x559f41fbb5e2 in bfd_get_flavour /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:7881:20
+    #1 0x559f41ff7eda in _bfd_elf_copy_private_header_data /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:8658:7
+    #2 0x559f41fbab23 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_harness.c:35:5
+    #3 0x559f41ee3523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd5523) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #4 0x559f41ee2c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd4c79) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #5 0x559f41ee48e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd68e8) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #6 0x559f41ee4dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #7 0x559f41ed3122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xc5122) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #8 0x559f41efce12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xeee12) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+    #9 0x7effac27ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x7effac27ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #11 0x559f41ec7b64 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8146_elf.c_7944_sailor_wmi-2-type-confusion-leak/ossfuzz/fuzz_bin+0xb9b64) (BuildId: 10427518bd3d100bb8ff2d0ee21a6f121c1bf51f)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/bfd.h:7881:20 in bfd_get_flavour
+==3358229==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-b110a88a11436b215220486c1081dec2fb0f389a
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA

@@ -1,0 +1,86 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "output.c",
+        "original_line": 479,
+        "function": "fz_write_data",
+        "entry_point": "fz_write_buffer",
+        "spine": [
+            "fz_write_buffer",
+            "fz_write_data"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "output.c",
+        "harness_line": 42,
+        "original_file": "output.c",
+        "original_line": 479,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 408\nState: 1\nStack: \n\t#000000408 in memcpy(138938488549376, 139230546325504, symbolic) at runtime/Freestanding/memcpy.c:17\n\t#100000247 in fz_write_data(138886948941824, 139093107372032, 139230546325504, symbolic) at output.c:42\n\t#200000379 in fz_write_buffer(138886948941824, 139093107372032, 138955668418560) at output.c:65\n\t#300000100 in main() at driver.c:44\nInfo: \n\taddress: 138938488549392\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "out_storage",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "in_data",
+            "size": 512,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "buf_len",
+            "size": 8,
+            "data": "b'\\x11\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_write_buffer",
+        "crash_file": "source/fitz/output.c",
+        "crash_line": 500,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==11711==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000048 at pc 0x5631f2cbebc6 bp 0x7ffcdd513a30 sp 0x7ffcdd513a20\nREAD of size 8 at 0x502000000048 thread T0\n    #0 0x5631f2cbebc5 in fz_write_buffer source/fitz/output.c:500\n    #1 0x5631f2cbcd4e in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/224_output.c_479_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:44\n    #2 0x7f0773516d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f0773516e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x5631f2cbc8b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/224_output.c_479_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x108b4)\n\n0x502000000048 is located 8 bytes to the left of 16-byte region [0x502000000050,0x502000000060)\nallocated by thread T0 here:\n    #0 0x7f07738cd887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5631f2cbca69 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/224_output.c_479_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:19\n    #2 0x7f0773516d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/output.c:500 in fz_write_buffer\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa[fa]00 00 fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/224_output.c_479_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "output.c",
+            "harness_line": 42,
+            "original_file": "output.c",
+            "original_line": 479,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/224_output.c_479_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_write_buffer",
+            "crash_file": "source/fitz/output.c",
+            "crash_line": 500
+        }
+    ]
+}

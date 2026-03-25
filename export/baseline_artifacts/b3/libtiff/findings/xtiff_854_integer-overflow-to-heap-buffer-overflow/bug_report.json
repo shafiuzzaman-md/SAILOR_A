@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/dbs/xtiff/xtiff.c",
+    "line": 854,
+    "function": "GetTIFFImage",
+    "bug_type": "integer-overflow-to-heap-buffer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "The allocation size tfBytesPerRow * 2 * tfImageHeight + 2 can overflow size_t, producing a small buffer. The conversion loop writes approximately 2 * ceil(tfImageWidth/2) bytes per row for tfImageHeight rows, causing a heap overflow if the allocation wrapped.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/dbs/xtiff/xtiff.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <limits.h>\n\n/*\n * Standalone reproducer for the integer-overflow-to-heap-buffer-overflow in\n * contrib/dbs/xtiff/xtiff.c:GetTIFFImage at the allocation:\n *   malloc(tfBytesPerRow * 2 * tfImageHeight + 2)\n * followed by per-row expansion writing ~2 * ceil(tfImageWidth/2) bytes.\n *\n * We reimplement just the vulnerable branch ((xImageDepth==8)&&(tfImageDepth==4)),\n * set tfBytesPerRow to force the allocation to wrap to a small size, and set a\n * large tfImageWidth to cause a large write that overflows the undersized buffer.\n */\n\n#define MCHECK(p) do { if (!(p)) { fprintf(stderr, \"alloc failed\\n\"); exit(1);} } while (0)\n\nstatic size_t tfBytesPerRow;\nstatic size_t tfImageHeight, tfImageWidth;\nstatic int tfImageDepth, xImageDepth;\nstatic unsigned char basePixel = 0;\nstatic unsigned char *scan_line;\nstatic size_t g_scanline_size;\n\n/* Stub TIFFReadScanline: fill the provided buffer with dummy data */\nstatic int TIFFReadScanline(void *tif, void *buf, unsigned int row, unsigned short s)\n{\n    (void)tif; (void)row; (void)s;\n    memset(buf, 0xFF, g_scanline_size);\n    return 1; /* success */\n}\n\nstatic void GetTIFFImage_trigger(void)\n{\n    char *imageMemory;\n    char *output_p;\n    unsigned char *input_p;\n    size_t i, j;\n\n    if ((xImageDepth == 8) && (tfImageDepth == 4))\n    {\n        /* Vulnerable allocation (matches the upstream code pattern) */\n        output_p = imageMemory = (char *)malloc(tfBytesPerRow * 2 * tfImageHeight + 2);\n        MCHECK(imageMemory);\n\n        for (i = 0; i < tfImageHeight; i++)\n        {\n            if (TIFFReadScanline(NULL, scan_line, (unsigned int)i, 0) < 0)\n                break;\n            output_p = &imageMemory[i * tfImageWidth];\n            input_p = scan_line;\n            for (j = 0; j < tfImageWidth; j += 2, input_p++)\n            {\n                /* 4-bit to 8-bit expansion writes 2 bytes per input byte */\n                *output_p++ = (unsigned char)((*input_p >> 4) + basePixel);\n                *output_p++ = (unsigned char)((*input_p & 0x0F) + basePixel);\n            }\n        }\n\n        /* Prevent compiler from optimizing away writes */\n        if (imageMemory) {\n            volatile unsigned char sink = (unsigned char)imageMemory[0];\n            (void)sink;\n        }\n    }\n}\n\nint main(void)\n{\n    /* Choose parameters to force integer overflow in allocation:\n     * size = tfBytesPerRow * 2 * tfImageHeight + 2\n     * Pick tfBytesPerRow so that (tfBytesPerRow * 2) wraps to a small value.\n     */\n    tfImageWidth  = (size_t)1 << 20;  /* 1,048,576 pixels per row (even) */\n    tfImageHeight = 2;                /* two rows */\n    tfImageDepth  = 4;                /* source depth triggers the branch */\n    xImageDepth   = 8;                /* destination depth triggers the branch */\n\n    /* Cause wrap: (SIZE_MAX/2 + 100) * 2 -> SIZE_MAX + 200 -> wraps to 199\n     * Then 199 * height (2) + 2 => 400-byte allocation, far too small. */\n    tfBytesPerRow = (SIZE_MAX / 2) + 100;\n\n    /* Allocate a scanline buffer large enough for the read loop: ceil(width/2) */\n    g_scanline_size = (tfImageWidth + 1) / 2;\n    scan_line = (unsigned char *)malloc(g_scanline_size);\n    MCHECK(scan_line);\n    memset(scan_line, 0xAB, g_scanline_size);\n\n    /* Trigger the vulnerable logic */\n    GetTIFFImage_trigger();\n\n    free(scan_line);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09034037590026855,
+      "output": ""
+    }
+  }
+}

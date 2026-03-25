@@ -1,0 +1,68 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "half2float.c",
+    "original_line": 51,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "46:         t->mantissatable[i] = 0x38000000UL + ((i - 1024) << 13UL);\n47:     for (int i = 2048; i < 3072; i++)\n48:         t->mantissatable[i] = t->mantissatable[i - 1024] | 0x400000UL;\n49:     t->mantissatable[2048] = t->mantissatable[1024];\n50: \n51:     t->exponenttable[0] = 0;\n52:     for (int i = 1; i < 31; i++)\n53:         t->exponenttable[i] = i << 23;\n54:     for (int i = 33; i < 63; i++)\n55:         t->exponenttable[i] = 0x80000000UL + ((i - 32) << 23UL);\n56:     t->exponenttable[31]= 0x47800000UL;"
+  },
+  "klee_crash": {
+    "harness_file": "half2float.c",
+    "harness_line": 26,
+    "original_file": "half2float.c",
+    "original_line": 51,
+    "original_code": "t->exponenttable[0] = 0;",
+    "original_context": "    48:         t->mantissatable[i] = t->mantissatable[i - 1024] | 0x400000UL;\n    49:     t->mantissatable[2048] = t->mantissatable[1024];\n    50: \n>>> 51:     t->exponenttable[0] = 0;\n    52:     for (int i = 1; i < 31; i++)\n    53:         t->exponenttable[i] = i << 23;\n    54:     for (int i = 33; i < 63; i++)",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: half2float.c\nLine: 26\nassembly.ll line: 77\nState: 1\nStack: \n\t#000000077 in ff_init_half2float_tables(139016131727360) at half2float.c:26\n\t#100000065 in entry_func(139016131727360) at half2float.c:17\n\t#200000043 in main() at driver.c:17\nInfo: \n\taddress: 139016131743744\n\tnext: object at 138719778983936 of size 4\n\t\tMO18[4] allocated at main():  %1 = alloca i32, align 4\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "tiny_tables_mem",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6012_half2float.c_51_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "half2float.c",
+      "harness_line": 26,
+      "original_file": "half2float.c",
+      "original_line": 51,
+      "error_type": "ptr",
+      "crash_function": "ff_init_half2float_tables",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/6012_half2float.c_51_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

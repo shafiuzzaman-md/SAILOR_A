@@ -1,0 +1,55 @@
+First read: 4096 bytes (ibuf_off now advanced)
+Triggering overflow with outl = 2147475457
+=================================================================
+==1478516==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x621000001100 at pc 0x55c79d05da93 bp 0x7ffccd80e680 sp 0x7ffccd80de48
+WRITE of size 61440 at 0x621000001100 thread T0
+    #0 0x55c79d05da92 in __interceptor_memcpy (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0xc4a92) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #1 0x55c79d105d30 in mem_read bss_mem.c
+    #2 0x55c79d1044ba in bread_conv (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x16b4ba) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #3 0x55c79d1022c1 in BIO_read (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x1692c1) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #4 0x55c79d101db7 in readbuffer_read bf_readbuff.c
+    #5 0x55c79d1044ba in bread_conv (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x16b4ba) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #6 0x55c79d1022c1 in BIO_read (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x1692c1) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #7 0x55c79d10172b in main /app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer.c:111:13
+    #8 0x7f2d77f0ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #9 0x7f2d77f0ee3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x55c79d043704 in _start (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0xaa704) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+
+0x621000001100 is located 0 bytes to the right of 4096-byte region [0x621000000100,0x621000001100)
+allocated by thread T0 here:
+    #0 0x55c79d0c654e in __interceptor_malloc (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x12d54e) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+    #1 0x55c79d10f350 in CRYPTO_malloc (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0x176350) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b5/openssl_67b5686b_vul/targets/target_0060/validate_reproducer_001/reproducer+0xc4a92) (BuildId: 05d6f33e05298b4a4db081dc2061c7349ecc2370) in __interceptor_memcpy
+Shadow bytes around the buggy address:
+  0x0c427fff81d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c427fff81e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c427fff81f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c427fff8200: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c427fff8210: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c427fff8220:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c427fff8230: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c427fff8240: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c427fff8250: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c427fff8260: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c427fff8270: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==1478516==ABORTING

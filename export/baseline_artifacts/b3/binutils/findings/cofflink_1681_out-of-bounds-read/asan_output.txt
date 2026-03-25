@@ -1,0 +1,53 @@
+Allocated 32 bytes for external symbols (8 entries).
+Using malicious x_endndx=58 -> eslend beyond allocated table.
+=================================================================
+==3626956==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x603000000090 at pc 0x642b61a0e371 bp 0x7ffd7ec4d0f0 sp 0x7ffd7ec4d0e8
+READ of size 1 at 0x603000000090 thread T0
+    #0 0x642b61a0e370 in bfd_coff_swap_sym_in /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer.c:61:15
+    #1 0x642b61a0e175 in coff_renumber_symbols /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer.c:92:5
+    #2 0x642b61a0df2e in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer.c:134:9
+    #3 0x74c9aba2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x74c9aba2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x642b6194e314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer+0x21314) (BuildId: e70e777cf7e7a575b7c0f49d9a402e92a88f8485)
+
+0x603000000090 is located 0 bytes to the right of 32-byte region [0x603000000070,0x603000000090)
+allocated by thread T0 here:
+    #0 0x642b619d1d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer+0xa4d22) (BuildId: e70e777cf7e7a575b7c0f49d9a402e92a88f8485)
+    #1 0x642b61a0dd20 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer.c:113:37
+    #2 0x74c9aba2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x74c9aba2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x642b6194e314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer+0x21314) (BuildId: e70e777cf7e7a575b7c0f49d9a402e92a88f8485)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/cofflink_1681_out-of-bounds-read/reproducer.c:61:15 in bfd_coff_swap_sym_in
+Shadow bytes around the buggy address:
+  0x0c067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c067fff8000: fa fa 00 00 00 fa fa fa 00 00 00 fa fa fa 00 00
+=>0x0c067fff8010: 00 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c067fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3626956==ABORTING

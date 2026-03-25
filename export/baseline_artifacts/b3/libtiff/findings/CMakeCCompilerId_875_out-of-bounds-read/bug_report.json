@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c",
+    "line": 875,
+    "function": "main",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "Indexes into the string literal info_language_standard_default using argc without bounds checking; excessive argc will cause an out-of-bounds read.",
+    "abs_path": "/tmp/libtiff_upstream/build_bc/CMakeFiles/3.28.3/CompilerIdC/CMakeCCompilerId.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n\n/*\n   Reproduce the CMakeCCompilerId.c bug:\n   Indexing into a string using argc without bounds checking.\n\n   We declare the strings as global arrays so AddressSanitizer places redzones\n   around them, ensuring an out-of-bounds read is reliably detected.\n*/\n\n/* These mirror the identifiers used in the vulnerable file */\nconst char info_language_standard_default[]   = \"INFO:standard_default[ON]\";\nconst char info_language_extensions_default[] = \"INFO:extensions_default[ON]\";\n\n/* Function that mimics the vulnerable access at line 875 */\nstatic int cmake_id_like_main(int argc) {\n    volatile int require = 0;\n    /* Out-of-bounds read when argc >= sizeof(array) */\n    require += info_language_standard_default[argc];\n    require += info_language_extensions_default[argc];\n    return require;\n}\n\nint main(void) {\n    /* Craft an argc that is one past the end of info_language_standard_default */\n    int crafted_argc = (int)sizeof(info_language_standard_default); /* includes NUL, so this is OOB by 1 */\n\n    /* Trigger the vulnerable code path */\n    int r = cmake_id_like_main(crafted_argc);\n\n    /* Use the result to avoid any chance of it being optimized away */\n    printf(\"result=%d\\n\", r);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6327164173126221,
+      "output": "=================================================================\n==3808416==ERROR: AddressSanitizer: global-buffer-overflow on address 0x568464c984ba at pc 0x568464c85e28 bp 0x7fff04280d70 sp 0x7fff04280d68\nREAD of size 1 at 0x568464c984ba thread T0\n    #0 0x568464c85e27 in cmake_id_like_main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:20:16\n    #1 0x568464c85cbd in main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:30:13\n    #2 0x77b3d642a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x77b3d642a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x568464bc6304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer+0x21304) (BuildId: 4ec586544e6bd98674431275ec9aeddc27bd4658)\n\n0x568464c984ba is located 38 bytes to the left of global variable 'info_language_extensions_default' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:14:12' (0x568464c984e0) of size 28\n  'info_language_extensions_default' is ascii string 'INFO:extensions_default[ON]'\n0x568464c984ba is located 0 bytes to the right of global variable 'info_language_standard_default' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:13:12' (0x568464c984a0) of size 26\n  'info_language_standard_default' is ascii string 'INFO:standard_default[ON]'\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:20:16 in cmake_id_like_main\nShadow bytes around the buggy address:\n  0x0ad10c98b040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b070: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b080: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0ad10c98b090: 00 00 00 00 00 00 00[02]f9 f9 f9 f9 00 00 00 04\n  0x0ad10c98b0a0: f9 f9 f9 f9 00 03 f9 f9 00 00 00 00 00 00 00 00\n  0x0ad10c98b0b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b0c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b0d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0ad10c98b0e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3808416==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "cmake_id_like_main",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:20",
+      "crash_line": 16,
+      "frames": [
+        [
+          "0",
+          "cmake_id_like_main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:20",
+          "16"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_875_out-of-bounds-read/reproducer.c:30",
+          "13"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

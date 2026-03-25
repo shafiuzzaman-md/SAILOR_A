@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "pngget.c",
+    "line": 900,
+    "function": "png_get_eXIf_1",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The function writes to *num_exif without checking that num_exif is non-NULL. If the caller passes num_exif == NULL (while exif is non-NULL and PNG_INFO_eXIf is set), the unconditional assignment at line 900 dereferences a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/libpng_upstream/pngget.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal typedefs to mimic libpng types */\ntypedef uint32_t png_uint_32;\ntypedef unsigned char png_byte;\n\ntypedef struct png_struct_def png_struct;\ntypedef struct png_info_def png_info;\n\nstruct png_struct_def { int dummy; };\n\n/* Only the fields needed by png_get_eXIf_1 */\nstruct png_info_def {\n    png_uint_32 valid;\n    png_uint_32 num_exif;\n    png_byte *exif;\n};\n\n/* Fake debug macro used by libpng */\n#define png_debug1(level, message, arg1) ((void)0)\n\n/* Bit for eXIf validity; any non-zero unique bit works for this reproducer */\n#define PNG_INFO_eXIf 0x00000001u\n\n/* This macro ensures our stub is compiled, matching the upstream conditional */\n#define PNG_eXIf_SUPPORTED 1\n\n#ifdef PNG_eXIf_SUPPORTED\n/* Vulnerable function copied in spirit from pngget.c: it writes to *num_exif\n * without checking if num_exif is NULL when exif != NULL and PNG_INFO_eXIf set.\n */\npng_uint_32 png_get_eXIf_1(const png_struct *png_ptr, const png_info *info_ptr,\n    png_uint_32 *num_exif, png_byte **exif)\n{\n    png_debug1(1, \"in %s retrieval function\", \"eXIf\");\n\n    if (png_ptr != NULL && info_ptr != NULL &&\n        (info_ptr->valid & PNG_INFO_eXIf) != 0 && exif != NULL)\n    {\n        /* BUG: no check that num_exif != NULL before dereference */\n        *num_exif = info_ptr->num_exif;  /* NULL deref when num_exif == NULL */\n        *exif = info_ptr->exif;\n        return PNG_INFO_eXIf;\n    }\n\n    return 0;\n}\n#endif\n\nint main(void)\n{\n    /* Set up structures with eXIf info present */\n    png_struct png_s;                /* Non-NULL png_ptr */\n    png_info info;                   /* Non-NULL info_ptr */\n    memset(&png_s, 0, sizeof(png_s));\n    memset(&info, 0, sizeof(info));\n\n    /* Populate eXIf data and mark it valid */\n    png_byte *exif_data = (png_byte*)malloc(8);\n    if (!exif_data) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n    for (int i = 0; i < 8; ++i) exif_data[i] = (png_byte)i;\n\n    info.valid |= PNG_INFO_eXIf;     /* Pretend eXIf chunk is present */\n    info.num_exif = 8;               /* Number of eXIf bytes */\n    info.exif = exif_data;           /* Pointer to eXIf data */\n\n    /* Prepare arguments to trigger the bug */\n    png_uint_32 *num_exif_ptr = NULL;  /* Intentionally NULL to trigger NPD */\n    png_byte *out_exif = NULL;         /* Non-NULL pointer argument (address below is non-NULL) */\n\n    /* This call will enter the 'if' branch and then dereference num_exif_ptr (NULL) */\n    (void)png_get_eXIf_1(&png_s, &info, num_exif_ptr, &out_exif);\n\n    /* Not reached: the above line should crash due to NULL dereference */\n    free(exif_data);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.0882875919342041,
+      "output": ""
+    }
+  }
+}

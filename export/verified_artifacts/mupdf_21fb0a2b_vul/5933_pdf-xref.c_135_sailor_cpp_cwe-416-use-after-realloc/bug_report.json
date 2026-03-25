@@ -1,0 +1,77 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-xref.c",
+        "original_line": 135,
+        "function": "resize_xref_sub",
+        "entry_point": "pdf_update_stream",
+        "spine": [
+            "pdf_update_stream",
+            "pdf_get_local_xref_entry",
+            "resize_xref_sub"
+        ],
+        "original_context": "130: \tsub->table = fz_realloc_array(ctx, sub->table, newlen, pdf_xref_entry);\n131: \tfor (i = sub->len; i < newlen; i++)\n132: \t{\n133: \t\tsub->table[i].type = 0;\n134: \t\tsub->table[i].ofs = 0;\n135: \t\tsub->table[i].gen = 0;\n136: \t\tsub->table[i].num = 0;\n137: \t\tsub->table[i].stm_ofs = 0;\n138: \t\tsub->table[i].stm_buf = NULL;\n139: \t\tsub->table[i].obj = NULL;\n140: \t}"
+    },
+    "klee_crash": {
+        "harness_file": "pdf-xref.c",
+        "harness_line": 56,
+        "original_file": "pdf-xref.c",
+        "original_line": 126,
+        "original_code": "sub = xref->subsec;",
+        "original_context": "    123: \tint i;\n    124: \n    125: \tassert(xref != NULL);\n>>> 126: \tsub = xref->subsec;\n    127: \tassert(sub->next == NULL && sub->start == base && sub->len+base == xref->num_objects);\n    128: \tassert(newlen+base > xref->num_objects);\n    129: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: null page access\nFile: pdf-xref.c\nLine: 56\nassembly.ll line: 164\nState: 1\nStack: \n\t#000000164 in resize_xref_sub(139456944439296, 0, 0) at pdf-xref.c:56\n\t#100000132 in pdf_get_local_xref_entry(139456944439296, 139525663916032, 139439764570112, 139508484046848, symbolic) at pdf-xref.c:81\n\t#200000287 in pdf_update_stream(139456944439296, 139525663916032, 139439764570112, 139508484046848, symbolic) at pdf-xref.c:88\n\t#300000100 in main() at driver.c:64\nInfo: \n\taddress: 0\n\tnext: "
+    },
+    "concrete_inputs": [
+        {
+            "name": "newlen",
+            "size": 4,
+            "data": "b'\\x03\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_buffer_storage",
+        "crash_file": "source/fitz/buffer.c",
+        "crash_line": 273,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==33776==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000088 at pc 0x55a4c8c5e549 bp 0x7ffdbe3bdc90 sp 0x7ffdbe3bdc80\nREAD of size 8 at 0x502000000088 thread T0\n    #0 0x55a4c8c5e548 in fz_buffer_storage source/fitz/buffer.c:273\n    #1 0x55a4c8c517ae in pdf_update_stream source/pdf/pdf-xref.c:2963\n    #2 0x55a4c8c3b769 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5933_pdf-xref.c_135_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:64\n    #3 0x7f4ef917bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f4ef917be3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55a4c8c3b3b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5933_pdf-xref.c_135_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_bin+0x1483b4)\n\n0x502000000088 is located 8 bytes to the right of 16-byte region [0x502000000070,0x502000000080)\nallocated by thread T0 here:\n    #0 0x7f4ef9532a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55a4c8c3b553 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5933_pdf-xref.c_135_sailor_cpp_cwe-416-use-after-realloc/asan_real/replay_driver.c:44\n    #2 0x7f4ef917bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/buffer.c:273 in fz_buffer_storage\nShadow bytes around the buggy address:\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa fa 04 fa fa fa 00 00\n=>0x0a047fff8010: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5933_pdf-xref.c_135_sailor_cpp_cwe-416-use-after-realloc/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-xref.c",
+            "harness_line": 56,
+            "original_file": "pdf-xref.c",
+            "original_line": 126,
+            "error_type": "ptr",
+            "crash_function": "resize_xref_sub",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5933_pdf-xref.c_135_sailor_cpp_cwe-416-use-after-realloc/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_buffer_storage",
+            "crash_file": "source/fitz/buffer.c",
+            "crash_line": 273
+        }
+    ]
+}

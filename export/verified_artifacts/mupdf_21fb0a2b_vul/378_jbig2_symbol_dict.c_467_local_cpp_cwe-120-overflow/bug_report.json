@@ -1,0 +1,81 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_symbol_dict.c",
+        "original_line": 467,
+        "function": "jbig2_decode_symbol_dict",
+        "entry_point": "jbig2_symbol_dictionary",
+        "spine": [
+            "jbig2_symbol_dictionary",
+            "jbig2_decode_symbol_dict"
+        ],
+        "original_context": "462:                     region_params.MMR = 0;\n463:                     region_params.GBTEMPLATE = params->SDTEMPLATE;\n464:                     region_params.TPGDON = 0;\n465:                     region_params.USESKIP = 0;\n466:                     sdat_bytes = params->SDTEMPLATE == 0 ? 8 : 2;\n467:                     memcpy(region_params.gbat, params->sdat, sdat_bytes);\n468: \n469:                     image = jbig2_image_new(ctx, SYMWIDTH, HCHEIGHT);\n470:                     if (image == NULL) {\n471:                         code = jbig2_error(ctx, JBIG2_SEVERITY_WARNING, segment->number, \"failed to allocate image\");\n472:                         goto cleanup;"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_symbol_dict.c",
+        "harness_line": 55,
+        "original_file": "jbig2_symbol_dict.c",
+        "original_line": 467,
+        "original_code": "memcpy(region_params.gbat, params->sdat, sdat_bytes);",
+        "original_context": "    464:                     region_params.TPGDON = 0;\n    465:                     region_params.USESKIP = 0;\n    466:                     sdat_bytes = params->SDTEMPLATE == 0 ? 8 : 2;\n>>> 467:                     memcpy(region_params.gbat, params->sdat, sdat_bytes);\n    468: \n    469:                     image = jbig2_image_new(ctx, SYMWIDTH, HCHEIGHT);\n    470:                     if (image == NULL) {",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 170\nState: 1\nStack: \n\t#000000170 in memcpy(138618826428416, 139845039591424, 8) at runtime/Freestanding/memcpy.c:17\n\t#100000140 in jbig2_decode_symbol_dict(138906052366336, 138974771843072, 139043491319808, 64, 138607552139264, 138611847106560) at jbig2_symbol_dict.c:55\n\t#200000086 in jbig2_symbol_dictionary(138906052366336, 138974771843072, 139043491319808) at jbig2_symbol_dict.c:39\n\t#300000"
+    },
+    "concrete_inputs": [
+        {
+            "name": "segment_data",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "sdat_buf",
+            "size": 1,
+            "data": "b'\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_symbol_dictionary",
+        "crash_file": "thirdparty/jbig2dec/jbig2_symbol_dict.c",
+        "crash_line": 873,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==21891==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000040 at pc 0x555a52afd7e7 bp 0x7fff2afbb390 sp 0x7fff2afbb380\nREAD of size 8 at 0x502000000040 thread T0\n    #0 0x555a52afd7e6 in jbig2_symbol_dictionary thirdparty/jbig2dec/jbig2_symbol_dict.c:873\n    #1 0x555a52af8b73 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/378_jbig2_symbol_dict.c_467_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:27\n    #2 0x7f841ca8ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f841ca8ee3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x555a52af8994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/378_jbig2_symbol_dict.c_467_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xb994)\n\n0x502000000040 is located 0 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f841ce45a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x555a52af8a86 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/378_jbig2_symbol_dict.c_467_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:13\n    #2 0x7f841ca8ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2_symbol_dict.c:873 in jbig2_symbol_dictionary\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00[fa]fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/378_jbig2_symbol_dict.c_467_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_symbol_dict.c",
+            "harness_line": 55,
+            "original_file": "jbig2_symbol_dict.c",
+            "original_line": 467,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/378_jbig2_symbol_dict.c_467_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_symbol_dictionary",
+            "crash_file": "thirdparty/jbig2dec/jbig2_symbol_dict.c",
+            "crash_line": 873
+        }
+    ]
+}

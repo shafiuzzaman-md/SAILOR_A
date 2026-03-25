@@ -1,0 +1,51 @@
+=================================================================
+==4135620==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000000f at pc 0x57110850f8da bp 0x7ffc72d4e0d0 sp 0x7ffc72d4d898
+READ of size 1 at 0x60200000000f thread T0
+    #0 0x57110850f8d9 in strlen (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer+0x378d9) (BuildId: 62e8bf389311b7b34109a99d8c834d159e040516)
+    #1 0x5711085b8e21 in opt_progname /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer.c:34:9
+    #2 0x5711085b904f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer.c:58:18
+    #3 0x778eee82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x778eee82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5711084f9324 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer+0x21324) (BuildId: 62e8bf389311b7b34109a99d8c834d159e040516)
+
+0x60200000000f is located 1 bytes to the left of 1-byte region [0x602000000010,0x602000000011)
+allocated by thread T0 here:
+    #0 0x57110857cd32 in __interceptor_malloc (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer+0xa4d32) (BuildId: 62e8bf389311b7b34109a99d8c834d159e040516)
+    #1 0x5711085b8fd8 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer.c:50:27
+    #2 0x778eee82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x778eee82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5711084f9324 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer+0x21324) (BuildId: 62e8bf389311b7b34109a99d8c834d159e040516)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/openssl_67b5686b_vul/findings/opt_76_out-of-bounds-read/reproducer+0x378d9) (BuildId: 62e8bf389311b7b34109a99d8c834d159e040516) in strlen
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa[fa]01 fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4135620==ABORTING

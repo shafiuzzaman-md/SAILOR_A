@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/addtiffo/addtiffo.c",
+    "line": 95,
+    "function": "main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The loop condition while (argv[1][0] == '-') dereferences argv[1] without ensuring argc >= 2 after prior adjustments. With only the \"-subifd\" option and no filename (initial argc==2), the code does argv++; argc--; making argc==1 so argv[1] becomes NULL (argv[argc]). Dereferencing argv[1][0] then triggers a NULL pointer dereference.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/addtiffo/addtiffo.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n\n/* Rename the addtiffo tool's main() so we can include it and call it directly */\n#define main addtiffo_main\n#include \"contrib/addtiffo/addtiffo.c\"\n#undef main\n\nint main(void)\n{\n    /* Craft argv to only contain the -subifd option and no filename */\n    char prog[] = \"repro\";\n    char opt[] = \"-subifd\";\n    char *argv[] = { prog, opt, NULL };\n    int argc = 2; /* program name + one option */\n\n    /* This call will trigger the NULL pointer dereference inside addtiffo_main */\n    return addtiffo_main(argc, argv);\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/addtiffo_95_null-pointer-dereference/reproducer.c:6:\nIn file included from /tmp/libtiff_upstream/contrib/addtiffo/addtiffo.c:62:\nIn file included from /tmp/libtiff_upstream/contrib/addtiffo/tif_ovrcache.h:38:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

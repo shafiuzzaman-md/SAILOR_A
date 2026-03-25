@@ -1,0 +1,84 @@
+{
+  "adts_parser.c": {
+    "2": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 22,
+      "code": "#include <stdint.h>"
+    },
+    "4": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 23,
+      "code": "#include <string.h>"
+    },
+    "9": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 47,
+      "code": "#endif"
+    },
+    "12": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 47,
+      "code": "#endif"
+    },
+    "15": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 47,
+      "code": "#endif"
+    },
+    "18": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 47,
+      "code": "#endif"
+    },
+    "33": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 30,
+      "code": "int av_adts_header_parse(const uint8_t *buf, uint32_t *samples, uint8_t *frames)"
+    },
+    "34": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 31,
+      "code": "{"
+    },
+    "35": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 33,
+      "code": "uint8_t tmpbuf[AV_AAC_ADTS_HEADER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];"
+    },
+    "36": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 34,
+      "code": "AACADTSHeaderInfo hdr;"
+    },
+    "37": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 35,
+      "code": "int err;"
+    },
+    "39": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 38,
+      "code": "memcpy(tmpbuf, buf, AV_AAC_ADTS_HEADER_SIZE);"
+    },
+    "42": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 44,
+      "code": "return 0;"
+    },
+    "43": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 48,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 44,
+      "code": "return 0;"
+    },
+    "49": {
+      "orig_file": "adts_parser.c",
+      "orig_line": 48,
+      "code": "}"
+    }
+  }
+}

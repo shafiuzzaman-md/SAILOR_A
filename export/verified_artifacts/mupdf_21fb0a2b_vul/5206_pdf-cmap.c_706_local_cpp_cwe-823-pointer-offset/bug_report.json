@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-cmap.c",
+        "original_line": 706,
+        "function": "add_mrange",
+        "entry_point": "pdf_map_one_to_many",
+        "spine": [
+            "pdf_map_one_to_many",
+            "add_mrange"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "pdf-cmap.c",
+        "harness_line": 45,
+        "original_file": "pdf-cmap.c",
+        "original_line": 706,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 242\nState: 1\nStack: \n\t#000000242 in memcpy(139771087877120, 139141875167232, 8) at runtime/Freestanding/memcpy.c:17\n\t#100000206 in add_mrange(0, 139633648922624, 0, 139141875167232, 2) at pdf-cmap.c:45\n\t#200000102 in pdf_map_one_to_many(0, 139633648922624, 0, 139141875167232, 2) at pdf-cmap.c:28\n\t#300000062 in main() at driver.c:31\nInfo: \n\taddress: 139771087877120\n\tnext: object at 13912791652"
+    },
+    "concrete_inputs": [
+        {
+            "name": "values",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "add_mrange",
+        "crash_file": "source/pdf/pdf-cmap.c",
+        "crash_line": 698,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==29286==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x504000000288 at pc 0x562f22d84855 bp 0x7ffe2f170530 sp 0x7ffe2f170520\nREAD of size 4 at 0x504000000288 thread T0\n    #0 0x562f22d84854 in add_mrange source/pdf/pdf-cmap.c:698\n    #1 0x562f22d84854 in pdf_map_one_to_many source/pdf/pdf-cmap.c:770\n    #2 0x562f22d81bb6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5206_pdf-cmap.c_706_local_cpp_cwe-823-pointer-offset/asan_real/replay_driver.c:31\n    #3 0x7fe03362ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fe03362ae3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x562f22d81904 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5206_pdf-cmap.c_706_local_cpp_cwe-823-pointer-offset/asan_real/replay_bin+0x10904)\n\n0x504000000288 is located 584 bytes to the right of 48-byte region [0x504000000010,0x504000000040)\nallocated by thread T0 here:\n    #0 0x7fe0339e1a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x562f22d81a69 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5206_pdf-cmap.c_706_local_cpp_cwe-823-pointer-offset/asan_real/replay_driver.c:14\n    #2 0x7fe03362ad8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/pdf/pdf-cmap.c:698 in add_mrange\nShadow bytes around the buggy address:\n  0x0a087fff8000: fa fa 00 00 00 00 00 00 fa fa fa fa fa fa fa fa\n  0x0a087fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a087fff8050: fa[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a087fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5206_pdf-cmap.c_706_local_cpp_cwe-823-pointer-offset/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-cmap.c",
+            "harness_line": 45,
+            "original_file": "pdf-cmap.c",
+            "original_line": 706,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5206_pdf-cmap.c_706_local_cpp_cwe-823-pointer-offset/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "add_mrange",
+            "crash_file": "source/pdf/pdf-cmap.c",
+            "crash_line": 698
+        }
+    ]
+}

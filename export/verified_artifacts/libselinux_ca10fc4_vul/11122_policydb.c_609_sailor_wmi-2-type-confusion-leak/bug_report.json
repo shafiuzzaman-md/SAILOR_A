@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-use-after-free",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "policydb.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-use-after-free",
+            "crash_function": "__interceptor_memset",
+            "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+            "crash_line": 799
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-use-after-free",
+        "crash_function": "__interceptor_memset",
+        "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+        "crash_line": 799,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==2165==ERROR: AddressSanitizer: heap-use-after-free on address 0x502000000010 at pc 0x7f360b499c23 bp 0x7ffc05564d90 sp 0x7ffc05564538\nWRITE of size 40 at 0x502000000010 thread T0\n    #0 0x7f360b499c22 in __interceptor_memset ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:799\n    #1 0x5605f1048378 in type_datum_init /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/policydb.c:608\n    #2 0x5605f1047933 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11122_policydb.c_609_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:23\n    #3 0x7f360b15dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f360b15de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5605f10477a4 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11122_policydb.c_609_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x117a4)\n\n0x502000000020 is located 0 bytes to the right of 16-byte region [0x502000000010,0x502000000020)\nfreed by thread T0 here:\n    #0 0x7f360b514537 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:127\n    #1 0x5605f1047927 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11122_policydb.c_609_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:19\n    #2 0x7f360b15dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\npreviously allocated by thread T0 here:\n    #0 0x7f360b514887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x5605f104787f in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11122_policydb.c_609_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:12\n    #2 0x7f360b15dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-use-after-free ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptor"
+    }
+}

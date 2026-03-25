@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "cmscnvrt.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "_cmsRegisterRenderingIntentPlugin",
+            "crash_file": "thirdparty/lcms2/src/cmscnvrt.c",
+            "crash_line": 1199
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "_cmsRegisterRenderingIntentPlugin",
+        "crash_file": "thirdparty/lcms2/src/cmscnvrt.c",
+        "crash_line": 1199,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==25014==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000058 at pc 0x555f4ebb0762 bp 0x7fff1abcdd50 sp 0x7fff1abcdd40\nREAD of size 4 at 0x503000000058 thread T0\n    #0 0x555f4ebb0761 in _cmsRegisterRenderingIntentPlugin thirdparty/lcms2/src/cmscnvrt.c:1199\n    #1 0x555f4ebab070 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/428_cmscnvrt.c_1200_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:24\n    #2 0x7f53b2003d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f53b2003e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x555f4ebaaeb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/428_cmscnvrt.c_1200_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xaeb4)\n\n0x503000000058 is located 0 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7f53b23baa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x555f4ebaaf9b in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/428_cmscnvrt.c_1200_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:11\n    #2 0x7f53b2003d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmscnvrt.c:1199 in _cmsRegisterRenderingIntentPlugin\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa 00 00 00 fa fa fa 00 00 00[fa]fa fa 00 00\n  0x0a067fff8010: 00 fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a067fff8030: "
+    }
+}

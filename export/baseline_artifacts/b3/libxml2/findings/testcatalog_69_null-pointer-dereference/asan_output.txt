@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4066123==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5f5239266e9e bp 0x7ffe437894b0 sp 0x7ffe43789460 T0)
+==4066123==The signal is caused by a READ memory access.
+==4066123==Hint: address points to the zero page.
+    #0 0x5f5239266e9e in testRepeatedNextCatalog /app/se_runs/b3/libxml2_e334a9d_vul/findings/testcatalog_69_null-pointer-dereference/reproducer.c:93:18
+    #1 0x5f5239266da3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testcatalog_69_null-pointer-dereference/reproducer.c:108:12
+    #2 0x7fa96d82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7fa96d82a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5f52391a7304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testcatalog_69_null-pointer-dereference/reproducer+0x21304) (BuildId: 2368c0012a1af67b21b24b0b920061bd88bc1dbe)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/testcatalog_69_null-pointer-dereference/reproducer.c:93:18 in testRepeatedNextCatalog
+==4066123==ABORTING

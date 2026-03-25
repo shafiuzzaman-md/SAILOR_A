@@ -1,0 +1,24 @@
+{
+  "vc1_loopfilter.c": {
+    "27": {
+      "orig_file": "vc1_loopfilter.c",
+      "orig_line": 107,
+      "code": "MpegEncContext *s = &v->s;"
+    },
+    "31": {
+      "orig_file": "vc1_loopfilter.c",
+      "orig_line": 178,
+      "code": "if (v->mb_type[0][s->block_index[i]] && v->mb_type[0][s->block_index[i] - 1])"
+    },
+    "36": {
+      "orig_file": "vc1_loopfilter.c",
+      "orig_line": 184,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "vc1_loopfilter.c",
+      "orig_line": 184,
+      "code": "}"
+    }
+  }
+}

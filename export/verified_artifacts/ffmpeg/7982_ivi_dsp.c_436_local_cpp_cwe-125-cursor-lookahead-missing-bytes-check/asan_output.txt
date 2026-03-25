@@ -1,0 +1,50 @@
+=================================================================
+==369354==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000001c at pc 0x557618512481 bp 0x7ffdf8a74d20 sp 0x7ffdf8a74d10
+READ of size 4 at 0x50200000001c thread T0
+    #0 0x557618512480 in ff_ivi_row_haar4 /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/ivi_dsp.c:11
+    #1 0x5576185124c1 in ivi_entry /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/ivi_dsp.c:22
+    #2 0x5576185122ff in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/driver.c:31
+    #3 0x7fa97a5a1d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #4 0x7fa97a5a1e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #5 0x557618512144 in _start (/home/user/user/ffmpeg_verify_v2/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_bin+0x1144)
+
+0x50200000001c is located 0 bytes to the right of 12-byte region [0x502000000010,0x50200000001c)
+allocated by thread T0 here:
+    #0 0x7fa97a983887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x55761851224a in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/driver.c:13
+    #2 0x7fa97a5a1d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/7982_ivi_dsp.c_436_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/ivi_dsp.c:11 in ff_ivi_row_haar4
+Shadow bytes around the buggy address:
+  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0a047fff8000: fa fa 00[04]fa fa 00 fa fa fa 04 fa fa fa fa fa
+  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==369354==ABORTING

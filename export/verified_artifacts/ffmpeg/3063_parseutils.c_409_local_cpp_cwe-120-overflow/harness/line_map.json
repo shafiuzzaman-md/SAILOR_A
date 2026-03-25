@@ -1,0 +1,29 @@
+{
+  "parseutils.c": {
+    "16": {
+      "orig_file": "parseutils.c",
+      "orig_line": 409,
+      "code": "memcpy(rgba_color, entry->rgb_color, 3);"
+    },
+    "20": {
+      "orig_file": "parseutils.c",
+      "orig_line": 433,
+      "code": "return 0;"
+    },
+    "21": {
+      "orig_file": "parseutils.c",
+      "orig_line": 434,
+      "code": "}"
+    },
+    "26": {
+      "orig_file": "parseutils.c",
+      "orig_line": 433,
+      "code": "return 0;"
+    },
+    "27": {
+      "orig_file": "parseutils.c",
+      "orig_line": 434,
+      "code": "}"
+    }
+  }
+}

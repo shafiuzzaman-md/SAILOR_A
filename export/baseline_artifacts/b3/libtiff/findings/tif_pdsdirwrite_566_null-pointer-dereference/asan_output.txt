@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3835615==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x566ecdeac4fb bp 0x7ffe122ed470 sp 0x7ffe122ed320 T0)
+==3835615==The signal is caused by a WRITE memory access.
+==3835615==Hint: address points to the zero page.
+    #0 0x566ecdeac4fb in TIFFWritePerSampleShorts /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_566_null-pointer-dereference/reproducer.c:69:14
+    #1 0x566ecdeac225 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_566_null-pointer-dereference/reproducer.c:93:15
+    #2 0x7e1874c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7e1874c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x566ecddec304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_566_null-pointer-dereference/reproducer+0x21304) (BuildId: 533505a64164a79848bde6a591326196fcd72c87)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_566_null-pointer-dereference/reproducer.c:69:14 in TIFFWritePerSampleShorts
+==3835615==ABORTING

@@ -1,0 +1,12 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3715423==ERROR: AddressSanitizer: FPE on unknown address 0x649a5edaa450 (pc 0x649a5edaa450 bp 0x7ffcb08a5d20 sp 0x7ffcb08a5bd0 T0)
+    #0 0x649a5edaa450 in rpng2_x_reload_bg_image /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-x_1985_divide-by-zero/reproducer.c:64:53
+    #1 0x649a5eda9e6f in main /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-x_1985_divide-by-zero/reproducer.c:99:5
+    #2 0x7d01ef42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7d01ef42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x649a5ecea314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-x_1985_divide-by-zero/reproducer+0x21314) (BuildId: f34d9ae2ceff215f5717c5d19b02e041df2407b7)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-x_1985_divide-by-zero/reproducer.c:64:53 in rpng2_x_reload_bg_image
+==3715423==ABORTING

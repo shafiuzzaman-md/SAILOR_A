@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "context.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "",
+            "crash_file": "",
+            "crash_line": 0
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "",
+        "crash_file": "",
+        "crash_line": 0,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4081==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x564099df2f26 bp 0x7ffc05e02080 sp 0x7ffc05e02050 T0)\n==4081==The signal is caused by a WRITE memory access.\n==4081==Hint: address points to the zero page.\n"
+    }
+}

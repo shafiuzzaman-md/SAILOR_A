@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/iptcutil/iptcutil.c",
+    "line": 175,
+    "function": "convertHTMLcodes",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "strcpy(s + 1, s + html_codes[i].len) performs a left-shift of the string using overlapping source/destination pointers. This overlap with strcpy is undefined behavior and may corrupt heap memory. Use memmove instead.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/iptcutil/iptcutil.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <strings.h>\n\n// Minimal reconstruction of the vulnerable pieces from contrib/iptcutil/iptcutil.c\n// Focus is on convertHTMLcodes() and the html_codes table it references.\n\ntypedef struct {\n    int len;\n    const char *code;\n    char val;\n} html_code;\n\n// Only include one entry that will trigger the overlapping strcpy path.\nstatic html_code html_codes[] = {\n    {6, \"&quot;\", '\"'}\n};\n\n#ifndef STRNICMP\n#define STRNICMP strncasecmp\n#endif\n\nstatic int convertHTMLcodes(char *s, int len)\n{\n    if (len <= 0 || s == (char *)NULL || *s == '\\0')\n        return 0;\n\n    if (s[1] == '#')\n    {\n        int val, o;\n\n        if (sscanf(s, \"&#%d;\", &val) == 1)\n        {\n            o = 3;\n            while (o < len && s[o] != ';')\n            {\n                o++;\n                if (o > 5)\n                    break;\n            }\n            if (o < 5 && o < len)\n                strcpy(s + 1, s + 1 + o);\n            *s = (char)val;\n            return o;\n        }\n    }\n    else\n    {\n        int i, codes = (int)(sizeof(html_codes) / sizeof(html_code));\n\n        for (i = 0; i < codes; i++)\n        {\n            if (html_codes[i].len <= len)\n                if (STRNICMP(s, html_codes[i].code, html_codes[i].len) == 0)\n                {\n                    // Vulnerable overlapping copy: dest = s+1, src = s+len (left shift)\n                    strcpy(s + 1, s + html_codes[i].len);\n                    *s = html_codes[i].val;\n                    return html_codes[i].len - 1;\n                }\n        }\n    }\n\n    return 0;\n}\n\nint main(void)\n{\n    // Allocate a small heap buffer and intentionally do NOT NUL-terminate it,\n    // so strcpy reads/writes past the end when the overlapping copy happens.\n    size_t alloc = 8; // small buffer on heap\n    char *buf = (char *)malloc(alloc);\n    if (!buf) return 1;\n\n    // Fill entire buffer with non-zero bytes to avoid an early NUL.\n    memset(buf, 'A', alloc);\n\n    // Place the HTML escape at the beginning without a terminating NUL in-buffer.\n    // \"&quot;\" is 6 bytes: &, q, u, o, t, ;\n    memcpy(buf, \"&quot;\", 6);\n\n    // Trigger the vulnerable path: s[1] != '#', and STRNICMP matches \"&quot;\".\n    // Pass len large enough to satisfy the html_codes[i].len <= len check.\n    // Because the buffer is not NUL-terminated, strcpy(s+1, s+6) will\n    // read/write beyond the heap buffer, which ASan reports as heap-buffer-overflow.\n    int dropped = convertHTMLcodes(buf, 6);\n\n    // Prevent unused warnings and keep program behavior visible.\n    printf(\"Dropped: %d, first char now: %d\\n\", dropped, (int)buf[0]);\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.9459350109100342,
+      "output": "=================================================================\n==3824649==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000018 at pc 0x56ca2b39c2cc bp 0x7ffc1eb02b90 sp 0x7ffc1eb02358\nREAD of size 3 at 0x602000000018 thread T0\n    #0 0x56ca2b39c2cb in strcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer+0x8f2cb) (BuildId: ac7e902219aba68a37cb8ddcb7e9488823e525ec)\n    #1 0x56ca2b3ee376 in convertHTMLcodes /app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:58:21\n    #2 0x56ca2b3edd16 in main /app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:87:19\n    #3 0x799c89e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x799c89e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x56ca2b32e304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer+0x21304) (BuildId: ac7e902219aba68a37cb8ddcb7e9488823e525ec)\n\n0x602000000018 is located 0 bytes to the right of 8-byte region [0x602000000010,0x602000000018)\nallocated by thread T0 here:\n    #0 0x56ca2b3b1d12 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: ac7e902219aba68a37cb8ddcb7e9488823e525ec)\n    #1 0x56ca2b3edcbf in main /app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:73:25\n    #2 0x799c89e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x799c89e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x56ca2b32e304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer+0x21304) (BuildId: ac7e902219aba68a37cb8ddcb7e9488823e525ec)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer+0x8f2cb) (BuildId: ac7e902219aba68a37cb8ddcb7e9488823e525ec) in strcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00[fa]fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3824649==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "convertHTMLcodes",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:58",
+          "21"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:87",
+          "19"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/iptcutil_175_heap-buffer-overflow/reproducer.c:73",
+          "25"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

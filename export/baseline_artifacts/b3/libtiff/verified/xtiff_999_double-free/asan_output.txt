@@ -1,0 +1,28 @@
+=================================================================
+==4080828==ERROR: AddressSanitizer: attempting double-free on 0x619000000080 in thread T0:
+    #0 0x57a2b41c7a76 in free (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+    #1 0x57a2b4204041 in CreateXImage_bug /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:75:9
+    #2 0x57a2b4203ff1 in main /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:104:5
+    #3 0x7bd5a602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7bd5a602a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x57a2b4144314 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0x21314) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+
+0x619000000080 is located 0 bytes inside of 1024-byte region [0x619000000080,0x619000000480)
+freed by thread T0 here:
+    #0 0x57a2b41c7a76 in free (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+    #1 0x57a2b4203e81 in XDestroyImage /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:56:9
+    #2 0x57a2b4204038 in CreateXImage_bug /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:73:9
+    #3 0x57a2b4203ff1 in main /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:104:5
+    #4 0x7bd5a602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7bd5a602a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x57a2b4144314 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0x21314) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+
+previously allocated by thread T0 here:
+    #0 0x57a2b41c7d22 in __interceptor_malloc (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0xa4d22) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+    #1 0x57a2b4203eef in main /app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer.c:83:32
+    #2 0x7bd5a602a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x7bd5a602a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x57a2b4144314 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0x21314) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8)
+
+SUMMARY: AddressSanitizer: double-free (/app/export/baseline_artifacts/b3/libtiff/verified/xtiff_999_double-free/reproducer+0xa4a76) (BuildId: f2389fe81345e3326f874d75677287d6f664a0b8) in free
+==4080828==ABORTING

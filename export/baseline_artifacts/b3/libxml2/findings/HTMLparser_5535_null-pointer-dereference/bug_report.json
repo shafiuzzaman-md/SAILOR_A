@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "HTMLparser.c",
+    "line": 5535,
+    "function": "htmlCtxtSetOptionsInternal",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "When HTML_PARSE_NOBLANKS is set, the code unconditionally writes through ctxt->sax->ignorableWhitespace without verifying that ctxt->sax is non-NULL. If a caller provides a parser context with a NULL sax handler (e.g., a context created or modified without initializing sax), this leads to a NULL pointer dereference.",
+    "abs_path": "/tmp/libxml2_upstream/HTMLparser.c"
+  },
+  "reproducer_code": "// Standalone reproducer for null-pointer-dereference in htmlCtxtSetOptionsInternal\n// Compile with:\n//   clang -fsanitize=address -g -O0 reproducer.c -o reproducer\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stddef.h>\n#include <stdint.h>\n\n// Minimal stubs and typedefs to emulate the needed bits of libxml2\n\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlDict xmlDict;\nstruct _xmlDict { int dummy; };\n\n// SAX callback type for ignorableWhitespace\ntypedef void (*ignorableWhitespaceSAXFunc)(void *ctx, const xmlChar *ch, int len);\n\n// Minimal SAX handler struct with only the field we touch in the bug\ntypedef struct _xmlSAXHandler {\n    ignorableWhitespaceSAXFunc ignorableWhitespace;\n} xmlSAXHandler, *xmlSAXHandlerPtr;\n\n// Minimal parser context with only the fields referenced in the vulnerable code\ntypedef struct _xmlParserCtxt {\n    int options;\n    int keepBlanks;\n    int recovery;\n    int dictNames;\n    xmlSAXHandlerPtr sax;   // will be NULL to trigger the bug\n    xmlDict *dict;\n} xmlParserCtxt, *xmlParserCtxtPtr;\n\n// Option bit masks (values don't need to match real libxml2; they just need to be distinct)\n#define HTML_PARSE_RECOVER      (1 << 0)\n#define HTML_PARSE_HTML5        (1 << 1)\n#define HTML_PARSE_NODEFDTD     (1 << 2)\n#define HTML_PARSE_NOERROR      (1 << 3)\n#define HTML_PARSE_NOWARNING    (1 << 4)\n#define HTML_PARSE_PEDANTIC     (1 << 5)\n#define HTML_PARSE_NOBLANKS     (1 << 6)\n#define HTML_PARSE_NONET        (1 << 7)\n#define HTML_PARSE_NOIMPLIED    (1 << 8)\n#define HTML_PARSE_COMPACT      (1 << 9)\n#define HTML_PARSE_HUGE         (1 << 10)\n#define HTML_PARSE_IGNORE_ENC   (1 << 11)\n#define HTML_PARSE_BIG_LINES    (1 << 12)\n#define XML_PARSE_NOENT         (1 << 13)\n\n// Stub implementations for external functions referenced by the vulnerable code\nvoid xmlSAX2IgnorableWhitespace(void *ctx, const xmlChar *ch, int len) {\n    (void)ctx; (void)ch; (void)len;\n}\n\nvoid xmlDictSetLimit(xmlDict *dict, size_t limit) {\n    (void)dict; (void)limit;\n}\n\n// Vulnerable function reproduced from the source context (trimmed to essentials)\nstatic int htmlCtxtSetOptionsInternal(xmlParserCtxtPtr ctxt, int options, int keepMask)\n{\n    int allMask;\n\n    if (ctxt == NULL)\n        return(-1);\n\n    allMask = HTML_PARSE_RECOVER |\n              HTML_PARSE_HTML5 |\n              HTML_PARSE_NODEFDTD |\n              HTML_PARSE_NOERROR |\n              HTML_PARSE_NOWARNING |\n              HTML_PARSE_PEDANTIC |\n              HTML_PARSE_NOBLANKS |\n              HTML_PARSE_NONET |\n              HTML_PARSE_NOIMPLIED |\n              HTML_PARSE_COMPACT |\n              HTML_PARSE_HUGE |\n              HTML_PARSE_IGNORE_ENC |\n              HTML_PARSE_BIG_LINES;\n\n    ctxt->options = (ctxt->options & keepMask) | (options & allMask);\n\n    // For some options, struct members are historically the source of truth\n    ctxt->keepBlanks = (options & HTML_PARSE_NOBLANKS) ? 0 : 1;\n\n    // Recover from character encoding errors\n    ctxt->recovery = 1;\n\n    // Changing SAX callbacks is a bad idea. This should be fixed.\n    if (options & HTML_PARSE_NOBLANKS) {\n        // BUG: No NULL check on ctxt->sax before dereferencing\n        ctxt->sax->ignorableWhitespace = xmlSAX2IgnorableWhitespace; // NULL deref here when sax == NULL\n    }\n    if (options & HTML_PARSE_HUGE) {\n        if (ctxt->dict != NULL)\n            xmlDictSetLimit(ctxt->dict, 0);\n    }\n\n    // It would be useful to allow this feature.\n    ctxt->dictNames = 0;\n\n    // Allow XML_PARSE_NOENT which many users set on the HTML parser.\n    return(options & ~allMask & ~XML_PARSE_NOENT);\n}\n\n// Public wrapper mirroring the real API\nint htmlCtxtSetOptions(xmlParserCtxt *ctxt, int options)\n{\n    return htmlCtxtSetOptionsInternal(ctxt, options, 0);\n}\n\nint main(void)\n{\n    // Create a parser context with a NULL SAX handler to trigger the bug\n    xmlParserCtxt ctxt;\n    memset(&ctxt, 0, sizeof(ctxt));\n    ctxt.sax = NULL;  // critical condition for the NULL dereference\n    ctxt.dict = NULL;\n\n    // Set the NOBLANKS option, which will cause the vulnerable code path to run\n    int options = HTML_PARSE_NOBLANKS;\n\n    // This call will crash with a NULL pointer dereference in AddressSanitizer\n    // at the line where ctxt->sax->ignorableWhitespace is assigned.\n    (void)htmlCtxtSetOptions(&ctxt, options);\n\n    // We should never reach here\n    printf(\"If you see this, the bug did not trigger as expected.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7870287895202637,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3972929==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5bb363494ee1 bp 0x7ffc28cc47b0 sp 0x7ffc28cc4720 T0)\n==3972929==The signal is caused by a WRITE memory access.\n==3972929==Hint: address points to the zero page.\n    #0 0x5bb363494ee1 in htmlCtxtSetOptionsInternal /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:94:40\n    #1 0x5bb363494cec in htmlCtxtSetOptions /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:111:12\n    #2 0x5bb36349513e in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:127:11\n    #3 0x71363f02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x71363f02a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5bb3633d5304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer+0x20304) (BuildId: 2f431de2bb68f5891fbb8069f19dba185a925a8f)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:94:40 in htmlCtxtSetOptionsInternal\n==3972929==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "htmlCtxtSetOptionsInternal",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:94",
+      "crash_line": 40,
+      "frames": [
+        [
+          "0",
+          "htmlCtxtSetOptionsInternal",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:94",
+          "40"
+        ],
+        [
+          "1",
+          "htmlCtxtSetOptions",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:111",
+          "12"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_5535_null-pointer-dereference/reproducer.c:127",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

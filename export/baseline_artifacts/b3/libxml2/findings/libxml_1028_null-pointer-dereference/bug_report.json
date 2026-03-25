@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 1028,
+    "function": "pythonProcessingInstruction",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "PyObject_CallMethod uses format \"ss\" with data. In libxml2, processing instruction data can be NULL (PI without data). Passing NULL to the \"s\" format will crash.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for types used by python/libxml.c */\ntypedef unsigned char xmlChar;\n\ntypedef struct _PyObject {\n    int dummy;\n} PyObject;\n\n/* Stubs for the small subset of the Python C-API used */\nint PyObject_HasAttrString(PyObject *obj, const char *name) {\n    /* Pretend the handler implements only processingInstruction */\n    if (name && strcmp(name, \"processingInstruction\") == 0)\n        return 1;\n    return 0;\n}\n\n/* Py_XDECREF is a no-op for our stub environment */\n#define Py_XDECREF(op) ((void)0)\n\n/*\n * Stub for PyObject_CallMethod that mimics the dangerous behavior of the\n * \"s\" formatter: passing NULL for an \"s\" argument leads to a NULL deref\n * when the C-API tries to use the char*.\n */\nPyObject *PyObject_CallMethod(PyObject *obj, const char *name, const char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n\n    /* We only care about the vulnerable path: format \"ss\" */\n    if (fmt && strcmp(fmt, \"ss\") == 0) {\n        const char *arg1 = va_arg(ap, const char *);\n        const char *arg2 = va_arg(ap, const char *);\n        (void)arg1;\n        /* Simulate CPython expecting a non-NULL C string for format 's'. */\n        /* This will crash with a NULL pointer dereference if arg2 == NULL. */\n        size_t len2 = strlen(arg2);  /* Intentional NULL dereference when arg2 == NULL */\n        (void)len2;\n    }\n\n    va_end(ap);\n    return (PyObject *)obj; /* Return a non-NULL dummy */\n}\n\n/* === Code under test (mirrors python/libxml.c snippet) === */\nstatic void pythonProcessingInstruction(void *user_data,\n                                        const xmlChar *target,\n                                        const xmlChar *data) {\n    PyObject *handler;\n    PyObject *result;\n\n    handler = (PyObject *) user_data;\n    if (PyObject_HasAttrString(handler, \"processingInstruction\")) {\n        /* Vulnerable call: format \"ss\" with potential NULL for data */\n        result = PyObject_CallMethod(handler, \"processingInstruction\", \"ss\",\n                                     (const char *)target, (const char *)data);\n        Py_XDECREF(result);\n    }\n}\n\nint main(void) {\n    /* Set up a fake Python handler object */\n    PyObject handler = {0};\n\n    /* target is a normal string, data is NULL to simulate PI without data */\n    const xmlChar *target = (const xmlChar *)\"pi-target\";\n    const xmlChar *data = NULL;  /* This triggers the crash in the stub */\n\n    /* This call will reach PyObject_CallMethod with format \"ss\" and NULL */\n    pythonProcessingInstruction((void *)&handler, target, data);\n\n    /* Should not reach here; if it does, indicate failure */\n    fprintf(stderr, \"Did not crash as expected.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.0909883975982666,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "bwdifdsp.c": {
+    "1": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 31,
+      "code": "#include <stdint.h>"
+    },
+    "6": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 225,
+      "code": "#endif"
+    },
+    "14": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 128,
+      "code": "void ff_bwdif_filter_line_c(void *dst1, const void *prev1, const void *cur1, const void *next1,"
+    },
+    "15": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 129,
+      "code": "int w, int prefs, int mrefs, int prefs2, int mrefs2,"
+    },
+    "16": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 130,
+      "code": "int prefs3, int mrefs3, int prefs4, int mrefs4,"
+    },
+    "17": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 131,
+      "code": "int parity, int clip_max)"
+    },
+    "18": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 132,
+      "code": "{"
+    },
+    "19": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 133,
+      "code": "uint8_t *dst   = (uint8_t *)dst1;",
+      "match_type": "fuzzy"
+    },
+    "20": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 134,
+      "code": "const uint8_t *prev  = (const uint8_t *)prev1;",
+      "match_type": "fuzzy"
+    },
+    "21": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 135,
+      "code": "const uint8_t *cur   = (const uint8_t *)cur1;",
+      "match_type": "fuzzy"
+    },
+    "22": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 136,
+      "code": "const uint8_t *next  = (const uint8_t *)next1;",
+      "match_type": "fuzzy"
+    },
+    "23": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 137,
+      "code": "const uint8_t *prev2 = parity ? prev : cur ;"
+    },
+    "24": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 138,
+      "code": "const uint8_t *next2 = parity ? cur  : next;"
+    },
+    "25": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 139,
+      "code": "int interpol, x;"
+    },
+    "43": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 144,
+      "code": "}"
+    },
+    "47": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 147,
+      "code": "int w, int prefs, int mrefs, int prefs2, int mrefs2,"
+    },
+    "48": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 130,
+      "code": "int prefs3, int mrefs3, int prefs4, int mrefs4,"
+    },
+    "55": {
+      "orig_file": "bwdifdsp.c",
+      "orig_line": 126,
+      "code": "}"
+    }
+  }
+}

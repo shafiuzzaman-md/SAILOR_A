@@ -1,0 +1,86 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pdf-page.c",
+        "original_line": 1348,
+        "function": "pdf_delete_page",
+        "entry_point": "pdf_delete_page_range",
+        "spine": [
+            "pdf_delete_page_range",
+            "pdf_delete_page"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "pdf-page.c",
+        "harness_line": 43,
+        "original_file": "pdf-page.c",
+        "original_line": 1348,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=0)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: pdf-page.c\nLine: 43\nassembly.ll line: 193\nState: 1\nStack: \n\t#000000193 in pdf_delete_page(139617067384832, 139599887515648, symbolic) at pdf-page.c:43\n\t#100000283 in pdf_delete_page_range(139617067384832, 139599887515648, symbolic, symbolic) at pdf-page.c:58\n\t#200000105 in main() at driver.c:39\nInfo: \n\taddress: 139634247254032\n\tnext: object at 139316956545024 of size 4\n\t\tMO97[4] allocated at pdf_delete_page():  %6 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "start",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "num1",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "num2",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "pdf_count_pages",
+        "crash_file": "source/pdf/pdf-page.c",
+        "crash_line": 36,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==34629==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000f4 at pc 0x55be5968f17a bp 0x7ffcbf227ed0 sp 0x7ffcbf227ec0\nREAD of size 4 at 0x5020000000f4 thread T0\n    #0 0x55be5968f179 in pdf_count_pages source/pdf/pdf-page.c:36\n    #1 0x55be5968f179 in pdf_delete_page_range source/pdf/pdf-page.c:1360\n    #2 0x55be596877d6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6166_pdf-page.c_1348_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:40\n    #3 0x7f7f8374ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f7f8374ee3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55be596873b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6166_pdf-page.c_1348_sailor_kernel-lifecycle-mismatch/asan_real/replay_bin+0x1483b4)\n\n0x5020000000f4 is located 156 bytes to the right of 8-byte region [0x502000000050,0x502000000058)\nallocated by thread T0 here:\n    #0 0x7f7f83b05887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55be5968760f in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/6166_pdf-page.c_1348_sailor_kernel-lifecycle-mismatch/asan_real/replay_driver.c:20\n    #2 0x7f7f8374ed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/pdf/pdf-page.c:36 in pdf_count_pages\nShadow bytes around the buggy address:\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 00 fa fa fa 00 fa fa fa fa fa\n=>0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/6166_pdf-page.c_1348_sailor_kernel-lifecycle-mismatch/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pdf-page.c",
+            "harness_line": 43,
+            "original_file": "pdf-page.c",
+            "original_line": 1348,
+            "error_type": "ptr",
+            "crash_function": "pdf_delete_page",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/6166_pdf-page.c_1348_sailor_kernel-lifecycle-mismatch/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "pdf_count_pages",
+            "crash_file": "source/pdf/pdf-page.c",
+            "crash_line": 36
+        }
+    ]
+}

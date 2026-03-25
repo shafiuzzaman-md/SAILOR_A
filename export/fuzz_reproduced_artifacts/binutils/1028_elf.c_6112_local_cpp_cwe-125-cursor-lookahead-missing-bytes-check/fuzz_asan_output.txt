@@ -1,0 +1,33 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1837640212
+INFO: Loaded 1 modules   (3 inline 8-bit counters): 3 [0x55a4caf5be00, 0x55a4caf5be03), 
+INFO: Loaded 1 PC tables (3 PCs): 3 [0x55a4caf5be08,0x55a4caf5be38), 
+INFO:        4 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 4 min: 64b max: 202b total: 458b rss: 32Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3358012==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000368 (pc 0x55a4cab3c002 bp 0x7ffef5924600 sp 0x7ffef5924500 T0)
+==3358012==The signal is caused by a READ memory access.
+==3358012==Hint: address points to the zero page.
+    #0 0x55a4cab3c002 in _bfd_elf_compute_section_file_positions /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699:21
+    #1 0x55a4cab1b9fa in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_harness.c:28:5
+    #2 0x55a4caa44523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd5523) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #3 0x55a4caa43c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd4c79) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #4 0x55a4caa458e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd68e8) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #5 0x55a4caa45dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #6 0x55a4caa34122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xc5122) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #7 0x55a4caa5de12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xeee12) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+    #8 0x7f2a15cf2d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #9 0x7f2a15cf2e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x55a4caa28b64 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/1028_elf.c_6112_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xb9b64) (BuildId: 01c61d7b4991a59bed1ea8b8d74d7a31cb69fb5b)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699:21 in _bfd_elf_compute_section_file_positions
+==3358012==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-0ae4f711ef5d6e9d26c611fd2c8c8ac45ecbf9e7
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-mips.c",
+    "line": 790,
+    "function": "mips_relocate_hi",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Writes 4 bytes to contents + (refhi->r_vaddr - input_section->vma) via bfd_put_32 without verifying that the computed offset is within the contents buffer. An attacker-controlled r_vaddr in a relocation entry can cause an out-of-bounds write to heap-allocated section contents.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-mips.c"
+  },
+  "reproducer_code": "// Standalone reproducer for heap-buffer-overflow in mips_relocate_hi\n// Triggered by out-of-bounds write via bfd_put_32 at\n// contents + (refhi->r_vaddr - input_section->vma)\n\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n// Minimal type re-declarations to mirror BFD interfaces used\ntypedef unsigned long bfd_vma;    // Matches common BFD usage on 64-bit hosts\ntypedef unsigned char bfd_byte;\n\ntypedef struct bfd {\n  int dummy;\n} bfd;\n\ntypedef struct asection {\n  bfd_vma vma;   // Section load address (base for relocations)\n} asection;\n\ntypedef struct internal_reloc {\n  bfd_vma r_vaddr;   // Virtual address of the relocation within the section\n} internal_reloc;\n\n// Stubbed BFD accessors\n// Make bfd_get_32 a macro that does NOT touch the provided pointer, so we avoid\n// an earlier OOB-read and only trigger on the write (matching the report focus).\n#define bfd_get_32(abfd, ptr) (0U)\n\n// Make bfd_put_32 a macro that performs a 4-byte write at the provided pointer.\n// Using a macro makes the write happen at the call site, closely matching the bug site.\n#define bfd_put_32(abfd, val, ptr) do {            \\\n  unsigned char *p__ = (unsigned char *)(ptr);     \\\n  unsigned int v__ = (unsigned int)(val);          \\\n  /* Write 4 bytes (big-endian order is arbitrary here; any write will do). */ \\\n  p__[0] = (unsigned char)((v__ >> 24) & 0xFF);    \\\n  p__[1] = (unsigned char)((v__ >> 16) & 0xFF);    \\\n  p__[2] = (unsigned char)((v__ >> 8) & 0xFF);     \\\n  p__[3] = (unsigned char)(v__ & 0xFF);            \\\n} while (0)\n\n// Vulnerable function (adapted from bfd/coff-mips.c)\nstatic void mips_relocate_hi(struct internal_reloc *refhi,\n                             struct internal_reloc *reflo,\n                             bfd *input_bfd,\n                             asection *input_section,\n                             bfd_byte *contents,\n                             bfd_vma relocation)\n{\n  unsigned long insn;\n  unsigned long val;\n  unsigned long vallo;\n\n  if (refhi == NULL)\n    return;\n\n  insn = bfd_get_32(input_bfd, contents + refhi->r_vaddr - input_section->vma);\n  if (reflo == NULL)\n    vallo = 0;\n  else\n    vallo = (bfd_get_32(input_bfd, contents + reflo->r_vaddr - input_section->vma) & 0xffff);\n\n  val = ((insn & 0xffff) << 16) + vallo;\n  val += relocation;\n\n  if ((vallo & 0x8000) != 0)\n    val -= 0x10000;\n\n  if ((val & 0x8000) != 0)\n    val += 0x10000;\n\n  insn = (insn & ~(unsigned)0xffff) | ((val >> 16) & 0xffff);\n  // Out-of-bounds write: no bounds check on (refhi->r_vaddr - input_section->vma)\n  bfd_put_32(input_bfd, (bfd_vma)insn, contents + refhi->r_vaddr - input_section->vma);\n}\n\nint main(void) {\n  // Prepare a small heap buffer to represent section contents\n  size_t contents_size = 16; // small buffer to make OOB easy to hit\n  bfd_byte *contents = (bfd_byte *)malloc(contents_size);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  memset(contents, 0xAA, contents_size);\n\n  // Set up fake BFD and section\n  bfd fake_bfd = {0};\n  asection input_section = {0};\n  // Keep vma at 0 so the offset is exactly r_vaddr\n  input_section.vma = 0;\n\n  // Craft relocation entries. We only need refhi; reflo can be NULL.\n  internal_reloc refhi;\n  // Choose an address well beyond the end of the contents buffer.\n  // This ensures contents + (refhi.r_vaddr - vma) points OOB.\n  refhi.r_vaddr = (bfd_vma)(contents_size + 32); // definitely OOB\n\n  // Trigger the vulnerable path; relocation delta is irrelevant for OOB\n  mips_relocate_hi(&refhi, NULL, &fake_bfd, &input_section, contents, 0);\n\n  // Cleanup (we likely won't reach here cleanly under ASan)\n  free(contents);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09205198287963867,
+      "output": ""
+    }
+  }
+}

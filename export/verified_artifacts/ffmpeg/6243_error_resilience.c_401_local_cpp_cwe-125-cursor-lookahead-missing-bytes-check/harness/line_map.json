@@ -1,0 +1,39 @@
+{
+  "error_resilience.c": {
+    "37": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 730,
+      "code": "return 0;"
+    },
+    "38": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 738,
+      "code": "}"
+    },
+    "45": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 392,
+      "code": "uint8_t *fixed;"
+    },
+    "49": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 406,
+      "code": "blocklist      = (int (*)[2])s->er_temp_buffer;"
+    },
+    "50": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 407,
+      "code": "next_blocklist = blocklist + s->mb_stride * s->mb_height;"
+    },
+    "54": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 408,
+      "code": "fixed          = (uint8_t *)(next_blocklist + s->mb_stride * s->mb_height);"
+    },
+    "63": {
+      "orig_file": "error_resilience.c",
+      "orig_line": 418,
+      "code": "}"
+    }
+  }
+}

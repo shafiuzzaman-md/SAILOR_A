@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "bitmap.c",
+        "original_line": 337,
+        "function": "fz_clear_bitmap",
+        "entry_point": "fz_clear_bitmap",
+        "spine": [
+            "fz_clear_bitmap"
+        ],
+        "original_context": "332: }\n333: \n334: void\n335: fz_clear_bitmap(fz_context *ctx, fz_bitmap *bit)\n336: {\n337: \tmemset(bit->samples, 0, (size_t)bit->stride * bit->h);\n338: }\n339: \n340: static void\n341: pbm_write_header(fz_context *ctx, fz_band_writer *writer, fz_colorspace *cs)\n342: {"
+    },
+    "klee_crash": {
+        "harness_file": "bitmap.c",
+        "harness_line": 19,
+        "original_file": "bitmap.c",
+        "original_line": 337,
+        "original_code": "memset(bit->samples, 0, (size_t)bit->stride * bit->h);",
+        "original_context": "    334: void\n    335: fz_clear_bitmap(fz_context *ctx, fz_bitmap *bit)\n    336: {\n>>> 337: \tmemset(bit->samples, 0, (size_t)bit->stride * bit->h);\n    338: }\n    339: \n    340: static void",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 139\nState: 1\nStack: \n\t#000000139 in memset(139772458913792, 0, 160) at runtime/Freestanding/memset.c:15\n\t#100000036 in fz_clear_bitmap(139566300483584, 139635019960320) at bitmap.c:19\n\t#200000100 in main() at driver.c:31\nInfo: \n\taddress: 139772458913856\n\tnext: object at 139269947740160 of size 4\n\t\tMO22[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "samples_buf",
+            "size": 64,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_clear_bitmap",
+        "crash_file": "source/fitz/bitmap.c",
+        "crash_line": 337,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3600==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000050 at pc 0x556f56c12730 bp 0x7ffd302c7560 sp 0x7ffd302c7550\nREAD of size 8 at 0x502000000050 thread T0\n    #0 0x556f56c1272f in fz_clear_bitmap source/fitz/bitmap.c:337\n    #1 0x556f56c11c06 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/048_bitmap.c_337_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:31\n    #2 0x7f6b5e352d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f6b5e352e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x556f56c11954 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/048_bitmap.c_337_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x10954)\n\n0x502000000050 is located 16 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7f6b5e709a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x556f56c11a47 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/048_bitmap.c_337_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:14\n    #2 0x7f6b5e352d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/bitmap.c:337 in fz_clear_bitmap\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa fa[fa]fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/048_bitmap.c_337_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "bitmap.c",
+            "harness_line": 19,
+            "original_file": "bitmap.c",
+            "original_line": 337,
+            "error_type": "ptr",
+            "crash_function": "memset",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/048_bitmap.c_337_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_clear_bitmap",
+            "crash_file": "source/fitz/bitmap.c",
+            "crash_line": 337
+        }
+    ]
+}

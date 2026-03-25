@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_mmi_inline_assembly.c",
+    "line": 35,
+    "function": "png_read_filter_row_up_mmi",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "high",
+    "explanation": "The loop processes 8 bytes per iteration (ldc1/sdc1) but never handles a tail shorter than 8 bytes. It performs the 8-byte store before checking istop, so for rowbytes not divisible by 8 the final iteration writes past the end of row.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_mmi_inline_assembly.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for libpng types */\ntypedef unsigned char png_byte;\n\ntypedef struct png_row_info {\n    size_t rowbytes;\n} png_row_info;\n\n/*\n * Buggy implementation modeled after the MIPS inline assembly in\n * png_read_filter_row_up_mmi: it processes 8 bytes per iteration and\n * always performs an 8-byte store without handling a tail shorter than 8.\n */\n__attribute__((noinline))\nvoid png_read_filter_row_up_mmi(png_row_info *row_info, png_byte *row,\n                                const png_byte *prev_row)\n{\n    int istop = (int)row_info->rowbytes;\n\n    for (;;) {\n        /* Emulate parallel byte add for 8 bytes. The last (tail) iteration\n         * will read and write 8 bytes unconditionally, overflowing if\n         * rowbytes is not a multiple of 8.\n         */\n        unsigned char out[8];\n        for (int i = 0; i < 8; ++i) {\n            /* These indexed accesses intentionally read 8 bytes regardless of\n             * remaining length, mirroring the buggy ldc1/sdc1 behavior. */\n            out[i] = (unsigned char)(row[i] + prev_row[i]);\n        }\n\n        /* Unconditional 8-byte store (can overflow when tail < 8) */\n        memcpy(row, out, 8);\n\n        row      += 8;\n        prev_row += 8;\n        istop    -= 8;\n        if (istop <= 0)\n            break; /* Branch after the 8-byte store, like the assembly */\n    }\n}\n\nint main(void)\n{\n    /* Choose a row size not divisible by 8 to trigger the overflow. */\n    const size_t rowbytes = 9; /* Tail = 1 byte, store still writes 8 bytes */\n\n    png_row_info info;\n    info.rowbytes = rowbytes;\n\n    png_byte *row = (png_byte *)malloc(rowbytes);\n    png_byte *prev = (png_byte *)malloc(rowbytes);\n\n    if (!row || !prev) {\n        fprintf(stderr, \"Allocation failed\\n\");\n        return 1;\n    }\n\n    /* Initialize buffers with deterministic data */\n    for (size_t i = 0; i < rowbytes; ++i) {\n        row[i] = (png_byte)(i & 0xFF);\n        prev[i] = (png_byte)((0xF0 + i) & 0xFF);\n    }\n\n    /* This call will perform an 8-byte write past the end of 'row' on the\n     * last iteration, causing a heap-buffer-overflow under ASan. */\n    png_read_filter_row_up_mmi(&info, row, prev);\n\n    /* Prevent the compiler from optimizing away the call/uses */\n    volatile unsigned char sink = row[0];\n    (void)sink;\n\n    free(row);\n    free(prev);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7936570644378662,
+      "output": "=================================================================\n==3733061==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000019 at pc 0x5e20ddf0ee0a bp 0x7ffd18a3ddd0 sp 0x7ffd18a3ddc8\nREAD of size 1 at 0x602000000019 thread T0\n    #0 0x5e20ddf0ee09 in png_read_filter_row_up_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33:38\n    #1 0x5e20ddf0f265 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:71:5\n    #2 0x7e015122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7e015122a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5e20dde4f304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0x21304) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)\n\n0x602000000019 is located 0 bytes to the right of 9-byte region [0x602000000010,0x602000000019)\nallocated by thread T0 here:\n    #0 0x5e20dded2d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0xa4d12) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)\n    #1 0x5e20ddf0f0c8 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:55:33\n    #2 0x7e015122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7e015122a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5e20dde4f304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer+0x21304) (BuildId: 79451eb68875583973731b3fece0239d59695a7c)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33:38 in png_read_filter_row_up_mmi\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa 00[01]fa fa 00 01 fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3733061==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "png_read_filter_row_up_mmi",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33",
+      "crash_line": 38,
+      "frames": [
+        [
+          "0",
+          "png_read_filter_row_up_mmi",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:33",
+          "38"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:71",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_35_heap-buffer-overflow/reproducer.c:55",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

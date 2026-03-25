@@ -1,0 +1,160 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 23 (sink assert at 25)\nCrash: CRASH: ptr at simple_idct.c:23\nOriginal: simple_idct.c:113 \u2192 BF(0);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at simple_idct.c:23 \u2192 simple_idct.c:113\n"
+    ]
+  ],
+  "line_map": {
+    "simple_idct.c": {
+      "7": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 90,
+        "code": "#define BF(k) \\"
+      },
+      "8": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 91,
+        "code": "{\\"
+      },
+      "9": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 92,
+        "code": "int a0, a1;\\"
+      },
+      "10": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 93,
+        "code": "a0 = ptr[k];\\"
+      },
+      "11": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 94,
+        "code": "a1 = ptr[8 + k];\\"
+      },
+      "12": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 95,
+        "code": "ptr[k] = a0 + a1;\\"
+      },
+      "13": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 96,
+        "code": "ptr[8 + k] = a0 - a1;\\"
+      },
+      "14": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 97,
+        "code": "}"
+      },
+      "17": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 105,
+        "code": "void ff_simple_idct248_put(uint8_t *dest, ptrdiff_t line_size, int16_t *block)"
+      },
+      "18": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 106,
+        "code": "{"
+      },
+      "19": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 108,
+        "code": "int16_t *ptr;"
+      },
+      "21": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 111,
+        "code": "ptr = block;"
+      },
+      "23": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 113,
+        "code": "BF(0);"
+      },
+      "26": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 122,
+        "code": "}"
+      },
+      "32": {
+        "orig_file": "simple_idct.c",
+        "orig_line": 122,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "simple_idct.c",
+      "original_line": 113,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "108:     int16_t *ptr;\n109: \n110:     /* butterfly */\n111:     ptr = block;\n112:     for(i=0;i<4;i++) {\n113:         BF(0);\n114:         BF(1);\n115:         BF(2);\n116:         BF(3);\n117:         BF(4);\n118:         BF(5);"
+    },
+    "klee_crash": {
+      "harness_file": "simple_idct.c",
+      "harness_line": 23,
+      "original_file": "simple_idct.c",
+      "original_line": 113,
+      "original_code": "BF(0);",
+      "original_context": "    110:     /* butterfly */\n    111:     ptr = block;\n    112:     for(i=0;i<4;i++) {\n>>> 113:         BF(0);\n    114:         BF(1);\n    115:         BF(2);\n    116:         BF(3);",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: simple_idct.c\nLine: 23\nassembly.ll line: 81\nState: 1\nStack: \n\t#000000081 in ff_simple_idct248_put(139075896320000, 16, 138938457366528) at simple_idct.c:23\n\t#100000119 in entry_func(139075896320000, 16, 138938457366528) at simple_idct.c:30\n\t#200000043 in main() at driver.c:24\nInfo: \n\taddress: 138938457366544\n\tnext: object at 138571237662720 of size 4\n\t\tMO55[4] allocated at ff_simple_idct248_put():  %8 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "dest_buf",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      },
+      {
+        "name": "block_buf",
+        "size": 16,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/13517_simple_idct.c_113_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "simple_idct.c",
+        "harness_line": 23,
+        "original_file": "simple_idct.c",
+        "original_line": 113,
+        "error_type": "ptr",
+        "crash_function": "ff_simple_idct248_put",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/13517_simple_idct.c_113_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

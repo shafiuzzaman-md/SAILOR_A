@@ -1,0 +1,17 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4135248==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64d68f9b5774 bp 0x7ffc73938ed0 sp 0x7ffc73938ca0 T0)
+==4135248==The signal is caused by a READ memory access.
+==4135248==Hint: address points to the zero page.
+    #0 0x64d68f9b5774 in BIO_snprintf /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:87:35
+    #1 0x64d68f9b5c38 in log_with_prefix /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:109:11
+    #2 0x64d68f9b5a94 in trace_log_message /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:128:9
+    #3 0x64d68f9b5d82 in log_set_verbosity /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:136:9
+    #4 0x64d68f9b5dd1 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:147:11
+    #5 0x77571362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x77571362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x64d68f8f5314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer+0x21314) (BuildId: fb21249b3f1d08e2465f02dc0ec983c985c269ac)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/log_49_null-pointer-dereference/reproducer.c:87:35 in BIO_snprintf
+==4135248==ABORTING

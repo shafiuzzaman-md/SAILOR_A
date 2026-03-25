@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4072541==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64f508adeda8 bp 0x7fffb4709d80 sp 0x7fffb4709d20 T0)
+==4072541==The signal is caused by a WRITE memory access.
+==4072541==Hint: address points to the zero page.
+    #0 0x64f508adeda8 in gen_random_string /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49:16
+    #1 0x64f508adeceb in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:69:11
+    #2 0x727ca502a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x727ca502a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x64f508a1f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer+0x20304) (BuildId: 6f9ef42154853d3a4b5ec7871151e364317c1762)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_470_null-pointer-dereference/reproducer.c:49:16 in gen_random_string
+==4072541==ABORTING

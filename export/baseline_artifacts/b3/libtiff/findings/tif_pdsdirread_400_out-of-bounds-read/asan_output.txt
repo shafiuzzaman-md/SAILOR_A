@@ -1,0 +1,17 @@
+About to trigger out-of-bounds read via wrapped bounds check...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3831623==ERROR: AddressSanitizer: SEGV on unknown address 0x619100000070 (pc 0x7dbac3788a8d bp 0x7ffd8b2f18e0 sp 0x7ffd8b2f10a8 T0)
+==3831623==The signal is caused by a READ memory access.
+    #0 0x7dbac3788a8d in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:265
+    #1 0x5c2945f950d5 in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_400_out-of-bounds-read/reproducer+0xa40d5) (BuildId: 5a8227b6cf2224ac5b320c0266d77d2e0c93775f)
+    #2 0x5c2945fd2a44 in _TIFFmemcpy /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:59:66
+    #3 0x5c2945fd24d5 in TIFFFetchData /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:93:9
+    #4 0x5c2945fd2110 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_400_out-of-bounds-read/reproducer.c:153:11
+    #5 0x7dbac362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7dbac362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5c2945f12304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirread_400_out-of-bounds-read/reproducer+0x21304) (BuildId: 5a8227b6cf2224ac5b320c0266d77d2e0c93775f)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:265 in __memcpy_avx_unaligned_erms
+==3831623==ABORTING

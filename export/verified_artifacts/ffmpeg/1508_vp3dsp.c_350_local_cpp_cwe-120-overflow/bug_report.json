@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "vp3dsp.c",
+    "original_line": 350,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "345: }\n346: \n347: void ff_vp3dsp_idct10_add(uint8_t *dest, ptrdiff_t stride, int16_t *block)\n348: {\n349:     idct10(dest, stride, block, 2);\n350:     memset(block, 0, sizeof(*block) * 64);\n351: }\n352: \n353: static void vp3_idct_put_c(uint8_t *dest /* align 8 */, ptrdiff_t stride,\n354:                            int16_t *block /* align 16 */)\n355: {"
+  },
+  "klee_crash": {
+    "harness_file": "vp3dsp.c",
+    "harness_line": 17,
+    "original_file": "vp3dsp.c",
+    "original_line": 350,
+    "original_code": "memset(block, 0, sizeof(*block) * 64);",
+    "original_context": "    347: void ff_vp3dsp_idct10_add(uint8_t *dest, ptrdiff_t stride, int16_t *block)\n    348: {\n    349:     idct10(dest, stride, block, 2);\n>>> 350:     memset(block, 0, sizeof(*block) * 64);\n    351: }\n    352: \n    353: static void vp3_idct_put_c(uint8_t *dest /* align 8 */, ptrdiff_t stride,",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 137\nState: 1\nStack: \n\t#000000137 in memset(138898477666304, 0, 128) at runtime/Freestanding/memset.c:15\n\t#100000067 in ff_vp3dsp_idct10_add(138915657535488, symbolic, 138898477666304) at vp3dsp.c:17\n\t#200000110 in entry_func(138915657535488, symbolic, 138898477666304) at vp3dsp.c:24\n\t#300000038 in main() at driver.c:26\nInfo: \n\taddress: 138898477666368\n\tnext: object at 138413146361856 of size "
+  },
+  "concrete_inputs": [
+    {
+      "name": "dest_buf",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    },
+    {
+      "name": "stride",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "block_buf",
+      "size": 64,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1508_vp3dsp.c_350_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "vp3dsp.c",
+      "harness_line": 17,
+      "original_file": "vp3dsp.c",
+      "original_line": 350,
+      "error_type": "ptr",
+      "crash_function": "memset",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1508_vp3dsp.c_350_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

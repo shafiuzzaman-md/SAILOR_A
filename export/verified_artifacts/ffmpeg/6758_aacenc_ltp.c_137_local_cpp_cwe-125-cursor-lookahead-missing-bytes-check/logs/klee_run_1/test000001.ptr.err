@@ -1,0 +1,13 @@
+Error: memory error: null page access
+File: aacenc_ltp.c
+Line: 46
+assembly.ll line: 49
+State: 1
+Stack: 
+	#000000049 in ff_aac_adjust_common_ltp(139526203338752, 140179038355456) at aacenc_ltp.c:46
+	#100000097 in entry_func(139526203338752, 140179038355456) at aacenc_ltp.c:57
+	#200000155 in main() at driver.c:32
+Info: 
+	address: 0
+	next: object at 139229850595328 of size 4
+		MO19[4] allocated at main():  %1 = alloca i32, align 4

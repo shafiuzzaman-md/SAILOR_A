@@ -1,0 +1,44 @@
+{
+  "vp3dsp.c": {
+    "3": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 27,
+      "code": "#include <string.h>"
+    },
+    "9": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 103,
+      "code": "}"
+    },
+    "12": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 347,
+      "code": "void ff_vp3dsp_idct10_add(uint8_t *dest, ptrdiff_t stride, int16_t *block)"
+    },
+    "13": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 348,
+      "code": "{"
+    },
+    "15": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 349,
+      "code": "idct10(dest, stride, block, 2);"
+    },
+    "17": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 350,
+      "code": "memset(block, 0, sizeof(*block) * 64);"
+    },
+    "20": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 351,
+      "code": "}"
+    },
+    "26": {
+      "orig_file": "vp3dsp.c",
+      "orig_line": 351,
+      "code": "}"
+    }
+  }
+}

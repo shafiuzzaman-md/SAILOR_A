@@ -1,0 +1,7 @@
+Error: invalid klee_assume call (provably false)
+File: driver.c
+Line: 85
+assembly.ll line: 181
+State: 3
+Stack: 
+	#000000181 in main() at driver.c:85

@@ -1,0 +1,21 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3585869==ERROR: AddressSanitizer: SEGV on unknown address 0x602000010000 (pc 0x7cd56bf88d87 bp 0x7ffd4baabf00 sp 0x7ffd4baabed8 T0)
+==3585869==The signal is caused by a WRITE memory access.
+    #0 0x7cd56bf88d87 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:660
+    #1 0x7cd56be60d87 in __GI_memcpy stdio-common/../string/bits/string_fortified.h:29:10
+    #2 0x7cd56be60d87 in __printf_buffer_write stdio-common/./stdio-common/Xprintf_buffer_write.c:39:7
+    #3 0x7cd56be6951b in __printf_buffer stdio-common/./stdio-common/vfprintf-process-arg.c:501:5
+    #4 0x7cd56be88a4d in __vsprintf_internal libio/./libio/iovsprintf.c:62:3
+    #5 0x7cd56be88a4d in vsprintf libio/./libio/iovsprintf.c:76:10
+    #6 0x596115e53b66 in __interceptor_vsprintf (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1066_integer-overflow/reproducer+0x43b66) (BuildId: 09d89703ebadaf38988ced700978526c70687cda)
+    #7 0x596115e54c77 in sprintf (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1066_integer-overflow/reproducer+0x44c77) (BuildId: 09d89703ebadaf38988ced700978526c70687cda)
+    #8 0x596115ef0fd8 in find_arm_glue /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1066_integer-overflow/reproducer.c:70:3
+    #9 0x596115ef0e82 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1066_integer-overflow/reproducer.c:100:9
+    #10 0x7cd56be2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #11 0x7cd56be2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #12 0x596115e31304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1066_integer-overflow/reproducer+0x21304) (BuildId: 09d89703ebadaf38988ced700978526c70687cda)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:660 in __memcpy_avx_unaligned_erms
+==3585869==ABORTING

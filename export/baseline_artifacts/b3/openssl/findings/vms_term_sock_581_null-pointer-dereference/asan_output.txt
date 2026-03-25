@@ -1,0 +1,14 @@
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4140535==ERROR: AddressSanitizer: SEGV on unknown address 0x00000000000c (pc 0x5fc38967924f bp 0x7fff91ad2b80 sp 0x7fff91ad2760 T0)
+==4140535==The signal is caused by a READ memory access.
+==4140535==Hint: address points to the zero page.
+    #0 0x5fc38967924f in LogMessage /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41:18
+    #1 0x5fc389678f01 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:56:5
+    #2 0x71fb3d42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x71fb3d42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5fc3895b9334 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer+0x21334) (BuildId: 03316fbdfbfa78ebcf111c565620a1db58df3f7a)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41:18 in LogMessage
+==4140535==ABORTING

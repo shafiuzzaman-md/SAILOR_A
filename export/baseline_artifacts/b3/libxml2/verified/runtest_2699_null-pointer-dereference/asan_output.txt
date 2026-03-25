@@ -1,0 +1,17 @@
+Relax-NG schema invalid.rng failed to compile
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4080493==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x780cc5a852a4 bp 0x7ffeabacd9a0 sp 0x7ffeabacd980 T0)
+==4080493==The signal is caused by a READ memory access.
+==4080493==Hint: address points to the zero page.
+    #0 0x780cc5a852a4 in fclose libio/./libio/iofclose.c:48:9
+    #1 0x5eecbbd937f4 in fclose (/app/export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer+0x767f4) (BuildId: 8db106b21ebb80fa6d9b239afd5e2823af105c21)
+    #2 0x5eecbbdfdf00 in streamProcessTest /app/export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer.c:95:13
+    #3 0x5eecbbdfdd19 in main /app/export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer.c:152:13
+    #4 0x780cc5a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x780cc5a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5eecbbd3e324 in _start (/app/export/baseline_artifacts/b3/libxml2/verified/runtest_2699_null-pointer-dereference/reproducer+0x21324) (BuildId: 8db106b21ebb80fa6d9b239afd5e2823af105c21)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV libio/./libio/iofclose.c:48:9 in fclose
+==4080493==ABORTING

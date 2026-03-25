@@ -1,0 +1,12 @@
+Error: memory error: out of bound pointer
+File: cavs.c
+Line: 20
+assembly.ll line: 21
+State: 1
+Stack: 
+	#000000021 in ff_cavs_init_pic(139637099446272) at cavs.c:20
+	#100000063 in main() at driver.c:19
+Info: 
+	address: 139637099446296
+	next: object at 139340746702848 of size 4
+		MO17[4] allocated at main():  %1 = alloca i32, align 4

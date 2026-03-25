@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "jfdctfst.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_fdct_ifast",
+            "crash_file": "thirdparty/libjpeg/jfdctfst.c",
+            "crash_line": 134
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_fdct_ifast",
+        "crash_file": "thirdparty/libjpeg/jfdctfst.c",
+        "crash_line": 134,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==17086==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000020 at pc 0x55fc91b70e1d bp 0x7ffce516c140 sp 0x7ffce516c130\nREAD of size 1 at 0x502000000020 thread T0\n    #0 0x55fc91b70e1c in jpeg_fdct_ifast thirdparty/libjpeg/jfdctfst.c:134\n    #1 0x55fc91b70689 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3028_jfdctfst.c_151_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:35\n    #2 0x7fc6ce705d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fc6ce705e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55fc91b70244 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3028_jfdctfst.c_151_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1244)\n\n0x502000000020 is located 0 bytes to the right of 16-byte region [0x502000000010,0x502000000020)\nallocated by thread T0 here:\n    #0 0x7fc6ceabc887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55fc91b70549 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/3028_jfdctfst.c_151_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:25\n    #2 0x7fc6ce705d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jfdctfst.c:134 in jpeg_fdct_ifast\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00[fa]fa 00 00 fa fa 00 00 fa fa 00 00\n  0x0a047fff8010: fa fa 00 00 fa fa 00 00 fa fa 00 00 fa fa 00 00\n  0x0a047fff8020: fa fa fa fa fa fa fa fa "
+    }
+}

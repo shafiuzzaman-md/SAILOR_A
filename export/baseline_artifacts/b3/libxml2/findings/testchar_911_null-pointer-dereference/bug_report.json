@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testchar.c",
+    "line": 911,
+    "function": "testEncHandler",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "xmlBufferCreate return values (encBuf/decBuf) are not checked; xmlBufferAdd(encBuf, ...) will dereference a NULL pointer on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/testchar.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal type definitions to avoid depending on libxml2 */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlBuffer {\n    xmlChar *content;\n    int size;\n    int use;\n} *xmlBufferPtr;\n\ntypedef struct _xmlCharEncodingHandler {\n    const char *name;\n} *xmlCharEncodingHandlerPtr;\n\n/* Stubs mimicking the libxml2 API used by testEncHandler */\nstatic xmlBufferPtr xmlBufferCreate(void) {\n    /* Simulate allocation failure to trigger the NULL dereference path */\n    return NULL;\n}\n\nstatic int xmlBufferAdd(xmlBufferPtr buf, const xmlChar *content, int len) {\n    /* Intentionally no NULL check to mirror the vulnerability surface. */\n    /* This will dereference a NULL pointer when buf == NULL. */\n    int need = (len >= 0) ? len : (int)strlen((const char *)content);\n    (void)need;\n    /* Crash here by dereferencing buf */\n    int available = buf->size - buf->use; /* NULL dereference */\n    (void)available;\n    return 0;\n}\n\nstatic const xmlChar *xmlBufferContent(xmlBufferPtr buf) {\n    if (!buf || !buf->content) return (const xmlChar *)\"\";\n    return buf->content;\n}\n\nstatic int xmlBufferLength(xmlBufferPtr buf) {\n    if (!buf) return 0;\n    return buf->use;\n}\n\nstatic void xmlBufferEmpty(xmlBufferPtr buf) {\n    if (!buf) return;\n    buf->use = 0;\n    if (buf->content) buf->content[0] = 0;\n}\n\nstatic void xmlBufferFree(xmlBufferPtr buf) {\n    if (!buf) return;\n    free(buf->content);\n    free(buf);\n}\n\nstatic int xmlCharEncInFunc(xmlCharEncodingHandlerPtr handler, xmlBufferPtr out, xmlBufferPtr in) {\n    (void)handler; (void)out; (void)in; return 0;\n}\n\nstatic int xmlCharEncOutFunc(xmlCharEncodingHandlerPtr handler, xmlBufferPtr out, xmlBufferPtr in) {\n    (void)handler; (void)out; (void)in; return 0;\n}\n\n/* Helper functions copied/adapted from the source context */\nstatic void bufDump(const char *prefix, const xmlChar *content, int len) {\n    int i;\n    fprintf(stderr, \"%s\", prefix);\n    for (i = 0; i < len; i++) {\n        fprintf(stderr, \" %02X\", content[i]);\n    }\n    fprintf(stderr, \"\\n\");\n}\n\nstatic int bufCompare(xmlBufferPtr got, const xmlChar *expectContent, int expectLen) {\n    const xmlChar *gotContent = xmlBufferContent(got);\n    int gotLen = xmlBufferLength(got);\n\n    if ((gotLen == expectLen) && (memcmp(gotContent, expectContent, gotLen) == 0))\n        return 0;\n\n    bufDump(\"got:     \", gotContent, gotLen);\n    bufDump(\"expected:\", expectContent, expectLen);\n\n    return -1;\n}\n\n/* Vulnerable function: mirrors testchar.c::testEncHandler */\nstatic int testEncHandler(xmlCharEncodingHandlerPtr handler, const xmlChar *dec,\n                          int decSize, const xmlChar *enc, int encSize) {\n    xmlBufferPtr encBuf = xmlBufferCreate();\n    xmlBufferPtr decBuf = xmlBufferCreate();\n    int ret = 0;\n\n    /* Vulnerability: encBuf is not checked for NULL before use */\n    xmlBufferAdd(encBuf, enc, encSize); /* NULL dereference occurs inside xmlBufferAdd */\n    xmlCharEncInFunc(handler, decBuf, encBuf);\n    if (bufCompare(decBuf, dec, decSize) != 0) {\n        fprintf(stderr, \"Decoding %s failed\\n\", handler->name);\n        ret = -1;\n    }\n\n#ifdef LIBXML_OUTPUT_ENABLED\n    xmlBufferEmpty(decBuf);\n    xmlBufferAdd(decBuf, dec, decSize);\n    xmlCharEncOutFunc(handler, encBuf, decBuf);\n    if (bufCompare(encBuf, enc, encSize) != 0) {\n        fprintf(stderr, \"Encoding %s failed\\n\", handler->name);\n        ret = -1;\n    }\n#endif\n\n    xmlBufferFree(decBuf);\n    xmlBufferFree(encBuf);\n    return ret;\n}\n\nint main(void) {\n    struct _xmlCharEncodingHandler handler = { \"dummy-enc\" };\n\n    /* Any small buffers suffice; failure is forced via xmlBufferCreate() */\n    static const xmlChar dec[] = { 'A' };\n    static const xmlChar enc[] = { 'B' };\n\n    /* This call will trigger the NULL-pointer dereference inside xmlBufferAdd */\n    return testEncHandler(&handler, dec, (int)sizeof(dec), enc, (int)sizeof(enc));\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8598079681396484,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4068773==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000008 (pc 0x576b5cf13f8f bp 0x7ffde5205b50 sp 0x7ffde5205b00 T0)\n==4068773==The signal is caused by a READ memory access.\n==4068773==Hint: address points to the zero page.\n    #0 0x576b5cf13f8f in xmlBufferAdd /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:30:26\n    #1 0x576b5cf13e43 in testEncHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:96:5\n    #2 0x576b5cf13d97 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:126:12\n    #3 0x7c033c82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7c033c82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x576b5ce54304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer+0x21304) (BuildId: 19341cfdf70c20e4259f82feb8839fc9d9f103dc)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:30:26 in xmlBufferAdd\n==4068773==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlBufferAdd",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:30",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "xmlBufferAdd",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:30",
+          "26"
+        ],
+        [
+          "1",
+          "testEncHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:96",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_911_null-pointer-dereference/reproducer.c:126",
+          "12"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

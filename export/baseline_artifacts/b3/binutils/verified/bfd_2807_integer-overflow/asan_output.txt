@@ -1,0 +1,53 @@
+=================================================================
+==4079942==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x62d000008fa8 at pc 0x5bb05197909e bp 0x7ffce804d100 sp 0x7ffce804c8d0
+WRITE of size 560000 at 0x62d000008fa8 thread T0
+    #0 0x5bb05197909d in __asan_memcpy (/app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer+0xa409d) (BuildId: a9bfcf1042f52b44b6dbec1469aa6b2bd8e017bb)
+    #1 0x5bb0519b6077 in bfd_record_phdr /app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer.c:99:5
+    #2 0x5bb0519b64d4 in main /app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer.c:133:10
+    #3 0x7fd97b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7fd97b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5bb0518f6304 in _start (/app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer+0x21304) (BuildId: a9bfcf1042f52b44b6dbec1469aa6b2bd8e017bb)
+
+0x62d000008fa8 is located 0 bytes to the right of 35752-byte region [0x62d000000400,0x62d000008fa8)
+allocated by thread T0 here:
+    #0 0x5bb051979d12 in __interceptor_malloc (/app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer+0xa4d12) (BuildId: a9bfcf1042f52b44b6dbec1469aa6b2bd8e017bb)
+    #1 0x5bb0519b6210 in bfd_zalloc /app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer.c:58:13
+    #2 0x5bb0519b5d60 in bfd_record_phdr /app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer.c:86:34
+    #3 0x5bb0519b64d4 in main /app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer.c:133:10
+    #4 0x7fd97b42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x7fd97b42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5bb0518f6304 in _start (/app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer+0x21304) (BuildId: a9bfcf1042f52b44b6dbec1469aa6b2bd8e017bb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/export/baseline_artifacts/b3/binutils/verified/bfd_2807_integer-overflow/reproducer+0xa409d) (BuildId: a9bfcf1042f52b44b6dbec1469aa6b2bd8e017bb) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c5a7fff91a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c5a7fff91b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c5a7fff91c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c5a7fff91d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c5a7fff91e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c5a7fff91f0: 00 00 00 00 00[fa]fa fa fa fa fa fa fa fa fa fa
+  0x0c5a7fff9200: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c5a7fff9210: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c5a7fff9220: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c5a7fff9230: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c5a7fff9240: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4079942==ABORTING

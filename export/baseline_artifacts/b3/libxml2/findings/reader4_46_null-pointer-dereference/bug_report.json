@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "example/reader4.c",
+    "line": 46,
+    "function": "processDoc",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "docPtr->URL is read into URL and explicitly checked for NULL at lines 40-43, but the function continues and passes URL to fprintf with \"%s\" here when ret != 0. If URL is NULL, this results in a NULL pointer dereference in fprintf.",
+    "abs_path": "/tmp/libxml2_upstream/example/reader4.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for libxml2 types/APIs used by example/reader4.c */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlDoc {\n    const xmlChar *URL;  /* Intentionally left NULL to trigger the bug */\n} xmlDoc, *xmlDocPtr;\n\ntypedef struct _xmlTextReader {\n    xmlDocPtr doc;\n    int state; /* 0 -> first read returns 1, then returns -1 (parse error) */\n} xmlTextReader, *xmlTextReaderPtr;\n\n/* Stub implementations mimicking the public reader API behavior */\nxmlTextReaderPtr xmlReaderForMemory(const char *buffer, int size,\n                                    const char *URL, const char *encoding,\n                                    int options) {\n    (void)buffer; (void)size; (void)URL; (void)encoding; (void)options;\n    xmlTextReaderPtr r = (xmlTextReaderPtr)calloc(1, sizeof(xmlTextReader));\n    if (!r) return NULL;\n    r->doc = (xmlDocPtr)calloc(1, sizeof(xmlDoc));\n    if (!r->doc) {\n        free(r);\n        return NULL;\n    }\n    /* Critical to reproducer: ensure doc->URL is NULL */\n    r->doc->URL = NULL;\n    r->state = 0;\n    return r;\n}\n\nint xmlTextReaderRead(xmlTextReaderPtr readerPtr) {\n    if (!readerPtr) return -1;\n    /* Simulate reading some nodes successfully once, then a parse error */\n    if (readerPtr->state == 0) {\n        readerPtr->state = 1;\n        return 1; /* keep loop going once */\n    }\n    return -1; /* ret != 0 triggers the vulnerable fprintf with NULL URL */\n}\n\nxmlDocPtr xmlTextReaderCurrentDoc(xmlTextReaderPtr readerPtr) {\n    if (!readerPtr) return NULL;\n    return readerPtr->doc; /* Non-NULL doc with NULL URL */\n}\n\n/* Vulnerable function copied (logically) from example/reader4.c */\nstatic void processDoc(xmlTextReaderPtr readerPtr) {\n    int ret;\n    xmlDocPtr docPtr;\n    const xmlChar *URL;\n\n    ret = xmlTextReaderRead(readerPtr);\n    while (ret == 1) {\n        ret = xmlTextReaderRead(readerPtr);\n    }\n\n    docPtr = xmlTextReaderCurrentDoc(readerPtr);\n    if (NULL == docPtr) {\n        fprintf(stderr, \"failed to obtain document\\n\");\n        return;\n    }\n\n    URL = docPtr->URL;\n    if (NULL == URL) {\n        fprintf(stderr, \"Failed to obtain URL\\n\");\n    }\n\n    if (ret != 0) {\n        /* BUG: URL may be NULL here, leading to NULL dereference in fprintf */\n        fprintf(stderr, \"%s: Failed to parse\\n\", URL);\n        return;\n    }\n\n    printf(\"%s: Processed ok\\n\", (const char *)URL);\n}\n\nint main(void) {\n    /* Create a reader whose document has a NULL URL and will report a parse error */\n    const char *bad_xml = \"<root><unclosed></root>\"; /* Just a placeholder; not actually parsed by stubs */\n    xmlTextReaderPtr readerPtr = xmlReaderForMemory(bad_xml, (int)sizeof(\"<root><unclosed></root>\") - 1,\n                                                   NULL, NULL, 0);\n    if (NULL == readerPtr) {\n        fprintf(stderr, \"failed to create reader\\n\");\n        return 1;\n    }\n\n    processDoc(readerPtr);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": 0,
+      "elapsed": 0.0032062530517578125,
+      "output": "Failed to obtain URL\n(null): Failed to parse\n"
+    }
+  }
+}

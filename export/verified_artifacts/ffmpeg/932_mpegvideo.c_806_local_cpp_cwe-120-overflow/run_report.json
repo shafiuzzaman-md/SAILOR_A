@@ -1,0 +1,93 @@
+{
+  "search_status": "FOUND_LIKELY_TP",
+  "verdict": "LIKELY_TP",
+  "crash_relevance": "no_asan",
+  "secondary_bugs": 0,
+  "failure_reason": "",
+  "metrics": {
+    "tokens_total": 142093,
+    "tokens_prompt": 123405,
+    "tokens_completion": 18688,
+    "turns": 13,
+    "klee_runs": 1
+  },
+  "bug": {
+    "type": "ptr",
+    "file": "mpegvideo.c",
+    "line": 806,
+    "function": "unknown",
+    "asan_confirmed": false,
+    "cwe": "unknown"
+  },
+  "spec": "/app/specs/ffmpeg_f46e5144_vul/932_mpegvideo.c_806_local_cpp_cwe-120-overflow.json",
+  "vul_file": "mpegvideo.c",
+  "vul_line": "806",
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 0
+    },
+    "vulnerability": {
+      "original_file": "mpegvideo.c",
+      "original_line": 806,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "801:     s->dc_val[0][xy           ] =\n802:     s->dc_val[0][xy + 1       ] =\n803:     s->dc_val[0][xy     + wrap] =\n804:     s->dc_val[0][xy + 1 + wrap] = 1024;\n805:     /* ac pred */\n806:     memset(s->ac_val[0][xy       ], 0, 32 * sizeof(int16_t));\n807:     memset(s->ac_val[0][xy + wrap], 0, 32 * sizeof(int16_t));\n808:     /* chroma */\n809:     wrap = s->mb_stride;\n810:     xy = s->mb_x + s->mb_y * wrap;\n811:     s->dc_val[1][xy] ="
+    },
+    "klee_crash": {
+      "harness_file": "mpegvideo.c",
+      "harness_line": 21,
+      "original_file": "mpegvideo.c",
+      "original_line": 806,
+      "original_code": "memset(s->ac_val[0][xy       ], 0, 32 * sizeof(int16_t));",
+      "original_context": "    803:     s->dc_val[0][xy     + wrap] =\n    804:     s->dc_val[0][xy + 1 + wrap] = 1024;\n    805:     /* ac pred */\n>>> 806:     memset(s->ac_val[0][xy       ], 0, 32 * sizeof(int16_t));\n    807:     memset(s->ac_val[0][xy + wrap], 0, 32 * sizeof(int16_t));\n    808:     /* chroma */\n    809:     wrap = s->mb_stride;",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memset.c\nLine: 15\nassembly.ll line: 147\nState: 1\nStack: \n\t#000000147 in memset(139707302555648, 0, 64) at runtime/Freestanding/memset.c:15\n\t#100000106 in ff_clean_intra_table_entries(139776022032384) at mpegvideo.c:21\n\t#200000120 in harness_entry(139776022032384) at mpegvideo.c:30\n\t#300000060 in main() at driver.c:30\nInfo: \n\taddress: 139707302555680\n\tnext: object at 139271363375104 of size 4\n\t\tMO49[4] allocated at ff_clean_intr"
+    },
+    "concrete_inputs": [
+      {
+        "name": "ac0_buf",
+        "size": 32,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/932_mpegvideo.c_806_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "mpegvideo.c",
+        "harness_line": 21,
+        "original_file": "mpegvideo.c",
+        "original_line": 806,
+        "error_type": "ptr",
+        "crash_function": "memset",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/932_mpegvideo.c_806_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": []
+  }
+}

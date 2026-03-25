@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_compress.c",
+    "line": 211,
+    "function": "TIFFRegisterCODEC",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "The function calls strlen(name) without checking if name is NULL. If a caller passes name == NULL, this results in a NULL pointer dereference and an immediate crash.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_compress.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <tiffio.h>\n\n/*\n * Minimal TIFFInitMethod stub. It won't be reached because the crash\n * happens before any use of this function, at strlen(name).\n */\nstatic int DummyInit(TIFF *tif, int scheme)\n{\n    (void)tif;\n    (void)scheme;\n    return 1;\n}\n\nint main(void)\n{\n    /* Intentionally pass a NULL name to trigger the vulnerability */\n    const char *name = NULL;\n\n    /*\n     * This call will dereference the NULL pointer via strlen(name)\n     * inside TIFFRegisterCODEC (tif_compress.c:211).\n     */\n    const TIFFCodec *codec = TIFFRegisterCODEC(65000 /* arbitrary scheme */, name, DummyInit);\n\n    /* If the vulnerability is fixed, codec would be NULL or non-NULL depending on behavior. */\n    (void)codec;\n\n    /* If we got here without crashing, print a message. */\n    printf(\"TIFFRegisterCODEC returned without crashing (vulnerability likely fixed)\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_compress_211_null-pointer-dereference/reproducer.c:2:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

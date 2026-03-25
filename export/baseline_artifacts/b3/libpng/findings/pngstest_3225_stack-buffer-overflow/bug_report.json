@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngstest.c",
+    "line": 3225,
+    "function": "write_one_file",
+    "bug_type": "stack-buffer-overflow",
+    "cwe": "CWE-121",
+    "confidence": "high",
+    "explanation": "A fixed-size stack buffer 'name[32]' is written using sprintf without bounds: sprintf(name, \"%s%u.png\", tmpf, ++counter). If the prefix 'tmpf' plus the decimal digits of 'counter' and the suffix '.png' exceed 31 characters, this overflows 'name', corrupting stack memory.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngstest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* This reproducer extracts the vulnerable pattern from\n * contrib/libtests/pngstest.c: write_one_file at line 3225.\n * It demonstrates the stack-buffer-overflow caused by:\n *   sprintf(name, \"%s%u.png\", tmpf, ++counter);\n * where 'name' is a fixed-size 32-byte stack buffer and 'tmpf' is a long prefix.\n */\n\n#define USE_FILE 0x1\n\ntypedef struct TestImage {\n    unsigned int opts;\n} TestImage;\n\n__attribute__((noinline))\nstatic void write_one_file(TestImage *image, const char *tmpf)\n{\n    if (image->opts & USE_FILE)\n    {\n        static unsigned int counter = 0;\n        char name[32]; /* Vulnerable fixed-size buffer */\n\n        /* This is the vulnerable call from pngstest.c (line 3225). */\n        /* Passing a long tmpf will overflow 'name'. */\n        sprintf(name, \"%s%u.png\", tmpf, ++counter);\n\n        /* This line may or may not be reached depending on ASan catching the overflow. */\n        (void)fprintf(stderr, \"Generated name: %s\\n\", name);\n    }\n}\n\nint main(void)\n{\n    /* Set opts so the USE_FILE path is taken. */\n    TestImage img;\n    img.opts = USE_FILE;\n\n    /* Craft a long prefix to overflow the 32-byte 'name' buffer.\n     * Length calculation:\n     *   prefix_len + digits(counter) + strlen(\".png\") must exceed 31.\n     * Use a much longer prefix to ensure overflow reliably.\n     */\n    const size_t prefix_len = 80; /* comfortably larger than 31 */\n    char *long_prefix = (char *)malloc(prefix_len + 1);\n    if (!long_prefix) return 1;\n    memset(long_prefix, 'A', prefix_len);\n    long_prefix[prefix_len] = '\\0';\n\n    write_one_file(&img, long_prefix);\n\n    free(long_prefix);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09266185760498047,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testdict.c",
+    "line": 506,
+    "function": "pool_new",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlMalloc at line 505 can return NULL for ret->strings, but memset is called on ret->strings at line 506 without checking for NULL, leading to a NULL pointer dereference on allocation failure.",
+    "abs_path": "/tmp/libxml2_upstream/testdict.c"
+  },
+  "reproducer_code": "// Standalone C reproducer for null-pointer-dereference in pool_new memset\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n// Minimal typedef to match libxml2 style\ntypedef unsigned char xmlChar;\n\n// Global counter to control simulated allocation failures\nstatic int g_xmlmalloc_calls = 0;\n\n// Stub implementations mimicking libxml2 allocation API\nvoid *xmlMalloc(size_t size) {\n    g_xmlmalloc_calls++;\n    // First allocation (for StringPool struct) succeeds\n    if (g_xmlmalloc_calls == 1) {\n        return malloc(size);\n    }\n    // Second allocation (for ret->strings) fails to trigger the bug\n    if (g_xmlmalloc_calls == 2) {\n        return NULL;\n    }\n    // Any further allocations succeed (not used here)\n    return malloc(size);\n}\n\nvoid xmlFree(void *ptr) {\n    free(ptr);\n}\n\n// Mirror of the vulnerable code context\ntypedef struct {\n    xmlChar **strings;\n    size_t num_entries;\n    size_t num_keys;\n    size_t num_strings;\n    size_t index;\n    xmlChar id;\n} StringPool;\n\n// Vulnerable function copied from the context\nstatic StringPool *\npool_new(size_t num_entries, size_t num_keys, xmlChar id) {\n    StringPool *ret;\n    size_t num_strings;\n\n    ret = (StringPool *)xmlMalloc(sizeof(*ret));\n    // Intentionally no NULL check to mirror original behavior\n    ret->num_entries = num_entries;\n    ret->num_keys = num_keys;\n    num_strings = num_entries * num_keys;\n    ret->strings = (xmlChar **)xmlMalloc(num_strings * sizeof(ret->strings[0]));\n    // Vulnerable memset: ret->strings may be NULL, size > 0\n    memset(ret->strings, 0, num_strings * sizeof(ret->strings[0]));\n    ret->num_strings = num_strings;\n    ret->index = 0;\n    ret->id = id;\n\n    return ret;\n}\n\nint main(void) {\n    // Choose values so num_strings > 0, ensuring memset size > 0\n    size_t num_entries = 10;\n    size_t num_keys = 10;\n    xmlChar id = (xmlChar)'x';\n\n    // This call will crash inside pool_new at the memset when ret->strings == NULL\n    (void)pool_new(num_entries, num_keys, id);\n\n    // Should never reach here\n    printf(\"Unexpectedly succeeded.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8645048141479492,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4073340==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7e1bd81894c9 bp 0x7ffd284c4f30 sp 0x7ffd284c46f8 T0)\n==4073340==The signal is caused by a WRITE memory access.\n==4073340==Hint: address points to the zero page.\n    #0 0x7e1bd81894c9 in __memset_avx2_unaligned_erms string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:244\n    #1 0x645354c69337 in __asan_memset (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer+0xa4337) (BuildId: 4ca187923ab408b21b491b009137c9f23b3c850e)\n    #2 0x645354ca5e9a in pool_new /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer.c:55:5\n    #3 0x645354ca5d63 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer.c:70:11\n    #4 0x7e1bd802a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7e1bd802a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x645354be6304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer+0x21304) (BuildId: 4ca187923ab408b21b491b009137c9f23b3c850e)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:244 in __memset_avx2_unaligned_erms\n==4073340==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memset_avx2_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+      "crash_line": 244,
+      "frames": [
+        [
+          "0",
+          "__memset_avx2_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+          "244"
+        ],
+        [
+          "2",
+          "pool_new",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer.c:55",
+          "5"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testdict_506_null-pointer-dereference/reproducer.c:70",
+          "11"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

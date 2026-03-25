@@ -1,0 +1,16 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+fuzz_addr2line	NO_BUG	FP			0			61	0		true
+fuzz_nm_fuzz_nm.h_1641_external	FP_EXTERNAL_CALL	FP	external	fuzz_nm.h	1641			525	0		true
+fuzz_disas_ext	NO_BUG	FP			0			330	0		true
+fuzz_objdump	BUILD_ERROR	FP			0			0	0		true
+fuzz_disassemble	NO_BUG	FP			0			42	0		true
+fuzz_strings	NO_BUG	FP			0			348	0		true
+fuzz_dwarf	BUILD_ERROR	FP			0			0	0		true
+fuzz_ranlib_simulation	NO_BUG	FP			0			76	0		true
+fuzz_dlltool	BUILD_ERROR	FP			0			0	0		true
+fuzz_windres	NO_BUG	FP			0			76	0		true
+fuzz_as	BUILD_ERROR	FP			0			0	0		true
+fuzz_bfd_ext	NO_BUG	FP			0			88	0		true
+fuzz_bfd	NO_BUG	FP			0			131	0		true
+fuzz_readelf	NO_BUG	FP			0			50	0		true
+fuzz_objcopy	NO_BUG	FP			0			59	0		true

@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "testchar.c",
+    "line": 709,
+    "function": "testUserEncoding",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "xmlMalloc is not checked for failure; if it returns NULL, the immediate writes to buf (buf[k++] = ...) dereference a NULL pointer on OOM.",
+    "abs_path": "/tmp/libxml2_upstream/testchar.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stddef.h>\n\n/* Minimal stubs to mirror libxml2 types/symbols used in testUserEncoding */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlNode {\n    struct _xmlNode *children;\n    xmlChar *content;\n} xmlNode, *xmlNodePtr;\n\ntypedef struct _xmlDoc {\n    xmlNodePtr children;\n} xmlDoc, *xmlDocPtr;\n\n/* Stubbed libxml2 API (not actually used because we crash earlier) */\nxmlDocPtr xmlReadMemory(const char *buffer, int size, const char *URL,\n                        const char *encoding, int options) {\n    (void)buffer; (void)size; (void)URL; (void)encoding; (void)options;\n    return NULL;\n}\n\nvoid xmlFreeDoc(xmlDocPtr doc) {\n    (void)doc;\n}\n\nvoid xmlFree(void *ptr) {\n    (void)ptr;\n}\n\n/* Critical piece: simulate OOM by making xmlMalloc always return NULL. */\nvoid *xmlMalloc(size_t size) {\n    (void)size;\n    return NULL; /* Force allocation failure */\n}\n\n/* Reimplementation of the vulnerable function from testchar.c */\nstatic int testUserEncoding(void) {\n    /* Create a document encoded as UTF-16LE with an ISO-8859-1 encoding\n     * declaration, then parse it with xmlReadMemory and the encoding\n     * argument set to UTF-16LE.\n     */\n    xmlDocPtr doc = NULL;\n    const char *start = \"<?xml version='1.0' encoding='ISO-8859-1'?><d>\";\n    const char *end = \"</d>\";\n    char *buf = NULL;\n    xmlChar *text;\n    int startSize = (int)strlen(start);\n    int textSize = 100000; /* Make sure to exceed internal buffer sizes. */\n    int endSize = (int)strlen(end);\n    int totalSize = startSize + textSize + endSize;\n    int k = 0;\n    int i;\n    int ret = 1;\n\n    /* Vulnerability: xmlMalloc return value is not checked for NULL */\n    buf = (char *)xmlMalloc(2 * (size_t)totalSize);\n\n    /* Immediate write to buf causes NULL pointer dereference on OOM */\n    for (i = 0; start[i] != 0; i++) { /* This loop starts at line 709 in testchar.c */\n        buf[k++] = start[i];\n        buf[k++] = 0;\n    }\n\n    for (i = 0; i < textSize; i++) {\n        buf[k++] = 'x';\n        buf[k++] = 0;\n    }\n    for (i = 0; end[i] != 0; i++) {\n        buf[k++] = end[i];\n        buf[k++] = 0;\n    }\n\n    /* The rest is unreachable due to the crash above, but kept for fidelity */\n    doc = xmlReadMemory(buf, 2 * totalSize, NULL, \"UTF-16LE\", 0);\n    if (doc == NULL) {\n        fprintf(stderr, \"failed to parse document\\n\");\n        goto error;\n    }\n\n    text = doc->children->children->content;\n    for (i = 0; i < textSize; i++) {\n        if (text[i] != 'x') {\n            fprintf(stderr, \"text node has wrong content at offset %d\\n\", k);\n            goto error;\n        }\n    }\n\n    ret = 0;\n\nerror:\n    xmlFreeDoc(doc);\n    xmlFree(buf);\n\n    return ret;\n}\n\nint main(void) {\n    /* Trigger the vulnerable code path */\n    return testUserEncoding();\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.5936422348022461,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4067805==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5794224ece7c bp 0x7ffdd4fe1ca0 sp 0x7ffdd4fe1b90 T0)\n==4067805==The signal is caused by a WRITE memory access.\n==4067805==Hint: address points to the zero page.\n    #0 0x5794224ece7c in testUserEncoding /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:63:18\n    #1 0x5794224ecd03 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:102:12\n    #2 0x784283c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x784283c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x57942242d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer+0x21304) (BuildId: dca62556250c308242c104c577c5cb90a8f11cee)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:63:18 in testUserEncoding\n==4067805==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "testUserEncoding",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:63",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "testUserEncoding",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:63",
+          "18"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/testchar_709_null-pointer-dereference/reproducer.c:102",
+          "12"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

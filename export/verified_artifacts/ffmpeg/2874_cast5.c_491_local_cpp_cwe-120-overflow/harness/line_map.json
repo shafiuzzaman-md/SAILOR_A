@@ -1,0 +1,144 @@
+{
+  "cast5.c": {
+    "2": {
+      "orig_file": "cast5.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "7": {
+      "orig_file": "cast5.c",
+      "orig_line": 75,
+      "code": "typedef struct AVCAST5 {"
+    },
+    "8": {
+      "orig_file": "cast5.c",
+      "orig_line": 76,
+      "code": "uint32_t Km[17];"
+    },
+    "9": {
+      "orig_file": "cast5.c",
+      "orig_line": 77,
+      "code": "uint32_t Kr[17];"
+    },
+    "10": {
+      "orig_file": "cast5.c",
+      "orig_line": 78,
+      "code": "int rounds;"
+    },
+    "11": {
+      "orig_file": "cast5.c",
+      "orig_line": 79,
+      "code": "} AVCAST5;"
+    },
+    "18": {
+      "orig_file": "cast5.c",
+      "orig_line": 480,
+      "code": "void av_cast5_crypt2(AVCAST5* cs, uint8_t* dst, const uint8_t* src, int count, uint8_t *iv, int decrypt)"
+    },
+    "19": {
+      "orig_file": "cast5.c",
+      "orig_line": 481,
+      "code": "{"
+    },
+    "20": {
+      "orig_file": "cast5.c",
+      "orig_line": 482,
+      "code": "int i;"
+    },
+    "21": {
+      "orig_file": "cast5.c",
+      "orig_line": 483,
+      "code": "while (count--) {"
+    },
+    "22": {
+      "orig_file": "cast5.c",
+      "orig_line": 484,
+      "code": "if (decrypt) {"
+    },
+    "23": {
+      "orig_file": "cast5.c",
+      "orig_line": 485,
+      "code": "decipher(cs, dst, src, iv);"
+    },
+    "24": {
+      "orig_file": "cast5.c",
+      "orig_line": 486,
+      "code": "} else {"
+    },
+    "25": {
+      "orig_file": "cast5.c",
+      "orig_line": 487,
+      "code": "if (iv) {"
+    },
+    "26": {
+      "orig_file": "cast5.c",
+      "orig_line": 488,
+      "code": "for (i = 0; i < 8; i++)"
+    },
+    "27": {
+      "orig_file": "cast5.c",
+      "orig_line": 489,
+      "code": "dst[i] = src[i] ^ iv[i];"
+    },
+    "28": {
+      "orig_file": "cast5.c",
+      "orig_line": 490,
+      "code": "encipher(cs, dst, dst);"
+    },
+    "29": {
+      "orig_file": "cast5.c",
+      "orig_line": 491,
+      "code": "memcpy(iv, dst, 8);"
+    },
+    "31": {
+      "orig_file": "cast5.c",
+      "orig_line": 492,
+      "code": "} else {"
+    },
+    "32": {
+      "orig_file": "cast5.c",
+      "orig_line": 493,
+      "code": "encipher(cs, dst, src);"
+    },
+    "33": {
+      "orig_file": "cast5.c",
+      "orig_line": 494,
+      "code": "}"
+    },
+    "34": {
+      "orig_file": "cast5.c",
+      "orig_line": 495,
+      "code": "}"
+    },
+    "35": {
+      "orig_file": "cast5.c",
+      "orig_line": 496,
+      "code": "src = src + 8;"
+    },
+    "36": {
+      "orig_file": "cast5.c",
+      "orig_line": 497,
+      "code": "dst = dst + 8;"
+    },
+    "37": {
+      "orig_file": "cast5.c",
+      "orig_line": 498,
+      "code": "}"
+    },
+    "38": {
+      "orig_file": "cast5.c",
+      "orig_line": 499,
+      "code": "}"
+    },
+    "43": {
+      "orig_file": "cast5.c",
+      "orig_line": 477,
+      "code": "return 0;"
+    },
+    "44": {
+      "orig_file": "cast5.c",
+      "orig_line": 478,
+      "code": "}"
+    }
+  }
+}

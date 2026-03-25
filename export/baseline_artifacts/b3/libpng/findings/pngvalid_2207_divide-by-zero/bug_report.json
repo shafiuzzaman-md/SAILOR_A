@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/libtests/pngvalid.c",
+    "line": 2207,
+    "function": "chromaticity_y",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "Returns c.Y / (c.X + c.Y + c.Z) without checking if the denominator is zero; if X=Y=Z=0, this divides by zero.",
+    "abs_path": "/tmp/libpng_upstream/contrib/libtests/pngvalid.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE\n#include <stdio.h>\n#include <fenv.h>\n#include <math.h>\n\n/* Replicated minimal types and functions from the vulnerable code */\ntypedef struct CIE_color {\n    double X, Y, Z;\n} CIE_color;\n\ntypedef struct color_encoding {\n    double gamma; /* unused here */\n    CIE_color red, green, blue;\n} color_encoding;\n\nstatic double chromaticity_y(CIE_color c)\n{\n    /* Vulnerable: no check for (X + Y + Z) == 0 */\n    return c.Y / (c.X + c.Y + c.Z);\n}\n\nstatic CIE_color white_point(const color_encoding *encoding)\n{\n    CIE_color white;\n    white.X = encoding->red.X + encoding->green.X + encoding->blue.X;\n    white.Y = encoding->red.Y + encoding->green.Y + encoding->blue.Y;\n    white.Z = encoding->red.Z + encoding->green.Z + encoding->blue.Z;\n    return white;\n}\n\nint main(void)\n{\n    /* Enable floating-point exceptions so the 0/0 triggers SIGFPE (FE_INVALID) */\n#if defined(__gnu_linux__) || defined(__GLIBC__)\n    /* feenableexcept is a GNU extension; declare prototype if missing */\n    extern int feenableexcept(int);\n    feenableexcept(FE_INVALID | FE_DIVBYZERO);\n#endif\n\n    /* Use volatile to prevent compile-time constant folding of zeros */\n    volatile double v0 = 0.0;\n\n    color_encoding enc;\n    enc.gamma = 1.0;\n    enc.red.X = v0;   enc.red.Y = v0;   enc.red.Z = v0;\n    enc.green.X = v0; enc.green.Y = v0; enc.green.Z = v0;\n    enc.blue.X = v0;  enc.blue.Y = v0;  enc.blue.Z = v0;\n\n    /* This produces a white point with X=Y=Z=0 */\n    CIE_color white = white_point(&enc);\n\n    /* This call divides 0.0 by (0.0+0.0+0.0) => 0.0/0.0 -> FE_INVALID */\n    double y = chromaticity_y(white);\n\n    /* If exceptions are masked on this platform, print the NaN result */\n    printf(\"chromaticity_y = %f\\n\", y);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09031915664672852,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,2 @@
+Before normalize: whiteY=0 (expect 0), condition (whiteY != 1)=true
+Caught SIGFPE (floating-point divide-by-zero) while normalizing color encoding

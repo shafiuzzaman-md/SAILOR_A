@@ -1,0 +1,69 @@
+{
+  "camellia.c": {
+    "2": {
+      "orig_file": "camellia.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "6": {
+      "orig_file": "camellia.c",
+      "orig_line": 46,
+      "code": "typedef struct AVCAMELLIA {"
+    },
+    "7": {
+      "orig_file": "camellia.c",
+      "orig_line": 47,
+      "code": "uint64_t Kw[4];"
+    },
+    "8": {
+      "orig_file": "camellia.c",
+      "orig_line": 48,
+      "code": "uint64_t Ke[6];"
+    },
+    "9": {
+      "orig_file": "camellia.c",
+      "orig_line": 49,
+      "code": "uint64_t K[24];"
+    },
+    "10": {
+      "orig_file": "camellia.c",
+      "orig_line": 50,
+      "code": "int key_bits;"
+    },
+    "11": {
+      "orig_file": "camellia.c",
+      "orig_line": 51,
+      "code": "} AVCAMELLIA;"
+    },
+    "14": {
+      "orig_file": "camellia.c",
+      "orig_line": 397,
+      "code": "void av_camellia_crypt(AVCAMELLIA *cs, uint8_t *dst, const uint8_t *src, int count, uint8_t *iv, int decrypt)"
+    },
+    "15": {
+      "orig_file": "camellia.c",
+      "orig_line": 398,
+      "code": "{"
+    },
+    "18": {
+      "orig_file": "camellia.c",
+      "orig_line": 408,
+      "code": "memcpy(iv, dst, 16);"
+    },
+    "21": {
+      "orig_file": "camellia.c",
+      "orig_line": 411,
+      "code": "}"
+    },
+    "26": {
+      "orig_file": "camellia.c",
+      "orig_line": 394,
+      "code": "return 0;"
+    },
+    "27": {
+      "orig_file": "camellia.c",
+      "orig_line": 395,
+      "code": "}"
+    }
+  }
+}

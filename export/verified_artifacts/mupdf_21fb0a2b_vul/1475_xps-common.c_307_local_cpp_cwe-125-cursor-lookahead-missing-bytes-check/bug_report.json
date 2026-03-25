@@ -1,0 +1,96 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "xps-common.c",
+        "original_line": 307,
+        "function": "xps_parse_color",
+        "entry_point": "xps_begin_opacity",
+        "spine": [
+            "xps_begin_opacity",
+            "xps_parse_color"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "xps-common.c",
+        "harness_line": 48,
+        "original_file": "xps-common.c",
+        "original_line": 268,
+        "original_code": "samples[2] = 0;",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: xps-common.c\nLine: 48\nassembly.ll line: 175\nState: 1\nStack: \n\t#000000175 in xps_parse_color(138953993428992, 138936813559808, 138683410489344, 138681263005696, 138664620007424, 138979763232768) at xps-common.c:48\n\t#100000140 in xps_begin_opacity(138953993428992, 138936813559808, symbolic, symbolic, 138683410489344, 138971173298176, 138681263005696, 138928223625216) at xps-common.c:28\n\t#200000088 in main() at driver.c:51\nInfo: \n\taddress: 13897976323"
+    },
+    "concrete_inputs": [
+        {
+            "name": "samples_small",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "base_uri",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "opacity_att",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "ctm",
+            "size": 24,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "area",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "xps_begin_opacity",
+        "crash_file": "source/xps/xps-common.c",
+        "crash_line": 101,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==7618==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000278 at pc 0x55fb0eea12fd bp 0x7ffef75dfa10 sp 0x7ffef75dfa00\nREAD of size 8 at 0x502000000278 thread T0\n    #0 0x55fb0eea12fc in xps_begin_opacity source/xps/xps-common.c:101\n    #1 0x55fb0ee9ece2 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1475_xps-common.c_307_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:51\n    #2 0x7f36b203cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f36b203ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55fb0ee9e784 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1475_xps-common.c_307_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x14d784)\n\n0x502000000278 is located 480 bytes to the right of 8-byte region [0x502000000090,0x502000000098)\nallocated by thread T0 here:\n    #0 0x7f36b23f3887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55fb0ee9e96b in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1475_xps-common.c_307_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:31\n    #2 0x7f36b203cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/xps/xps-common.c:101 in xps_begin_opacity\nShadow bytes around the buggy address:\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 04 fa fa fa 04 fa fa fa 04 fa fa fa 04 fa\n  0x0a047fff8010: fa fa 00 fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa[fa]\n  0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8060: fa fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1475_xps-common.c_307_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xps-common.c",
+            "harness_line": 48,
+            "original_file": "xps-common.c",
+            "original_line": 268,
+            "error_type": "ptr",
+            "crash_function": "xps_parse_color",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1475_xps-common.c_307_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "xps_begin_opacity",
+            "crash_file": "source/xps/xps-common.c",
+            "crash_line": 101
+        }
+    ]
+}

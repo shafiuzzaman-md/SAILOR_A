@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 2794,
+    "function": "libxml_saveNodeTo",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If a non-document node with node->doc == NULL (e.g., created via xmlNewNode and not attached to a document) is passed, doc is set to node->doc and then dereferenced at doc->type without a NULL check, causing a NULL pointer dereference. This is reachable by calling libxml_xmlNewNode followed by libxml_saveNodeTo on the returned node.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n\n/* Minimal type re-declarations to mimic libxml2/python glue */\ntypedef unsigned char xmlChar;\n\ntypedef struct _xmlDoc xmlDoc;\ntypedef struct _xmlNode xmlNode;\n\ntypedef xmlDoc* xmlDocPtr;\ntypedef xmlNode* xmlNodePtr;\n\ntypedef struct _xmlOutputBuffer xmlOutputBuffer;\ntypedef xmlOutputBuffer* xmlOutputBufferPtr;\n\ntypedef void* xmlCharEncodingHandlerPtr;\n\nstruct _xmlDoc {\n    int type; /* only field we need */\n};\n\nstruct _xmlNode {\n    void* _private;\n    int type;      /* node type */\n    xmlDocPtr doc; /* owning document, can be NULL */\n};\n\nstruct _xmlOutputBuffer { int dummy; };\n\n/* Node type constants (values chosen to be distinct) */\n#define XML_ELEMENT_NODE          1\n#define XML_DOCUMENT_NODE         9\n#define XML_HTML_DOCUMENT_NODE   13\n\n/* Python C-API stubs */\ntypedef struct { int dummy; } PyObject;\n\n/* Structure used to pass fake Python tuple args into PyArg_ParseTuple */\ntypedef struct {\n    PyObject* pyobj_node;\n    PyObject* py_file;\n    const char* encoding;\n    int format;\n} SaveArgs;\n\n/* Stub: parse our fake args and populate out-parameters */\nint PyArg_ParseTuple(PyObject* args, const char* fmt, ...) {\n    (void)fmt; /* ignore the format string */\n    SaveArgs* a = (SaveArgs*)args;\n    va_list ap;\n    va_start(ap, fmt);\n    PyObject** out_node = va_arg(ap, PyObject**);\n    PyObject** out_file = va_arg(ap, PyObject**);\n    const char** out_enc = va_arg(ap, const char**);\n    int* out_fmt = va_arg(ap, int*);\n    va_end(ap);\n    if (!a || !out_node || !out_file || !out_enc || !out_fmt)\n        return 0;\n    *out_node = a->pyobj_node;\n    *out_file = a->py_file;\n    *out_enc = a->encoding;\n    *out_fmt = a->format;\n    return 1;\n}\n\n/* Stub: convert long to PyObject* (we just return a heap number) */\nPyObject* PyLong_FromLong(long v) {\n    long* p = (long*)malloc(sizeof(long));\n    if (p) *p = v;\n    return (PyObject*)p;\n}\n\n/* Stub: get a FILE* from a PyObject* (we pass FILE* directly) */\nvoid* PyFile_Get(PyObject* py_file) {\n    return (void*)py_file;\n}\n\n/* Stub: release file (no-op) */\nvoid PyFile_Release(void* f) {\n    (void)f;\n}\n\n/* Stub: unwrap Python xml node object to xmlNodePtr */\nxmlNodePtr PyxmlNode_Get(PyObject* obj) {\n    return (xmlNodePtr)obj;\n}\n\n/* libxml2 I/O and encoding stubs (unreached before the crash) */\nxmlCharEncodingHandlerPtr xmlFindCharEncodingHandler(const char* enc) {\n    (void)enc; return (xmlCharEncodingHandlerPtr)0x1; /* non-NULL */\n}\n\nxmlOutputBufferPtr xmlOutputBufferCreateFile(void* file, xmlCharEncodingHandlerPtr handler) {\n    (void)file; (void)handler; return (xmlOutputBufferPtr)malloc(sizeof(xmlOutputBuffer));\n}\n\nint xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr doc, const char* encoding, int format) {\n    (void)buf; (void)doc; (void)encoding; (void)format; return 0;\n}\n\nvoid htmlDocContentDumpFormatOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, const char* encoding, int format) {\n    (void)buf; (void)doc; (void)encoding; (void)format;\n}\n\nint xmlOutputBufferClose(xmlOutputBufferPtr buf) {\n    if (buf) free(buf);\n    return 0;\n}\n\nvoid htmlNodeDumpFormatOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr node, const char* encoding, int format) {\n    (void)buf; (void)doc; (void)node; (void)encoding; (void)format;\n}\n\nvoid xmlNodeDumpOutput(xmlOutputBufferPtr buf, xmlDocPtr doc, xmlNodePtr node, int level, int format, const char* encoding) {\n    (void)buf; (void)doc; (void)node; (void)level; (void)format; (void)encoding;\n}\n\n/* Vulnerable function stubbed from python/libxml.c */\nPyObject* libxml_saveNodeTo(PyObject* self, PyObject* args) {\n    (void)self;\n    PyObject* pyobj_node;\n    PyObject* py_file;\n    void* output;\n    xmlNodePtr node;\n    xmlDocPtr doc;\n    const char* encoding;\n    int format;\n    int len;\n    xmlOutputBufferPtr buf;\n    xmlCharEncodingHandlerPtr handler = NULL;\n\n    if (!PyArg_ParseTuple(args, \"OOzi:serializeNode\", &pyobj_node, &py_file, &encoding, &format))\n        return NULL;\n    node = (xmlNodePtr)PyxmlNode_Get(pyobj_node);\n    if (node == NULL) {\n        return PyLong_FromLong((long)-1);\n    }\n    output = PyFile_Get(py_file);\n    if (output == NULL) {\n        return PyLong_FromLong((long)-1);\n    }\n\n    if (node->type == XML_DOCUMENT_NODE) {\n        doc = (xmlDocPtr)node;\n    } else if (node->type == XML_HTML_DOCUMENT_NODE) {\n        doc = (xmlDocPtr)node;\n    } else {\n        doc = node->doc; /* doc can be NULL for unattached nodes */\n    }\n\n    /* The first HTML block is behind a feature macro in the real source.\n       We omit it here to mirror a typical build where the next check is reached. */\n\n    if (encoding != NULL) {\n        handler = xmlFindCharEncodingHandler(encoding);\n        if (handler == NULL) {\n            PyFile_Release(output);\n            return PyLong_FromLong((long)-1);\n        }\n    }\n\n    /* Unconditional dereference of doc->type without NULL check -> crash */\n    if (doc->type == XML_HTML_DOCUMENT_NODE) {\n        if (handler == NULL)\n            handler = xmlFindCharEncodingHandler(\"HTML\");\n        if (handler == NULL)\n            handler = xmlFindCharEncodingHandler(\"ascii\");\n    }\n\n    /* Rest of function (unreached in this reproducer) */\n    buf = xmlOutputBufferCreateFile(output, handler);\n    if (node->type == XML_DOCUMENT_NODE) {\n        len = xmlSaveFormatFileTo(buf, doc, encoding, format);\n    } else {\n        xmlNodeDumpOutput(buf, doc, node, 0, format, encoding);\n        len = xmlOutputBufferClose(buf);\n    }\n    PyFile_Release(output);\n    return PyLong_FromLong((long)len);\n}\n\n/* Minimal creator that returns a non-document node with node->doc == NULL */\nPyObject* libxml_xmlNewNode(PyObject* self, PyObject* args) {\n    (void)self; (void)args;\n    xmlNodePtr node = (xmlNodePtr)malloc(sizeof(*node));\n    if (!node) return NULL;\n    node->type = XML_ELEMENT_NODE; /* non-document node */\n    node->doc = NULL;              /* unattached -> triggers bug */\n    node->_private = NULL;\n    return (PyObject*)node;        /* directly return as PyObject stub */\n}\n\nint main(void) {\n    /* Step 1: Create a new node not attached to any document (doc == NULL) */\n    PyObject* new_node = libxml_xmlNewNode(NULL, NULL);\n\n    /* Step 2: Arrange fake Python args to pass into libxml_saveNodeTo */\n    SaveArgs call_args;\n    call_args.pyobj_node = new_node;        /* will be unwrapped to xmlNodePtr */\n    call_args.py_file = (PyObject*)stdout;  /* any non-NULL file handle */\n    call_args.encoding = NULL;              /* keep encoding NULL to skip handler lookup */\n    call_args.format = 1;                   /* pretty print flag */\n\n    /* Step 3: Call the vulnerable function; this will dereference doc->type where doc == NULL */\n    (void)libxml_saveNodeTo(NULL, (PyObject*)&call_args);\n\n    /* Should not reach here; if it does, exit non-zero to indicate unexpected behavior */\n    fprintf(stderr, \"Unexpectedly survived null dereference.\\n\");\n    return 1;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8779988288879395,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4013887==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5d43b5ab2d84 bp 0x7fff111faa10 sp 0x7fff111fa7e0 T0)\n==4013887==The signal is caused by a READ memory access.\n==4013887==Hint: address points to the zero page.\n    #0 0x5d43b5ab2d84 in libxml_saveNodeTo /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:165:19\n    #1 0x5d43b5ab33b4 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:207:11\n    #2 0x71d25c62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x71d25c62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5d43b59f2304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer+0x21304) (BuildId: cb32e81634031162a2a6e052dd74205405bdf2cf)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:165:19 in libxml_saveNodeTo\n==4013887==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "libxml_saveNodeTo",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:165",
+      "crash_line": 19,
+      "frames": [
+        [
+          "0",
+          "libxml_saveNodeTo",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:165",
+          "19"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_2794_null-pointer-dereference/reproducer.c:207",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

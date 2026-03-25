@@ -1,0 +1,33 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 1466246121
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x55d867685ec0, 0x55d867685ec4), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x55d867685ec8,0x55d867685f08), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 4b max: 4b total: 4b rss: 29Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==94613==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000198 (pc 0x55d86761fd0c bp 0x7ffd4ae884c0 sp 0x7ffd4ae88330 T0)
+==94613==The signal is caused by a READ memory access.
+==94613==Hint: address points to the zero page.
+    #0 0x55d86761fd0c in jpeg_idct_5x5 /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/libjpeg/jidctint.c:740:26
+    #1 0x55d86761b449 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:26:5
+    #2 0x55d86754181a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4381a) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #3 0x55d867540ee5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ee5) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #4 0x55d867542ae8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ae8) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #5 0x55d867542f66 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f66) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #6 0x55d867530552 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32552) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #7 0x55d86755b9f6 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9f6) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+    #8 0x70929c42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x70929c42a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x55d867524984 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/4855_jidctint.c_822_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26984) (BuildId: 7db372d19bf4c4c48768158df9c1cfaaf56c2c2e)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/libjpeg/jidctint.c:740:26 in jpeg_idct_5x5
+==94613==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,
+\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-9069ca78e7450a285173431b3e52c5c25299e473
+Base64: AAAAAA==

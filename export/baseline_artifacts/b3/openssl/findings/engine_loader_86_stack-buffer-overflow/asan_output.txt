@@ -1,0 +1,50 @@
+=================================================================
+==4134804==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7fffa5e0d460 at pc 0x65070d7cbdb1 bp 0x7fffa5e0d330 sp 0x7fffa5e0caf0
+WRITE of size 300 at 0x7fffa5e0d460 thread T0
+    #0 0x65070d7cbdb0 in __interceptor_strncpy (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x8fdb0) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c)
+    #1 0x65070d81d137 in engine_open /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:87:9
+    #2 0x65070d81ce2f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:130:34
+    #3 0x76a57702a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x76a57702a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x65070d75d314 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x21314) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c)
+
+Address 0x7fffa5e0d460 is located in stack of thread T0 at offset 288 in frame
+    #0 0x65070d81ce6f in engine_open /app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer.c:65
+
+  This frame has 1 object(s):
+    [32, 288) 'engineid' (line 83) <== Memory access at offset 288 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow (/app/se_runs/b3/openssl_67b5686b_vul/findings/engine_loader_86_stack-buffer-overflow/reproducer+0x8fdb0) (BuildId: 95f1c0b5de3c8874a3094069789ae2d4966d874c) in __interceptor_strncpy
+Shadow bytes around the buggy address:
+  0x100074bb9a30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9a40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9a50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9a60: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00
+  0x100074bb9a70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x100074bb9a80: 00 00 00 00 00 00 00 00 00 00 00 00[f3]f3 f3 f3
+  0x100074bb9a90: f3 f3 f3 f3 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9aa0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9ab0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9ac0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x100074bb9ad0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4134804==ABORTING

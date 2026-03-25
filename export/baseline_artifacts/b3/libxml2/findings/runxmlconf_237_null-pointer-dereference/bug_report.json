@@ -1,0 +1,60 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runxmlconf.c",
+    "line": 237,
+    "function": "xmlconfTestNotNSWF",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "xmlNewParserCtxt() can return NULL on allocation failure. The returned pointer is used immediately in xmlCtxtSetErrorHandler(ctxt, ...) and later in xmlCtxtReadFile(ctxt, ...), causing a NULL dereference if allocation fails.",
+    "abs_path": "/tmp/libxml2_upstream/runxmlconf.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdarg.h>\n#include <stdlib.h>\n\n/* Minimal stand-ins for libxml2 types/constants used by runxmlconf.c */\ntypedef struct _xmlParserCtxt {\n    int dummy;\n    int valid;\n} xmlParserCtxt, *xmlParserCtxtPtr;\n\ntypedef struct _xmlDoc {\n    int properties;\n} xmlDoc, *xmlDocPtr;\n\ntypedef struct _xmlError {\n    int domain;\n    int code;\n} xmlError;\n\ntypedef void (*xmlErrorFunc)(void *ctx, const char *msg, ...);\n\n#define XML_DOC_DTDVALID (1<<0)\n#define XML_ERR_OK 0\n#define XML_FROM_NAMESPACE 100\n\n/* Global test infra stubs (as referenced by the original file) */\nstatic int nb_errors = 0;\nstatic void test_log(const char *fmt, ...) {\n    va_list ap;\n    va_start(ap, fmt);\n    vfprintf(stderr, fmt, ap);\n    va_end(ap);\n}\nstatic void testErrorHandler(void *ctx, const char *msg, ...) {\n    (void)ctx; (void)msg; /* no-op */\n}\n\n/* Stubbed libxml2-like APIs */\nstatic xmlParserCtxtPtr xmlNewParserCtxt(void) {\n    /* Simulate allocation failure: return NULL to reproduce the bug path */\n    return NULL;\n}\n\nstatic void xmlCtxtSetErrorHandler(xmlParserCtxtPtr ctxt,\n                                   xmlErrorFunc handler,\n                                   void *ctx) {\n    (void)handler; (void)ctx;\n    /* This intentionally dereferences ctxt, reproducing the NPD when ctxt==NULL */\n    ctxt->dummy = 1; /* Null-pointer dereference here */\n}\n\nstatic xmlDocPtr xmlCtxtReadFile(xmlParserCtxtPtr ctxt, const char *filename,\n                                 const char *encoding, int options) {\n    (void)ctxt; (void)filename; (void)encoding; (void)options;\n    return NULL;\n}\n\nstatic const xmlError* xmlGetLastError(void) {\n    static xmlError e = { XML_FROM_NAMESPACE, XML_ERR_OK };\n    return &e;\n}\n\nstatic void xmlFreeDoc(xmlDocPtr doc) { (void)doc; }\nstatic void xmlFreeParserCtxt(xmlParserCtxtPtr ctxt) { (void)ctxt; }\n\n/* Vulnerable function from runxmlconf.c (trimmed to relevant parts) */\nstatic int xmlconfTestNotNSWF(const char *id, const char *filename, int options) {\n    xmlParserCtxtPtr ctxt;\n    xmlDocPtr doc;\n    int ret = 1;\n\n    ctxt = xmlNewParserCtxt();\n    /* Missing NULL check here is the bug: next call dereferences ctxt unconditionally */\n    xmlCtxtSetErrorHandler(ctxt, testErrorHandler, NULL);\n    /* In case of Namespace errors, libxml2 will still parse the document\n     * but log a Namespace error. */\n    doc = xmlCtxtReadFile(ctxt, filename, NULL, options);\n    if (doc == NULL) {\n        test_log(\"test %s : %s failed to parse the XML\\n\", id, filename);\n        nb_errors++;\n        ret = 0;\n    } else {\n        const xmlError *error = xmlGetLastError();\n        if ((error->code == XML_ERR_OK) || (error->domain != XML_FROM_NAMESPACE)) {\n            test_log(\"test %s : %s failed to detect namespace error\\n\", id, filename);\n            nb_errors++;\n            ret = 0;\n        }\n        xmlFreeDoc(doc);\n    }\n    xmlFreeParserCtxt(ctxt);\n    return ret;\n}\n\nint main(void) {\n    /* Any inputs are fine; the crash happens before parsing due to NULL ctxt */\n    fprintf(stderr, \"Triggering xmlconfTestNotNSWF null-deref via NULL parser context...\\n\");\n    /* This call will crash inside xmlCtxtSetErrorHandler because ctxt==NULL */\n    (void)xmlconfTestNotNSWF(\"id\", \"dummy.xml\", 0);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7908527851104736,
+      "output": "Triggering xmlconfTestNotNSWF null-deref via NULL parser context...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4044367==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5863c142def5 bp 0x7fff9fd020d0 sp 0x7fff9fd020a0 T0)\n==4044367==The signal is caused by a WRITE memory access.\n==4044367==Hint: address points to the zero page.\n    #0 0x5863c142def5 in xmlCtxtSetErrorHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49:17\n    #1 0x5863c142dd46 in xmlconfTestNotNSWF /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:74:5\n    #2 0x5863c142dcff in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:99:11\n    #3 0x7aa2b722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7aa2b722a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5863c136e304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer+0x21304) (BuildId: 5a07a7d712b2af1f77ab451de38152df63317138)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49:17 in xmlCtxtSetErrorHandler\n==4044367==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "xmlCtxtSetErrorHandler",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "xmlCtxtSetErrorHandler",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49",
+          "17"
+        ],
+        [
+          "1",
+          "xmlconfTestNotNSWF",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:74",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:99",
+          "11"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

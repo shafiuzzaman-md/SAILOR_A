@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "HTMLparser.c",
+    "line": 5058,
+    "function": "htmlParseTryOrFinish",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the DOCTYPE detection path after \"<!\", the code uses UPP(2) through UPP(8) (which index in->cur[2..8]) without first ensuring avail >= 9 when terminate is true. With terminate set and fewer than 9 bytes remaining, these accesses read beyond the buffer.",
+    "abs_path": "/tmp/libxml2_upstream/HTMLparser.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <ctype.h>\n#include <string.h>\n#include <stdint.h>\n\n/*\n * Minimal stand-in data structures to mimic the relevant libxml2 HTML parser\n * state. We only implement the fields and logic needed to hit the buggy code\n * path in htmlParseTryOrFinish.\n */\n\ntypedef struct _xmlParserInput {\n    const unsigned char *cur;\n    const unsigned char *end;\n} xmlParserInput;\n\ntypedef struct _htmlParserCtxt {\n    xmlParserInput *input;\n    int endCheckState;\n    int instate;\n    int disableSAX;\n    void *sax;\n    void *userData;\n    int checkIndex;\n} htmlParserCtxt;\n\n/* UPP(i): uppercase of in->cur[i] like libxml2's UPP macro */\n#define UPP(i) (toupper((unsigned char)in->cur[(i)]))\n\n/*\n * Reimplementation of the vulnerable portion of htmlParseTryOrFinish\n * from HTMLparser.c around lines 5018..5098. This reproduces the\n * out-of-bounds read when terminate is true and fewer than 9 bytes are\n * available after \"<!\" while checking for \"DOCTYPE\" using UPP(2)..UPP(8).\n */\nstatic void htmlParseTryOrFinish(htmlParserCtxt *ctxt, int terminate) {\n    xmlParserInput *in = ctxt->input;\n    int avail = (int)(in->end - in->cur);\n\n    if (avail < 1)\n        return;\n\n    int mode = ctxt->endCheckState;\n\n    if (mode != 0) {\n        // Not relevant for this reproducer\n        return;\n    } else if (in->cur[0] == '<') {\n        int next;\n\n        if (avail < 2) {\n            if (!terminate)\n                return;\n            next = ' ';\n        } else {\n            next = in->cur[1];\n        }\n\n        if (next == '!') {\n            if ((!terminate) && (avail < 4))\n                return;\n\n            /* Comment check first (safe for our crafted input) */\n            if ((in->cur[2] == '-') && (in->cur[3] == '-')) {\n                // Would parse comment; not taken for our input\n                return;\n            }\n\n            /* BUG: When terminate == true, there is no avail >= 9 check */\n            if ((!terminate) && (avail < 9))\n                return;\n\n            /* This condition chain reads UPP(2)..UPP(8) even if avail < 9 */\n            if ((UPP(2) == 'D') && (UPP(3) == 'O') &&\n                (UPP(4) == 'C') && (UPP(5) == 'T') &&\n                (UPP(6) == 'Y') && (UPP(7) == 'P') &&\n                (UPP(8) == 'E')) {\n                // Would parse DOCTYPE; not reached, but the read at UPP(8)\n                // already triggered OOB with ASan.\n            } else {\n                // Would handle bogus declaration/comment path\n            }\n        }\n    }\n}\n\nint main(void) {\n    /*\n     * Craft the minimal buffer: \"<!DOCTYP\" (8 bytes total), which makes\n     * avail == 8 at the point of evaluation. The code then evaluates\n     * (UPP(8) == 'E'), causing an out-of-bounds read at index 8.\n     */\n    static const unsigned char buf[8] = {\n        '<','!','D','O','C','T','Y','P'\n    };\n\n    xmlParserInput in;\n    in.cur = buf;\n    in.end = buf + sizeof(buf); // avail = 8\n\n    htmlParserCtxt ctxt;\n    memset(&ctxt, 0, sizeof(ctxt));\n    ctxt.input = &in;\n    ctxt.endCheckState = 0; // force the '<' handling path\n\n    /* terminate = 1 simulates end-of-input in push parsing,\n     * which skips the avail >= 9 guard in the buggy code.\n     */\n    htmlParseTryOrFinish(&ctxt, 1);\n\n    /* If AddressSanitizer is enabled, the above call should have\n     * triggered an out-of-bounds read. */\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08882594108581543,
+      "output": ""
+    }
+  }
+}

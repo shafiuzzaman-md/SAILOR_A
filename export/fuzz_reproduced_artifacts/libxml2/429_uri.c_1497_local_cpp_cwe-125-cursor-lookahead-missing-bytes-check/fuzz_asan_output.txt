@@ -1,0 +1,75 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2900678203
+INFO: Loaded 1 modules   (7 inline 8-bit counters): 7 [0x5d2026c61f20, 0x5d2026c61f27), 
+INFO: Loaded 1 PC tables (7 PCs): 7 [0x5d2026c61f28,0x5d2026c61f98), 
+INFO:        0 files found in /tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/corpus
+INFO:        1 files found in /tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: seed corpus: files: 1 min: 100b max: 100b total: 100b rss: 33Mb
+=================================================================
+==3115449==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000032 at pc 0x5d20268cba10 bp 0x7ffe1dc205e0 sp 0x7ffe1dc205d8
+READ of size 1 at 0x602000000032 thread T0
+    #0 0x5d20268cba0f in xmlNormalizePath /tmp/libxml2_upstream/uri.c:1524:17
+    #1 0x5d20268cbbc5 in xmlNormalizeURIPath /tmp/libxml2_upstream/uri.c:1556:12
+    #2 0x5d20268bf4d4 in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:33:11
+    #3 0x5d20267e598a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x9698a) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #4 0x5d20267e5055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x96055) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #5 0x5d20267e6c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x97c58) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #6 0x5d20267e70d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x980d6) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #7 0x5d20267d46c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x856c2) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #8 0x5d20267ffb66 in main (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xb0b66) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #9 0x7b61b2a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x7b61b2a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5d20267c8af4 in _start (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x79af4) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+
+0x602000000032 is located 0 bytes to the right of 2-byte region [0x602000000030,0x602000000032)
+allocated by thread T0 here:
+    #0 0x5d20268834b2 in malloc (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1344b2) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #1 0x5d20268bf46a in LLVMFuzzerTestOneInput /tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:24:26
+    #2 0x5d20267e598a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x9698a) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #3 0x5d20267e5055 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x96055) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #4 0x5d20267e6c58 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x97c58) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #5 0x5d20267e70d6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x980d6) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #6 0x5d20267d46c2 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x856c2) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #7 0x5d20267ffb66 in main (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xb0b66) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+    #8 0x7b61b2a2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x7b61b2a2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x5d20267c8af4 in _start (/tmp/libxml2_fuzz_verify/429_uri.c_1497_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x79af4) (BuildId: 358299fbe3046beb9294198334c120bcf6993d52)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libxml2_upstream/uri.c:1524:17 in xmlNormalizePath
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa[02]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3115449==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x70,0x61,0x74,0x68,0x5f,0x62,0x79,0x74,0x65,0x73,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x32,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"path_bytes\",\012    \"offset\": 0,\012    \"size\": 2,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-9fde6ad4ea4dac249465e27cef487ff3da9a4511
+Base64: WwogIHsKICAgICJuYW1lIjogInBhdGhfYnl0ZXMiLAogICAgIm9mZnNldCI6IDAsCiAgICAic2l6ZSI6IDIsCiAgICAic291cmNlIjogImNvbmNyZXRlX2Jsb2NrIgogIH0KXQ==

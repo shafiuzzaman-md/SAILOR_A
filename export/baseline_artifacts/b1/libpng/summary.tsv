@@ -1,0 +1,5 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+png_read_harness	BUILD_ERROR	FP			0			0	0		
+png_write_harness	BUILD_ERROR	FP			0			0	0		
+png_transforms_harness	BUILD_ERROR	FP			0			0	0		
+png_chunk_harness	BUILD_ERROR	FP			0			0	0		

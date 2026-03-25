@@ -1,0 +1,69 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2820391874
+INFO: Loaded 1 modules   (15 inline 8-bit counters): 15 [0x5b7004525660, 0x5b700452566f), 
+INFO: Loaded 1 PC tables (15 PCs): 15 [0x5b7004525670,0x5b7004525760), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 32b max: 32b total: 32b rss: 29Mb
+=================================================================
+==95400==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffd001b5e58 at pc 0x5b70044df4af bp 0x7ffd001b5cf0 sp 0x7ffd001b5ce8
+READ of size 8 at 0x7ffd001b5e58 thread T0
+    #0 0x5b70044df4ae in ft_mem_qrealloc /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/freetype/src/base/ftutil.c:156:22
+    #1 0x5b70044df1fd in ft_mem_realloc /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/freetype/src/base/ftutil.c:101:13
+    #2 0x5b70044b55e1 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_harness.c:47:11
+    #3 0x5b70043db83a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x4483a) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #4 0x5b70043daf05 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x43f05) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #5 0x5b70043dcb08 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x45b08) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #6 0x5b70043dcf86 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x45f86) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #7 0x5b70043ca572 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x33572) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #8 0x5b70043f5a16 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x5ea16) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+    #9 0x74e872c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x74e872c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x5b70043be9a4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_bin+0x279a4) (BuildId: 283ba82439f5cf6c5be8b983884f7db6d826039e)
+
+Address 0x7ffd001b5e58 is located in stack of thread T0 at offset 56 in frame
+    #0 0x5b70044b52df in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/728_ftutil.c_104_local_cpp_cwe-120-overflow/fuzz_harness.c:27
+
+  This frame has 1 object(s):
+    [32, 56) 'memory' (line 30) <== Memory access at offset 56 overflows this variable
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/thirdparty/freetype/src/base/ftutil.c:156:22 in ft_mem_qrealloc
+Shadow bytes around the buggy address:
+  0x10002002eb70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002eb80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002eb90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002eba0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002ebb0: 00 00 f1 f1 f1 f1 04 f3 f3 f3 00 00 00 00 00 00
+=>0x10002002ebc0: 00 00 00 00 f1 f1 f1 f1 00 00 00[f3]f3 f3 f3 f3
+  0x10002002ebd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002ebe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002ebf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002ec00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10002002ec10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==95400==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-de8a847bff8c343d69b853a215e6ee775ef2ef96
+Base64: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=

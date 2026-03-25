@@ -1,0 +1,12 @@
+Error: memory error: out of bound pointer
+File: tea.c
+Line: 31
+assembly.ll line: 125
+State: 1
+Stack: 
+	#000000125 in av_tea_crypt(139893658619904, 139670320320512, 139687500189696, 1, 139618780712960, 0) at tea.c:31
+	#100000054 in main() at driver.c:35
+Info: 
+	address: 139618780712964
+	next: object at 139319206744064 of size 4
+		MO59[4] allocated at av_tea_crypt():  %10 = alloca i32, align 4

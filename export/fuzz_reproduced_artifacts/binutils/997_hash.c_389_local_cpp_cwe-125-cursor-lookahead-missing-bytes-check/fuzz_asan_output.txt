@@ -1,0 +1,32 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3938726134
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x559def13ce40, 0x559def13ce44), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x559def13ce48,0x559def13ce88), 
+INFO:        3 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 3 min: 4b max: 100b total: 108b rss: 32Mb
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3358122==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x000000000000 bp 0x7ffce89a3650 sp 0x7ffce89a35d8 T0)
+==3358122==Hint: pc points to the zero page.
+==3358122==The signal is caused by a READ memory access.
+==3358122==Hint: address points to the zero page.
+    #0 0x0  (<unknown module>)
+    #1 0x559deecfcb3e in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_harness.c:51:11
+    #2 0x559deec25523 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd5523) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #3 0x559deec24c79 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd4c79) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #4 0x559deec268e8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd68e8) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #5 0x559deec26dd2 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xd6dd2) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #6 0x559deec15122 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xc5122) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #7 0x559deec3ee12 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/997_hash.c_389_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/ossfuzz/fuzz_bin+0xeee12) (BuildId: d383e8304fe1927094a917f9aa43c756b9ed108c)
+    #8 0x7f50143c5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV (<unknown module>) 
+==3358122==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0xfb,0xff,0xff,0xff,
+\373\377\377\377
+artifact_prefix='./'; Test unit written to ./crash-589dcdc354c07ba8b59daa9e51c7fd3c35e9e648
+Base64: +////w==

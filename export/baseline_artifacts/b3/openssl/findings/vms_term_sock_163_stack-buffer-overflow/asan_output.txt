@@ -1,0 +1,51 @@
+Enter 'q' or 'Q' to quit ...
+Waiting on terminal I/O ...
+=================================================================
+==4140242==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffed38aebb0 at pc 0x5b4a5ec78692 bp 0x7ffed38aeb30 sp 0x7ffed38aeb28
+WRITE of size 1 at 0x7ffed38aebb0 thread T0
+    #0 0x5b4a5ec78691 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102:23
+    #1 0x77273fe2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #2 0x77273fe2a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #3 0x5b4a5ebb8334 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer+0x21334) (BuildId: c211f84cfebacab749e3a4a9d185c2fc0542abb8)
+
+Address 0x7ffed38aebb0 is located in stack of thread T0 at offset 112 in frame
+    #0 0x5b4a5ec7840f in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:81
+
+  This frame has 2 object(s):
+    [32, 112) 'TermBuff' (line 83) <== Memory access at offset 112 overflows this variable
+    [144, 148) 'TermSock' (line 84)
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_163_stack-buffer-overflow/reproducer.c:102:23 in main
+Shadow bytes around the buggy address:
+  0x10005a70dd20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dd30: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dd40: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dd50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dd60: 00 00 00 00 00 00 00 00 f1 f1 f1 f1 00 00 00 00
+=>0x10005a70dd70: 00 00 00 00 00 00[f2]f2 f2 f2 04 f3 00 00 00 00
+  0x10005a70dd80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dd90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70dda0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70ddb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10005a70ddc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4140242==ABORTING

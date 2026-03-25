@@ -1,0 +1,15 @@
+
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3356324==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000368 (pc 0x5576cd50e8d4 bp 0x7fff73e28680 sp 0x7fff73e28580 T0)
+==3356324==The signal is caused by a READ memory access.
+==3356324==Hint: address points to the zero page.
+    #0 0x5576cd50e8d4 in _bfd_elf_compute_section_file_positions /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699
+    #1 0x5576cd4ee2d4 in main /app/sailor_binutils_b2bc71a_vul/verify_output/findings/8802_elf.c_5612_sailor_wmi-2-type-confusion-leak/reproducer.c:40
+    #2 0x7f664ca88d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #3 0x7f664ca88e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #4 0x5576cd4ee094 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/8802_elf.c_5612_sailor_wmi-2-type-confusion-leak/reproducer_bin+0x9b094)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/bfd/elf.c:4699 in _bfd_elf_compute_section_file_positions
+==3356324==ABORTING

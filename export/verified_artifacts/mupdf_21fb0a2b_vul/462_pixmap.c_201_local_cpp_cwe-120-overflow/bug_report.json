@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "pixmap.c",
+        "original_line": 201,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "196: }\n197: \n198: fz_pixmap *fz_clone_pixmap(fz_context *ctx, const fz_pixmap *old)\n199: {\n200: \tfz_pixmap *pix = fz_new_pixmap_with_bbox(ctx, old->colorspace, fz_make_irect(old->x, old->y, old->w, old->h), old->seps, old->alpha);\n201: \tmemcpy(pix->samples, old->samples, pix->stride * pix->h);\n202: \treturn pix;\n203: }\n204: \n205: fz_irect\n206: fz_pixmap_bbox(fz_context *ctx, const fz_pixmap *pix)"
+    },
+    "klee_crash": {
+        "harness_file": "pixmap.c",
+        "harness_line": 51,
+        "original_file": "pixmap.c",
+        "original_line": 201,
+        "original_code": "memcpy(pix->samples, old->samples, pix->stride * pix->h);",
+        "original_context": "    198: fz_pixmap *fz_clone_pixmap(fz_context *ctx, const fz_pixmap *old)\n    199: {\n    200: \tfz_pixmap *pix = fz_new_pixmap_with_bbox(ctx, old->colorspace, fz_make_irect(old->x, old->y, old->w, old->h), old->seps, old->alpha);\n>>> 201: \tmemcpy(pix->samples, old->samples, pix->stride * pix->h);\n    202: \treturn pix;\n    203: }\n    204: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 409\nState: 1\nStack: \n\t#000000409 in memcpy(140419584454656, 140110346817536, 16384) at runtime/Freestanding/memcpy.c:17\n\t#100000328 in fz_clone_pixmap(139766749433856, 139972907864064) at pixmap.c:51\n\t#200000383 in entry_func(139766749433856, 139972907864064) at pixmap.c:59\n\t#300000065 in main() at driver.c:40\nInfo: \n\taddress: 140110346818560\n\tnext: object at 139470396690432 of size 4\n\t\tMO23["
+    },
+    "concrete_inputs": [
+        {
+            "name": "old_samples",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_clone_pixmap",
+        "crash_file": "source/fitz/pixmap.c",
+        "crash_line": 200,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==26007==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x506000000058 at pc 0x55bb72655732 bp 0x7ffde6b21cb0 sp 0x7ffde6b21ca0\nREAD of size 8 at 0x506000000058 thread T0\n    #0 0x55bb72655731 in fz_clone_pixmap source/fitz/pixmap.c:200\n    #1 0x55bb72653bcf in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/462_pixmap.c_201_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:40\n    #2 0x7ff8d30d8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7ff8d30d8e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55bb726538b4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/462_pixmap.c_201_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x108b4)\n\n0x506000000058 is located 0 bytes to the right of 56-byte region [0x506000000020,0x506000000058)\nallocated by thread T0 here:\n    #0 0x7ff8d348fa57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55bb726539a6 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/462_pixmap.c_201_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:23\n    #2 0x7ff8d30d8d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/pixmap.c:200 in fz_clone_pixmap\nShadow bytes around the buggy address:\n  0x0a0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a0c7fff8000: fa fa fa fa 00 00 00 00 00 00 00[fa]fa fa fa fa\n  0x0a0c7fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a0c7fff8040: fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/462_pixmap.c_201_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "pixmap.c",
+            "harness_line": 51,
+            "original_file": "pixmap.c",
+            "original_line": 201,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/462_pixmap.c_201_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_clone_pixmap",
+            "crash_file": "source/fitz/pixmap.c",
+            "crash_line": 200
+        }
+    ]
+}

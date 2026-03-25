@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "sha1.c",
+        "original_line": 175,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "170: \n171:     Context->Count[1] += (BufferSize >> 29);\n172:     if ((j + BufferSize) > 63)\n173:     {\n174:         i = 64 - j;\n175:         memcpy(&Context->Buffer[j], Buffer, i);\n176:         TransformFunction(Context->State, Context->Buffer);\n177:         for (; i + 63 < BufferSize; i += 64)\n178:         {\n179:             TransformFunction(Context->State, (const uint8_t*)Buffer + i);\n180:         }"
+    },
+    "klee_crash": {
+        "harness_file": "sha1.c",
+        "harness_line": 31,
+        "original_file": "sha1.c",
+        "original_line": 175,
+        "original_code": "memcpy(&Context->Buffer[j], Buffer, i);",
+        "original_context": "    172:     if ((j + BufferSize) > 63)\n    173:     {\n    174:         i = 64 - j;\n>>> 175:         memcpy(&Context->Buffer[j], Buffer, i);\n    176:         TransformFunction(Context->State, Context->Buffer);\n    177:         for (; i + 63 < BufferSize; i += 64)\n    178:         {",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 214\nState: 1\nStack: \n\t#000000214 in memcpy(139216289849372, 139078850895872, 64) at runtime/Freestanding/memcpy.c:17\n\t#100000145 in Sha1Update(139216289849344, 139078850895872, symbolic) at sha1.c:31\n\t#200000188 in harness_entry(139216289849344, 139078850895872, symbolic) at sha1.c:51\n\t#300000057 in main() at driver.c:26\nInfo: \n\taddress: 139078850895904\n\tnext: object at 138641837973504 of siz"
+    },
+    "concrete_inputs": [
+        {
+            "name": "sha1_buf",
+            "size": 32,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "sha1_len",
+            "size": 4,
+            "data": "b'\\xc0\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "__interceptor_memcpy",
+        "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+        "crash_line": 827,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1679==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000060 at pc 0x7f3cd14ea397 bp 0x7ffc36e714a0 sp 0x7ffc36e70c48\nREAD of size 64 at 0x503000000060 thread T0\n    #0 0x7f3cd14ea396 in __interceptor_memcpy ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827\n    #1 0x559695b82a39 in Sha1Update /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libselinux/src/sha1.c:175\n    #2 0x559695b7f4be in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/015_sha1.c_175_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:27\n    #3 0x7f3cd11add8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f3cd11ade3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x559695b7f224 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/015_sha1.c_175_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x1224)\n\n0x503000000060 is located 0 bytes to the right of 32-byte region [0x503000000040,0x503000000060)\nallocated by thread T0 here:\n    #0 0x7f3cd1564887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x559695b7f435 in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/015_sha1.c_175_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:18\n    #2 0x7f3cd11add8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc:827 in __interceptor_memcpy\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a067fff8000: fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/015_sha1.c_175_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "sha1.c",
+            "harness_line": 31,
+            "original_file": "sha1.c",
+            "original_line": 175,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/015_sha1.c_175_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "__interceptor_memcpy",
+            "crash_file": "../../../../src/libsanitizer/sanitizer_common/sanitizer_common_interceptors.inc",
+            "crash_line": 827
+        }
+    ]
+}

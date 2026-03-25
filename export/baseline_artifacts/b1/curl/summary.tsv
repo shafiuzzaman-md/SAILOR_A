@@ -1,0 +1,7 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+curl_fuzzer	FP_EXTERNAL_CALL	FP	external	curl_fuzzer.cc	55			11	0		true
+fuzz_bufq	FP_ASSERTION	FP	assert	fuzz_bufq.cc	48			8	0		true
+fuzz_fnmatch	NO_BUG	FP						309	0		true
+fuzz_url_model	FP_KLEE_MODEL	FP	model	fuzz_url.cc	42			311	0		true
+fuzz_url_exec_1	FP_KLEE_MODEL	FP	exec		0			311	0		true
+fuzz_url_exec_2	FP_KLEE_MODEL	FP	exec		0			311	0		true

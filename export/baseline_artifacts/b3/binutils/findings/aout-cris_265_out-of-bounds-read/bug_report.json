@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/aout-cris.c",
+    "line": 265,
+    "function": "MY (swap_ext_reloc_in)",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The bounds check for an external symbol index uses (r_extern && r_index > symcount), allowing r_index == symcount to pass. The subsequent MOVE_ADDRESS macro (per the comment, it uses r_extern and the symbols array) will use r_index as an index into the symbols array, leading to an out-of-bounds read when r_index == symcount.",
+    "abs_path": "/tmp/binutils_upstream/bfd/aout-cris.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n/* Self-contained stubs and minimal types to mimic the vulnerable logic. */\n\ntypedef struct bfd { int dummy; } bfd;\n\ntypedef struct {\n    int32_t address;\n    void *howto;\n    int32_t addend;\n} internal_reloc;\n\n/* External reloc entry bytes layout (simplified). */\nstruct external_reloc {\n    uint8_t r_address[4];\n    uint8_t r_index[3];\n    uint8_t r_type[1];\n    uint8_t r_addend[4];\n};\n\n/* Mock constants/macros similar to those used by the real code. */\n#define RELOC_EXT_BITS_EXTERN_LITTLE 0x80\n#define RELOC_EXT_BITS_TYPE_LITTLE   0x03\n#define RELOC_EXT_BITS_TYPE_SH_LITTLE 0\n\n#define N_ABS 2\n\n/* Stubs for bfd error reporting used by the target code. */\nstatic void _bfd_error_handler(const char *fmt, ...) {\n    (void)fmt; /* ignore in this reproducer */\n}\nstatic void bfd_set_error(int err) { (void)err; }\n\ntypedef enum { bfd_error_wrong_format = 1 } bfd_error_type;\n\n/* Dummy howto table. */\nstatic int howto_table_ext_storage[3] = {0, 1, 2};\nstatic void *howto_table_ext = (void *)howto_table_ext_storage;\n\n/* Little-endian 32-bit signed load from a 4-byte array. */\nstatic inline int32_t GET_SWORD(bfd *abfd, const uint8_t b[4]) {\n    (void)abfd;\n    uint32_t u = (uint32_t)b[0] | ((uint32_t)b[1] << 8) | ((uint32_t)b[2] << 16) | ((uint32_t)b[3] << 24);\n    return (int32_t)u;\n}\n\n/* Vulnerable function, adapted from the snippet. We pass in symcount and symbols\n   explicitly so MOVE_ADDRESS can index them. */\nstatic void swap_ext_reloc_in(bfd *abfd,\n                              const struct external_reloc *bytes,\n                              internal_reloc *cache_ptr,\n                              unsigned long symcount,\n                              uint32_t *symbols)\n{\n    unsigned int r_index;\n    unsigned int r_type;\n    int r_extern;\n\n    (void)abfd;\n\n    cache_ptr->address = GET_SWORD(abfd, bytes->r_address);\n\n    r_index = (((unsigned int)bytes->r_index[2] << 16) |\n               ((unsigned int)bytes->r_index[1] << 8) |\n               bytes->r_index[0]);\n\n    r_extern = (0 != (bytes->r_type[0] & RELOC_EXT_BITS_EXTERN_LITTLE));\n\n    r_type = ((bytes->r_type[0] & RELOC_EXT_BITS_TYPE_LITTLE) >> RELOC_EXT_BITS_TYPE_SH_LITTLE);\n\n    if (r_type > 2) {\n        _bfd_error_handler(\"unsupported relocation type imported: %#x\", r_type);\n        bfd_set_error(bfd_error_wrong_format);\n    }\n\n    /* howto_table_ext + r_type - just to mimic original behavior */\n    cache_ptr->howto = (char *)howto_table_ext + (sizeof(int) * r_type);\n\n    if (r_extern && r_index > symcount) {\n        _bfd_error_handler(\"bad relocation record imported: %u\", r_index);\n        bfd_set_error(bfd_error_wrong_format);\n        r_extern = 0;\n        r_index = N_ABS;\n    }\n\n    /* MOVE_ADDRESS macro equivalent. Critically, it uses r_extern and symbols[r_index],\n       which will read out-of-bounds when r_index == symcount (off-by-one). */\n#define MOVE_ADDRESS(X) do { \\\n        if (r_extern) { \\\n            /* The following read is out-of-bounds when r_index == symcount. */ \\\n            volatile uint32_t symval = symbols[r_index]; \\\n            cache_ptr->addend = (X) + (int32_t)symval; \\\n        } else { \\\n            cache_ptr->addend = (X); \\\n        } \\\n    } while (0)\n\n    MOVE_ADDRESS(GET_SWORD(abfd, bytes->r_addend));\n\n#undef MOVE_ADDRESS\n}\n\nint main(void) {\n    /* Set up a symbol array with symcount = 1, so the only valid index is 0. */\n    unsigned long symcount = 1;\n    uint32_t *symbols = (uint32_t *)malloc(symcount * sizeof(uint32_t));\n    if (!symbols) {\n        perror(\"malloc\");\n        return 1;\n    }\n    symbols[0] = 0x11111111u;\n\n    /* Craft an external reloc with r_extern set and r_index == symcount (off-by-one). */\n    struct external_reloc bytes;\n    memset(&bytes, 0, sizeof(bytes));\n\n    /* r_address and r_addend can be any values. */\n    bytes.r_address[0] = 0x34; bytes.r_address[1] = 0x12; bytes.r_address[2] = 0x00; bytes.r_address[3] = 0x00; /* 0x1234 */\n    bytes.r_addend[0]  = 0x78; bytes.r_addend[1]  = 0x56; bytes.r_addend[2]  = 0x00; bytes.r_addend[3]  = 0x00; /* 0x5678 */\n\n    /* Encode r_index == symcount == 1 into 3 bytes little-endian. */\n    unsigned int bad_index = (unsigned int)symcount; /* off-by-one */\n    bytes.r_index[0] = (uint8_t)(bad_index & 0xFF);\n    bytes.r_index[1] = (uint8_t)((bad_index >> 8) & 0xFF);\n    bytes.r_index[2] = (uint8_t)((bad_index >> 16) & 0xFF);\n\n    /* Set extern bit and a supported type (e.g., 1). */\n    bytes.r_type[0] = RELOC_EXT_BITS_EXTERN_LITTLE | 0x01; /* r_extern = 1, r_type = 1 */\n\n    internal_reloc cache;\n    memset(&cache, 0, sizeof(cache));\n\n    bfd dummy_bfd = {0};\n\n    /* This call will attempt to read symbols[r_index] where r_index == symcount, */\n    /* triggering an ASan out-of-bounds read. */\n    swap_ext_reloc_in(&dummy_bfd, &bytes, &cache, symcount, symbols);\n\n    /* Prevent optimizing away by using cache values. */\n    printf(\"address=%d addend=%d howto=%p\\n\", cache.address, cache.addend, cache.howto);\n\n    free(symbols);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7345411777496338,
+      "output": "=================================================================\n==3575851==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000014 at pc 0x58b1a0b51987 bp 0x7fff260b81d0 sp 0x7fff260b81c8\nREAD of size 4 at 0x602000000014 thread T0\n    #0 0x58b1a0b51986 in swap_ext_reloc_in /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:102:5\n    #1 0x58b1a0b51333 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:141:5\n    #2 0x7325e742a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7325e742a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58b1a0a91314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer+0x21314) (BuildId: 63ce1ab9d242e3f6232e5268ac3bf565757db3a4)\n\n0x602000000014 is located 0 bytes to the right of 4-byte region [0x602000000010,0x602000000014)\nallocated by thread T0 here:\n    #0 0x58b1a0b14d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 63ce1ab9d242e3f6232e5268ac3bf565757db3a4)\n    #1 0x58b1a0b50de7 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:110:37\n    #2 0x7325e742a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7325e742a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58b1a0a91314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer+0x21314) (BuildId: 63ce1ab9d242e3f6232e5268ac3bf565757db3a4)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:102:5 in swap_ext_reloc_in\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3575851==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "swap_ext_reloc_in",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:102",
+      "crash_line": 5,
+      "frames": [
+        [
+          "0",
+          "swap_ext_reloc_in",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:102",
+          "5"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:141",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/aout-cris_265_out-of-bounds-read/reproducer.c:110",
+          "37"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

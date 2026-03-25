@@ -1,0 +1,44 @@
+{
+  "mpegvideo.c": {
+    "15": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 796,
+      "code": "void ff_clean_intra_table_entries(MpegEncContext *s)"
+    },
+    "16": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 797,
+      "code": "{"
+    },
+    "17": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 798,
+      "code": "int wrap = s->b8_stride;"
+    },
+    "18": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 799,
+      "code": "int xy = s->block_index[0];"
+    },
+    "21": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 806,
+      "code": "memset(s->ac_val[0][xy       ], 0, 32 * sizeof(int16_t));"
+    },
+    "26": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 818,
+      "code": "}"
+    },
+    "31": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 743,
+      "code": "return 0;"
+    },
+    "32": {
+      "orig_file": "mpegvideo.c",
+      "orig_line": 747,
+      "code": "}"
+    }
+  }
+}

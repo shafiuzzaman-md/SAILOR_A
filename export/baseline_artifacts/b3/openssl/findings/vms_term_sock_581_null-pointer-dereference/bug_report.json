@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "apps/lib/vms_term_sock.c",
+    "line": 581,
+    "function": "LogMessage",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "The return value of localtime(&CurTime) is not checked for NULL. If localtime fails and returns NULL, subsequent dereferences (LocTime->tm_mday, LocTime->tm_mon, etc.) at lines 581-583 will dereference a NULL pointer, causing a crash.",
+    "abs_path": "/tmp/openssl_upstream/apps/lib/vms_term_sock.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdarg.h>\n#include <time.h>\n#include <unistd.h>\n\n/* Stub for OpenSSL's BIO_snprintf used by the vulnerable function */\nint BIO_snprintf(char *buf, size_t n, const char *format, ...) {\n    va_list ap;\n    va_start(ap, format);\n    int ret = vsnprintf(buf, n, format, ap);\n    va_end(ap);\n    return ret;\n}\n\n/* Interpose localtime() to force a failure and return NULL */\nstruct tm *localtime(const time_t *timer) {\n    (void)timer;\n    return NULL; /* Simulate localtime() failure */\n}\n\n/* Vulnerable function copied from the source context */\nstatic void LogMessage(char *msg, ...) {\n    char *Month[] = { \"Jan\", \"Feb\", \"Mar\", \"Apr\", \"May\", \"Jun\",\n        \"Jul\", \"Aug\", \"Sep\", \"Oct\", \"Nov\", \"Dec\" };\n    static unsigned int pid = 0;\n    va_list args;\n    time_t CurTime;\n    struct tm *LocTime;\n    char MsgBuff[256];\n\n    /* Get the process pid */\n    if (pid == 0)\n        pid = getpid();\n\n    /* Convert the current time into local time */\n    CurTime = time(NULL);\n    LocTime = localtime(&CurTime);\n\n    /* This will dereference LocTime even if it is NULL */\n    BIO_snprintf(MsgBuff, sizeof(MsgBuff), \"%02d-%s-%04d %02d:%02d:%02d [%08X] %s\\n\",\n        LocTime->tm_mday, Month[LocTime->tm_mon],\n        (LocTime->tm_year + 1900), LocTime->tm_hour, LocTime->tm_min,\n        LocTime->tm_sec, pid, msg);\n\n    /* Use variable args */\n    va_start(args, msg);\n    vfprintf(stderr, MsgBuff, args);\n    va_end(args);\n\n    /* Flush standard error output */\n    fsync(fileno(stderr));\n}\n\nint main(void) {\n    /* Trigger the bug: our interposed localtime() returns NULL */\n    LogMessage((char *)\"Test message: %d\", 42);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.778658390045166,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==4140535==ERROR: AddressSanitizer: SEGV on unknown address 0x00000000000c (pc 0x5fc38967924f bp 0x7fff91ad2b80 sp 0x7fff91ad2760 T0)\n==4140535==The signal is caused by a READ memory access.\n==4140535==Hint: address points to the zero page.\n    #0 0x5fc38967924f in LogMessage /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41:18\n    #1 0x5fc389678f01 in main /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:56:5\n    #2 0x71fb3d42a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x71fb3d42a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5fc3895b9334 in _start (/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer+0x21334) (BuildId: 03316fbdfbfa78ebcf111c565620a1db58df3f7a)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41:18 in LogMessage\n==4140535==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "LogMessage",
+      "crash_file": "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41",
+      "crash_line": 18,
+      "frames": [
+        [
+          "0",
+          "LogMessage",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:41",
+          "18"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/openssl_67b5686b_vul/findings/vms_term_sock_581_null-pointer-dereference/reproducer.c:56",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

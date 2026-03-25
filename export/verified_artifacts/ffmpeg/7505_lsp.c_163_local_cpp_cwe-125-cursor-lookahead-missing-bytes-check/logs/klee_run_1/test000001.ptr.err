@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: lsp.c
+Line: 8
+assembly.ll line: 97
+State: 1
+Stack: 
+	#000000097 in ff_acelp_lsp2lpc(139539734401024, 139522554531840, 1) at lsp.c:8
+	#100000116 in entry_func(139539734401024, 139522554531840, 1) at lsp.c:15
+	#200000069 in main() at driver.c:25
+Info: 
+	address: 139539734401024
+	next: object at 139240160432128 of size 4
+		MO58[4] allocated at ff_acelp_lsp2lpc():  %6 = alloca i32, align 4

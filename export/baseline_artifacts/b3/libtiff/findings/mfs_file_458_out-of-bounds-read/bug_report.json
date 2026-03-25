@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 458,
+    "function": "mfs_map",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "No bounds check on fd before indexing fds[fd]; invalid fd can cause out-of-bounds access.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <errno.h>\n#include <stddef.h>\n\n/* Minimal re-declaration of the globals used by contrib/mfs/mfs_file.c */\n#define MAX_FDS 4\nstatic int fds[MAX_FDS];\nstatic char *buf[MAX_FDS];\nstatic size_t buf_size[MAX_FDS];\n\n/* Vulnerable function copied in spirit from contrib/mfs/mfs_file.c */\nint mfs_map(int fd, char **addr, size_t *len)\n{\n    int ret;\n\n    /* BUG: No bounds check on fd before indexing fds[fd] */\n    if (fds[fd] == -1) /* Not open */\n    {\n        ret = -1;\n        errno = EBADF;\n    }\n    else\n    {\n        *addr = buf[fd];\n        *len = buf_size[fd];\n        ret = 0;\n    }\n\n    return ret;\n}\n\nstatic void mfs_init(void)\n{\n    for (int i = 0; i < MAX_FDS; i++) {\n        fds[i] = -1;      /* mark all as not open */\n        buf[i] = NULL;\n        buf_size[i] = 0;\n    }\n}\n\nint main(void)\n{\n    mfs_init();\n\n    /* Choose an fd that is out of bounds for the small fds[] array */\n    int bad_fd = MAX_FDS + 1; /* e.g., 5 when MAX_FDS is 4 */\n\n    char *addr = NULL;\n    size_t len = 0;\n\n    /* This call will perform an out-of-bounds read on fds[bad_fd] */\n    int ret = mfs_map(bad_fd, &addr, &len);\n\n    /* Prevent optimizing away the call / variables */\n    printf(\"mfs_map returned %d (errno=%d). addr=%p len=%zu\\n\", ret, errno, (void*)addr, len);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7674140930175781,
+      "output": "=================================================================\n==3827064==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5d7d41b5e5b4 at pc 0x5d7d411d4cfe bp 0x7ffcfeb5fb70 sp 0x7ffcfeb5fb68\nREAD of size 4 at 0x5d7d41b5e5b4 thread T0\n    #0 0x5d7d411d4cfd in mfs_map /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17:9\n    #1 0x5d7d411d4f9b in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:52:15\n    #2 0x7d8314c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7d8314c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5d7d41115304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer+0x21304) (BuildId: b4e3a50c0ae7ca9017008d5696e5a1315fbab363)\n\n0x5d7d41b5e5b4 is located 12 bytes to the left of global variable 'buf' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:8:14' (0x5d7d41b5e5c0) of size 32\n0x5d7d41b5e5b4 is located 4 bytes to the right of global variable 'fds' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:7:12' (0x5d7d41b5e5a0) of size 16\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17:9 in mfs_map\nShadow bytes around the buggy address:\n  0x0bb028363c60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363c70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363c80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363c90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363ca0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0bb028363cb0: 00 00 00 00 00 00[f9]f9 00 00 00 00 f9 f9 f9 f9\n  0x0bb028363cc0: 00 00 00 00 f9 f9 f9 f9 00 00 00 00 00 00 00 00\n  0x0bb028363cd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363ce0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363cf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0bb028363d00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3827064==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "mfs_map",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17",
+      "crash_line": 9,
+      "frames": [
+        [
+          "0",
+          "mfs_map",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:17",
+          "9"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_458_out-of-bounds-read/reproducer.c:52",
+          "15"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

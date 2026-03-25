@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmserr.c",
+        "original_line": 533,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "528: \n529:     // Move chars\n530:     memmove(String, &be, 4);\n531: \n532:     // Make sure of terminator\n533:     String[4] = 0;\n534: }\n535: \n536: //--------------------------------------------------------------------------------------------------\n537: \n538: "
+    },
+    "klee_crash": {
+        "harness_file": "cmserr.c",
+        "harness_line": 24,
+        "original_file": "cmserr.c",
+        "original_line": 533,
+        "original_code": "String[4] = 0;",
+        "original_context": "    530:     memmove(String, &be, 4);\n    531: \n    532:     // Make sure of terminator\n>>> 533:     String[4] = 0;\n    534: }\n    535: \n    536: //--------------------------------------------------------------------------------------------------",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cmserr.c\nLine: 24\nassembly.ll line: 30\nState: 1\nStack: \n\t#000000030 in _cmsTagSignature2String(139099712778240, symbolic) at cmserr.c:24\n\t#100000060 in cms_entry(139099712778240, symbolic) at cmserr.c:31\n\t#200000080 in main() at driver.c:18\nInfo: \n\taddress: 139099712778244\n\tnext: object at 138800138809344 of size 4\n\t\tMO42[4] allocated at _cmsTagSignature2String():  %4 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "buf",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "sig",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "_cmsTagSignature2String",
+        "crash_file": "thirdparty/lcms2/src/cmserr.c",
+        "crash_line": 533,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==9343==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000014 at pc 0x55b09198ebf9 bp 0x7ffc7236f090 sp 0x7ffc7236f080\nWRITE of size 1 at 0x502000000014 thread T0\n    #0 0x55b09198ebf8 in _cmsTagSignature2String thirdparty/lcms2/src/cmserr.c:533\n    #1 0x55b09198d0dd in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1890_cmserr.c_533_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:18\n    #2 0x7f108c64bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f108c64be3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55b09198ceb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1890_cmserr.c_533_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0xaeb4)\n\n0x502000000014 is located 0 bytes to the right of 4-byte region [0x502000000010,0x502000000014)\nallocated by thread T0 here:\n    #0 0x7f108ca02887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55b09198d009 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1890_cmserr.c_533_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:11\n    #2 0x7f108c64bd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmserr.c:533 in _cmsTagSignature2String\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1890_cmserr.c_533_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmserr.c",
+            "harness_line": 24,
+            "original_file": "cmserr.c",
+            "original_line": 533,
+            "error_type": "ptr",
+            "crash_function": "_cmsTagSignature2String",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1890_cmserr.c_533_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "_cmsTagSignature2String",
+            "crash_file": "thirdparty/lcms2/src/cmserr.c",
+            "crash_line": 533
+        }
+    ]
+}

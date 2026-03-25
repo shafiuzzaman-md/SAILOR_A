@@ -1,0 +1,29 @@
+{
+  "mpegvideoencdsp.c": {
+    "7": {
+      "orig_file": "mpegvideoencdsp.c",
+      "orig_line": 80,
+      "code": "#define MAX_LINE_SIZE 1920"
+    },
+    "10": {
+      "orig_file": "mpegvideoencdsp.c",
+      "orig_line": 81,
+      "code": "#define EDGE_WIDTH 16"
+    },
+    "26": {
+      "orig_file": "mpegvideoencdsp.c",
+      "orig_line": 92,
+      "code": "int w, int h, int sides);"
+    },
+    "36": {
+      "orig_file": "mpegvideoencdsp.c",
+      "orig_line": 77,
+      "code": "}"
+    },
+    "45": {
+      "orig_file": "mpegvideoencdsp.c",
+      "orig_line": 77,
+      "code": "}"
+    }
+  }
+}

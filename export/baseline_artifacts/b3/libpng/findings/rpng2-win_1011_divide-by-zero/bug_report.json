@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/gregbook/rpng2-win.c",
+    "line": 1011,
+    "function": "rpng2_win_load_bg_image",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "high",
+    "explanation": "maxDist is computed as (hw*hw + hh*hh). For a 1x1 image, hw == 0 and hh == 0, so maxDist == 0. The subsequent division dist = ((x*x)+(y*y)) / maxDist divides by zero.",
+    "abs_path": "/tmp/libpng_upstream/contrib/gregbook/rpng2-win.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#include <fenv.h>\n\n#pragma STDC FENV_ACCESS ON\n\ntypedef unsigned char uch;\n\n#define CLIP(a,l,h) ((a) < (l) ? (l) : ((a) > (h) ? (h) : (a)))\n#define MAX(a,b) ((a) > (b) ? (a) : (b))\n#define MIN(a,b) ((a) < (b) ? (a) : (b))\n#define ABS(a) ((a) < 0 ? -(a) : (a))\n\n#define PI 3.14159265358979323846\n#define PI_2 (PI/2.0)\n#define INV_PI_360 (360.0 / PI)\n\n#define PROGNAME \"repro\"\n\n/* Minimal stand-ins for the globals used by rpng2-win.c */\nstruct {\n    int width;\n    int height;\n} rpng2_info;\n\nstruct bgconf {\n    int type;     /* lower 3 bits select pattern (2 == radial) */\n    int bg_gray;  /* gray spot size */\n    int bg_freq;  /* frequency */\n    int bg_bsat;  /* saturation*10 */\n    int bg_brot;  /* rotation*10 */\n};\n\nstatic struct bgconf bg[1];\n\nstatic void rpng2_win_load_bg_image(void)\n{\n    /* This function contains the vulnerable code path (radial background) */\n    int pat = 0;\n\n    if ((bg[pat].type & 0x07) == 2) {\n        uch ch;\n        int ii, x, y, hw, hh, grayspot;\n        int row, i;\n        double freq, rotate, saturate, gray, intensity;\n        double angle = 0.0, aoffset = 0.0, maxDist, dist;\n        double red = 0.0, green = 0.0, blue = 0.0, hue, s, v, f, p, q, t;\n\n        fprintf(stderr, \"%s:  computing radial background...\\n\", PROGNAME);\n        fflush(stderr);\n\n        hh = rpng2_info.height / 2;  /* for 1x1 image -> 0 */\n        hw = rpng2_info.width / 2;   /* for 1x1 image -> 0 */\n\n        /* Allocate a tiny destination buffer (RGB) */\n        size_t bg_rowbytes = (size_t)rpng2_info.width * 3;\n        size_t bufsz = (size_t)rpng2_info.height * bg_rowbytes;\n        uch *bg_data = (uch*)calloc(1, bufsz ? bufsz : 1);\n        uch *dest;\n        if (!bg_data) {\n            perror(\"calloc\");\n            exit(1);\n        }\n\n        angle = CLIP(angle, 0.0, 360.0);\n        grayspot = CLIP(bg[pat].bg_gray, 1, (hh + hw));\n        freq = MAX((double)bg[pat].bg_freq, 0.0);\n        saturate = (double)bg[pat].bg_bsat * 0.1;\n        rotate = (double)bg[pat].bg_brot * 0.1;\n        gray = 0.0;\n        intensity = 0.0;\n        maxDist = (double)((hw*hw) + (hh*hh));  /* for 1x1 -> 0.0 */\n\n        for (row = 0; row < rpng2_info.height; ++row) {\n            y = row - hh;\n            dest = bg_data + (size_t)row * bg_rowbytes;\n            for (i = 0; i < rpng2_info.width; ++i) {\n                x = i - hw;\n                angle = (x == 0) ? PI_2 : atan((double)y / (double)x);\n                gray = (double)MAX(ABS(y), ABS(x)) / grayspot;\n                gray = MIN(1.0, gray);\n                /* Vulnerable divide-by-zero: maxDist is 0.0 for a 1x1 image */\n                dist = (double)((x*x) + (y*y)) / maxDist;  /* 0.0/0.0 on first pixel */\n                intensity = cos((angle + (rotate * dist * PI)) * freq) * gray * saturate;\n                intensity = (MAX(MIN(intensity, 1.0), -1.0) + 1.0) * 0.5;\n                hue = (angle + PI) * INV_PI_360 + aoffset;\n                s = gray * ((double)(ABS(x) + ABS(y)) / (double)(hw + hh));\n                s = MIN(MAX(s, 0.0), 1.0);\n                v = MIN(MAX(intensity, 0.0), 1.0);\n\n                if (s == 0.0) {\n                    ch = (uch)(v * 255.0);\n                    *dest++ = ch;\n                    *dest++ = ch;\n                    *dest++ = ch;\n                } else {\n                    if ((hue < 0.0) || (hue >= 360.0))\n                        hue -= (((int)(hue / 360.0)) * 360.0);\n                    hue /= 60.0;\n                    ii = (int)hue;\n                    f = hue - (double)ii;\n                    p = (1.0 - s) * v;\n                    q = (1.0 - (s * f)) * v;\n                    t = (1.0 - (s * (1.0 - f))) * v;\n                    if      (ii == 0) { red = v; green = t; blue = p; }\n                    else if (ii == 1) { red = q; green = v; blue = p; }\n                    else if (ii == 2) { red = p; green = v; blue = t; }\n                    else if (ii == 3) { red = p; green = q; blue = v; }\n                    else if (ii == 4) { red = t; green = p; blue = v; }\n                    else if (ii == 5) { red = v; green = p; blue = q; }\n                    *dest++ = (uch)(red * 255.0);\n                    *dest++ = (uch)(green * 255.0);\n                    *dest++ = (uch)(blue * 255.0);\n                }\n            }\n        }\n\n        fprintf(stderr, \"done.\\n\");\n        fflush(stderr);\n        free(bg_data);\n    } else {\n        fprintf(stderr, \"Not the radial background path.\\n\");\n    }\n}\n\nint main(void)\n{\n    /* Enable traps for floating-point divide-by-zero and invalid operations\n       so that 0/0 or X/0 in double raises SIGFPE at the vulnerable line. */\n#ifdef FE_DIVBYZERO\n    feenableexcept(FE_DIVBYZERO);\n#endif\n#ifdef FE_INVALID\n    feenableexcept(FE_INVALID);\n#endif\n\n    /* Craft a 1x1 image so hw = hh = 0 -> maxDist = 0 */\n    rpng2_info.width = 1;\n    rpng2_info.height = 1;\n\n    /* Configure background type to radial (type & 0x07 == 2) */\n    bg[0].type = 2;\n    bg[0].bg_gray = 1;\n    bg[0].bg_freq = 5;\n    bg[0].bg_bsat = 10;\n    bg[0].bg_brot = 0;\n\n    rpng2_win_load_bg_image();\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6662204265594482,
+      "output": "repro:  computing radial background...\nAddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3713294==ERROR: AddressSanitizer: FPE on unknown address 0x59159fb47525 (pc 0x59159fb47525 bp 0x7ffd3fe18da0 sp 0x7ffd3fe18b30 T0)\n    #0 0x59159fb47525 in rpng2_win_load_bg_image /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:82:52\n    #1 0x59159fb46d5d in main /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:150:5\n    #2 0x78c4c3c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78c4c3c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x59159fa87354 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer+0x21354) (BuildId: 6a6bb446a31de69ad79eb70f4b2c84a0fa8b4791)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: FPE /app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:82:52 in rpng2_win_load_bg_image\n==3713294==ABORTING\n",
+      "error_type": "FPE",
+      "crash_function": "rpng2_win_load_bg_image",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:82",
+      "crash_line": 52,
+      "frames": [
+        [
+          "0",
+          "rpng2_win_load_bg_image",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:82",
+          "52"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/rpng2-win_1011_divide-by-zero/reproducer.c:150",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 2,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "aacenc_tns.c",
+    "original_line": 167,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "162: {\n163:     TemporalNoiseShaping *tns = &sce->tns;\n164:     int w, g, count = 0;\n165:     double gain, coefs[MAX_LPC_ORDER];\n166:     const int mmm = FFMIN(sce->ics.tns_max_bands, sce->ics.max_sfb);\n167:     const int is8 = sce->ics.window_sequence[0] == EIGHT_SHORT_SEQUENCE;\n168:     const int c_bits = is8 ? TNS_Q_BITS_IS8 == 4 : TNS_Q_BITS == 4;\n169:     const int sfb_start = av_clip(tns_min_sfb[is8][s->samplerate_index], 0, mmm);\n170:     const int sfb_end   = av_clip(sce->ics.num_swb, 0, mmm);\n171:     const int order = is8 ? 7 : s->profile == AV_PROFILE_AAC_LOW ? 12 : TNS_MAX_ORDER;\n172:     const int slant = sce->ics.window_sequence[0] == LONG_STOP_SEQUENCE  ? 1 :"
+  },
+  "klee_crash": {
+    "harness_file": "aacenc_tns.c",
+    "harness_line": 30,
+    "original_file": "aacenc_tns.c",
+    "original_line": 162,
+    "original_code": "{",
+    "original_context": "    159:  * 3 bits per coefficient with 8 short windows\n    160:  */\n    161: void ff_aac_search_for_tns(AACEncContext *s, SingleChannelElement *sce)\n>>> 162: {\n    163:     TemporalNoiseShaping *tns = &sce->tns;\n    164:     int w, g, count = 0;\n    165:     double gain, coefs[MAX_LPC_ORDER];",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: aacenc_tns.c\nLine: 30\nassembly.ll line: 30\nState: 23\nStack: \n\t#000000030 in ff_aac_search_for_tns(139051431112704, 139120150589440) at aacenc_tns.c:30\n\t#100000054 in entry_func(139051431112704, 139120150589440) at aacenc_tns.c:37\n\t#200000083 in main() at driver.c:20\nInfo: \n\taddress: (ReadLSB w64 0 window_sequence_ptr)\n\texample: 0\n\trange: [0, 18446744073709551615]\n\tnext: object at 138752930885632 of size 4\n\t\tMO42[4] allocated at ff_aac_search_for_tn"
+  },
+  "concrete_inputs": [
+    {
+      "name": "window_sequence_ptr",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "window_sequence_ptr",
+      "size": 8,
+      "data": "b'\\xfe2UrT\\x7f\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "aacenc_tns.c",
+      "harness_line": 30,
+      "original_file": "aacenc_tns.c",
+      "original_line": 162,
+      "error_type": "ptr",
+      "crash_function": "ff_aac_search_for_tns",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    },
+    {
+      "harness_file": "aacenc_tns.c",
+      "harness_line": 32,
+      "original_file": "aacenc_tns.c",
+      "original_line": 156,
+      "error_type": "assert",
+      "crash_function": "ff_aac_search_for_tns",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/3861_aacenc_tns.c_167_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

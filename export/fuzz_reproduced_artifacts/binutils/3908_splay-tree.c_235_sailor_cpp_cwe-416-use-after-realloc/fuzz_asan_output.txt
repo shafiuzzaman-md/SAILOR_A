@@ -1,0 +1,74 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 226076924
+INFO: Loaded 1 modules   (6 inline 8-bit counters): 6 [0x5585424a3120, 0x5585424a3126), 
+INFO: Loaded 1 PC tables (6 PCs): 6 [0x5585424a3128,0x5585424a3188), 
+INFO:        3 files found in /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 3 min: 16b max: 99b total: 131b rss: 29Mb
+=================================================================
+==3358413==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x6020000000a0 at pc 0x55854245f710 bp 0x7ffc1d792850 sp 0x7ffc1d792848
+READ of size 8 at 0x6020000000a0 thread T0
+    #0 0x55854245f70f in splay_tree_foreach_helper /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libiberty/./splay-tree.c:236:9
+    #1 0x558542460aff in splay_tree_foreach /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libiberty/./splay-tree.c:577:10
+    #2 0x55854245e8c9 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_harness.c:34:11
+    #3 0x558542387383 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3e383) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #4 0x558542386ad9 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3dad9) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #5 0x558542388748 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3f748) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #6 0x558542388c32 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3fc32) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #7 0x558542376f82 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x2df82) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #8 0x5585423a0c72 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x57c72) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #9 0x7fbf1a069d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #10 0x7fbf1a069e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+    #11 0x55854236b9c4 in _start (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x229c4) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+
+0x6020000000a0 is located 0 bytes to the right of 16-byte region [0x602000000090,0x6020000000a0)
+allocated by thread T0 here:
+    #0 0x558542423be8 in __interceptor_calloc (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0xdabe8) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #1 0x55854245e812 in LLVMFuzzerTestOneInput /app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_harness.c:28:45
+    #2 0x558542387383 in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3e383) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #3 0x558542386ad9 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3dad9) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #4 0x558542388748 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3f748) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #5 0x558542388c32 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x3fc32) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #6 0x558542376f82 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x2df82) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #7 0x5585423a0c72 in main (/app/sailor_binutils_b2bc71a_vul/verify_output/findings/3908_splay-tree.c_235_sailor_cpp_cwe-416-use-after-realloc/ossfuzz/fuzz_bin+0x57c72) (BuildId: d40f79f057d11a72d893d2a5a7928647b3e6f1e9)
+    #8 0x7fbf1a069d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f) (BuildId: 095c7ba148aeca81668091f718047078d57efddb)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_binutils_b2bc71a_vul/verify_output/upstream/src/libiberty/./splay-tree.c:236:9 in splay_tree_foreach_helper
+Shadow bytes around the buggy address:
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff8000: fa fa fd fa fa fa 00 00 fa fa 00 00 fa fa 00 fa
+=>0x0c047fff8010: fa fa 00 00[fa]fa 00 00 fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3358413==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-e129f27c5103bc5cc44bcdf0a15e160d445066ff
+Base64: AAAAAAAAAAAAAAAAAAAAAA==

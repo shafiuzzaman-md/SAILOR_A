@@ -1,0 +1,79 @@
+{
+  "tea.c": {
+    "4": {
+      "orig_file": "tea.c",
+      "orig_line": 25,
+      "code": "#include <string.h>"
+    },
+    "12": {
+      "orig_file": "tea.c",
+      "orig_line": 30,
+      "code": "typedef struct AVTEA {"
+    },
+    "14": {
+      "orig_file": "tea.c",
+      "orig_line": 32,
+      "code": "int rounds;"
+    },
+    "15": {
+      "orig_file": "tea.c",
+      "orig_line": 33,
+      "code": "} AVTEA;"
+    },
+    "21": {
+      "orig_file": "tea.c",
+      "orig_line": 38,
+      "code": "}"
+    },
+    "28": {
+      "orig_file": "tea.c",
+      "orig_line": 38,
+      "code": "}"
+    },
+    "37": {
+      "orig_file": "tea.c",
+      "orig_line": 66,
+      "code": "if (decrypt) {"
+    },
+    "38": {
+      "orig_file": "tea.c",
+      "orig_line": 75,
+      "code": "if (iv) {"
+    },
+    "42": {
+      "orig_file": "tea.c",
+      "orig_line": 78,
+      "code": "memcpy(iv, src, 8);"
+    },
+    "45": {
+      "orig_file": "tea.c",
+      "orig_line": 79,
+      "code": "}"
+    },
+    "46": {
+      "orig_file": "tea.c",
+      "orig_line": 79,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "tea.c",
+      "orig_line": 91,
+      "code": "AV_WB32(dst, v0);"
+    },
+    "49": {
+      "orig_file": "tea.c",
+      "orig_line": 92,
+      "code": "AV_WB32(dst + 4, v1);"
+    },
+    "50": {
+      "orig_file": "tea.c",
+      "orig_line": 93,
+      "code": "}"
+    },
+    "58": {
+      "orig_file": "tea.c",
+      "orig_line": 93,
+      "code": "}"
+    }
+  }
+}

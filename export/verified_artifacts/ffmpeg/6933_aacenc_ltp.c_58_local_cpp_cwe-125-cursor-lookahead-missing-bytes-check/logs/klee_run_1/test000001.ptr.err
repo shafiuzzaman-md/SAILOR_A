@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: aacenc_ltp.c
+Line: 16
+assembly.ll line: 29
+State: 1
+Stack: 
+	#000000029 in ff_aac_ltp_insert_new_frame(139561984561152) at aacenc_ltp.c:16
+	#100000054 in aac_entry(139561984561152) at aacenc_ltp.c:24
+	#200000079 in main() at driver.c:22
+Info: 
+	address: 139836862468224
+	next: object at 139263484334080 of size 4
+		MO38[4] allocated at ff_aac_ltp_insert_new_frame():  %3 = alloca i32, align 4

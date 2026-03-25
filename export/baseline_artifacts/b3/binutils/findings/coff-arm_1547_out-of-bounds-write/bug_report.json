@@ -1,0 +1,78 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coff-arm.c",
+    "line": 1547,
+    "function": "coff_arm_relocate_section",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "medium",
+    "explanation": "Writes a 32-bit word to contents + (rel->r_vaddr - input_section->vma) without verifying the offset is within the section buffer. Unlike the later relocation handling that checks address > high_address, this BL fixup path omits the bounds check, allowing a malformed input with an out-of-range r_vaddr to cause a heap buffer overflow.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coff-arm.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for BFD types used by coff_arm_relocate_section. */\ntypedef uint64_t bfd_vma;\ntypedef int64_t  bfd_signed_vma;\n\ntypedef struct bfd {\n  int dummy;\n} bfd;\n\ntypedef struct asection {\n  bfd_vma vma;            /* VMA of the input section */\n  bfd_vma output_offset;  /* Unused here, but present in real code */\n  struct outsec {         /* Unused here */\n    bfd_vma vma;\n  } *output_section;\n} asection;\n\ntypedef struct reloc_entry {\n  bfd_vma r_vaddr;  /* relocation virtual address (offset within section) */\n} reloc_entry;\n\n/* Stubs mimicking BFD helpers. */\nstatic inline uint32_t insert_thumb_branch(uint32_t insn, bfd_signed_vma ret_offset) {\n  /* The precise details don't matter; we just produce some 32-bit value. */\n  (void)ret_offset;\n  return insn ^ 0x12345678u;\n}\n\n/* Intentionally do NOT read from 'where' to avoid an earlier OOB read. */\nstatic inline uint32_t bfd_get_32(bfd *abfd, const void *where) {\n  (void)abfd; (void)where;\n  return 0xDEADBEEFu;\n}\n\n/* Perform a 32-bit little-endian store at the target address. */\nstatic inline void bfd_put_32(bfd *abfd, bfd_vma val, void *where) {\n  (void)abfd;\n  unsigned char *p = (unsigned char *)where;\n  /* This write will be out-of-bounds when 'where' points past the end\n     of the section buffer, which is the essence of the original bug. */\n  p[0] = (unsigned char)(val & 0xFF);\n  p[1] = (unsigned char)((val >> 8) & 0xFF);\n  p[2] = (unsigned char)((val >> 16) & 0xFF);\n  p[3] = (unsigned char)((val >> 24) & 0xFF);\n}\n\n/* A minimal reproduction of the vulnerable path inside coff_arm_relocate_section.\n   It fixes up a BL instruction by writing to contents + (rel->r_vaddr - input_section->vma)\n   without checking bounds, matching the buggy snippet. */\nstatic void coff_arm_relocate_section(bfd *output_bfd,\n                                      bfd *input_bfd,\n                                      asection *input_section,\n                                      unsigned char *contents,\n                                      const reloc_entry *rel)\n{\n  /* Compute the write location exactly as in the vulnerable code path. */\n  unsigned char *where = contents + (size_t)(rel->r_vaddr - input_section->vma);\n\n  /* Dummy values to mirror the original sequence. */\n  bfd_signed_vma ret_offset = 0; /* Value isn't relevant for the OOB. */\n\n  /* Read the original instruction value (stubbed to avoid OOB read). */\n  uint32_t tmp = bfd_get_32(input_bfd, where);\n\n  /* Vulnerable write: no bounds check before writing 4 bytes at 'where'. */\n  bfd_put_32(output_bfd, (bfd_vma)insert_thumb_branch(tmp, ret_offset), where);\n}\n\nint main(void) {\n  /* Allocate a small section buffer to represent the input section's contents. */\n  const size_t section_size = 16;  /* Very small on purpose. */\n  unsigned char *contents = (unsigned char *)malloc(section_size);\n  if (!contents) {\n    perror(\"malloc\");\n    return 1;\n  }\n  memset(contents, 0xAA, section_size);\n\n  /* Set up minimal BFD/section/reloc objects. */\n  bfd out_bfd = {0};\n  bfd in_bfd = {0};\n  asection input_sec;\n  memset(&input_sec, 0, sizeof(input_sec));\n  input_sec.vma = 0;  /* Typical: contents is indexed from 0 relative to section VMA. */\n\n  reloc_entry rel;\n  /* Craft an r_vaddr that is far beyond the end of 'contents'.\n     This will make contents + (r_vaddr - vma) point past the buffer,\n     triggering an out-of-bounds write. */\n  rel.r_vaddr = section_size + 1024;  /* Well beyond the 16-byte buffer. */\n\n  fprintf(stderr, \"Section size: %zu, VMA: 0x%llx, r_vaddr: 0x%llx, computed offset: 0x%llx\\n\",\n          section_size,\n          (unsigned long long)input_sec.vma,\n          (unsigned long long)rel.r_vaddr,\n          (unsigned long long)(rel.r_vaddr - input_sec.vma));\n\n  /* Call the vulnerable routine; ASan should flag the OOB write in bfd_put_32. */\n  coff_arm_relocate_section(&out_bfd, &in_bfd, &input_sec, contents, &rel);\n\n  /* Cleanup (won't be reached if ASan aborts). */\n  free(contents);\n  return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6447415351867676,
+      "output": "Section size: 16, VMA: 0x0, r_vaddr: 0x410, computed offset: 0x410\n=================================================================\n==3586810==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000420 at pc 0x5f4296c7b1f2 bp 0x7ffe01cbdbd0 sp 0x7ffe01cbdbc8\nWRITE of size 1 at 0x602000000420 thread T0\n    #0 0x5f4296c7b1f1 in bfd_put_32 /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:45:8\n    #1 0x5f4296c7b165 in coff_arm_relocate_section /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:70:3\n    #2 0x5f4296c7afcd in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:103:3\n    #3 0x7df3e242a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7df3e242a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x5f4296bbb314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer+0x21314) (BuildId: 7c4ac46df2bf53c1f2b6f964bd305fb4f9084dde)\n\n0x602000000420 is located 1024 bytes to the right of 16-byte region [0x602000000010,0x602000000020)\nallocated by thread T0 here:\n    #0 0x5f4296c3ed22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer+0xa4d22) (BuildId: 7c4ac46df2bf53c1f2b6f964bd305fb4f9084dde)\n    #1 0x5f4296c7adc8 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:76:46\n    #2 0x7df3e242a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7df3e242a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5f4296bbb314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer+0x21314) (BuildId: 7c4ac46df2bf53c1f2b6f964bd305fb4f9084dde)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:45:8 in bfd_put_32\nShadow bytes around the buggy address:\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8060: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8070: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n=>0x0c047fff8080: fa fa fa fa[fa]fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8090: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80a0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80b0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff80d0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3586810==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "bfd_put_32",
+      "crash_file": "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:45",
+      "crash_line": 8,
+      "frames": [
+        [
+          "0",
+          "bfd_put_32",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:45",
+          "8"
+        ],
+        [
+          "1",
+          "coff_arm_relocate_section",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:70",
+          "3"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:103",
+          "3"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coff-arm_1547_out-of-bounds-write/reproducer.c:76",
+          "46"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

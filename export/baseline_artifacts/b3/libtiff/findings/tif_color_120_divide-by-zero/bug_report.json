@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 120,
+    "function": "TIFFXYZToRGB",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "Index i is computed by dividing by cielab->bstep. If bstep is 0 (e.g., when display parameters yield zero step), this is a floating-point divide-by-zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#include <stdint.h>\n#include <stdio.h>\n#include <string.h>\n\n/* Use libtiff's internal color structs to match the library ABI/layout */\n#include \"libtiff/tif_color.h\"\n\n/* Prototype of the vulnerable function exported by libtiff */\nextern void TIFFXYZToRGB(TIFFCIELabToRGB *cielab, float X, float Y, float Z,\n                         uint32_t *r, uint32_t *g, uint32_t *b);\n\nint main(void)\n{\n    TIFFCIELabToRGB state;\n    memset(&state, 0, sizeof(state));\n\n    /*\n     * Craft the conversion state so that bstep == 0.0f, which causes a\n     * floating-point divide-by-zero at:\n     *   i = (size_t)((Yb - cielab->display.d_Y0B) / cielab->bstep);\n     */\n\n    /* Keep range small so the post-min index stays in-bounds (0). */\n    state.range = 0;\n\n    /* Identity-like matrix so Yr=X, Yg=Y, Yb=Z. */\n    state.display.d_mat[0][0] = 1.0f; state.display.d_mat[0][1] = 0.0f; state.display.d_mat[0][2] = 0.0f;\n    state.display.d_mat[1][0] = 0.0f; state.display.d_mat[1][1] = 1.0f; state.display.d_mat[1][2] = 0.0f;\n    state.display.d_mat[2][0] = 0.0f; state.display.d_mat[2][1] = 0.0f; state.display.d_mat[2][2] = 1.0f;\n\n    /* Clip bounds: allow positive Yb so numerator != 0, but force bstep=0. */\n    state.display.d_Y0R = 0.0f;\n    state.display.d_Y0G = 0.0f;\n    state.display.d_Y0B = 0.0f;  /* Y0B */\n    state.display.d_YCR = 100.0f;\n    state.display.d_YCG = 100.0f;\n    state.display.d_YCB = 100.0f; /* Keep > Yb so it won't clamp to 0 before the divide */\n\n    /* Steps: make blue step 0 to trigger the bug; others non-zero. */\n    state.rstep = 1.0f;\n    state.gstep = 1.0f;\n    state.bstep = 0.0f; /* divide-by-zero trigger */\n\n    /* Output clip values */\n    state.display.d_Vrwr = 255;\n    state.display.d_Vrwg = 255;\n    state.display.d_Vrwb = 255;\n\n    /* Minimal LUT entries used when range==0 and index is clamped to 0. */\n    state.Yr2r[0] = 0.0f;\n    state.Yg2g[0] = 0.0f;\n    state.Yb2b[0] = 0.0f;\n\n    uint32_t r = 0, g = 0, b = 0;\n\n    /* With the identity matrix, Yb = Z. Choose Z > 0 so (Yb - Y0B) > 0. */\n    float X = 0.0f, Y = 0.0f, Z = 1.0f;\n\n    /* This call will execute the faulty division by state.bstep (0.0f). */\n    TIFFXYZToRGB(&state, X, Y, Z, &r, &g, &b);\n\n    /* If it gets here without trapping, just print the values. */\n    printf(\"r=%u g=%u b=%u\\n\", r, g, b);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_120_divide-by-zero/reproducer.c:6:10: fatal error: 'libtiff/tif_color.h' file not found\n#include \"libtiff/tif_color.h\"\n         ^~~~~~~~~~~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

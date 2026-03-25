@@ -1,0 +1,80 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "ftpsprop.c",
+        "original_line": 245,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "240:       FT_Int*  darken_params = driver->darken_params;\n241:       FT_Int*  val           = (FT_Int*)value;\n242: \n243: \n244:       val[0] = darken_params[0];\n245:       val[1] = darken_params[1];\n246:       val[2] = darken_params[2];\n247:       val[3] = darken_params[3];\n248:       val[4] = darken_params[4];\n249:       val[5] = darken_params[5];\n250:       val[6] = darken_params[6];"
+    },
+    "klee_crash": {
+        "harness_file": "ftpsprop.c",
+        "harness_line": 39,
+        "original_file": "ftpsprop.c",
+        "original_line": 245,
+        "original_code": "val[1] = darken_params[1];",
+        "original_context": "    242: \n    243: \n    244:       val[0] = darken_params[0];\n>>> 245:       val[1] = darken_params[1];\n    246:       val[2] = darken_params[2];\n    247:       val[3] = darken_params[3];\n    248:       val[4] = darken_params[4];",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: ftpsprop.c\nLine: 39\nassembly.ll line: 124\nState: 1\nStack: \n\t#000000124 in ps_property_get(139611597484032, 140544142258176, 139594417614848) at ftpsprop.c:39\n\t#100000088 in entry_func(139611597484032, 140544142258176, 139594417614848) at ftpsprop.c:57\n\t#200000058 in main() at driver.c:28\nInfo: \n\taddress: 139611597484036\n\tnext: object at 139315244740608 of size 4\n\t\tMO20[4] allocated at main():  %1 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "module_mem",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "val_buf",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "ps_property_get",
+        "crash_file": "thirdparty/freetype/src/base/ftpsprop.c",
+        "crash_line": 244,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==23609==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000050 at pc 0x564d3c8ec875 bp 0x7fff830e62d0 sp 0x7fff830e62c0\nREAD of size 4 at 0x502000000050 thread T0\n    #0 0x564d3c8ec874 in ps_property_get thirdparty/freetype/src/base/ftpsprop.c:244\n    #1 0x564d3c8db896 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4073_ftpsprop.c_245_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:29\n    #2 0x7f167e2c5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f167e2c5e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x564d3c8db674 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4073_ftpsprop.c_245_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x2674)\n\n0x502000000050 is located 24 bytes to the right of 8-byte region [0x502000000030,0x502000000038)\nallocated by thread T0 here:\n    #0 0x7f167e67c887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x564d3c8db7e5 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4073_ftpsprop.c_245_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:23\n    #2 0x7f167e2c5d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/freetype/src/base/ftpsprop.c:244 in ps_property_get\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 fa fa fa[fa]fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4073_ftpsprop.c_245_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "ftpsprop.c",
+            "harness_line": 39,
+            "original_file": "ftpsprop.c",
+            "original_line": 245,
+            "error_type": "ptr",
+            "crash_function": "ps_property_get",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4073_ftpsprop.c_245_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "ps_property_get",
+            "crash_file": "thirdparty/freetype/src/base/ftpsprop.c",
+            "crash_line": 244
+        }
+    ]
+}

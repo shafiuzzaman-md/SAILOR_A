@@ -1,0 +1,39 @@
+{
+  "vp9recon.c": {
+    "14": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 66,
+      "code": "};"
+    },
+    "35": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 657,
+      "code": "inter_recon(td, 1);"
+    },
+    "36": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 658,
+      "code": "}"
+    },
+    "40": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 581,
+      "code": "VP9Block *b = td->b;"
+    },
+    "42": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 611,
+      "code": "int w4 = ff_vp9_bwh_tab[1][b->bs][0] << 1, step1d = 1 << b->tx, n;"
+    },
+    "43": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 612,
+      "code": "int h4 = ff_vp9_bwh_tab[1][b->bs][1] << 1, x, y, step = 1 << (b->tx * 2);"
+    },
+    "47": {
+      "orig_file": "vp9recon.c",
+      "orig_line": 606,
+      "code": "}"
+    }
+  }
+}

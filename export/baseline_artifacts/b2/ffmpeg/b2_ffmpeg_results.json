@@ -1,0 +1,23 @@
+{
+  "baseline": "B2",
+  "description": "Project-Level LLM Harness + KLEE (No SA, No Iteration)",
+  "project": "ffmpeg",
+  "commit": "f46e5144",
+  "llm_model": "GPT-5",
+  "num_rounds": 3,
+  "total_harnesses": 21,
+  "build_errors": 21,
+  "se_detected": 0,
+  "no_bug": 0,
+  "harness_artifacts": 0,
+  "unique_bugs": 0,
+  "real_bugs_in_library": 0,
+  "klee_timeout": 300,
+  "run_date": "2026-03-12",
+  "key_findings": [
+    "21 LLM-generated harnesses across 3 rounds",
+    "21 BUILD_ERROR (21/21 failed to compile)",
+    "0 SE_DETECTED",
+    "0 real bugs found vs SAILOR's 78"
+  ]
+}

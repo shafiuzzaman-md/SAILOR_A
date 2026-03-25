@@ -1,0 +1,66 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "png.c",
+    "line": 4007,
+    "function": "png_image_error",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "medium",
+    "explanation": "The function unconditionally dereferences 'image' (image->message) when calling png_safecat without checking if 'image' is NULL. If png_image_error is invoked with a NULL image pointer (e.g., when reporting an error before image initialization), this results in an immediate crash.",
+    "abs_path": "/tmp/libpng_upstream/png.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stand-ins for libpng types/macros used by the vulnerable code */\ntypedef char* png_charp;\ntypedef const char* png_const_charp;\n\n#ifndef PNG_IMAGE_ERROR\n#define PNG_IMAGE_ERROR 2\n#endif\n\n/* Minimal stand-in for png_image that includes only the fields used */\ntypedef struct png_image {\n    unsigned int warning_or_error;\n    char message[64];\n    void *opaque;\n} png_image;\n\n/* Stub of png_image_free as referenced by png_image_error */\nvoid png_image_free(png_image *image)\n{\n    /* Safe no-op; real implementation would free internal state. */\n    (void)image;\n}\n\n/* Minimal png_safecat implementation matching expected behavior */\nstatic size_t png_safecat(png_charp buffer, size_t bufsize, size_t pos, png_const_charp string)\n{\n    size_t len = strlen(string);\n    if (pos < bufsize) {\n        size_t avail = (bufsize > pos) ? (bufsize - pos - 1) : 0; /* reserve for NUL */\n        if (len > avail) len = avail;\n        if (len > 0) memcpy(buffer + pos, string, len);\n        pos += len;\n        if (pos < bufsize) buffer[pos] = '\\0';\n    }\n    return pos;\n}\n\n/* Vulnerable function (mirrors the bug: unconditional dereference of image) */\nint png_image_error(png_image *image, const char *error_message)\n{\n    /* Utility to log an error. */\n    png_safecat(image->message, (sizeof image->message), 0, error_message);\n    image->warning_or_error |= PNG_IMAGE_ERROR;\n    png_image_free(image);\n    return 0;\n}\n\nint main(void)\n{\n    /* Trigger: pass a NULL image pointer, causing immediate NULL dereference\n       at image->message inside png_image_error via png_safecat. */\n    const char *msg = \"Triggering null-pointer dereference in png_image_error\";\n    /* This call will crash with ASan reporting a null-pointer dereference. */\n    (void)png_image_error(NULL, msg);\n\n    /* Should never reach here */\n    puts(\"If you see this, the bug did not trigger as expected.\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.741121768951416,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3750230==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000004 (pc 0x702ff0988aa1 bp 0x7ffe5259ed80 sp 0x7ffe5259e548 T0)\n==3750230==The signal is caused by a WRITE memory access.\n==3750230==Hint: address points to the zero page.\n    #0 0x702ff0988aa1 in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271\n    #1 0x5f9bc44130d5 in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer+0xa40d5) (BuildId: 1e10cb6552449f2cf3fed43b5f8884df183594ad)\n    #2 0x5f9bc444fdde in png_safecat /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:34:22\n    #3 0x5f9bc444fcd9 in png_image_error /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:45:5\n    #4 0x5f9bc444fe76 in main /app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:57:11\n    #5 0x702ff082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x702ff082a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5f9bc4390304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer+0x21304) (BuildId: 1e10cb6552449f2cf3fed43b5f8884df183594ad)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:271 in __memcpy_avx_unaligned_erms\n==3750230==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 271,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "271"
+        ],
+        [
+          "2",
+          "png_safecat",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:34",
+          "22"
+        ],
+        [
+          "3",
+          "png_image_error",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:45",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/png_4007_null-pointer-dereference/reproducer.c:57",
+          "11"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

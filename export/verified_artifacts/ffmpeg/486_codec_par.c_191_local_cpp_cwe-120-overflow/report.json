@@ -1,0 +1,165 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 42 (sink assert at 43)\nCrash: CRASH: ptr at codec_par.c:42\nOriginal: codec_par.c:258 \u2192 memcpy(codec->extradata, par->extradata, par->extradata_size);\nASan: not confirmed\n\nAll crashes (1):\n  ptr at codec_par.c:42 \u2192 codec_par.c:258\n"
+    ]
+  ],
+  "line_map": {
+    "codec_par.c": {
+      "3": {
+        "orig_file": "codec_par.c",
+        "orig_line": 26,
+        "code": "#include <string.h>"
+      },
+      "25": {
+        "orig_file": "codec_par.c",
+        "orig_line": 54,
+        "code": "}"
+      },
+      "31": {
+        "orig_file": "codec_par.c",
+        "orig_line": 54,
+        "code": "}"
+      },
+      "35": {
+        "orig_file": "codec_par.c",
+        "orig_line": 252,
+        "code": "av_freep(&codec->extradata);"
+      },
+      "36": {
+        "orig_file": "codec_par.c",
+        "orig_line": 253,
+        "code": "codec->extradata_size = 0;"
+      },
+      "37": {
+        "orig_file": "codec_par.c",
+        "orig_line": 254,
+        "code": "if (par->extradata) {"
+      },
+      "38": {
+        "orig_file": "codec_par.c",
+        "orig_line": 255,
+        "code": "codec->extradata = av_mallocz(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);"
+      },
+      "39": {
+        "orig_file": "codec_par.c",
+        "orig_line": 256,
+        "code": "if (!codec->extradata)"
+      },
+      "42": {
+        "orig_file": "codec_par.c",
+        "orig_line": 258,
+        "code": "memcpy(codec->extradata, par->extradata, par->extradata_size);"
+      },
+      "44": {
+        "orig_file": "codec_par.c",
+        "orig_line": 259,
+        "code": "codec->extradata_size = par->extradata_size;"
+      },
+      "45": {
+        "orig_file": "codec_par.c",
+        "orig_line": 260,
+        "code": "}"
+      },
+      "46": {
+        "orig_file": "codec_par.c",
+        "orig_line": 268,
+        "code": "return 0;"
+      },
+      "47": {
+        "orig_file": "codec_par.c",
+        "orig_line": 269,
+        "code": "}"
+      },
+      "52": {
+        "orig_file": "codec_par.c",
+        "orig_line": 268,
+        "code": "return 0;"
+      },
+      "53": {
+        "orig_file": "codec_par.c",
+        "orig_line": 269,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 0,
+      "secondary_bugs": 1
+    },
+    "vulnerability": {
+      "original_file": "codec_par.c",
+      "original_line": 191,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "186: \n187:     if (codec->extradata) {\n188:         par->extradata = av_mallocz(codec->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);\n189:         if (!par->extradata)\n190:             return AVERROR(ENOMEM);\n191:         memcpy(par->extradata, codec->extradata, codec->extradata_size);\n192:         par->extradata_size = codec->extradata_size;\n193:     }\n194: \n195:     ret = codec_parameters_copy_side_data(&par->coded_side_data, &par->nb_coded_side_data,\n196:                                           codec->coded_side_data, codec->nb_coded_side_data);"
+    },
+    "klee_crash": {
+      "harness_file": "codec_par.c",
+      "harness_line": 42,
+      "original_file": "codec_par.c",
+      "original_line": 258,
+      "original_code": "memcpy(codec->extradata, par->extradata, par->extradata_size);",
+      "original_context": "    255:         codec->extradata = av_mallocz(par->extradata_size + AV_INPUT_BUFFER_PADDING_SIZE);\n    256:         if (!codec->extradata)\n    257:             return AVERROR(ENOMEM);\n>>> 258:         memcpy(codec->extradata, par->extradata, par->extradata_size);\n    259:         codec->extradata_size = par->extradata_size;\n    260:     }\n    261: ",
+      "error_type": "ptr",
+      "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 223\nState: 1\nStack: \n\t#000000223 in memcpy(139315844669440, 139178405715968, 320) at runtime/Freestanding/memcpy.c:17\n\t#100000064 in avcodec_parameters_to_context(139040966762496, 139023786893312) at codec_par.c:42\n\t#200000156 in entry_func(139040966762496, 139023786893312) at codec_par.c:51\n\t#300000192 in main() at driver.c:22\nInfo: \n\taddress: 139178405716032\n\tnext: object at 138673747058688"
+    },
+    "concrete_inputs": [
+      {
+        "name": "par_extradata_bytes",
+        "size": 64,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/486_codec_par.c_191_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "codec_par.c",
+        "harness_line": 42,
+        "original_file": "codec_par.c",
+        "original_line": 258,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/486_codec_par.c_191_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      }
+    ],
+    "all_asan_crashes": [],
+    "secondary_bugs": [
+      {
+        "original_file": "codec_par.c",
+        "original_line": 258,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/486_codec_par.c_191_local_cpp_cwe-120-overflow/logs/klee_run_2/test000001.ktest"
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 292
+State: 1
+Stack: 
+	#000000292 in memcpy(139445976449024, 139566235533312, symbolic) at runtime/Freestanding/memcpy.c:17
+	#100000215 in ff_psy_init(139583415402496, 139308537495552, symbolic, 139566235533312, 139514695925760, 0, 139299947560960) at psymodel.c:36
+	#200000263 in entry_func(139583415402496, 139308537495552, symbolic, 139566235533312, 139514695925760, 0, 139299947560960) at psymodel.c:48
+	#300000163 in main() at driver.c:74
+Info: 
+	address: 139445976449056
+	next: object at 139008426655744 of size 4
+		MO366[4] allocated at entry_func():  %10 = alloca i32, align 4

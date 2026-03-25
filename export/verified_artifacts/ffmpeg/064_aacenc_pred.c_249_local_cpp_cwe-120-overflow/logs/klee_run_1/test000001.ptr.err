@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 212
+State: 1
+Stack: 
+	#000000212 in memcpy(138976328642560, 139423005241344, 4096) at runtime/Freestanding/memcpy.c:17
+	#100000049 in ff_aac_search_for_pred(0, 138907609165824) at aacenc_pred.c:36
+	#200000082 in harness_entry(138907609165824) at aacenc_pred.c:44
+	#300000170 in main() at driver.c:34
+Info: 
+	address: 138976328642624
+	next: object at 138473817468928 of size 4
+		MO23[4] allocated at main():  %1 = alloca i32, align 4

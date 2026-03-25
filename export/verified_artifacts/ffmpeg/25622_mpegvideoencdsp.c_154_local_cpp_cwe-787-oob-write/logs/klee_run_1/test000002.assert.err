@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: mpegvideoencdsp.c
+Line: 35
+assembly.ll line: 163
+State: 1
+Stack: 
+	#000000163 in draw_edges_8_c(139946009534464, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic) at mpegvideoencdsp.c:35
+	#100000187 in ff_mpegvideoencdsp_init(0, 0) at mpegvideoencdsp.c:44
+	#200000105 in main() at driver.c:43

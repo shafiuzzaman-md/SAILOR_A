@@ -1,0 +1,76 @@
+
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 2779103027
+INFO: Loaded 1 modules   (4 inline 8-bit counters): 4 [0x59e57b8102e0, 0x59e57b8102e4), 
+INFO: Loaded 1 PC tables (4 PCs): 4 [0x59e57b8102e8,0x59e57b810328), 
+INFO:        1 files found in artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: -max_len is not provided; libFuzzer will not generate inputs larger than 4096 bytes
+INFO: seed corpus: files: 1 min: 16b max: 16b total: 16b rss: 40Mb
+=================================================================
+==88594==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc6420f560 at pc 0x59e578b6a4a2 bp 0x7ffc6420f280 sp 0x7ffc6420f278
+READ of size 8 at 0x7ffc6420f560 thread T0
+    #0 0x59e578b6a4a1 in fz_xml_is_tag /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/xml.c:235:15
+    #1 0x59e578a3f806 in xps_begin_opacity /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/xps/xps-common.c:111:6
+    #2 0x59e578a3ec28 in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:29:5
+    #3 0x59e578964b5a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1a8b5a) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #4 0x59e578964225 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1a8225) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #5 0x59e578965e28 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1a9e28) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #6 0x59e5789662a6 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1aa2a6) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #7 0x59e578953892 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x197892) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #8 0x59e57897ed36 in main (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x1c2d36) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+    #9 0x78bcee02a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x78bcee02a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x59e578947cc4 in _start (/app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x18bcc4) (BuildId: ac34e936c73ce3f7f30b9b08a5b3e0f9e2dda61d)
+
+Address 0x7ffc6420f560 is located in stack of thread T0 at offset 256 in frame
+    #0 0x59e578a3e5ff in LLVMFuzzerTestOneInput /app/artifacts/mupdf_21fb0a2b_vul/ossfuzz_artifacts/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:8
+
+  This frame has 8 object(s):
+    [32, 36) 'ctx_obj' (line 11)
+    [48, 104) 'doc_obj' (line 12)
+    [144, 168) 'ctm' (line 13)
+    [208, 224) 'area' (line 14)
+    [240, 244) 'dict_obj' (line 15)
+    [256, 260) 'xml_obj' (line 16) <== Memory access at offset 256 partially overflows this variable
+    [272, 288) 'base_uri' (line 19)
+    [304, 320) 'opacity_att' (line 20)
+HINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork
+      (longjmp and C++ exceptions *are* supported)
+SUMMARY: AddressSanitizer: stack-buffer-overflow /app/dataset/21fb0a2b/mupdf_21fb0a2b_vul/source/fitz/xml.c:235:15 in fz_xml_is_tag
+Shadow bytes around the buggy address:
+  0x10000c839e50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10000c839e60: 00 00 f1 f1 f1 f1 00 f2 f2 f2 00 00 00 00 00 00
+  0x10000c839e70: 00 00 00 00 00 00 00 00 00 00 f3 f3 f3 f3 00 00
+  0x10000c839e80: 00 00 00 00 00 00 00 00 00 00 00 00 f1 f1 f1 f1
+  0x10000c839e90: 04 f2 00 00 00 00 00 00 00 f2 f2 f2 f2 f2 00 00
+=>0x10000c839ea0: 00 f2 f2 f2 f2 f2 00 00 f2 f2 04 f2[04]f2 00 00
+  0x10000c839eb0: f2 f2 00 00 f3 f3 f3 f3 00 00 00 00 00 00 00 00
+  0x10000c839ec0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10000c839ed0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10000c839ee0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x10000c839ef0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==88594==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
+\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000
+artifact_prefix='./'; Test unit written to ./crash-e129f27c5103bc5cc44bcdf0a15e160d445066ff
+Base64: AAAAAAAAAAAAAAAAAAAAAA==

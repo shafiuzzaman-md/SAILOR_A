@@ -1,0 +1,14 @@
+Error: concretized symbolic size
+File: packet.c
+Line: 31
+assembly.ll line: 197
+State: 2
+Stack: 
+	#000000197 in packet_alloc(139516231876608, symbolic) at packet.c:31
+	#100000123 in av_packet_make_refcounted(139516231876608) at packet.c:45
+	#200000238 in entry_func(139516231876608) at packet.c:62
+	#300000076 in main() at driver.c:35
+Info: 
+  size expr: (SExt w64 (ReadLSB w32 0 pkt_size))
+  concretization : 9
+  unbound example: 64

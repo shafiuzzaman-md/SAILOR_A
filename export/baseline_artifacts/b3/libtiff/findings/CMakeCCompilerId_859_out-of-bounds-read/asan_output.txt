@@ -1,0 +1,46 @@
+=================================================================
+==3807993==ERROR: AddressSanitizer: global-buffer-overflow on address 0x58cfd85a6592 at pc 0x58cfd8592f99 bp 0x7ffc77036240 sp 0x7ffc77036238
+READ of size 1 at 0x58cfd85a6592 thread T0
+    #0 0x58cfd8592f98 in cmake_compilerid_main_like /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22:16
+    #1 0x58cfd8592dcc in main /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:34:24
+    #2 0x79e12182a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x79e12182a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x58cfd84d3304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer+0x21304) (BuildId: c260664b74b1513fc10de3f5cd62dff853011a02)
+
+0x58cfd85a6592 is located 46 bytes to the left of global variable '<string literal>' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:32:35' (0x58cfd85a65c0) of size 6
+  '<string literal>' is ascii string 'repro'
+0x58cfd85a6592 is located 0 bytes to the right of global variable 'info_arch_lit' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:10:19' (0x58cfd85a6580) of size 18
+  'info_arch_lit' is ascii string 'INFO:arch[x86_64]'
+SUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/CMakeCCompilerId_859_out-of-bounds-read/reproducer.c:22:16 in cmake_compilerid_main_like
+Shadow bytes around the buggy address:
+  0x0b1a7b0acc60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0acc70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0acc80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0acc90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0acca0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0b1a7b0accb0: 00 00[02]f9 f9 f9 f9 f9 06 f9 f9 f9 00 04 f9 f9
+  0x0b1a7b0accc0: 00 00 05 f9 f9 f9 f9 f9 00 00 05 f9 f9 f9 f9 f9
+  0x0b1a7b0accd0: 00 00 00 02 f9 f9 f9 f9 00 00 00 04 f9 f9 f9 f9
+  0x0b1a7b0acce0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0accf0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0b1a7b0acd00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3807993==ABORTING

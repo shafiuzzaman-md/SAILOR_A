@@ -1,0 +1,134 @@
+{
+  "ivi_dsp.c": {
+    "23": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 271,
+      "code": "void ff_ivi_inverse_haar_8x8(const int32_t *in, int16_t *out, ptrdiff_t pitch,"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 272,
+      "code": "const uint8_t *flags)"
+    },
+    "25": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 273,
+      "code": "{"
+    },
+    "26": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 329,
+      "code": "int     i;"
+    },
+    "27": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 330,
+      "code": "int     t0, t1, t2, t3, t4, t5, t6, t7, t8;"
+    },
+    "30": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 333,
+      "code": "#define COMPENSATE(x) (x)"
+    },
+    "31": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 334,
+      "code": "for (i = 0; i < 8; i++) {"
+    },
+    "32": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 360,
+      "code": "if (flags[i]) {"
+    },
+    "33": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 361,
+      "code": "INV_HAAR8(in[ 0], in[ 8], in[16], in[24],"
+    },
+    "34": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 362,
+      "code": "in[32], in[40], in[48], in[56],"
+    },
+    "35": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 363,
+      "code": "out[0 * pitch], out[1 * pitch],"
+    },
+    "36": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 364,
+      "code": "out[2 * pitch], out[3 * pitch],"
+    },
+    "37": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 365,
+      "code": "out[4 * pitch], out[5 * pitch],"
+    },
+    "38": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 366,
+      "code": "out[6 * pitch], out[7 * pitch],"
+    },
+    "39": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 367,
+      "code": "t0, t1, t2, t3, t4, t5, t6, t7, t8);"
+    },
+    "41": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 368,
+      "code": "} else"
+    },
+    "42": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 369,
+      "code": "out[0 * pitch] = out[1 * pitch] ="
+    },
+    "43": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 370,
+      "code": "out[2 * pitch] = out[3 * pitch] ="
+    },
+    "44": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 371,
+      "code": "out[4 * pitch] = out[5 * pitch] ="
+    },
+    "45": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 372,
+      "code": "out[6 * pitch] = out[7 * pitch] = 0;"
+    },
+    "47": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 374,
+      "code": "in++;"
+    },
+    "48": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 375,
+      "code": "out++;"
+    },
+    "49": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 376,
+      "code": "}"
+    },
+    "50": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 377,
+      "code": "#undef  COMPENSATE"
+    },
+    "51": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 378,
+      "code": "}"
+    },
+    "57": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 378,
+      "code": "}"
+    }
+  }
+}

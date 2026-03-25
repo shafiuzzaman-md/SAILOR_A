@@ -1,0 +1,26 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+to_u32_oob_read	BUILD_ERROR	FP			0	to_u32		0	3308		
+to_u16_oob_read	BUILD_ERROR	FP			0	to_u16		0	3308		
+fuzz_get_tlv_comn_oob_parse	BUILD_ERROR	FP			0	fuzz_get_tlv_comn		0	3308		
+fuzz_parse_tlv_stack_overflow	BUILD_ERROR	FP			0	fuzz_parse_tlv		0	3308		
+fuzz_tlv_to_string_oob_write	BUILD_ERROR	FP			0	fuzz_tlv_to_string		0	3308		
+fuzz_write_callback_heap_overflow	BUILD_ERROR	FP			0	fuzz_write_callback		0	3308		
+fuzz_read_callback_oob_read	BUILD_ERROR	FP			0	fuzz_read_callback		0	3308		
+fuzz_free_double_free	BUILD_ERROR	FP			0	fuzz_free		0	3308		
+fuzz_terminate_fuzz_data_double_free	BUILD_ERROR	FP			0	fuzz_terminate_fuzz_data		0	3308		
+fuzz_send_next_response_overflow	BUILD_ERROR	FP			0	fuzz_send_next_response		0	3308		
+fuzz_get_first_tlv_basic	BUILD_ERROR	FP			0	fuzz_get_first_tlv		0	3308		
+fuzz_get_next_tlv_step	BUILD_ERROR	FP			0	fuzz_get_next_tlv		0	3308		
+fuzz_setup_http_post_overflow	BUILD_ERROR	FP			0	fuzz_setup_http_post		0	3308		
+fuzz_add_mime_part_oob	BUILD_ERROR	FP			0	fuzz_add_mime_part		0	3308		
+fuzz_parse_mime_tlv_divzero	BUILD_ERROR	FP			0	fuzz_parse_mime_tlv		0	3308		
+fuzz_open_socket_addrlen_oob	BUILD_ERROR	FP			0	fuzz_open_socket		0	3308		
+fuzz_sockopt_callback_index_oob	BUILD_ERROR	FP			0	fuzz_sockopt_callback		0	3308		
+fuzz_select_bitset_oob	BUILD_ERROR	FP			0	fuzz_select		0	3308		
+fuzz_set_allowed_protocols_oob	BUILD_ERROR	FP			0	fuzz_set_allowed_protocols		0	3308		
+fuzz_initialize_fuzz_data_copy_oob	BUILD_ERROR	FP			0	fuzz_initialize_fuzz_data		0	3308		
+altsvc_createid_overread	BUILD_ERROR	FP			0	altsvc_createid		0	3308		
+bufq_init2_overflow_write	BUILD_ERROR	FP			0	Curl_bufq_init2		0	3308		
+bufq_double_free	BUILD_ERROR	FP			0	Curl_bufq_free		0	3308		
+altsvc_parse_strlen_oob	BUILD_ERROR	FP			0	Curl_altsvc_parse		0	3308		
+bufcp_init_overflow	BUILD_ERROR	FP			0	Curl_bufcp_init		0	3308		

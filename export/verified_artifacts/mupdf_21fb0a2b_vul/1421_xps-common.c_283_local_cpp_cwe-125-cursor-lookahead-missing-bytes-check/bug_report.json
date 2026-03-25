@@ -1,0 +1,76 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "stack-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "xps-common.c",
+        "original_line": 283,
+        "function": "xps_parse_color",
+        "entry_point": "xps_begin_opacity",
+        "spine": [
+            "xps_begin_opacity",
+            "xps_parse_color"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "xps-common.c",
+        "harness_line": 32,
+        "original_file": "xps-common.c",
+        "original_line": 283,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=1)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: xps-common.c\nLine: 32\nassembly.ll line: 103\nState: 1\nStack: \n\t#000000103 in xps_parse_color(138773619032064, 138810126254080, 138790798901248, 138795093868544, 138785430192128, 139072119259136) at xps-common.c:32\n\t#100000152 in xps_begin_opacity(138773619032064, 138810126254080, 138801536319488, 0, 0, 138790798901248, 138777913999360, 138795093868544, 138772545290240) at xps-common.c:43\n\t#200000068 in main() at driver.c:26\nInfo: \n\taddress: 13907211"
+    },
+    "concrete_inputs": [
+        {
+            "name": "opacity_att",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "stack-buffer-overflow",
+        "crash_function": "fz_xml_is_tag",
+        "crash_file": "source/fitz/xml.c",
+        "crash_line": 235,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==7434==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffc69d50270 at pc 0x5636e6e9df78 bp 0x7ffc69d50060 sp 0x7ffc69d50050\nREAD of size 8 at 0x7ffc69d50270 thread T0\n    #0 0x5636e6e9df77 in fz_xml_is_tag source/fitz/xml.c:235\n    #1 0x5636e6db2d47 in xps_begin_opacity source/xps/xps-common.c:111\n    #2 0x5636e6db0b06 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:26\n    #3 0x7f5e576ecd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f5e576ece3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x5636e6db0774 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x14d774)\n\nAddress 0x7ffc69d50270 is located in stack of thread T0 at offset 80 in frame\n    #0 0x5636e6db0848 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:6\n\n  This frame has 8 object(s):\n    [48, 52) 'ctx_obj' (line 8)\n    [64, 68) 'dict_obj' (line 12)\n    [80, 84) 'xml_obj' (line 13) <== Memory access at offset 80 partially overflows this variable\n    [96, 112) 'area' (line 11)\n    [128, 152) 'ctm' (line 10)\n    [192, 248) 'doc_obj' (line 9)\n    [288, 304) 'base_uri' (line 16)\n    [320, 336) 'opacity_att' (line 17)\nHINT: this may be a false positive if your program uses some custom stack unwind mechanism, swapcontext or vfork\n      (longjmp and C++ exceptions *are* supported)\nSUMMARY: AddressSanitizer: stack-buffer-overflow source/fitz/xml.c:235 in fz_xml_is_tag\nShadow bytes around the buggy address:\n  0x10000d3a1ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000d3a2000: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x10000d3"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "xps-common.c",
+            "harness_line": 32,
+            "original_file": "xps-common.c",
+            "original_line": 283,
+            "error_type": "ptr",
+            "crash_function": "xps_parse_color",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/1421_xps-common.c_283_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_2/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "stack-buffer-overflow",
+            "crash_function": "fz_xml_is_tag",
+            "crash_file": "source/fitz/xml.c",
+            "crash_line": 235
+        }
+    ]
+}

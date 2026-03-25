@@ -1,0 +1,49 @@
+=================================================================
+==371983==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000014 at pc 0x5600eebf5381 bp 0x7fff39f2d470 sp 0x7fff39f2d460
+READ of size 1 at 0x502000000014 thread T0
+    #0 0x5600eebf5380 in ff_ivi_init_tiles /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/ivi.c:29
+    #1 0x5600eebf529e in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/driver.c:33
+    #2 0x7f69b45cbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+    #3 0x7f69b45cbe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)
+    #4 0x5600eebf5144 in _start (/home/user/user/ffmpeg_verify_v2/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check_bin+0x1144)
+
+0x502000000014 is located 3 bytes to the right of 1-byte region [0x502000000010,0x502000000011)
+allocated by thread T0 here:
+    #0 0x7f69b49ad887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145
+    #1 0x5600eebf524a in main /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/driver.c:24
+    #2 0x7f69b45cbd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /app/sailor_ffmpeg_f46e5144_vul/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8996_ivi.c_406_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check//harness/ivi.c:29 in ff_ivi_init_tiles
+Shadow bytes around the buggy address:
+  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0a047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0a047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+  Shadow gap:              cc
+==371983==ABORTING

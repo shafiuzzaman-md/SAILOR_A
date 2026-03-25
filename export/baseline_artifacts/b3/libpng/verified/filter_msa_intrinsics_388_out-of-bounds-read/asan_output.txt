@@ -1,0 +1,52 @@
+=================================================================
+==4080443==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x606000000051 at pc 0x5f50f587efeb bp 0x7ffebb146cf0 sp 0x7ffebb1464c0
+READ of size 16 at 0x606000000051 thread T0
+    #0 0x5f50f587efea in __asan_memcpy (/app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 30ab9f01718f9f2d8403ba39d1f71a7aafc93329)
+    #1 0x5f50f58c355d in load16 /app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:18:5
+    #2 0x5f50f58bcbe1 in png_read_filter_row_up_msa /app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:108:17
+    #3 0x5f50f58bbf55 in main /app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:177:5
+    #4 0x780b4362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #5 0x780b4362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #6 0x5f50f57fc304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0x21304) (BuildId: 30ab9f01718f9f2d8403ba39d1f71a7aafc93329)
+
+0x606000000051 is located 0 bytes to the right of 49-byte region [0x606000000020,0x606000000051)
+allocated by thread T0 here:
+    #0 0x5f50f587fd12 in __interceptor_malloc (/app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa4d12) (BuildId: 30ab9f01718f9f2d8403ba39d1f71a7aafc93329)
+    #1 0x5f50f58bbd8c in main /app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer.c:158:32
+    #2 0x780b4362a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x780b4362a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5f50f57fc304 in _start (/app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0x21304) (BuildId: 30ab9f01718f9f2d8403ba39d1f71a7aafc93329)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow (/app/export/baseline_artifacts/b3/libpng/verified/filter_msa_intrinsics_388_out-of-bounds-read/reproducer+0xa3fea) (BuildId: 30ab9f01718f9f2d8403ba39d1f71a7aafc93329) in __asan_memcpy
+Shadow bytes around the buggy address:
+  0x0c0c7fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c0c7fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c0c7fff8000: fa fa fa fa 00 00 00 00 00 00[01]fa fa fa fa fa
+  0x0c0c7fff8010: 00 00 00 00 00 00 01 fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c0c7fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==4080443==ABORTING

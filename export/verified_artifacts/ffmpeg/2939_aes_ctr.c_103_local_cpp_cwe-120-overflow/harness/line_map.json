@@ -1,0 +1,114 @@
+{
+  "aes_ctr.c": {
+    "2": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "15": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 35,
+      "code": "uint8_t encrypted_counter[AES_BLOCK_SIZE];"
+    },
+    "16": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 36,
+      "code": "int block_offset;"
+    },
+    "19": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 88,
+      "code": "static void av_aes_ctr_increment_be64(uint8_t* counter)"
+    },
+    "20": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 89,
+      "code": "{"
+    },
+    "21": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 90,
+      "code": "uint8_t* cur_pos;"
+    },
+    "22": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 92,
+      "code": "for (cur_pos = counter + 7; cur_pos >= counter; cur_pos--) {"
+    },
+    "23": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 93,
+      "code": "(*cur_pos)++;"
+    },
+    "24": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 94,
+      "code": "if (*cur_pos != 0) {"
+    },
+    "25": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 95,
+      "code": "break;"
+    },
+    "26": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 96,
+      "code": "}"
+    },
+    "27": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 97,
+      "code": "}"
+    },
+    "28": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 98,
+      "code": "}"
+    },
+    "30": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 100,
+      "code": "void av_aes_ctr_increment_iv(struct AVAESCTR *a)"
+    },
+    "31": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 101,
+      "code": "{"
+    },
+    "32": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 102,
+      "code": "av_aes_ctr_increment_be64(a->counter);"
+    },
+    "34": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 103,
+      "code": "memset(a->counter + AES_CTR_IV_SIZE, 0, sizeof(a->counter) - AES_CTR_IV_SIZE);"
+    },
+    "37": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 104,
+      "code": "a->block_offset = 0;"
+    },
+    "38": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 105,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 108,
+      "code": "{"
+    },
+    "44": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 80,
+      "code": "return 0;"
+    },
+    "45": {
+      "orig_file": "aes_ctr.c",
+      "orig_line": 81,
+      "code": "}"
+    }
+  }
+}

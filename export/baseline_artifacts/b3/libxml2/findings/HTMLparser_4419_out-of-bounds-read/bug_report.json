@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "HTMLparser.c",
+    "line": 4419,
+    "function": "htmlParseDocument",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "The code calls xmlStrncmp(ctxt->input->cur, \"<?xm\", 4) without ensuring that at least 4 bytes are available in the input buffer at ctxt->input->cur. If the document contains fewer than 4 bytes and the encoding flag is not set, this reads past the end of the buffer. No GROW or equivalent check is performed before this comparison, allowing an out-of-bounds read on truncated inputs.",
+    "abs_path": "/tmp/libxml2_upstream/HTMLparser.c"
+  },
+  "reproducer_code": "#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal type/flag re-declarations to isolate the vulnerable logic */\ntypedef unsigned char xmlChar;\n#define BAD_CAST (const xmlChar *)\n\n/* Match the flag check used by the vulnerable code */\n#define XML_INPUT_HAS_ENCODING (1u << 0)\n\n/* Minimal parser input/context structures */\ntypedef struct _xmlParserInput {\n    const xmlChar *cur; /* current read pointer into input buffer */\n    unsigned int flags; /* bitfield; must NOT have XML_INPUT_HAS_ENCODING set */\n} xmlParserInput;\n\ntypedef struct _htmlParserCtxt {\n    xmlParserInput *input;\n    void *sax;        /* unused in this reproducer */\n    void *userData;   /* unused */\n    int disableSAX;   /* unused */\n    int instate;      /* unused */\n} htmlParserCtxt;\n\n/* Stubs matching libxml2 signatures used around the bug site */\nstatic void xmlDetectEncoding(htmlParserCtxt *ctxt) {\n    (void)ctxt; /* no-op; keep flags as set by caller */\n}\n\nstatic void xmlSwitchEncoding(htmlParserCtxt *ctxt, int enc) {\n    (void)ctxt; (void)enc; /* no-op */\n}\n\n/* xmlStrncmp as used by the vulnerable code: compares 'len' bytes unconditionally */\nstatic int xmlStrncmp(const xmlChar *str1, const xmlChar *str2, int len) {\n    /* This memcmp will read 'len' bytes from str1 and str2 (or until a diff is found),\n       which causes an out-of-bounds read when str1 doesn't have that many bytes available. */\n    return memcmp((const void *)str1, (const void *)str2, (size_t)len);\n}\n\n/* Reimplementation of the vulnerable part of htmlParseDocument */\nint htmlParseDocument(htmlParserCtxt *ctxt) {\n    if ((ctxt == NULL) || (ctxt->input == NULL))\n        return -1;\n\n    xmlDetectEncoding(ctxt);\n\n    /* Vulnerable check: no size check before comparing 4 bytes at ctxt->input->cur */\n    if (((ctxt->input->flags & XML_INPUT_HAS_ENCODING) == 0) &&\n        (xmlStrncmp(ctxt->input->cur, BAD_CAST \"<?xm\", 4) == 0)) {\n        xmlSwitchEncoding(ctxt, /* XML_CHAR_ENCODING_UTF8 */ 1);\n    }\n\n    return 0;\n}\n\nint main(void) {\n    /* Truncated input: only 1 byte allocated. */\n    unsigned char *buf = (unsigned char *)malloc(1);\n    if (!buf)\n        return 1;\n\n    /* Make the first byte match '<' so xmlStrncmp needs to read the next byte,\n       which is out-of-bounds. This reliably triggers the ASan OOB read. */\n    buf[0] = '<';\n\n    xmlParserInput input = {0};\n    input.cur = (const xmlChar *)buf; /* Points to a 1-byte buffer */\n    input.flags = 0;                  /* Ensure XML_INPUT_HAS_ENCODING is NOT set */\n\n    htmlParserCtxt ctxt = {0};\n    ctxt.input = &input;\n\n    /* Triggers the out-of-bounds read inside xmlStrncmp */\n    (void)htmlParseDocument(&ctxt);\n\n    free(buf);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 1.5930240154266357,
+      "output": "=================================================================\n==3969273==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x5abde0b69d2a bp 0x7ffe77516fe0 sp 0x7ffe77516790\nREAD of size 4 at 0x602000000011 thread T0\n    #0 0x5abde0b69d29 in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long) (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0x3ad29) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7)\n    #1 0x5abde0b6a220 in memcmp (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0x3b220) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7)\n    #2 0x5abde0c0ee33 in xmlStrncmp /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:39:12\n    #3 0x5abde0c0edd2 in htmlParseDocument /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:51:10\n    #4 0x5abde0c0f087 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:76:11\n    #5 0x754f3122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x754f3122a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5abde0b4f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0x20304) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x5abde0bd2d12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0xa3d12) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7)\n    #1 0x5abde0c0ef38 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:60:43\n    #2 0x754f3122a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x754f3122a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5abde0b4f304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0x20304) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer+0x3ad29) (BuildId: 8edf01f94d3231397db858581af3b583643f27f7) in MemcmpInterceptorCommon(void*, int (*)(void const*, void const*, unsigned long), void const*, void const*, unsigned long)\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3969273==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "2",
+          "xmlStrncmp",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:39",
+          "12"
+        ],
+        [
+          "3",
+          "htmlParseDocument",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:51",
+          "10"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:76",
+          "11"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/HTMLparser_4419_out-of-bounds-read/reproducer.c:60",
+          "43"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

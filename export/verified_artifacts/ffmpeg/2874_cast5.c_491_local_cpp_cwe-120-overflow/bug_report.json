@@ -1,0 +1,78 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "cast5.c",
+    "original_line": 491,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "486:         } else {\n487:             if (iv) {\n488:                 for (i = 0; i < 8; i++)\n489:                     dst[i] = src[i] ^ iv[i];\n490:                 encipher(cs, dst, dst);\n491:                 memcpy(iv, dst, 8);\n492:             } else {\n493:                 encipher(cs, dst, src);\n494:             }\n495:         }\n496:         src = src + 8;"
+  },
+  "klee_crash": {
+    "harness_file": "cast5.c",
+    "harness_line": 27,
+    "original_file": "cast5.c",
+    "original_line": 489,
+    "original_code": "dst[i] = src[i] ^ iv[i];",
+    "original_context": "    486:         } else {\n    487:             if (iv) {\n    488:                 for (i = 0; i < 8; i++)\n>>> 489:                     dst[i] = src[i] ^ iv[i];\n    490:                 encipher(cs, dst, dst);\n    491:                 memcpy(iv, dst, 8);\n    492:             } else {",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: cast5.c\nLine: 27\nassembly.ll line: 84\nState: 1\nStack: \n\t#000000084 in av_cast5_crypt2(139041531875328, 138749474099200, 138766653968384, 1, 138783833837568, 0) at cast5.c:27\n\t#100000167 in entry_func(139041531875328, 138749474099200, 138766653968384, 1, 138783833837568, 0) at cast5.c:42\n\t#200000210 in main() at driver.c:29\nInfo: \n\taddress: 138783833837572\n\tnext: object at 138466543128576 of size 4\n\t\tMO82[4] allocated at av_cast5_crypt2():  %13 = al"
+  },
+  "concrete_inputs": [
+    {
+      "name": "src_buf",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "dst_buf",
+      "size": 8,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "iv_buf",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2874_cast5.c_491_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "cast5.c",
+      "harness_line": 27,
+      "original_file": "cast5.c",
+      "original_line": 489,
+      "error_type": "ptr",
+      "crash_function": "av_cast5_crypt2",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/2874_cast5.c_491_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

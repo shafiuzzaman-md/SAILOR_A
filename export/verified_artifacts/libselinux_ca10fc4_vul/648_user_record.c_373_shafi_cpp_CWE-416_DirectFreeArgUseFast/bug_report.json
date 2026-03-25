@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "user_record.c",
+        "original_line": 373,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "368: \tif (!user)\n369: \t\treturn;\n370: \n371: \tfree(user->name);\n372: \tfor (i = 0; i < user->num_roles; i++)\n373: \t\tfree(user->roles[i]);\n374: \tfree(user->roles);\n375: \tfree(user->mls_level);\n376: \tfree(user->mls_range);\n377: \tfree(user);\n378: }"
+    },
+    "klee_crash": {
+        "harness_file": "user_record.c",
+        "harness_line": 23,
+        "original_file": "user_record.c",
+        "original_line": 373,
+        "original_code": "free(user->roles[i]);",
+        "original_context": "    370: \n    371: \tfree(user->name);\n    372: \tfor (i = 0; i < user->num_roles; i++)\n>>> 373: \t\tfree(user->roles[i]);\n    374: \tfree(user->roles);\n    375: \tfree(user->mls_level);\n    376: \tfree(user->mls_range);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: double free\nFile: user_record.c\nLine: 23\nassembly.ll line: 145\nState: 1\nStack: \n\t#000000145 in sepol_user_free(139550000230400) at user_record.c:23\n\t#100000202 in harness_entry(139550000230400) at user_record.c:37\n\t#200000087 in main() at driver.c:35\nInfo: \n\taddress: 139395381407744\n\tnext: object at 139045341573120 of size 4\n\t\tMO75[4] allocated at sepol_user_free():  %3 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "rolebuf_bytes",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "__interceptor_free",
+        "crash_file": "../../../../src/libsanitizer/asan/asan_malloc_linux.cpp",
+        "crash_line": 128,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==6386==ERROR: AddressSanitizer: SEGV on unknown address (pc 0x7f4b92488b46 bp 0xbebebebebebebebe sp 0x7ffe977c2390 T0)\n==6386==The signal is caused by a READ memory access.\n==6386==Hint: this fault was caused by a dereference of a high value address (see register values below).  Dissassemble the provided pc to learn which register was used.\n    #0 0x7f4b92488b46 in bool __sanitizer::atomic_compare_exchange_strong<__sanitizer::atomic_uint8_t>(__sanitizer::atomic_uint8_t volatile*, __sanitizer::atomic_uint8_t::Type*, __sanitizer::atomic_uint8_t::Type, __sanitizer::memory_order) ../../../../src/libsanitizer/sanitizer_common/sanitizer_atomic_clang.h:80\n    #1 0x7f4b92488b46 in __asan::Allocator::AtomicallySetQuarantineFlagIfAllocated(__asan::AsanChunk*, void*, __sanitizer::BufferedStackTrace*) ../../../../src/libsanitizer/asan/asan_allocator.cpp:621\n    #2 0x7f4b92488b46 in __asan::Allocator::Deallocate(void*, unsigned long, unsigned long, __sanitizer::BufferedStackTrace*, __asan::AllocType) ../../../../src/libsanitizer/asan/asan_allocator.cpp:697\n    #3 0x7f4b92488b46 in __asan::asan_free(void*, __sanitizer::BufferedStackTrace*, __asan::AllocType) ../../../../src/libsanitizer/asan/asan_allocator.cpp:971\n    #4 0x7f4b925144f4 in __interceptor_free ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:128\n    #5 0x55997b8cebb4 in sepol_user_free /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_cache/src/libsepol/src/user_record.c:373\n    #6 0x55997b8cc6eb in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/asan_real/replay_driver.c:35\n    #7 0x7f4b9215dd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #8 0x7f4b9215de3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #9 0x55997b8cc344 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/648_user_r"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "user_record.c",
+            "harness_line": 23,
+            "original_file": "user_record.c",
+            "original_line": 373,
+            "error_type": "ptr",
+            "crash_function": "sepol_user_free",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/648_user_record.c_373_sailor_cpp_CWE-416_DirectFreeArgUseFast/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "__interceptor_free",
+            "crash_file": "../../../../src/libsanitizer/asan/asan_malloc_linux.cpp",
+            "crash_line": 128
+        }
+    ]
+}

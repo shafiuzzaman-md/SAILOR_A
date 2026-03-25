@@ -1,0 +1,114 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "list.c",
+    "line": 601,
+    "function": "xmlListSort",
+    "bug_type": "use-after-free",
+    "cwe": "CWE-416",
+    "confidence": "high",
+    "explanation": "xmlListSort clears the input list and then calls xmlListMerge(l, lTemp). If xmlListCopy inside xmlListMerge fails (e.g., due to allocation failure), it frees the destination list 'l' (lines 702-704 in xmlListCopy). xmlListSort does not detect this and returns normally, leaving the caller with a dangling pointer to 'l', causing use-after-free on subsequent accesses.",
+    "abs_path": "/tmp/libxml2_upstream/list.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal re-declarations of libxml2 list types */\ntypedef struct _xmlLink xmlLink;\ntypedef xmlLink* xmlLinkPtr;\nstruct _xmlLink {\n    void *data;\n    xmlLinkPtr next;\n    xmlLinkPtr prev;\n};\n\ntypedef struct _xmlList xmlList;\ntypedef xmlList* xmlListPtr;\nstruct _xmlList {\n    xmlLinkPtr sentinel;\n};\n\n/* Helpers to build and tear down lists */\nstatic xmlListPtr xmlListCreate(void) {\n    xmlListPtr l = (xmlListPtr)malloc(sizeof(xmlList));\n    if (!l) return NULL;\n    l->sentinel = (xmlLinkPtr)malloc(sizeof(xmlLink));\n    if (!l->sentinel) {\n        free(l);\n        return NULL;\n    }\n    l->sentinel->data = NULL;\n    l->sentinel->next = l->sentinel;\n    l->sentinel->prev = l->sentinel;\n    return l;\n}\n\nstatic void xmlListDelete(xmlListPtr l) {\n    if (!l) return;\n    if (l->sentinel) {\n        xmlLinkPtr cur = l->sentinel->next;\n        while (cur && cur != l->sentinel) {\n            xmlLinkPtr nxt = cur->next;\n            free(cur);\n            cur = nxt;\n        }\n        free(l->sentinel);\n    }\n    free(l);\n}\n\nstatic int xmlListEmpty(xmlList *l) {\n    if (l == NULL || l->sentinel == NULL) return 1;\n    return l->sentinel->next == l->sentinel;\n}\n\nstatic int xmlListInsert(xmlList *l, void *data) {\n    if (!l || !l->sentinel) return -1;\n    xmlLinkPtr node = (xmlLinkPtr)malloc(sizeof(xmlLink));\n    if (!node) return -1;\n    node->data = data;\n    /* insert before sentinel (at tail) */\n    node->next = l->sentinel;\n    node->prev = l->sentinel->prev;\n    l->sentinel->prev->next = node;\n    l->sentinel->prev = node;\n    return 0;\n}\n\nstatic xmlListPtr xmlListDup(xmlList *l) {\n    if (!l) return NULL;\n    xmlListPtr dup = xmlListCreate();\n    if (!dup) return NULL;\n    /* shallow-copy the data pointers */\n    for (xmlLinkPtr it = l->sentinel->next; it != l->sentinel; it = it->next) {\n        if (xmlListInsert(dup, it->data) != 0) {\n            xmlListDelete(dup);\n            return NULL;\n        }\n    }\n    return dup;\n}\n\nstatic void xmlListClear(xmlList *l) {\n    /* A simple clear implementation that frees all nodes and resets the list */\n    if (l == NULL || l->sentinel == NULL) return;\n    xmlLinkPtr it = l->sentinel->next;\n    while (it != l->sentinel) {\n        xmlLinkPtr nxt = it->next;\n        free(it);\n        it = nxt;\n    }\n    l->sentinel->next = l->sentinel;\n    l->sentinel->prev = l->sentinel;\n}\n\n/*\n * Stubbed internal helpers to simulate the bug scenario.\n * xmlListCopy(from, to) will simulate allocation failure and free the\n * destination list 'to' (use-after-free source), mimicking libxml2's\n * buggy behavior on error (lines 702-704 in xmlListCopy).\n */\nstatic int xmlListCopy(xmlList *from, xmlList *to) {\n    (void)from; /* unused in this stub */\n\n    /* Simulate an allocation failure during copy. */\n    /* Buggy cleanup: free the destination list 'to'. */\n    if (to != NULL) {\n        xmlListDelete(to); /* Frees 'to' including its sentinel and struct */\n    }\n\n    /* Return non-zero to indicate failure; caller (xmlListMerge/xmlListSort)\n       won't notice that 'to' got freed. */\n    return -1;\n}\n\nstatic void xmlListMerge(xmlList *l, xmlList *other) {\n    /* In libxml2, this merges 'other' into 'l'. Here we just call copy. */\n    (void)other;\n    (void)xmlListCopy(other, l);\n    /* No error handling => 'l' might have been freed by xmlListCopy. */\n}\n\n/* Vulnerable function as per the provided source snippet. */\nstatic void xmlListSort(xmlList *l) {\n    xmlListPtr lTemp;\n\n    if (l == NULL)\n        return;\n    if (xmlListEmpty(l))\n        return;\n\n    lTemp = xmlListDup(l);\n    if (lTemp == NULL)\n        return;\n    xmlListClear(l);\n    /* UAF bug source: xmlListMerge may free 'l' on failure, but xmlListSort\n       continues and returns normally, leaving caller with dangling pointer. */\n    xmlListMerge(l, lTemp);\n    xmlListDelete(lTemp);\n}\n\n/* A small walker to optionally exercise list access after sort. */\nstatic int print_walker(void *data, void *user) {\n    (void)user;\n    printf(\"walker: %p\\n\", data);\n    return 1; /* continue */\n}\n\nstatic void xmlListWalk(xmlList *l, int (*walker)(void*, void*), void *user) {\n    if ((l == NULL) || (walker == NULL))\n        return;\n    for (xmlLinkPtr lk = l->sentinel->next; lk != l->sentinel; lk = lk->next) {\n        if ((walker(lk->data, user)) == 0)\n            break;\n    }\n}\n\nint main(void) {\n    /* Build a list with at least one element so xmlListDup succeeds\n       and xmlListClear actually clears something. */\n    xmlListPtr l = xmlListCreate();\n    if (!l) {\n        fprintf(stderr, \"failed to create list\\n\");\n        return 1;\n    }\n\n    /* Insert a couple of dummy items */\n    int *x = (int*)malloc(sizeof(int));\n    int *y = (int*)malloc(sizeof(int));\n    if (!x || !y) return 1;\n    *x = 1; *y = 2;\n    xmlListInsert(l, x);\n    xmlListInsert(l, y);\n\n    /* Trigger the vulnerable path: this will call xmlListMerge(l, lTemp),\n       which calls xmlListCopy and frees 'l' on (simulated) failure. */\n    xmlListSort(l);\n\n    /* Use-after-free: 'l' was freed inside xmlListSort via xmlListCopy.\n       Accessing 'l' now should trigger ASan heap-use-after-free. */\n    fprintf(stderr, \"About to trigger UAF by accessing freed list...\\n\");\n\n    /* Read from freed object */\n    if (l && l->sentinel) {\n        /* This read dereferences memory inside the freed 'l' allocation. */\n        fprintf(stderr, \"sentinel ptr: %p\\n\", (void*)l->sentinel);\n    }\n\n    /* Write into freed object to make the UAF unmistakable. */\n    l->sentinel = NULL; /* ASan should flag this as heap-use-after-free */\n\n    /* Optionally, try walking (will also deref freed memory). */\n    xmlListWalk(l, print_walker, NULL);\n\n    /* Cleanup dangling resources (x,y) to avoid unrelated leaks in output */\n    free(x);\n    free(y);\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8276448249816895,
+      "output": "About to trigger UAF by accessing freed list...\n=================================================================\n==3994924==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000010 at pc 0x583a06e7be71 bp 0x7ffcc1147900 sp 0x7ffcc11478f8\nREAD of size 8 at 0x602000000010 thread T0\n    #0 0x583a06e7be70 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:182:17\n    #1 0x77583342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #2 0x77583342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #3 0x583a06dbc304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer+0x21304) (BuildId: e5f91ead5c36074b8d6df9492e9f2533c51bc8e3)\n\n0x602000000010 is located 0 bytes inside of 8-byte region [0x602000000010,0x602000000018)\nfreed by thread T0 here:\n    #0 0x583a06e3fa66 in free (/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer+0xa4a66) (BuildId: e5f91ead5c36074b8d6df9492e9f2533c51bc8e3)\n    #1 0x583a06e7cd2a in xmlListDelete /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:46:5\n    #2 0x583a06e7cd63 in xmlListCopy /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:106:9\n    #3 0x583a06e7cb9c in xmlListMerge /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:117:11\n    #4 0x583a06e7c4ea in xmlListSort /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:136:5\n    #5 0x583a06e7be07 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:175:5\n    #6 0x77583342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #7 0x77583342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #8 0x583a06dbc304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer+0x21304) (BuildId: e5f91ead5c36074b8d6df9492e9f2533c51bc8e3)\n\npreviously allocated by thread T0 here:\n    #0 0x583a06e3fd12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer+0xa4d12) (BuildId: e5f91ead5c36074b8d6df9492e9f2533c51bc8e3)\n    #1 0x583a06e7bf74 in xmlListCreate /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:22:32\n    #2 0x583a06e7bcb3 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:159:20\n    #3 0x77583342a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x77583342a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x583a06dbc304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer+0x21304) (BuildId: e5f91ead5c36074b8d6df9492e9f2533c51bc8e3)\n\nSUMMARY: AddressSanitizer: heap-use-after-free /app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:182:17 in main\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[fd]fa fa fa 04 fa fa fa 04 fa fa fa fd fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3994924==ABORTING\n",
+      "error_type": "heap-use-after-free",
+      "crash_function": "main",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:182",
+      "crash_line": 17,
+      "frames": [
+        [
+          "0",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:182",
+          "17"
+        ],
+        [
+          "1",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "2",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlListDelete",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:46",
+          "5"
+        ],
+        [
+          "2",
+          "xmlListCopy",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:106",
+          "9"
+        ],
+        [
+          "3",
+          "xmlListMerge",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:117",
+          "11"
+        ],
+        [
+          "4",
+          "xmlListSort",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:136",
+          "5"
+        ],
+        [
+          "5",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:175",
+          "5"
+        ],
+        [
+          "6",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "7",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlListCreate",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:22",
+          "32"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/list_601_use-after-free/reproducer.c:159",
+          "20"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

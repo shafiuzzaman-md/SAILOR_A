@@ -1,0 +1,225 @@
+{
+  "findings": [
+    [
+      "LIKELY_TP",
+      "BUG TRIGGERED \u2014 KLEE  error at line 50 (sink assert at 53)\nCrash: CRASH: ptr at packet.c:50\nOriginal: packet.c:504 \u2192 memcpy(pkt->buf->data, pkt->data, pkt->size);\nASan: not confirmed\n\nAll crashes (2):\n  model at packet.c:31 \u2192 packet.c:95\n  ptr at packet.c:50 \u2192 packet.c:504\n"
+    ]
+  ],
+  "line_map": {
+    "packet.c": {
+      "3": {
+        "orig_file": "packet.c",
+        "orig_line": 22,
+        "code": "#include <string.h>"
+      },
+      "11": {
+        "orig_file": "packet.c",
+        "orig_line": 235,
+        "code": "uint8_t *data;"
+      },
+      "17": {
+        "orig_file": "packet.c",
+        "orig_line": 235,
+        "code": "uint8_t *data;"
+      },
+      "23": {
+        "orig_file": "packet.c",
+        "orig_line": 51,
+        "code": "#endif"
+      },
+      "34": {
+        "orig_file": "packet.c",
+        "orig_line": 95,
+        "code": "return 0;"
+      },
+      "35": {
+        "orig_file": "packet.c",
+        "orig_line": 96,
+        "code": "}"
+      },
+      "38": {
+        "orig_file": "packet.c",
+        "orig_line": 492,
+        "code": "int av_packet_make_refcounted(AVPacket *pkt)"
+      },
+      "39": {
+        "orig_file": "packet.c",
+        "orig_line": 493,
+        "code": "{"
+      },
+      "40": {
+        "orig_file": "packet.c",
+        "orig_line": 494,
+        "code": "int ret;"
+      },
+      "42": {
+        "orig_file": "packet.c",
+        "orig_line": 496,
+        "code": "if (pkt->buf)"
+      },
+      "43": {
+        "orig_file": "packet.c",
+        "orig_line": 497,
+        "code": "return 0;"
+      },
+      "45": {
+        "orig_file": "packet.c",
+        "orig_line": 499,
+        "code": "ret = packet_alloc(&pkt->buf, pkt->size);"
+      },
+      "46": {
+        "orig_file": "packet.c",
+        "orig_line": 500,
+        "code": "if (ret < 0)"
+      },
+      "47": {
+        "orig_file": "packet.c",
+        "orig_line": 501,
+        "code": "return ret;"
+      },
+      "48": {
+        "orig_file": "packet.c",
+        "orig_line": 502,
+        "code": "av_assert1(!pkt->size || pkt->data);"
+      },
+      "49": {
+        "orig_file": "packet.c",
+        "orig_line": 503,
+        "code": "if (pkt->size)"
+      },
+      "50": {
+        "orig_file": "packet.c",
+        "orig_line": 504,
+        "code": "memcpy(pkt->buf->data, pkt->data, pkt->size);"
+      },
+      "55": {
+        "orig_file": "packet.c",
+        "orig_line": 506,
+        "code": "pkt->data = pkt->buf->data;"
+      },
+      "57": {
+        "orig_file": "packet.c",
+        "orig_line": 508,
+        "code": "return 0;"
+      },
+      "58": {
+        "orig_file": "packet.c",
+        "orig_line": 509,
+        "code": "}"
+      },
+      "63": {
+        "orig_file": "packet.c",
+        "orig_line": 508,
+        "code": "return 0;"
+      },
+      "64": {
+        "orig_file": "packet.c",
+        "orig_line": 509,
+        "code": "}"
+      }
+    }
+  },
+  "bug_report": {
+    "summary": {
+      "verdict": "LIKELY_TP",
+      "asan_confirmed": false,
+      "crash_relevance": "no_asan",
+      "cwe": "unknown",
+      "cwe_description": "",
+      "total_asan_crashes": 0,
+      "target_asan_crashes": 0,
+      "secondary_asan_crashes": 0,
+      "target_crashes": 1,
+      "secondary_bugs": 1
+    },
+    "vulnerability": {
+      "original_file": "packet.c",
+      "original_line": 504,
+      "function": "unknown",
+      "entry_point": "unknown",
+      "spine": [
+        "unknown"
+      ],
+      "original_context": "499:     ret = packet_alloc(&pkt->buf, pkt->size);\n500:     if (ret < 0)\n501:         return ret;\n502:     av_assert1(!pkt->size || pkt->data);\n503:     if (pkt->size)\n504:         memcpy(pkt->buf->data, pkt->data, pkt->size);\n505: \n506:     pkt->data = pkt->buf->data;\n507: \n508:     return 0;\n509: }"
+    },
+    "klee_crash": {
+      "harness_file": "packet.c",
+      "harness_line": 31,
+      "original_file": "packet.c",
+      "original_line": 95,
+      "original_code": "return 0;",
+      "original_context": "    92: \n    93:     memset((*buf)->data + size, 0, AV_INPUT_BUFFER_PADDING_SIZE);\n    94: \n>>> 95:     return 0;\n    96: }\n    97: \n    98: int av_new_packet(AVPacket *pkt, int size)",
+      "error_type": "model",
+      "error_details": "Error: concretized symbolic size\nFile: packet.c\nLine: 31\nassembly.ll line: 197\nState: 2\nStack: \n\t#000000197 in packet_alloc(139516231876608, symbolic) at packet.c:31\n\t#100000123 in av_packet_make_refcounted(139516231876608) at packet.c:45\n\t#200000238 in entry_func(139516231876608) at packet.c:62\n\t#300000076 in main() at driver.c:35\nInfo: \n  size expr: (SExt w64 (ReadLSB w32 0 pkt_size))\n  concretization : 9\n  unbound example: 64\n"
+    },
+    "concrete_inputs": [
+      {
+        "name": "src_bytes",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pkt_size",
+        "size": 4,
+        "data": "b'@\\x00\\x00\\x00'"
+      },
+      {
+        "name": "src_bytes",
+        "size": 8,
+        "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+      },
+      {
+        "name": "pkt_size",
+        "size": 4,
+        "data": "b'\\t\\x00\\x00\\x00'"
+      }
+    ],
+    "asan_result": {
+      "triggered": false,
+      "harness_artifact": false,
+      "error_type": "",
+      "crash_function": "",
+      "crash_file": "",
+      "crash_line": 0,
+      "original_file": "",
+      "original_line": 0,
+      "original_code": "",
+      "original_context": "",
+      "output": ""
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+      {
+        "harness_file": "packet.c",
+        "harness_line": 31,
+        "original_file": "packet.c",
+        "original_line": 95,
+        "error_type": "model",
+        "crash_function": "packet_alloc",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      },
+      {
+        "harness_file": "packet.c",
+        "harness_line": 50,
+        "original_file": "packet.c",
+        "original_line": 504,
+        "error_type": "ptr",
+        "crash_function": "memcpy",
+        "relevance": "target_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+      }
+    ],
+    "all_asan_crashes": [],
+    "secondary_bugs": [
+      {
+        "original_file": "packet.c",
+        "original_line": 95,
+        "error_type": "model",
+        "crash_function": "packet_alloc",
+        "relevance": "same_file_crash",
+        "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/1141_packet.c_504_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+      }
+    ]
+  }
+}

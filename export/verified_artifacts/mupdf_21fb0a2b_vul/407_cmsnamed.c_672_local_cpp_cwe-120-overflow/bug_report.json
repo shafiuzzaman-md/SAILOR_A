@@ -1,0 +1,85 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cmsnamed.c",
+        "original_line": 672,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "667:     if (Suffix) strcpy(Suffix, NamedColorList->Suffix);\n668:     if (PCS)\n669:         memmove(PCS, NamedColorList ->List[nColor].PCS, 3*sizeof(cmsUInt16Number));\n670: \n671:     if (Colorant)\n672:         memmove(Colorant, NamedColorList ->List[nColor].DeviceColorant,\n673:                                 sizeof(cmsUInt16Number) * NamedColorList ->ColorantCount);\n674: \n675: \n676:     return TRUE;\n677: }"
+    },
+    "klee_crash": {
+        "harness_file": "cmsnamed.c",
+        "harness_line": 45,
+        "original_file": "cmsnamed.c",
+        "original_line": 672,
+        "original_code": "memmove(Colorant, NamedColorList ->List[nColor].DeviceColorant,",
+        "original_context": "    669:         memmove(PCS, NamedColorList ->List[nColor].PCS, 3*sizeof(cmsUInt16Number));\n    670: \n    671:     if (Colorant)\n>>> 672:         memmove(Colorant, NamedColorList ->List[nColor].DeviceColorant,\n    673:                                 sizeof(cmsUInt16Number) * NamedColorList ->ColorantCount);\n    674: \n    675: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memmove.c\nLine: 21\nassembly.ll line: 343\nState: 1\nStack: \n\t#000000343 in memmove(138955816685568, 139247874461696, symbolic) at runtime/Freestanding/memmove.c:21\n\t#100000137 in cmsNamedColorInfo(0, 138972996554752, 0, 0, 0, 0, 0, 138955816685568) at cmsnamed.c:45\n\t#200000185 in harness_entry(0, 138972996554752, 0, 138955816685568) at cmsnamed.c:58\n\t#300000259 in main() at driver.c:58\nInfo: \n\taddress: 138955816685584\n\tnext: obje"
+    },
+    "concrete_inputs": [
+        {
+            "name": "DeviceColorant_src",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "ColorantCount",
+            "size": 4,
+            "data": "b'\\x11\\x00\\x00\\x00'"
+        },
+        {
+            "name": "Colorant_dest",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cmsNamedColorInfo",
+        "crash_file": "thirdparty/lcms2/src/cmsnamed.c",
+        "crash_line": 672,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==23710==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000060 at pc 0x55cbe86939ef bp 0x7fffadc788b0 sp 0x7fffadc788a0\nREAD of size 8 at 0x502000000060 thread T0\n    #0 0x55cbe86939ee in cmsNamedColorInfo thirdparty/lcms2/src/cmsnamed.c:672\n    #1 0x55cbe8690207 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/407_cmsnamed.c_672_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:58\n    #2 0x7fe8c572fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fe8c572fe3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55cbe868feb4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/407_cmsnamed.c_672_local_cpp_cwe-120-overflow/asan_real/replay_bin+0xaeb4)\n\n0x502000000060 is located 32 bytes to the right of 16-byte region [0x502000000030,0x502000000040)\nallocated by thread T0 here:\n    #0 0x7fe8c5ae6887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55cbe8690188 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/407_cmsnamed.c_672_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:50\n    #2 0x7fe8c572fd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/lcms2/src/cmsnamed.c:672 in cmsNamedColorInfo\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 00 fa fa 00 00 fa fa fa fa[fa]fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa "
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/407_cmsnamed.c_672_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cmsnamed.c",
+            "harness_line": 45,
+            "original_file": "cmsnamed.c",
+            "original_line": 672,
+            "error_type": "ptr",
+            "crash_function": "memmove",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/407_cmsnamed.c_672_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cmsNamedColorInfo",
+            "crash_file": "thirdparty/lcms2/src/cmsnamed.c",
+            "crash_line": 672
+        }
+    ]
+}

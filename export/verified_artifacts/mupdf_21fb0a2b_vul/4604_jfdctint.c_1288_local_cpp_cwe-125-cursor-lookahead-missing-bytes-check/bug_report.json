@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jfdctint.c",
+        "original_line": 1288,
+        "function": "jpeg_fdct_11x11",
+        "entry_point": "jpeg_fdct_11x11",
+        "spine": [
+            "jpeg_fdct_11x11"
+        ],
+        "original_context": "1283: \n1284:     tmp0 = GETJSAMPLE(elemptr[0]) + GETJSAMPLE(elemptr[10]);\n1285:     tmp1 = GETJSAMPLE(elemptr[1]) + GETJSAMPLE(elemptr[9]);\n1286:     tmp2 = GETJSAMPLE(elemptr[2]) + GETJSAMPLE(elemptr[8]);\n1287:     tmp3 = GETJSAMPLE(elemptr[3]) + GETJSAMPLE(elemptr[7]);\n1288:     tmp4 = GETJSAMPLE(elemptr[4]) + GETJSAMPLE(elemptr[6]);\n1289:     tmp5 = GETJSAMPLE(elemptr[5]);\n1290: \n1291:     tmp10 = GETJSAMPLE(elemptr[0]) - GETJSAMPLE(elemptr[10]);\n1292:     tmp11 = GETJSAMPLE(elemptr[1]) - GETJSAMPLE(elemptr[9]);\n1293:     tmp12 = GETJSAMPLE(elemptr[2]) - GETJSAMPLE(elemptr[8]);"
+    },
+    "klee_crash": {
+        "harness_file": "jfdctint.c",
+        "harness_line": 62,
+        "original_file": "jfdctint.c",
+        "original_line": 1288,
+        "original_code": "tmp4 = GETJSAMPLE(elemptr[4]) + GETJSAMPLE(elemptr[6]);",
+        "original_context": "    1285:     tmp1 = GETJSAMPLE(elemptr[1]) + GETJSAMPLE(elemptr[9]);\n    1286:     tmp2 = GETJSAMPLE(elemptr[2]) + GETJSAMPLE(elemptr[8]);\n    1287:     tmp3 = GETJSAMPLE(elemptr[3]) + GETJSAMPLE(elemptr[7]);\n>>> 1288:     tmp4 = GETJSAMPLE(elemptr[4]) + GETJSAMPLE(elemptr[6]);\n    1289:     tmp5 = GETJSAMPLE(elemptr[5]);\n    1290: \n    1291:     tmp10 = GETJSAMPLE(elemptr[0]) - GETJSAMPLE(elemptr[10]);",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jfdctint.c\nLine: 62\nassembly.ll line: 91\nState: 1\nStack: \n\t#000000091 in jpeg_fdct_11x11(139567911194624, 139293033287680, 0) at jfdctint.c:62\n\t#100000045 in main() at driver.c:25\nInfo: \n\taddress: 139275853418502\n\tnext: object at 138993459318784 of size 4\n\t\tMO46[4] allocated at jpeg_fdct_11x11():  %7 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "row_bytes",
+            "size": 6,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jpeg_fdct_11x11",
+        "crash_file": "thirdparty/libjpeg/jfdctint.c",
+        "crash_line": 1284,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==25728==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x50200000003a at pc 0x55829df288cc bp 0x7ffd0a6ecc60 sp 0x7ffd0a6ecc50\nREAD of size 1 at 0x50200000003a thread T0\n    #0 0x55829df288cb in jpeg_fdct_11x11 thirdparty/libjpeg/jfdctint.c:1284\n    #1 0x55829df243fc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4604_jfdctint.c_1288_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:26\n    #2 0x7fa88686cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fa88686ce3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55829df24284 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4604_jfdctint.c_1288_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x1284)\n\n0x50200000003a is located 4 bytes to the right of 6-byte region [0x502000000030,0x502000000036)\nallocated by thread T0 here:\n    #0 0x7fa886c23887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55829df24384 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4604_jfdctint.c_1288_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:16\n    #2 0x7fa88686cd8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/libjpeg/jfdctint.c:1284 in jpeg_fdct_11x11\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 00 fa fa fa 06[fa]fa fa fa fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4604_jfdctint.c_1288_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jfdctint.c",
+            "harness_line": 62,
+            "original_file": "jfdctint.c",
+            "original_line": 1288,
+            "error_type": "ptr",
+            "crash_function": "jpeg_fdct_11x11",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4604_jfdctint.c_1288_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jpeg_fdct_11x11",
+            "crash_file": "thirdparty/libjpeg/jfdctint.c",
+            "crash_line": 1284
+        }
+    ]
+}

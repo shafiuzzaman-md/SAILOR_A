@@ -1,0 +1,20 @@
+About to call mfs_write with negative size = -1 (will convert to size_t)
+=================================================================
+==4080857==ERROR: AddressSanitizer: negative-size-param: (size=-1)
+    #0 0x5e6abe317fa8 in __asan_memcpy (/app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 85fc6a390e007b5856f46b4b081bafe805213f42)
+    #1 0x5e6abe3550e2 in mfs_write /app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer.c:60:9
+    #2 0x5e6abe355dd9 in main /app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer.c:124:15
+    #3 0x78a6d482a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x78a6d482a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5e6abe295324 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 85fc6a390e007b5856f46b4b081bafe805213f42)
+
+0x603000000040 is located 0 bytes inside of 32-byte region [0x603000000040,0x603000000060)
+allocated by thread T0 here:
+    #0 0x5e6abe318d32 in __interceptor_malloc (/app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer+0xa4d32) (BuildId: 85fc6a390e007b5856f46b4b081bafe805213f42)
+    #1 0x5e6abe355d44 in main /app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer.c:110:25
+    #2 0x78a6d482a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x78a6d482a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5e6abe295324 in _start (/app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 85fc6a390e007b5856f46b4b081bafe805213f42)
+
+SUMMARY: AddressSanitizer: negative-size-param (/app/export/baseline_artifacts/b3/libtiff/verified/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 85fc6a390e007b5856f46b4b081bafe805213f42) in __asan_memcpy
+==4080857==ABORTING

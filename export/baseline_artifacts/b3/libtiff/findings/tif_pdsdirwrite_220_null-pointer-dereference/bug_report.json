@@ -1,0 +1,66 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/pds/tif_pdsdirwrite.c",
+    "line": 220,
+    "function": "TIFFWritePrivateDataSubDirectory",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "_TIFFmalloc() result for 'fields' is not checked for NULL before being used in _TIFFmemcpy(fields, pdir_fieldsset, ...). On allocation failure, this leads to a NULL pointer dereference.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/pds/tif_pdsdirwrite.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Self-contained stubs and minimal types to reproduce the bug */\n\ntypedef long long toff_t;\n\ntypedef struct {\n    toff_t tif_dataoff;\n    uint32_t tif_flags;\n} TIFF;\n\n/* Local, internal-linkage versions to avoid symbol clashes with libtiff */\nstatic void* _TIFFmalloc(size_t s) {\n    /* Simulate allocation failure to trigger the NULL dereference path */\n    (void)s;\n    return NULL;\n}\n\nstatic void _TIFFmemcpy(void* dst, const void* src, size_t n) {\n    /* Wrap memcpy to keep the call pattern identical to the vulnerable code */\n    memcpy(dst, src, n);\n}\n\n/* Minimal reproduction of the vulnerable function logic around lines 218-221 */\nstatic int TIFFWritePrivateDataSubDirectory(TIFF* tif,\n                                            const uint32_t* pdir_fieldsset,\n                                            uint32_t pdir_fields_last) {\n    (void)tif; /* Unused in this minimal reproducer */\n\n    /* fields_size is the number of uint32_t needed for the bit-mask */\n    size_t fields_size = pdir_fields_last / (8 * sizeof(uint32_t)) + 1;\n\n    /* Vulnerable allocation: result is not checked for NULL */\n    uint32_t* fields = (uint32_t*)_TIFFmalloc(fields_size * sizeof(uint32_t));\n\n    /* NULL-pointer-dereference: fields may be NULL on allocation failure */\n    _TIFFmemcpy(fields, pdir_fieldsset, fields_size * sizeof(uint32_t));\n\n    /* Not reached if the above memcpy dereferences NULL */\n    return 1;\n}\n\nint main(void) {\n    TIFF tif;\n    tif.tif_dataoff = 0;\n    tif.tif_flags = 0;\n\n    /* Provide a tiny, valid pdir_fieldsset so the only fault is NULL dest */\n    uint32_t pdir_fieldsset[1] = {0};\n\n    /* Choose pdir_fields_last small so copy length is small (4 bytes),\n       but make _TIFFmalloc always fail so we deterministically deref NULL */\n    uint32_t pdir_fields_last = 0; /* fields_size = 1; copy = 4 bytes */\n\n    /* This call will trigger the vulnerable memcpy with a NULL destination */\n    (void)TIFFWritePrivateDataSubDirectory(&tif, pdir_fieldsset, pdir_fields_last);\n\n    /* If we somehow return, indicate unexpected behavior */\n    puts(\"Unexpectedly returned without crashing\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7263014316558838,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3835109==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7ed5bf988adb bp 0x7ffccbeaff20 sp 0x7ffccbeaf6e8 T0)\n==3835109==The signal is caused by a WRITE memory access.\n==3835109==Hint: address points to the zero page.\n    #0 0x7ed5bf988adb in __memcpy_avx_unaligned_erms string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333\n    #1 0x5eef91c640d5 in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer+0xa30d5) (BuildId: c9d9803b54a07b2773aad12908cd9065e94c4694)\n    #2 0x5eef91ca0f34 in _TIFFmemcpy /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:24:5\n    #3 0x5eef91ca0ee7 in TIFFWritePrivateDataSubDirectory /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:40:5\n    #4 0x5eef91ca0e1e in main /app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:59:11\n    #5 0x7ed5bf82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #6 0x7ed5bf82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #7 0x5eef91be1304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer+0x20304) (BuildId: c9d9803b54a07b2773aad12908cd9065e94c4694)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:333 in __memcpy_avx_unaligned_erms\n==3835109==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "__memcpy_avx_unaligned_erms",
+      "crash_file": "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+      "crash_line": 333,
+      "frames": [
+        [
+          "0",
+          "__memcpy_avx_unaligned_erms",
+          "string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+          "333"
+        ],
+        [
+          "2",
+          "_TIFFmemcpy",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:24",
+          "5"
+        ],
+        [
+          "3",
+          "TIFFWritePrivateDataSubDirectory",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:40",
+          "5"
+        ],
+        [
+          "4",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tif_pdsdirwrite_220_null-pointer-dereference/reproducer.c:59",
+          "11"
+        ],
+        [
+          "5",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "6",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

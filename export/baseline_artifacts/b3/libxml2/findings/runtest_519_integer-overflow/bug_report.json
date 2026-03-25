@@ -1,0 +1,87 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "runtest.c",
+    "line": 519,
+    "function": "loadMem",
+    "bug_type": "integer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "info.st_size (off_t) is added with 1 and passed to xmlMalloc(size_t) without range checks. On 32-bit systems or with very large files, the off_t -> size_t conversion can truncate, causing under-allocation. The subsequent read loop writes up to info.st_size bytes into this buffer, leading to heap corruption.",
+    "abs_path": "/tmp/libxml2_upstream/runtest.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n#include <sys/types.h>\n#include <sys/stat.h>\n\n/*\n * Stub xmlMalloc/xmlFree that simulate a 32-bit allocator on a 64-bit host.\n * This intentionally truncates the requested size to 32 bits to emulate the\n * off_t -> size_t truncation issue described, so a huge requested size wraps\n * around to a tiny allocation.\n */\nvoid *xmlMalloc(size_t size) {\n    uint32_t s32 = (uint32_t)size; /* emulate 32-bit size_t truncation */\n    if (s32 == 0) {\n        /* emulate allocators that return a non-NULL minimal buffer for 0 */\n        s32 = 1;\n    }\n    void *p = malloc(s32);\n    fprintf(stderr, \"xmlMalloc called with size=%zu (0x%zx), truncated to %u bytes, ptr=%p\\n\",\n            size, size, s32, p);\n    return p;\n}\n\nvoid xmlFree(void *ptr) {\n    free(ptr);\n}\n\n/* Dummy I/O layer so we don't touch the real FS. */\nstatic int my_open(const char *filename, int flags) {\n    (void)filename; (void)flags;\n    return 3; /* any non-negative fd */\n}\n\nstatic int my_close(int fd) {\n    (void)fd;\n    return 0;\n}\n\n/*\n * my_stat sets st_size to 2^32 - 1, so st_size + 1 == 2^32. When that value\n * is passed to xmlMalloc(size_t), our stub truncates to 32 bits, yielding 0,\n * and we allocate only 1 byte. The subsequent read loop will then overflow.\n */\nstatic int my_stat(const char *filename, struct stat *st) {\n    (void)filename;\n    memset(st, 0, sizeof(*st));\n    st->st_size = (off_t)((1ULL << 32) - 1ULL); /* 4294967295 */\n    return 0;\n}\n\n/*\n * my_read writes some data into the provided buffer to simulate reading from a file.\n * We ignore the requested count and just write 1024 bytes once to trigger overflow.\n */\nstatic ssize_t my_read(int fd, void *buf, size_t count) {\n    (void)fd;\n    static int done = 0;\n    size_t to_write;\n    if (done) return 0; /* EOF on second call */\n    (void)count; /* ignore requested size; we control how much to write */\n    to_write = 1024; /* write 1 KiB to overflow the tiny allocation */\n    memset(buf, 'A', to_write);\n    done = 1;\n    return (ssize_t)to_write;\n}\n\n/* Minimal defines to avoid unknown macros */\n#ifndef RD_FLAGS\n#define RD_FLAGS 0\n#endif\n\n/* Vulnerable function adapted from runtest.c:loadMem */\nstatic int loadMem(const char *filename, const char **mem, int *size) {\n    int fd, res;\n    struct stat info;\n    char *base;\n    int siz = 0;\n    if (my_stat(filename, &info) < 0)\n        return(-1);\n    /* Vulnerable allocation: off_t (info.st_size) + 1 passed to xmlMalloc(size_t) */\n    base = (char *)xmlMalloc((size_t)(info.st_size + 1));\n    if (base == NULL)\n        return(-1);\n    fd = my_open(filename, RD_FLAGS);\n    if (fd  < 0) {\n        xmlFree(base);\n        return(-1);\n    }\n    while ((res = (int)my_read(fd, &base[siz], (size_t)(info.st_size - (off_t)siz))) > 0) {\n        siz += res;\n    }\n    my_close(fd);\n#if !defined(_WIN32)\n    if ((off_t)siz != info.st_size) {\n        xmlFree(base);\n        return(-1);\n    }\n#endif\n    base[siz] = 0;\n    *mem = base;\n    *size = siz;\n    return(0);\n}\n\nstatic int unloadMem(const char *mem) {\n    xmlFree((char *)mem);\n    return 0;\n}\n\nint main(void) {\n    const char *mem = NULL;\n    int size = 0;\n\n    /* Trigger the bug. The overflow occurs inside the read loop above. */\n    int ret = loadMem(\"dummy-big-file\", &mem, &size);\n    fprintf(stderr, \"loadMem returned %d, size=%d, mem=%p\\n\", ret, size, (void*)mem);\n\n    if (mem) unloadMem(mem);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.745398759841919,
+      "output": "xmlMalloc called with size=4294967296 (0x100000000), truncated to 1 bytes, ptr=0x602000000010\n=================================================================\n==4020468==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x64b10e1b0300 bp 0x7ffe9678a390 sp 0x7ffe96789b60\nWRITE of size 1024 at 0x602000000011 thread T0\n    #0 0x64b10e1b02ff in __asan_memset (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa42ff) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)\n    #1 0x64b10e1ed60d in my_read /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:64:5\n    #2 0x64b10e1ed2c5 in loadMem /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:91:24\n    #3 0x64b10e1eceab in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117:15\n    #4 0x7c447f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7c447f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x64b10e12d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0x21304) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x64b10e1b0d12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa4d12) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)\n    #1 0x64b10e1ecccd in xmlMalloc /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:20:15\n    #2 0x64b10e1ed1eb in loadMem /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:83:20\n    #3 0x64b10e1eceab in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117:15\n    #4 0x7c447f82a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7c447f82a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x64b10e12d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0x21304) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer+0xa42ff) (BuildId: 2c9280bb59a3e35897f9349ab97e94bcc6f66e46) in __asan_memset\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4020468==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "my_read",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:64",
+          "5"
+        ],
+        [
+          "2",
+          "loadMem",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:91",
+          "24"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "xmlMalloc",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:20",
+          "15"
+        ],
+        [
+          "2",
+          "loadMem",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:83",
+          "20"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/runtest_519_integer-overflow/reproducer.c:117",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

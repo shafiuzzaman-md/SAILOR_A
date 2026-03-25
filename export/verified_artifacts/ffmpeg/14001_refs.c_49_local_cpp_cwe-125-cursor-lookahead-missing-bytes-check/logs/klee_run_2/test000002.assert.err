@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: refs.c
+Line: 36
+assembly.ll line: 196
+State: 1
+Stack: 
+	#000000196 in ff_hevc_get_ref_list(139358457085952, symbolic, symbolic) at refs.c:36
+	#100000217 in entry_func(139358457085952, symbolic, symbolic) at refs.c:42
+	#200000120 in main() at driver.c:42

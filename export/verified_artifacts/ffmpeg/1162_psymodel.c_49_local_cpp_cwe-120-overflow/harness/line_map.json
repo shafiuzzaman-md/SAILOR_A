@@ -1,0 +1,59 @@
+{
+  "psymodel.c": {
+    "3": {
+      "orig_file": "psymodel.c",
+      "orig_line": 22,
+      "code": "#include <string.h>"
+    },
+    "29": {
+      "orig_file": "psymodel.c",
+      "orig_line": 31,
+      "code": "av_cold int ff_psy_init(FFPsyContext *ctx, AVCodecContext *avctx, int num_lens,"
+    },
+    "30": {
+      "orig_file": "psymodel.c",
+      "orig_line": 32,
+      "code": "const uint8_t **bands, const int* num_bands,"
+    },
+    "31": {
+      "orig_file": "psymodel.c",
+      "orig_line": 33,
+      "code": "int num_groups, const uint8_t *group_map)"
+    },
+    "32": {
+      "orig_file": "psymodel.c",
+      "orig_line": 34,
+      "code": "{"
+    },
+    "36": {
+      "orig_file": "psymodel.c",
+      "orig_line": 49,
+      "code": "memcpy(ctx->bands,     bands,     sizeof(ctx->bands[0])     *  num_lens);"
+    },
+    "37": {
+      "orig_file": "psymodel.c",
+      "orig_line": 50,
+      "code": "memcpy(ctx->num_bands, num_bands, sizeof(ctx->num_bands[0]) *  num_lens);"
+    },
+    "41": {
+      "orig_file": "psymodel.c",
+      "orig_line": 70,
+      "code": "return 0;"
+    },
+    "42": {
+      "orig_file": "psymodel.c",
+      "orig_line": 71,
+      "code": "}"
+    },
+    "46": {
+      "orig_file": "psymodel.c",
+      "orig_line": 32,
+      "code": "const uint8_t **bands, const int* num_bands,"
+    },
+    "49": {
+      "orig_file": "psymodel.c",
+      "orig_line": 47,
+      "code": "}"
+    }
+  }
+}

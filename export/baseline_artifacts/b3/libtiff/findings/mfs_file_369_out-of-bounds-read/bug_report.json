@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/mfs/mfs_file.c",
+    "line": 369,
+    "function": "mfs_write",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "No bounds check on fd before indexing fds[fd] and buf_mode[fd]; a negative or >= MAX_BUFFS fd leads to out-of-bounds access.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/mfs/mfs_file.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <string.h>\n#include <errno.h>\n#include <stdlib.h>\n\n/* Minimal stand-in for contrib/mfs/mfs_file.c globals */\n#define MAX_BUFFS 4\n\nstatic int   fds[MAX_BUFFS];\nstatic char  buf_mode[MAX_BUFFS];\nstatic int   buf_off[MAX_BUFFS];\nstatic int   buf_size[MAX_BUFFS];\nstatic unsigned char *buf[MAX_BUFFS];\n\n/* Stub for internal function referenced by mfs_write */\nstatic void extend_mem_file(int fd, int newsize) {\n    (void)fd; (void)newsize; /* no-op for reproducer */\n}\n\n/* Vulnerable function (mirrors the relevant logic) */\nstatic int mfs_write(int fd, void *clnt_buf, int size)\n{\n    int ret;\n\n    /* BUG: no bounds check on fd before indexing fds[fd] and buf_mode[fd] */\n    if (fds[fd] == -1 || buf_mode[fd] == 'r')\n    {\n        /* Either the file is not open or it is opened for reading only */\n        ret = -1;\n        errno = EBADF;\n    }\n    else if (buf_mode[fd] == 'w')\n    {\n        /* Write */\n        if (buf_off[fd] + size > buf_size[fd])\n        {\n            extend_mem_file(fd, buf_off[fd] + size);\n            buf_size[fd] = (buf_off[fd] + size);\n        }\n\n        memcpy((buf[fd] + buf_off[fd]), clnt_buf, size);\n        buf_off[fd] = buf_off[fd] + size;\n\n        ret = size;\n    }\n    else\n    {\n        /* Append */\n        if (buf_off[fd] != buf_size[fd])\n            buf_off[fd] = buf_size[fd];\n\n        extend_mem_file(fd, buf_off[fd] + size);\n        buf_size[fd] += size;\n\n        memcpy((buf[fd] + buf_off[fd]), clnt_buf, size);\n        buf_off[fd] = buf_off[fd] + size;\n\n        ret = size;\n    }\n\n    return (ret);\n}\n\nint main(void)\n{\n    /* Initialize globals to benign values so normal in-bounds use would be fine */\n    for (int i = 0; i < MAX_BUFFS; i++) {\n        fds[i] = 0;            /* pretend they are open */\n        buf_mode[i] = 'w';     /* writable mode */\n        buf_off[i] = 0;\n        buf_size[i] = 16;\n        buf[i] = (unsigned char*)malloc(buf_size[i]);\n        if (!buf[i]) return 1;\n        memset(buf[i], 0xAB, buf_size[i]);\n    }\n\n    char data = 'X';\n\n    /* Trigger: pass a negative fd to force out-of-bounds read in fds[fd] */\n    /* This will read fds[-1] (and potentially buf_mode[-1]) before any bounds checks */\n    int fd = -1;  /* Out-of-bounds index */\n    (void)mfs_write(fd, &data, 1);\n\n    /* Cleanup (unlikely reached if ASan aborts on OOB) */\n    for (int i = 0; i < MAX_BUFFS; i++) {\n        free(buf[i]);\n    }\n\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7949750423431396,
+      "output": "=================================================================\n==3826629==ERROR: AddressSanitizer: global-buffer-overflow on address 0x5f210538b5ff at pc 0x5f2104a02310 bp 0x7fff48ec5a20 sp 0x7fff48ec5a18\nREAD of size 1 at 0x5f210538b5ff thread T0\n    #0 0x5f2104a0230f in mfs_write /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:26:26\n    #1 0x5f2104a0215d in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:82:11\n    #2 0x79ba43e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x79ba43e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x5f2104942304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer+0x21304) (BuildId: 721b378ef12676f0c8320307f0d6f49f97e7ee73)\n\n0x5f210538b5ff is located 33 bytes to the left of global variable 'buf_off' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:11:14' (0x5f210538b620) of size 16\n0x5f210538b5ff is located 1 bytes to the left of global variable 'buf_mode' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:10:14' (0x5f210538b600) of size 4\n0x5f210538b5ff is located 15 bytes to the right of global variable 'fds' defined in '/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:9:14' (0x5f210538b5e0) of size 16\nSUMMARY: AddressSanitizer: global-buffer-overflow /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:26:26 in mfs_write\nShadow bytes around the buggy address:\n  0x0be4a0a69660: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a69670: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a69680: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a69690: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a696a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0be4a0a696b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 f9[f9]\n  0x0be4a0a696c0: 04 f9 f9 f9 00 00 f9 f9 00 00 f9 f9 00 00 00 00\n  0x0be4a0a696d0: f9 f9 f9 f9 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a696e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a696f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0be4a0a69700: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3826629==ABORTING\n",
+      "error_type": "global-buffer-overflow",
+      "crash_function": "mfs_write",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:26",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "mfs_write",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:26",
+          "26"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_369_out-of-bounds-read/reproducer.c:82",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

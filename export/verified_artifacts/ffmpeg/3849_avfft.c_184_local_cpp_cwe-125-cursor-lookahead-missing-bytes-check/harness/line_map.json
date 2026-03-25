@@ -1,0 +1,154 @@
+{
+  "avfft.c": {
+    "1": {
+      "orig_file": "avfft.c",
+      "orig_line": 19,
+      "code": "#include <stddef.h>"
+    },
+    "2": {
+      "orig_file": "avfft.c",
+      "orig_line": 20,
+      "code": "#include <string.h>"
+    },
+    "12": {
+      "orig_file": "avfft.c",
+      "orig_line": 28,
+      "code": "typedef struct AVTXWrapper {"
+    },
+    "13": {
+      "orig_file": "avfft.c",
+      "orig_line": 29,
+      "code": "AVTXContext *ctx;"
+    },
+    "14": {
+      "orig_file": "avfft.c",
+      "orig_line": 30,
+      "code": "av_tx_fn fn;"
+    },
+    "16": {
+      "orig_file": "avfft.c",
+      "orig_line": 32,
+      "code": "AVTXContext *ctx2;"
+    },
+    "17": {
+      "orig_file": "avfft.c",
+      "orig_line": 33,
+      "code": "av_tx_fn fn2;"
+    },
+    "19": {
+      "orig_file": "avfft.c",
+      "orig_line": 35,
+      "code": "ptrdiff_t stride;"
+    },
+    "20": {
+      "orig_file": "avfft.c",
+      "orig_line": 36,
+      "code": "int len;"
+    },
+    "21": {
+      "orig_file": "avfft.c",
+      "orig_line": 37,
+      "code": "int inv;"
+    },
+    "23": {
+      "orig_file": "avfft.c",
+      "orig_line": 39,
+      "code": "float *tmp;"
+    },
+    "24": {
+      "orig_file": "avfft.c",
+      "orig_line": 40,
+      "code": "int out_of_place;"
+    },
+    "25": {
+      "orig_file": "avfft.c",
+      "orig_line": 41,
+      "code": "} AVTXWrapper;"
+    },
+    "28": {
+      "orig_file": "avfft.c",
+      "orig_line": 175,
+      "code": "void av_rdft_calc(RDFTContext *s, FFTSample *data)"
+    },
+    "29": {
+      "orig_file": "avfft.c",
+      "orig_line": 176,
+      "code": "{"
+    },
+    "30": {
+      "orig_file": "avfft.c",
+      "orig_line": 177,
+      "code": "AVTXWrapper *w = (AVTXWrapper *)s;"
+    },
+    "31": {
+      "orig_file": "avfft.c",
+      "orig_line": 178,
+      "code": "float *src = w->inv ? w->tmp : (float *)data;"
+    },
+    "32": {
+      "orig_file": "avfft.c",
+      "orig_line": 179,
+      "code": "float *dst = w->inv ? (float *)data : w->tmp;"
+    },
+    "34": {
+      "orig_file": "avfft.c",
+      "orig_line": 181,
+      "code": "if (w->inv) {"
+    },
+    "35": {
+      "orig_file": "avfft.c",
+      "orig_line": 182,
+      "code": "memcpy(src, data, w->len*sizeof(float));"
+    },
+    "37": {
+      "orig_file": "avfft.c",
+      "orig_line": 184,
+      "code": "src[w->len] = src[1];"
+    },
+    "39": {
+      "orig_file": "avfft.c",
+      "orig_line": 185,
+      "code": "src[1] = 0.0f;"
+    },
+    "40": {
+      "orig_file": "avfft.c",
+      "orig_line": 186,
+      "code": "}"
+    },
+    "42": {
+      "orig_file": "avfft.c",
+      "orig_line": 188,
+      "code": "w->fn(w->ctx, dst, (void *)src, w->stride);"
+    },
+    "44": {
+      "orig_file": "avfft.c",
+      "orig_line": 190,
+      "code": "if (!w->inv) {"
+    },
+    "45": {
+      "orig_file": "avfft.c",
+      "orig_line": 191,
+      "code": "dst[1] = dst[w->len];"
+    },
+    "46": {
+      "orig_file": "avfft.c",
+      "orig_line": 192,
+      "code": "memcpy(data, dst, w->len*sizeof(float));"
+    },
+    "47": {
+      "orig_file": "avfft.c",
+      "orig_line": 193,
+      "code": "}"
+    },
+    "48": {
+      "orig_file": "avfft.c",
+      "orig_line": 194,
+      "code": "}"
+    },
+    "54": {
+      "orig_file": "avfft.c",
+      "orig_line": 194,
+      "code": "}"
+    }
+  }
+}

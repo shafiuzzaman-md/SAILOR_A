@@ -1,0 +1,44 @@
+{
+  "parseutils.c": {
+    "11": {
+      "orig_file": "parseutils.c",
+      "orig_line": 63,
+      "code": "return 0;"
+    },
+    "12": {
+      "orig_file": "parseutils.c",
+      "orig_line": 64,
+      "code": "}"
+    },
+    "20": {
+      "orig_file": "parseutils.c",
+      "orig_line": 652,
+      "code": "if (p[0] == '-') {"
+    },
+    "21": {
+      "orig_file": "parseutils.c",
+      "orig_line": 653,
+      "code": "negative = 1;"
+    },
+    "22": {
+      "orig_file": "parseutils.c",
+      "orig_line": 654,
+      "code": "++p;"
+    },
+    "23": {
+      "orig_file": "parseutils.c",
+      "orig_line": 655,
+      "code": "}"
+    },
+    "27": {
+      "orig_file": "parseutils.c",
+      "orig_line": 620,
+      "code": "return 0;"
+    },
+    "28": {
+      "orig_file": "parseutils.c",
+      "orig_line": 621,
+      "code": "}"
+    }
+  }
+}

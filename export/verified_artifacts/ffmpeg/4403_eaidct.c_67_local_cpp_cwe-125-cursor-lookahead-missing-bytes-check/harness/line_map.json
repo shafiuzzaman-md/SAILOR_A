@@ -1,0 +1,34 @@
+{
+  "eaidct.c": {
+    "8": {
+      "orig_file": "eaidct.c",
+      "orig_line": 66,
+      "code": "static inline void ea_idct_col(int16_t *dest, const int16_t *src) {"
+    },
+    "9": {
+      "orig_file": "eaidct.c",
+      "orig_line": 67,
+      "code": "if ((src[8]|src[16]|src[24]|src[32]|src[40]|src[48]|src[56])==0) {"
+    },
+    "11": {
+      "orig_file": "eaidct.c",
+      "orig_line": 75,
+      "code": "dest[56] = src[0];"
+    },
+    "15": {
+      "orig_file": "eaidct.c",
+      "orig_line": 78,
+      "code": "}"
+    },
+    "18": {
+      "orig_file": "eaidct.c",
+      "orig_line": 78,
+      "code": "}"
+    },
+    "25": {
+      "orig_file": "eaidct.c",
+      "orig_line": 78,
+      "code": "}"
+    }
+  }
+}

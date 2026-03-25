@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "python/libxml.c",
+    "line": 3493,
+    "function": "libxml_getObjDesc",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If the passed object is not a valid PyCapsule (or the capsule name check fails), PyCapsule_GetName and PyCapsule_GetPointer return NULL and set an exception. The code ignores errors and passes the NULL pointer to Py_BuildValue with the \"s\" format, which dereferences NULL (e.g., via strlen), causing a crash.",
+    "abs_path": "/tmp/libxml2_upstream/python/libxml.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n/* Minimal stubs to mimic the Python C API used by the vulnerable code */\n#define ATTRIBUTE_UNUSED\n\ntypedef struct FakePyObject {\n    int kind;\n} PyObject;\n\n/* Stub: pretend argument parsing succeeded and return the provided pointer */\nint PyArg_ParseTuple(PyObject *args, const char *fmt, PyObject **out) {\n    (void)fmt; /* unused */\n    *out = (PyObject *)args; /* Treat args as the single object argument */\n    return 1; /* success */\n}\n\n/* Stub: return some name (non-NULL) to simulate a capsule name lookup */\nconst char *PyCapsule_GetName(PyObject *obj) {\n    (void)obj;\n    return \"any_name\"; /* non-NULL */\n}\n\n/* Stub: always fail to get the pointer from the capsule (returns NULL) */\nvoid *PyCapsule_GetPointer(PyObject *obj, const char *name) {\n    (void)obj;\n    (void)name;\n    return NULL; /* Simulate failure per vulnerability description */\n}\n\n/* Stub: emulate Py_BuildValue(\"s\", str). This will deref NULL via strlen */\nPyObject *Py_BuildValue(const char *fmt, const char *str) {\n    if (fmt && fmt[0] == 's') {\n        /* Vulnerable behavior: assume str is non-NULL and use it */\n        size_t n = strlen(str); /* NULL deref if str == NULL */\n        /* Allocate a dummy PyObject to satisfy return type (not reached) */\n        PyObject *o = (PyObject *)malloc(sizeof(PyObject));\n        if (o) o->kind = (int)n;\n        return o;\n    }\n    return NULL;\n}\n\n/* Vulnerable function from python/libxml.c (adapted to use our stubs) */\nstatic PyObject *\nlibxml_getObjDesc(PyObject *self ATTRIBUTE_UNUSED, PyObject *args) {\n    PyObject *obj;\n    char *str;\n\n    if (!PyArg_ParseTuple(args, \"O:getObjDesc\", &obj))\n        return NULL;\n    str = (char *)PyCapsule_GetPointer(obj, PyCapsule_GetName(obj));\n    return Py_BuildValue(\"s\", str);\n}\n\nint main(void) {\n    /* Craft a non-capsule object; our stubs will make GetPointer return NULL */\n    PyObject fake_obj;\n    fake_obj.kind = 1234;\n\n    /* Call the vulnerable function: it will end up calling strlen(NULL) */\n    (void)libxml_getObjDesc(NULL, &fake_obj);\n\n    /* If the program did not crash (it should), indicate abnormal behavior */\n    fprintf(stderr, \"Unexpectedly did not crash.\\n\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.09556770324707031,
+      "output": ""
+    }
+  }
+}

@@ -1,0 +1,14 @@
+/* AUTO-GENERATED from harness preamble */
+#pragma once
+
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+
+#ifndef STATUS_ERR
+#define STATUS_ERR (-1)
+#endif
+#ifndef STATUS_SUCCESS
+#define STATUS_SUCCESS (0)
+#endif
+

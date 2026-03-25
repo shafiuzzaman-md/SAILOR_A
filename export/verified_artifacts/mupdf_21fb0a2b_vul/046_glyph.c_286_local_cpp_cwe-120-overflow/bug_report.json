@@ -1,0 +1,146 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 2,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "glyph.c",
+        "original_line": 286,
+        "function": "fz_new_glyph_from_8bpp_data",
+        "entry_point": "fz_new_glyph_from_pixmap",
+        "spine": [
+            "fz_new_glyph_from_pixmap",
+            "fz_new_glyph_from_8bpp_data"
+        ],
+        "original_context": "281: \t\t\t\t\t\tglyph->data[fill++] = ((len-1)>>5)<<2;\n282: \t\t\t\t\tnonblankfill = fill;\n283: \t\t\t\t\tglyph->data[fill++] = code | (((len-1)&31)<<3);\n284: \t\t\t\t\tif (code == 3)\n285: \t\t\t\t\t{\n286: \t\t\t\t\t\tmemcpy(&glyph->data[fill], sp - len, len);\n287: \t\t\t\t\t\tfill += len;\n288: \t\t\t\t\t}\n289: \t\t\t\t\tnonblankfill_end = fill;\n290: \t\t\t\t}\n291: \t\t\t}"
+    },
+    "klee_crash": {
+        "harness_file": "glyph.c",
+        "harness_line": 49,
+        "original_file": "glyph.c",
+        "original_line": 213,
+        "original_code": "glyph->x = x;",
+        "original_context": "    210: \t\tfill = h * sizeof(int);\n    211: \t\tglyph = Memento_label(fz_malloc(ctx, sizeof(fz_glyph) + size), \"fz_glyph(8)\");\n    212: \t\tFZ_INIT_STORABLE(glyph, 1, fz_drop_glyph_imp);\n>>> 213: \t\tglyph->x = x;\n    214: \t\tglyph->y = y;\n    215: \t\tglyph->w = w;\n    216: \t\tglyph->h = h;",
+        "error_type": "model",
+        "error_details": "Error: concretized symbolic size\nFile: glyph.c\nLine: 49\nassembly.ll line: 296\nState: 2\nStack: \n\t#000000296 in fz_new_glyph_from_8bpp_data(138922846679040, symbolic, symbolic, symbolic, symbolic, 139266444062720, symbolic) at glyph.c:49\n\t#100000195 in fz_new_glyph_from_pixmap(138922846679040, 139060285632512) at glyph.c:34\n\t#200000145 in main() at driver.c:45\nInfo: \n  size expr: (Add w64 32\n                       (SExt w64 (Mul w32 (ReadLSB w32 0 w)\n                                          (Read"
+    },
+    "concrete_inputs": [
+        {
+            "name": "samples_buf",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "x",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "y",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "w",
+            "size": 4,
+            "data": "b'&\\x00\\x00\\x00'"
+        },
+        {
+            "name": "h",
+            "size": 4,
+            "data": "b'@\\x00\\x00\\x00'"
+        },
+        {
+            "name": "stride",
+            "size": 4,
+            "data": "b'\\x80\\x00\\x00\\x00'"
+        },
+        {
+            "name": "samples_buf",
+            "size": 1024,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x"
+        },
+        {
+            "name": "x",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "y",
+            "size": 4,
+            "data": "b'\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "w",
+            "size": 4,
+            "data": "b'0\\x00\\x00\\x00'"
+        },
+        {
+            "name": "h",
+            "size": 4,
+            "data": "b'\\x19\\x00\\x00\\x00'"
+        },
+        {
+            "name": "stride",
+            "size": 4,
+            "data": "b'\\x80\\x00\\x00\\x00'"
+        },
+        {
+            "name": "len",
+            "size": 4,
+            "data": "b'\\x01\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "fz_push_try",
+        "crash_file": "source/fitz/error.c",
+        "crash_line": 233,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==3631==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000050 at pc 0x55ef42610566 bp 0x7ffef98d8ec0 sp 0x7ffef98d8eb0\nREAD of size 8 at 0x502000000050 thread T0\n    #0 0x55ef42610565 in fz_push_try source/fitz/error.c:233\n    #1 0x55ef425e8fd8 in fz_new_glyph_from_pixmap source/fitz/glyph.c:162\n    #2 0x55ef425e7dfc in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/046_glyph.c_286_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:45\n    #3 0x7f1f538bed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7f1f538bee3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x55ef425e78d4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/046_glyph.c_286_local_cpp_cwe-120-overflow/asan_real/replay_bin+0x108d4)\n\n0x502000000050 is located 60 bytes to the right of 4-byte region [0x502000000010,0x502000000014)\nallocated by thread T0 here:\n    #0 0x7f1f53c75a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x55ef425e7a4f in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/046_glyph.c_286_local_cpp_cwe-120-overflow/asan_real/replay_driver.c:11\n    #2 0x7f1f538bed8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow source/fitz/error.c:233 in fz_push_try\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa fa fa fa fa[fa]fa fa fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/046_glyph.c_286_local_cpp_cwe-120-overflow/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "glyph.c",
+            "harness_line": 49,
+            "original_file": "glyph.c",
+            "original_line": 213,
+            "error_type": "model",
+            "crash_function": "fz_new_glyph_from_8bpp_data",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/046_glyph.c_286_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+        },
+        {
+            "harness_file": "glyph.c",
+            "harness_line": 75,
+            "original_file": "glyph.c",
+            "original_line": 286,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/046_glyph.c_286_local_cpp_cwe-120-overflow/logs/klee_run_1/test000002.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "fz_push_try",
+            "crash_file": "source/fitz/error.c",
+            "crash_line": 233
+        }
+    ]
+}

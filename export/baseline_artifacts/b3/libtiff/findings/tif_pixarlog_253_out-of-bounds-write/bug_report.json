@@ -1,0 +1,23 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_pixarlog.c",
+    "line": 253,
+    "function": "horizontalAccumulate12",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "Same REPEAT(stride, ...) pattern as horizontalAccumulateF. With stride == 0, REPEAT executes once, n is not decreased, and the while (n > 0) loop becomes infinite, repeatedly incrementing/dereferencing wp/op (lines 258\u2013260), resulting in out-of-bounds reads and writes.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_pixarlog.c"
+  },
+  "reproducer_code": "#include <stdint.h>\n#include <stdio.h>\n#include <stdlib.h>\n\n// Replicate the vulnerable pattern from libtiff/tif_pixarlog.c\n// Key pieces: REPEAT that executes the body once even when n==0,\n// and the horizontalAccumulate12 else-branch that relies on REPEAT(stride, ...)\n\n#define CODE_MASK 0x0FFFu\n#define SCALE12 1.0f\n\nstatic inline uint16_t clamp12(float v) {\n    if (v < 0.0f)\n        v = 0.0f;\n    if (v > 4095.0f)\n        v = 4095.0f;\n    return (uint16_t)(v + 0.5f);\n}\n#define CLAMP12(x) clamp12((x))\n\n// Deliberately buggy REPEAT macro: executes the body once even when n == 0\n// This mirrors the behavior described in the vulnerability explanation\n#define REPEAT(n, op)                                                     \\\n    do {                                                                 \\\n        switch ((n)) {                                                   \\\n        default:                                                         \\\n            break;                                                       \\\n        case 4: op; /* fallthrough */                                    \\\n        case 3: op; /* fallthrough */                                    \\\n        case 2: op; /* fallthrough */                                    \\\n        case 1: op; /* fallthrough */                                    \\\n        case 0: op;                                                      \\\n            break;                                                       \\\n        }                                                                \\\n    } while (0)\n\nstatic void horizontalAccumulate12(uint16_t *wp, int n, int stride,\n                                   uint16_t *op, float *ToLinearF)\n{\n    unsigned int cr = 0, cg = 0, cb = 0, ca = 0, mask;\n    float t0 = 0, t1 = 0, t2 = 0, t3 = 0;\n\n    if (n >= stride) {\n        mask = CODE_MASK;\n        if (stride == 3) {\n            // Not used in this reproducer\n        } else if (stride == 4) {\n            // Not used in this reproducer\n        } else {\n            // Vulnerable path when stride == 0\n            REPEAT(stride, t0 = ToLinearF[*wp & mask] * SCALE12;\n                           *op = CLAMP12(t0); wp++; op++);\n            n -= stride; // With stride == 0, n is not decreased\n            while (n > 0) {\n                REPEAT(stride, wp[stride] += *wp;                         \\\n                               t0 = ToLinearF[wp[stride] & mask] * SCALE12; \\\n                               *op = CLAMP12(t0); wp++; op++);\n                n -= stride; // With stride == 0, this never decreases n -> infinite loop\n            }\n        }\n    }\n}\n\nint main(void) {\n    // Build the ToLinearF table (size 4096 for 12-bit mask)\n    float *ToLinearF = (float *)malloc(4096 * sizeof(float));\n    if (!ToLinearF) {\n        perror(\"malloc ToLinearF\");\n        return 1;\n    }\n    for (int i = 0; i < 4096; i++) {\n        ToLinearF[i] = (float)i; // simple linear mapping\n    }\n\n    // Minimal input/output buffers of size 1 to trigger OOB quickly\n    uint16_t *wp = (uint16_t *)malloc(1 * sizeof(uint16_t));\n    uint16_t *op = (uint16_t *)malloc(1 * sizeof(uint16_t));\n    if (!wp || !op) {\n        perror(\"malloc buffers\");\n        return 1;\n    }\n\n    wp[0] = 1;\n    op[0] = 0;\n\n    // Trigger: n > 0, stride == 0\n    // The first REPEAT executes once even though stride==0 and advances wp/op.\n    // Then the while loop condition (n > 0) is true and, since n is never\n    // decreased, the loop becomes infinite and immediately performs OOB\n    // read/write on the incremented pointers.\n    horizontalAccumulate12(wp, /*n=*/1, /*stride=*/0, op, ToLinearF);\n\n    // We should never reach here due to ASan crash\n    printf(\"Done (unexpected)\\n\");\n    free(wp);\n    free(op);\n    free(ToLinearF);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "NOT_REPRODUCIBLE",
+    "asan": {
+      "asan_triggered": false,
+      "exit_code": -11,
+      "elapsed": 0.08949398994445801,
+      "output": ""
+    }
+  }
+}

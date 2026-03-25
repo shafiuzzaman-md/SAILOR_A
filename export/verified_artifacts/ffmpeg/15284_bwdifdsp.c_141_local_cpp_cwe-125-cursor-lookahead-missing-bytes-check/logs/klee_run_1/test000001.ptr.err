@@ -1,0 +1,13 @@
+Error: memory error: out of bound pointer
+File: bwdifdsp.c
+Line: 37
+assembly.ll line: 162
+State: 2
+Stack: 
+	#000000162 in ff_bwdif_filter_line_c(139497523404800, 139480343535632, 139514703273984, 139471753601024, 8, 1, 1, 2, 2, 3, 3, 4, 4, 1, 255) at bwdifdsp.c:37
+	#100000327 in entry_func(139497523404800, 139480343535632, 139514703273984, 139471753601024, 8, 1, 1, 2, 2, 3, 3, 4, 4, 1, 255) at bwdifdsp.c:50
+	#200000415 in main() at driver.c:44
+Info: 
+	address: 139480343535632
+	next: object at 139128290435072 of size 4
+		MO148[4] allocated at ff_bwdif_filter_line_c():  %27 = alloca i32, align 4

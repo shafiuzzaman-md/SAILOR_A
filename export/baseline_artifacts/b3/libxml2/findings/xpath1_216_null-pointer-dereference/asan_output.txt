@@ -1,0 +1,2 @@
+Result (1 nodes):
+= namespace "(null)"="http://example.com/default" for node root

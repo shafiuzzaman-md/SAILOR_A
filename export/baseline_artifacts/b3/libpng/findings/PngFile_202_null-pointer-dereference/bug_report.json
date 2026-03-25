@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/visupng/PngFile.c",
+    "line": 202,
+    "function": "PngLoadImage",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "If the caller passes pBkgColor == NULL and the PNG file has a bKGD chunk (png_get_bKGD returns true), the code unconditionally writes to pBkgColor->red/green/blue (lines 202-204), dereferencing a NULL pointer and crashing.",
+    "abs_path": "/tmp/libpng_upstream/contrib/visupng/PngFile.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/* Self-contained reproducer for the null-pointer-dereference in\n * contrib/visupng/PngFile.c::PngLoadImage when pBkgColor == NULL and\n * png_get_bKGD() returns true.\n */\n\ntypedef unsigned char byte;\n\n/* Minimal libpng-like types used by the vulnerable code */\ntypedef struct png_struct_def* png_structp;\ntypedef struct png_info_def* png_infop;\n\ntypedef struct png_color_16_s {\n    uint16_t index;\n    uint16_t red;\n    uint16_t green;\n    uint16_t blue;\n    uint16_t gray;\n} png_color_16;\n\ntypedef png_color_16* png_color_16p;\n\n/* Macro used in the vulnerable call */\n#define PNG_BACKGROUND_GAMMA_FILE 0\n\n/* Stub implementations to force the vulnerable path */\nint png_get_bKGD(png_structp png_ptr, png_infop info_ptr, png_color_16p* pBackground) {\n    static png_color_16 bg;\n    (void)png_ptr; (void)info_ptr;\n    bg.red = 0x12;\n    bg.green = 0x34;\n    bg.blue = 0x56;\n    *pBackground = &bg;  /* simulate that the PNG has a bKGD chunk */\n    return 1;             /* indicate that bKGD is present */\n}\n\nvoid png_set_background(png_structp png_ptr, png_color_16p background, int gamma_code, int need_expand, double background_gamma) {\n    (void)png_ptr; (void)background; (void)gamma_code; (void)need_expand; (void)background_gamma;\n    /* no-op stub */\n}\n\n/* Struct matching how pBkgColor is used in the code */\ntypedef struct {\n    byte red;\n    byte green;\n    byte blue;\n} BkgColor;\n\n/* Minimal reproduction of the vulnerable portion of PngLoadImage */\nint PngLoadImage(BkgColor* pBkgColor) {\n    png_structp png_ptr = NULL;  /* unused in this reproducer */\n    png_infop info_ptr = NULL;   /* unused in this reproducer */\n    png_color_16p pBackground = NULL;\n\n    /* set the background color to draw transparent and alpha images over */\n    if (png_get_bKGD(png_ptr, info_ptr, &pBackground))\n    {\n        png_set_background(png_ptr, pBackground, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);\n        /* Vulnerable NULL dereference when pBkgColor == NULL */\n        pBkgColor->red   = (byte)pBackground->red;   /* crash here */\n        pBkgColor->green = (byte)pBackground->green;\n        pBkgColor->blue  = (byte)pBackground->blue;\n    }\n    else\n    {\n        pBkgColor = NULL;\n    }\n\n    return 0;\n}\n\nint main(void) {\n    /* Trigger: pass NULL pBkgColor while png_get_bKGD() reports a present bKGD */\n    (void)PngLoadImage(NULL);\n    /* We should never get here; if we do, something went wrong with the trigger */\n    puts(\"Unexpectedly survived the NULL dereference\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6000144481658936,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3727169==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x585d7dbcdf61 bp 0x7ffcd7977da0 sp 0x7ffcd7977c60 T0)\n==3727169==The signal is caused by a WRITE memory access.\n==3727169==Hint: address points to the zero page.\n    #0 0x585d7dbcdf61 in PngLoadImage /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63:26\n    #1 0x585d7dbce127 in main /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:77:11\n    #2 0x7b0148c2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7b0148c2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x585d7db0e304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer+0x21304) (BuildId: 486341e53459344155a2aa774e056e1419cdd010)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63:26 in PngLoadImage\n==3727169==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "PngLoadImage",
+      "crash_file": "/app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63",
+      "crash_line": 26,
+      "frames": [
+        [
+          "0",
+          "PngLoadImage",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:63",
+          "26"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/PngFile_202_null-pointer-dereference/reproducer.c:77",
+          "11"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

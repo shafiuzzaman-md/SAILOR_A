@@ -1,0 +1,54 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "contrib/dbs/tiff-grayscale.c",
+    "line": 79,
+    "function": "main",
+    "bug_type": "null-pointer-dereference",
+    "cwe": "CWE-476",
+    "confidence": "high",
+    "explanation": "malloc() for 'gray' is not checked for failure; if malloc returns NULL, 'gray[0] = 3000;' dereferences a NULL pointer.",
+    "abs_path": "/tmp/libtiff_upstream/contrib/dbs/tiff-grayscale.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n/*\n * This reproducer simulates the vulnerable portion of\n * contrib/dbs/tiff-grayscale.c:main around lines 76-81, where\n * malloc() is not checked and gray[0] is dereferenced unconditionally.\n * We force the allocation to fail deterministically and then\n * perform the same dereference to trigger a NULL pointer dereference.\n */\n\n/* A malloc surrogate that always fails to emulate OOM */\nstatic void *fail_malloc(size_t size) {\n    (void)size;\n    return NULL;\n}\n\nstatic void trigger_vuln_like_path(void) {\n    int bits_per_pixel = 8;          /* as in the default case */\n    int nchunks = 16;                /* for 8 bpp */\n    int chunk_size = 32;             /* for 8 bpp */\n    int cmsize;\n    uint16_t *gray;\n\n    (void)bits_per_pixel;            /* suppress unused warnings */\n    (void)chunk_size;\n\n    cmsize = nchunks * nchunks;      /* == 256 for 8 bpp */\n\n    /* Force the vulnerable allocation to \"fail\" */\n    /* In the original code: gray = (uint16_t*)malloc(cmsize * sizeof(uint16_t)); */\n    gray = (uint16_t*)fail_malloc((size_t)cmsize * sizeof(uint16_t));\n\n    /* Vulnerable dereference: mirrors `gray[0] = 3000;` at line 79 */\n    gray[0] = 3000;  /* NULL pointer dereference */\n}\n\nint main(void) {\n    /* Directly drive the vulnerable code path. */\n    trigger_vuln_like_path();\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6553041934967041,
+      "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==3814174==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x64e6fc06bd39 bp 0x7ffc246ae660 sp 0x7ffc246ae630 T0)\n==3814174==The signal is caused by a WRITE memory access.\n==3814174==Hint: address points to the zero page.\n    #0 0x64e6fc06bd39 in trigger_vuln_like_path /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36:13\n    #1 0x64e6fc06bcb3 in main /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:41:5\n    #2 0x7c06a022a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x7c06a022a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x64e6fbfac304 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer+0x20304) (BuildId: 206d7c9e575b829bc6afdae3172f8107ce76936f)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36:13 in trigger_vuln_like_path\n==3814174==ABORTING\n",
+      "error_type": "SEGV",
+      "crash_function": "trigger_vuln_like_path",
+      "crash_file": "/app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36",
+      "crash_line": 13,
+      "frames": [
+        [
+          "0",
+          "trigger_vuln_like_path",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:36",
+          "13"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libtiff_f324415_vul/findings/tiff-grayscale_79_null-pointer-dereference/reproducer.c:41",
+          "5"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

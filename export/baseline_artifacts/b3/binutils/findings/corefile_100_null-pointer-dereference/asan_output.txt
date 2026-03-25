@@ -1,0 +1,15 @@
+About to trigger NULL pointer dereference in bfd_core_file_pid...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3634123==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x648a77156d5d bp 0x7ffd39a59020 sp 0x7ffd39a59000 T0)
+==3634123==The signal is caused by a READ memory access.
+==3634123==Hint: address points to the zero page.
+    #0 0x648a77156d5d in bfd_core_file_pid /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33:20
+    #1 0x648a77156cf3 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:44:13
+    #2 0x71fad302a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x71fad302a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x648a77097304 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer+0x21304) (BuildId: dfccc84dd30c1f584fbdc0d3963c605d7f109c60)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/binutils_b2bc71a_vul/findings/corefile_100_null-pointer-dereference/reproducer.c:33:20 in bfd_core_file_pid
+==3634123==ABORTING

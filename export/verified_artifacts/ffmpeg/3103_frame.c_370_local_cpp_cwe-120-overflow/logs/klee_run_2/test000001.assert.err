@@ -1,0 +1,9 @@
+Error: ASSERTION FAIL: 0 && "SAILOR_SINK_REACHED"
+File: frame.c
+Line: 86
+assembly.ll line: 216
+State: 1
+Stack: 
+	#000000216 in frame_copy_props(139117411459072, 139134591328256) at frame.c:86
+	#100000103 in av_frame_copy_props(139117411459072, 139134591328256) at frame.c:61
+	#200000078 in main() at driver.c:53

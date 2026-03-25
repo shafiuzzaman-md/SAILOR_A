@@ -1,0 +1,68 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "adts_parser.c",
+    "original_line": 38,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "33:     uint8_t tmpbuf[AV_AAC_ADTS_HEADER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE];\n34:     AACADTSHeaderInfo hdr;\n35:     int err;\n36:     if (!buf)\n37:         return AVERROR(EINVAL);\n38:     memcpy(tmpbuf, buf, AV_AAC_ADTS_HEADER_SIZE);\n39:     err = ff_adts_header_parse_buf(tmpbuf, &hdr);\n40:     if (err < 0)\n41:         return err;\n42:     *samples = hdr.samples;\n43:     *frames  = hdr.num_aac_frames;"
+  },
+  "klee_crash": {
+    "harness_file": "adts_parser.c",
+    "harness_line": 39,
+    "original_file": "adts_parser.c",
+    "original_line": 38,
+    "original_code": "memcpy(tmpbuf, buf, AV_AAC_ADTS_HEADER_SIZE);",
+    "original_context": "    35:     int err;\n    36:     if (!buf)\n    37:         return AVERROR(EINVAL);\n>>> 38:     memcpy(tmpbuf, buf, AV_AAC_ADTS_HEADER_SIZE);\n    39:     err = ff_adts_header_parse_buf(tmpbuf, &hdr);\n    40:     if (err < 0)\n    41:         return err;",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 127\nState: 1\nStack: \n\t#000000127 in memcpy(138766657896448, 139020060966912, 7) at runtime/Freestanding/memcpy.c:17\n\t#100000032 in av_adts_header_parse(139020060966912, 138721560739840, 138715118288896) at adts_parser.c:39\n\t#200000057 in entry_func(139020060966912, 138721560739840, 138715118288896) at adts_parser.c:47\n\t#300000092 in main() at driver.c:24\nInfo: \n\taddress: 139020060966915\n\tnext"
+  },
+  "concrete_inputs": [
+    {
+      "name": "buf_bytes",
+      "size": 3,
+      "data": "b'\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/019_adts_parser.c_38_local_cpp_cwe-120-overflow/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "adts_parser.c",
+      "harness_line": 39,
+      "original_file": "adts_parser.c",
+      "original_line": 38,
+      "error_type": "ptr",
+      "crash_function": "memcpy",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/019_adts_parser.c_38_local_cpp_cwe-120-overflow/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

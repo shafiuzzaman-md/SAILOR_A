@@ -1,0 +1,49 @@
+{
+  "ivi_dsp.c": {
+    "3": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 29,
+      "code": "#include <string.h>"
+    },
+    "7": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 427,
+      "code": "void ff_ivi_row_haar4(const int32_t *in, int16_t *out, ptrdiff_t pitch,"
+    },
+    "8": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 428,
+      "code": "const uint8_t *flags)"
+    },
+    "9": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 429,
+      "code": "{"
+    },
+    "11": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 436,
+      "code": "if (!in[0] && !in[1] && !in[2] && !in[3]) {"
+    },
+    "13": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 438,
+      "code": "} else {"
+    },
+    "15": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 442,
+      "code": "}"
+    },
+    "18": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 442,
+      "code": "}"
+    },
+    "24": {
+      "orig_file": "ivi_dsp.c",
+      "orig_line": 442,
+      "code": "}"
+    }
+  }
+}

@@ -1,0 +1,75 @@
+INFO: Running with entropic power schedule (0xFF, 100).
+INFO: Seed: 3128897097
+INFO: Loaded 1 modules   (5 inline 8-bit counters): 5 [0x55585ec96f80, 0x55585ec96f85), 
+INFO: Loaded 1 PC tables (5 PCs): 5 [0x55585ec96f88,0x55585ec96fd8), 
+INFO:        0 files found in /tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/corpus
+INFO:        2 files found in /tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/seed_corpus
+INFO: seed corpus: files: 2 min: 97b max: 97b total: 194b rss: 30Mb
+=================================================================
+==3118535==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000031 at pc 0x55585ec53b2d bp 0x7ffed83c4040 sp 0x7ffed83c4038
+READ of size 1 at 0x602000000031 thread T0
+    #0 0x55585ec53b2c in TIFFSwabArrayOfShort /tmp/libtiff_upstream/libtiff/tif_swab.c:90:11
+    #1 0x55585ec533ed in harness_entry /tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/shim.c:13:5
+    #2 0x55585ec5331d in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:33:5
+    #3 0x55585eb7980a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #4 0x55585eb78ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #5 0x55585eb7aad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #6 0x55585eb7af56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #7 0x55585eb68542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #8 0x55585eb939e6 in main (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #9 0x77547042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #10 0x77547042a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #11 0x55585eb5c974 in _start (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+
+0x602000000031 is located 0 bytes to the right of 1-byte region [0x602000000030,0x602000000031)
+allocated by thread T0 here:
+    #0 0x55585ec17332 in malloc (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0xe1332) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #1 0x55585ec532dd in LLVMFuzzerTestOneInput /tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_harness.c:26:43
+    #2 0x55585eb7980a in fuzzer::Fuzzer::ExecuteCallback(unsigned char const*, unsigned long) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x4380a) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #3 0x55585eb78ed5 in fuzzer::Fuzzer::RunOne(unsigned char const*, unsigned long, bool, fuzzer::InputInfo*, bool, bool*) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x42ed5) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #4 0x55585eb7aad8 in fuzzer::Fuzzer::ReadAndExecuteSeedCorpora(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44ad8) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #5 0x55585eb7af56 in fuzzer::Fuzzer::Loop(std::vector<fuzzer::SizedFile, std::allocator<fuzzer::SizedFile> >&) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x44f56) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #6 0x55585eb68542 in fuzzer::FuzzerDriver(int*, char***, int (*)(unsigned char const*, unsigned long)) (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x32542) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #7 0x55585eb939e6 in main (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x5d9e6) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+    #8 0x77547042a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #9 0x77547042a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #10 0x55585eb5c974 in _start (/tmp/libtiff_fuzz_verify/818_tif_swab.c_90_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/fuzz_bin+0x26974) (BuildId: 1df834e3444977ddc71787f91c9abf01e1d9446f)
+
+SUMMARY: AddressSanitizer: heap-buffer-overflow /tmp/libtiff_upstream/libtiff/tif_swab.c:90:11 in TIFFSwabArrayOfShort
+Shadow bytes around the buggy address:
+  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+=>0x0c047fff8000: fa fa fd fa fa fa[01]fa fa fa fa fa fa fa fa fa
+  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+Shadow byte legend (one shadow byte represents 8 application bytes):
+  Addressable:           00
+  Partially addressable: 01 02 03 04 05 06 07 
+  Heap left redzone:       fa
+  Freed heap region:       fd
+  Stack left redzone:      f1
+  Stack mid redzone:       f2
+  Stack right redzone:     f3
+  Stack after return:      f5
+  Stack use after scope:   f8
+  Global redzone:          f9
+  Global init order:       f6
+  Poisoned by user:        f7
+  Container overflow:      fc
+  Array cookie:            ac
+  Intra object redzone:    bb
+  ASan internal:           fe
+  Left alloca redzone:     ca
+  Right alloca redzone:    cb
+==3118535==ABORTING
+MS: 0 ; base unit: 0000000000000000000000000000000000000000
+0x5b,0xa,0x20,0x20,0x7b,0xa,0x20,0x20,0x20,0x20,0x22,0x6e,0x61,0x6d,0x65,0x22,0x3a,0x20,0x22,0x72,0x61,0x77,0x5f,0x62,0x75,0x66,0x22,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x6f,0x66,0x66,0x73,0x65,0x74,0x22,0x3a,0x20,0x30,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x69,0x7a,0x65,0x22,0x3a,0x20,0x31,0x2c,0xa,0x20,0x20,0x20,0x20,0x22,0x73,0x6f,0x75,0x72,0x63,0x65,0x22,0x3a,0x20,0x22,0x63,0x6f,0x6e,0x63,0x72,0x65,0x74,0x65,0x5f,0x62,0x6c,0x6f,0x63,0x6b,0x22,0xa,0x20,0x20,0x7d,0xa,0x5d,
+[\012  {\012    \"name\": \"raw_buf\",\012    \"offset\": 0,\012    \"size\": 1,\012    \"source\": \"concrete_block\"\012  }\012]
+artifact_prefix='./'; Test unit written to ./crash-e65845d3af02a93bb98d54ff67eb568f98bfef34
+Base64: WwogIHsKICAgICJuYW1lIjogInJhd19idWYiLAogICAgIm9mZnNldCI6IDAsCiAgICAic2l6ZSI6IDEsCiAgICAic291cmNlIjogImNvbmNyZXRlX2Jsb2NrIgogIH0KXQ==

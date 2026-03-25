@@ -1,0 +1,18 @@
+xmlSAX2ErrMemory: out of memory simulated in xmlSplitQName4
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==3982175==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x7b7feb78b7dd bp 0x7ffc7b485c60 sp 0x7ffc7b485418 T0)
+==3982175==The signal is caused by a READ memory access.
+==3982175==Hint: address points to the zero page.
+    #0 0x7b7feb78b7dd in __strlen_avx2 string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76
+    #1 0x5dd90d54376c in strlen (/app/se_runs/b3/libxml2_e334a9d_vul/findings/SAX2_639_null-pointer-dereference/reproducer+0x3776c) (BuildId: 4571ce670898430d60f5cc99b1b1604e4edac228)
+    #2 0x5dd90d5ed4e3 in xmlAddAttributeDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/SAX2_639_null-pointer-dereference/reproducer.c:82:16
+    #3 0x5dd90d5ed071 in xmlSAX2AttributeDecl /app/se_runs/b3/libxml2_e334a9d_vul/findings/SAX2_639_null-pointer-dereference/reproducer.c:110:16
+    #4 0x5dd90d5ed928 in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/SAX2_639_null-pointer-dereference/reproducer.c:151:5
+    #5 0x7b7feb62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #6 0x7b7feb62a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #7 0x5dd90d52d304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/SAX2_639_null-pointer-dereference/reproducer+0x21304) (BuildId: 4571ce670898430d60f5cc99b1b1604e4edac228)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV string/../sysdeps/x86_64/multiarch/strlen-avx2.S:76 in __strlen_avx2
+==3982175==ABORTING

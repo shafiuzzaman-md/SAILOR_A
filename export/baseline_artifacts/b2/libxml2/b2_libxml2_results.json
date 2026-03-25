@@ -1,0 +1,23 @@
+{
+  "baseline": "B2",
+  "description": "Project-Level LLM Harness + KLEE (No SA, No Iteration)",
+  "project": "libxml2",
+  "commit": "e334a9d",
+  "llm_model": "GPT-5",
+  "num_rounds": 3,
+  "total_harnesses": 28,
+  "build_errors": 26,
+  "se_detected": 2,
+  "no_bug": 0,
+  "harness_artifacts": 0,
+  "unique_bugs": 0,
+  "real_bugs_in_library": 0,
+  "klee_timeout": 300,
+  "run_date": "2026-03-12",
+  "key_findings": [
+    "28 LLM-generated harnesses across 3 rounds",
+    "26 BUILD_ERROR (26/28 failed to compile)",
+    "2 SE_DETECTED (all in harness.c/stubs, not library code)",
+    "0 real bugs found vs SAILOR's 11"
+  ]
+}

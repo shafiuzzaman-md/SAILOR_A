@@ -1,0 +1,69 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_mmi_inline_assembly.c",
+    "line": 120,
+    "function": "png_read_filter_row_sub4_mmi",
+    "bug_type": "out-of-bounds-read",
+    "cwe": "CWE-125",
+    "confidence": "high",
+    "explanation": "In the last iteration when only 4 bytes remain, the code reads 4 bytes from row+4 (lwc1 at 0x04(row)), which is past the end of the row buffer.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_mmi_inline_assembly.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n\n/* Minimal libpng-like typedefs */\ntypedef unsigned char png_byte;\ntypedef struct {\n    uint32_t rowbytes;\n} png_row_info;\n\n/* Buggy implementation mirroring the MIPS inline-asm logic:\n * Processes 4-byte chunks and, in each iteration, reads 4 bytes at row+4\n * and writes the result back at row+4. When only 4 bytes remain (istop==4),\n * the read from row+4 goes past the end of the buffer (OOB read).\n */\nvoid png_read_filter_row_sub4_mmi(png_row_info *row_info, png_byte *row, const png_byte *prev)\n{\n    int istop = (int)row_info->rowbytes;\n\n    while (istop > 0) {\n        uint32_t pp = 0, rp = 0;\n        /* Read current 4-byte block at row */\n        memcpy(&pp, row + 0, 4);\n        /* OOB read when istop == 4: attempts to read 4 bytes from row+4 */\n        memcpy(&rp, row + 4, 4);\n        /* Approximate paddb with simple addition (details don't matter for OOB) */\n        rp = rp + pp;\n        /* Write result back to row+4 (also OOB when istop == 4) */\n        memcpy(row + 4, &rp, 4);\n\n        row += 4;\n        istop -= 4;\n    }\n\n    (void)prev; /* Unused in this context */\n}\n\nint main(void)\n{\n    /* Set up a row buffer with exactly 4 bytes so the loop runs once and\n     * the function reads from row+4 (past-the-end) in that iteration.\n     */\n    png_row_info info;\n    info.rowbytes = 4;  /* exactly one 4-byte chunk */\n\n    png_byte *row = (png_byte *)malloc(info.rowbytes);\n    if (!row) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Initialize row with some data */\n    for (uint32_t i = 0; i < info.rowbytes; ++i) row[i] = (png_byte)(i + 1);\n\n    /* Trigger the bug: this will perform an out-of-bounds read from row+4 */\n    png_read_filter_row_sub4_mmi(&info, row, NULL);\n\n    /* Touch the buffer so the compiler doesn't optimize everything away */\n    volatile unsigned char sink = row[0];\n    printf(\"sink=%u\\n\", (unsigned)sink);\n\n    free(row);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.8924169540405273,
+      "output": "=================================================================\n==3734921==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000014 at pc 0x58fa3a1b5ffb bp 0x7ffe7855b230 sp 0x7ffe7855aa00\nREAD of size 4 at 0x602000000014 thread T0\n    #0 0x58fa3a1b5ffa in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 33f6682075acded3d1da390655dedd765017e7cd)\n    #1 0x58fa3a1f2e90 in png_read_filter_row_sub4_mmi /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:26:9\n    #2 0x58fa3a1f31eb in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:57:5\n    #3 0x70bae082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x70bae082a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x58fa3a133314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer+0x21314) (BuildId: 33f6682075acded3d1da390655dedd765017e7cd)\n\n0x602000000014 is located 0 bytes to the right of 4-byte region [0x602000000010,0x602000000014)\nallocated by thread T0 here:\n    #0 0x58fa3a1b6d22 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer+0xa4d22) (BuildId: 33f6682075acded3d1da390655dedd765017e7cd)\n    #1 0x58fa3a1f30c5 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:47:33\n    #2 0x70bae082a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x70bae082a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x58fa3a133314 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer+0x21314) (BuildId: 33f6682075acded3d1da390655dedd765017e7cd)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer+0xa3ffa) (BuildId: 33f6682075acded3d1da390655dedd765017e7cd) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[04]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3734921==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "png_read_filter_row_sub4_mmi",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:26",
+          "9"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:57",
+          "5"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_mmi_inline_assembly_120_out-of-bounds-read/reproducer.c:47",
+          "33"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

@@ -1,0 +1,78 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jbig2_generic.c",
+        "original_line": 890,
+        "function": "copy_prev_row",
+        "entry_point": "jbig2_decode_generic_region",
+        "spine": [
+            "jbig2_decode_generic_region",
+            "jbig2_decode_generic_region_TPGDON",
+            "jbig2_decode_generic_template0_TPGDON",
+            "copy_prev_row"
+        ],
+        "original_context": "885:         memset(image->data, 0, image->stride);\n886:     } else {\n887:         /* duplicate data from the previous row */\n888:         uint8_t *src = image->data + (row - 1) * image->stride;\n889: \n890:         memcpy(src + image->stride, src, image->stride);\n891:     }\n892: }\n893: \n894: static int\n895: jbig2_decode_generic_template0_TPGDON(Jbig2Ctx *ctx,"
+    },
+    "klee_crash": {
+        "harness_file": "jbig2_generic.c",
+        "harness_line": 38,
+        "original_file": "jbig2_generic.c",
+        "original_line": 890,
+        "original_code": "memcpy(src + image->stride, src, image->stride);",
+        "original_context": "    887:         /* duplicate data from the previous row */\n    888:         uint8_t *src = image->data + (row - 1) * image->stride;\n    889: \n>>> 890:         memcpy(src + image->stride, src, image->stride);\n    891:     }\n    892: }\n    893: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: runtime/Freestanding/memcpy.c\nLine: 17\nassembly.ll line: 307\nState: 1\nStack: \n\t#000000307 in memcpy(139652638404616, 139652638404608, 8) at runtime/Freestanding/memcpy.c:17\n\t#100000197 in copy_prev_row(139747127685120, 1) at jbig2_generic.c:38\n\t#200000278 in jbig2_decode_generic_region(139626868600832, 139609688731648, 139764307554304, 139644048470016, 139747127685120, 139601098797056) at jbig2_generic.c:73\n\t#300000101 in main() at driver.c:33\nInfo"
+    },
+    "concrete_inputs": [
+        {
+            "name": "img_data",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "jbig2_decode_generic_template0_TPGDON",
+        "crash_file": "thirdparty/jbig2dec/jbig2_generic.c",
+        "crash_line": 907,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==29622==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x503000000059 at pc 0x562901945eda bp 0x7fffb1bd18e0 sp 0x7fffb1bd18d0\nREAD of size 1 at 0x503000000059 thread T0\n    #0 0x562901945ed9 in jbig2_decode_generic_template0_TPGDON thirdparty/jbig2dec/jbig2_generic.c:907\n    #1 0x562901945ed9 in jbig2_decode_generic_region_TPGDON thirdparty/jbig2dec/jbig2_generic.c:1314\n    #2 0x562901945ed9 in jbig2_decode_generic_region thirdparty/jbig2dec/jbig2_generic.c:1350\n    #3 0x562901940c7d in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5256_jbig2_generic.c_890_local_cpp_cwe-823-pointer-offset/asan_real/replay_driver.c:33\n    #4 0x7f8695364d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #5 0x7f8695364e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #6 0x562901940994 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5256_jbig2_generic.c_890_local_cpp_cwe-823-pointer-offset/asan_real/replay_bin+0xa994)\n\n0x503000000059 is located 1 bytes to the right of 24-byte region [0x503000000040,0x503000000058)\nallocated by thread T0 here:\n    #0 0x7f869571ba57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x562901940a99 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/5256_jbig2_generic.c_890_local_cpp_cwe-823-pointer-offset/asan_real/replay_driver.c:10\n    #2 0x7f8695364d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow thirdparty/jbig2dec/jbig2_generic.c:907 in jbig2_decode_generic_template0_TPGDON\nShadow bytes around the buggy address:\n  0x0a067fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a067fff7ff0: 00 00 00 00 00 00 00 0"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5256_jbig2_generic.c_890_local_cpp_cwe-823-pointer-offset/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jbig2_generic.c",
+            "harness_line": 38,
+            "original_file": "jbig2_generic.c",
+            "original_line": 890,
+            "error_type": "ptr",
+            "crash_function": "memcpy",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/5256_jbig2_generic.c_890_local_cpp_cwe-823-pointer-offset/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "jbig2_decode_generic_template0_TPGDON",
+            "crash_file": "thirdparty/jbig2dec/jbig2_generic.c",
+            "crash_line": 907
+        }
+    ]
+}

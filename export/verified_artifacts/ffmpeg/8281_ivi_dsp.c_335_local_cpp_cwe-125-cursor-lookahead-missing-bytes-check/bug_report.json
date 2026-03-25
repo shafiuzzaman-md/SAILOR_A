@@ -1,0 +1,93 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 2,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "ivi_dsp.c",
+    "original_line": 335,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "330:     int     t0, t1, t2, t3, t4, t5, t6, t7, t8;\n331: \n332:     /* apply the InvHaar8 to all rows */\n333: #define COMPENSATE(x) (x)\n334:     for (i = 0; i < 8; i++) {\n335:         if (   !in[0] && !in[1] && !in[2] && !in[3]\n336:             && !in[4] && !in[5] && !in[6] && !in[7]) {\n337:             memset(out, 0, 8 * sizeof(out[0]));\n338:         } else {\n339:             INV_HAAR8(in[0],  in[1],  in[2],  in[3],\n340:                       in[4],  in[5],  in[6],  in[7],"
+  },
+  "klee_crash": {
+    "harness_file": "ivi_dsp.c",
+    "harness_line": 33,
+    "original_file": "ivi_dsp.c",
+    "original_line": 344,
+    "original_code": "}",
+    "original_context": "    341:                       out[0], out[1], out[2], out[3],\n    342:                       out[4], out[5], out[6], out[7],\n    343:                       t0, t1, t2, t3, t4, t5, t6, t7, t8);\n>>> 344:         }\n    345:         in  += 8;\n    346:         out += pitch;\n    347:     }",
+    "error_type": "assert",
+    "error_details": "Error: ASSERTION FAIL: 0 && \"SAILOR_SINK_REACHED\"\nFile: ivi_dsp.c\nLine: 33\nassembly.ll line: 226\nState: 1\nStack: \n\t#000000226 in ff_ivi_row_haar8(138793862438912, 139000020869120, 8, 138725142962176) at ivi_dsp.c:33\n\t#100000116 in entry_func(138793862438912, 139000020869120, 8, 138725142962176) at ivi_dsp.c:11\n\t#200000081 in main() at driver.c:32\n"
+  },
+  "concrete_inputs": [
+    {
+      "name": "in_buf",
+      "size": 16,
+      "data": "b'\\xff\\x00\\x00\\x00\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff\\xff'"
+    },
+    {
+      "name": "flags",
+      "size": 1,
+      "data": "b'\\x00'"
+    },
+    {
+      "name": "in_buf",
+      "size": 16,
+      "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "flags",
+      "size": 1,
+      "data": "b'\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8281_ivi_dsp.c_335_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "ivi_dsp.c",
+      "harness_line": 33,
+      "original_file": "ivi_dsp.c",
+      "original_line": 344,
+      "error_type": "assert",
+      "crash_function": "ff_ivi_row_haar8",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8281_ivi_dsp.c_335_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    },
+    {
+      "harness_file": "ivi_dsp.c",
+      "harness_line": 26,
+      "original_file": "ivi_dsp.c",
+      "original_line": 336,
+      "error_type": "ptr",
+      "crash_function": "ff_ivi_row_haar8",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/8281_ivi_dsp.c_335_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000002.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

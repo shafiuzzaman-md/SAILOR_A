@@ -1,0 +1,19 @@
+Error: memory error: out of bound pointer
+File: mpegvideoencdsp.c
+Line: 33
+assembly.ll line: 162
+State: 2
+Stack: 
+	#000000162 in draw_edges_8_c(139946009534464, symbolic, symbolic, symbolic, symbolic, symbolic, symbolic) at mpegvideoencdsp.c:33
+	#100000187 in ff_mpegvideoencdsp_init(0, 0) at mpegvideoencdsp.c:44
+	#200000105 in main() at driver.c:43
+Info: 
+	address: (Add w64 139946009534464
+          (Add w64 (Add w64 (Mul w64 (SExt w64 (ReadLSB w32 0 height))
+                                     (ReadLSB w64 0 wrap))
+                            (SExt w64 (ReadLSB w32 0 width)))
+                   (SExt w64 (ReadLSB w32 0 w))))
+	example: 139946009804695
+	range: [139946009538560, 139946026319872]
+	next: object at 138993600536576 of size 4
+		MO83[4] allocated at draw_edges_8_c():  %12 = alloca i32, align 4

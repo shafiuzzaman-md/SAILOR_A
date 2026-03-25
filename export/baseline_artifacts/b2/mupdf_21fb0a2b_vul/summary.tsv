@@ -1,0 +1,50 @@
+Spec	FinalStatus	Verdict	BugType	BugFile	BugLine	BugFunc	CWE	Time	Tokens	UniqueBugID	IsDuplicate
+buffer_append_data_overflow	SE_DETECTED	TP	ptr	memcpy.c	29	fz_append_data		0	3458	BUG-024	
+buffer_base64_size_miscalc	SE_DETECTED	TP	model	harness.c	30	fz_new_buffer_from_base64		312	3458	BUG-017	
+buffer_base64_size_miscalc_crash1	SE_DETECTED	TP	ptr	memcpy.c	29	fz_new_buffer_from_base64		312	3458		true
+slice_buffer_negative_range	SE_DETECTED	TP	model	harness.c	19	fz_slice_buffer		52	3458	BUG-006	
+slice_buffer_negative_range_crash1	SE_DETECTED	TP	ptr	memcpy.c	29	fz_slice_buffer		52	3458		true
+slice_buffer_negative_range_crash2	SE_DETECTED	TP	ptr	memcpy.c	29	fz_slice_buffer		52	3458		true
+is_zip_archive_oobread	SE_DETECTED	TP	ptr	memcpy.c	29	fz_is_zip_archive		0	3458		true
+append_bits_byte_overflow	SE_DETECTED	TP	ptr	harness.c	28	fz_append_bits		0	3458	BUG-016	
+bitmap_invert_stride_mismatch	SE_DETECTED	TP	ptr	harness.c	23	fz_invert_bitmap		0	3458	BUG-012	
+band_writer_write_band_overflow	SE_DETECTED	TP	ptr	memcpy.c	29	fz_write_band		3	3458		true
+bidi_fragment_oob_read	SE_DETECTED	TP	ptr	harness.c	22	fz_bidi_fragment_text		0	3458	BUG-009	
+deflate_underalloc_copy	SE_DETECTED	TP	model	harness.c	16	fz_new_deflated_data		0	3458	BUG-003	
+deflate_underalloc_copy_crash1	SE_DETECTED	TP	ptr	memcpy.c	29	fz_new_deflated_data		0	3458		true
+archive_list_entry_off_by_one	SE_DETECTED	TP	ptr	harness.c	19	fz_list_archive_entry		1	3458	BUG-007	
+append_int32_le_no_grow	SE_DETECTED	TP	model	harness.c	20	fz_append_int32_le		0	3458	BUG-008	
+append_int32_le_no_grow_crash1	SE_DETECTED	TP	ptr	harness.c	30	fz_append_int32_le		0	3458	BUG-018	
+append_byte_no_grow	HARNESS_ARTIFACT	HARNESS_ARTIFACT	ptr	driver.c	13	fz_append_byte		0	3458		
+terminate_buffer_oob	SE_DETECTED	TP	model	harness.c	18	fz_terminate_buffer		0	3458	BUG-005	
+terminate_buffer_oob_crash1	SE_DETECTED	TP	ptr	harness.c	28	fz_terminate_buffer		0	3458		true
+resize_buffer_shrink_underflow	SE_DETECTED	TP	model	harness.c	27	fz_resize_buffer		300	3458	BUG-015	
+resize_buffer_shrink_underflow_crash1	SE_DETECTED	TP	ptr	harness.c	32	fz_resize_buffer		300	3458	BUG-020	
+resize_buffer_shrink_underflow_crash2	SE_DETECTED	TP	read_only	harness.c	32	fz_resize_buffer		300	3458	BUG-021	
+resize_buffer_shrink_underflow_crash3	SE_DETECTED	TP	ptr	_stdio.c	261	fz_resize_buffer		300	3458	BUG-001	
+clone_buffer_double_free	SE_DETECTED	TP	ptr	harness.c	42	fz_clone_buffer		0	3458	BUG-023	
+open_archive_entry_null_deref	BUILD_ERROR	FP			0	fz_open_archive_entry		0	3458		
+has_archive_entry_null_deref	BUILD_ERROR	FP			0	fz_has_archive_entry		0	3458		
+is_tar_archive_oob_read	SE_DETECTED	TP	ptr	memcpy.c	29	fz_is_tar_archive		0	3458		true
+is_cfb_archive_oob_read	SE_DETECTED	TP	ptr	memcpy.c	29	fz_is_cfb_archive		0	3458		true
+clear_bitmap_size_mismatch	SE_DETECTED	TP	model	harness.c	27	fz_clear_bitmap		21	3458		true
+clear_bitmap_size_mismatch_crash1	SE_DETECTED	TP	ptr	memset.c	28	fz_clear_bitmap		21	3458	BUG-025	
+new_archive_of_size_small_struct	SE_DETECTED	TP	model	harness.c	27	fz_new_archive_of_size		0	3458		true
+new_archive_of_size_small_struct_crash1	SE_DETECTED	TP	ptr	harness.c	30	fz_new_archive_of_size		0	3458		true
+new_archive_of_size_small_struct_crash2	SE_DETECTED	TP	ptr	harness.c	31	fz_new_archive_of_size		0	3458	BUG-019	
+drop_archive_refcount_underflow	SE_DETECTED	TP	ptr	harness.c	37	fz_drop_archive		0	3458	BUG-022	
+mount_multi_archive_path_overflow	SE_DETECTED	TP	ptr	strcat.c	24	fz_mount_multi_archive		7	3458	BUG-026	
+mount_multi_archive_path_overflow_crash1	SE_DETECTED	TP	ptr	strcpy.c	27	fz_mount_multi_archive		7	3458	BUG-027	
+tree_archive_add_data_int_overflow	SE_DETECTED	TP	model	harness.c	23	fz_tree_archive_add_data		0	3458	BUG-011	
+tree_archive_add_data_int_overflow_crash1	SE_DETECTED	TP	ptr	memcpy.c	29	fz_tree_archive_add_data		0	3458		true
+try_open_archive_entry_null_cb	SE_DETECTED	TP	exec	harness.c	23	fz_try_open_archive_entry		0	3458	BUG-010	
+open_archive_with_stream_oob_read	SE_DETECTED	TP	ptr	harness.c	24	fz_open_archive_with_stream		0	3458	BUG-014	
+is_directory_null_deref	SE_DETECTED	TP	ptr	harness.c	14	fz_is_directory		0	3458	BUG-002	
+append_string_off_by_one	SE_DETECTED	TP	ptr	memcpy.c	29	fz_append_string		14	3458		true
+append_string_off_by_one_crash1	SE_DETECTED	TP	model	harness.c	24	fz_append_string		14	3458	BUG-013	
+new_bitmap_size_mismatch	SE_DETECTED	TP	model	harness.c	27	fz_new_bitmap		7	3458		true
+new_bitmap_size_mismatch_crash1	SE_DETECTED	TP	ptr	memset.c	28	fz_new_bitmap		7	3458		true
+write_zip_entry_name_overflow	SE_DETECTED	TP	ptr	strcpy.c	27	fz_write_zip_entry		0	3458		true
+string_from_buffer_off_by_one	SE_DETECTED	TP	ptr	harness.c	16	fz_string_from_buffer		0	3458	BUG-004	
+open_archive_with_stream_format_guess	SE_DETECTED	TP	ptr	harness.c	19	fz_archive_format		0	3458		true
+register_archive_handler_oob	SE_DETECTED	TP	ptr	harness.c	23	fz_register_archive_handler		0	3458		true

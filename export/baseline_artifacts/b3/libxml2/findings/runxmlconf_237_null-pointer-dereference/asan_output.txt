@@ -1,0 +1,16 @@
+Triggering xmlconfTestNotNSWF null-deref via NULL parser context...
+AddressSanitizer:DEADLYSIGNAL
+=================================================================
+==4044367==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000000 (pc 0x5863c142def5 bp 0x7fff9fd020d0 sp 0x7fff9fd020a0 T0)
+==4044367==The signal is caused by a WRITE memory access.
+==4044367==Hint: address points to the zero page.
+    #0 0x5863c142def5 in xmlCtxtSetErrorHandler /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49:17
+    #1 0x5863c142dd46 in xmlconfTestNotNSWF /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:74:5
+    #2 0x5863c142dcff in main /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:99:11
+    #3 0x7aa2b722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x7aa2b722a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5863c136e304 in _start (/app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer+0x21304) (BuildId: 5a07a7d712b2af1f77ab451de38152df63317138)
+
+AddressSanitizer can not provide additional info.
+SUMMARY: AddressSanitizer: SEGV /app/se_runs/b3/libxml2_e334a9d_vul/findings/runxmlconf_237_null-pointer-dereference/reproducer.c:49:17 in xmlCtxtSetErrorHandler
+==4044367==ABORTING

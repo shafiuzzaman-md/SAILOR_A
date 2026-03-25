@@ -1,0 +1,88 @@
+{
+  "summary": {
+    "verdict": "LIKELY_TP",
+    "asan_confirmed": false,
+    "crash_relevance": "no_asan",
+    "cwe": "unknown",
+    "cwe_description": "",
+    "total_asan_crashes": 0,
+    "target_asan_crashes": 0,
+    "secondary_asan_crashes": 0,
+    "target_crashes": 1,
+    "secondary_bugs": 0
+  },
+  "vulnerability": {
+    "original_file": "vc1_mc.c",
+    "original_line": 847,
+    "function": "unknown",
+    "entry_point": "unknown",
+    "spine": [
+      "unknown"
+    ],
+    "original_context": "842:     H264ChromaContext *h264chroma = &v->h264chroma;\n843:     uint8_t *srcU, *srcV;\n844:     int uvsrc_x, uvsrc_y;\n845:     int uvmx_field[4], uvmy_field[4];\n846:     int i, off, tx, ty;\n847:     int fieldmv = v->blk_mv_type[s->block_index[0]];\n848:     static const uint8_t s_rndtblfield[16] = { 0, 0, 1, 2, 4, 4, 5, 6, 2, 2, 3, 8, 6, 6, 7, 12 };\n849:     int v_dist = fieldmv ? 1 : 4; // vertical offset for lower sub-blocks\n850:     int v_edge_pos = s->v_edge_pos >> 1;\n851:     int use_ic;\n852:     int interlace;"
+  },
+  "klee_crash": {
+    "harness_file": "vc1_mc.c",
+    "harness_line": 27,
+    "original_file": "vc1_mc.c",
+    "original_line": 847,
+    "original_code": "int fieldmv = v->blk_mv_type[s->block_index[0]];",
+    "original_context": "    844:     int uvsrc_x, uvsrc_y;\n    845:     int uvmx_field[4], uvmy_field[4];\n    846:     int i, off, tx, ty;\n>>> 847:     int fieldmv = v->blk_mv_type[s->block_index[0]];\n    848:     static const uint8_t s_rndtblfield[16] = { 0, 0, 1, 2, 4, 4, 5, 6, 2, 2, 3, 8, 6, 6, 7, 12 };\n    849:     int v_dist = fieldmv ? 1 : 4; // vertical offset for lower sub-blocks\n    850:     int v_edge_pos = s->v_edge_pos >> 1;",
+    "error_type": "ptr",
+    "error_details": "Error: memory error: out of bound pointer\nFile: vc1_mc.c\nLine: 27\nassembly.ll line: 131\nState: 1\nStack: \n\t#000000131 in ff_vc1_mc_4mv_chroma4(139399157137408, symbolic, symbolic, symbolic) at vc1_mc.c:27\n\t#100000159 in entry_func(139399157137408, symbolic, symbolic, symbolic) at vc1_mc.c:35\n\t#200000083 in main() at driver.c:38\nInfo: \n\taddress: (Add w64 139261718183936\n          (Mul w64 4\n                   (SExt w64 (ReadLSB w32 0 block_index0))))\n\texample: 139261718184956\n\trange: [139253128249"
+  },
+  "concrete_inputs": [
+    {
+      "name": "blk_mv_type_bytes",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "block_index0",
+      "size": 4,
+      "data": "b'\\xff\\x00\\x00\\x00'"
+    },
+    {
+      "name": "dir",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "dir2",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    },
+    {
+      "name": "avg",
+      "size": 4,
+      "data": "b'\\x00\\x00\\x00\\x00'"
+    }
+  ],
+  "asan_result": {
+    "triggered": false,
+    "harness_artifact": false,
+    "error_type": "",
+    "crash_function": "",
+    "crash_file": "",
+    "crash_line": 0,
+    "original_file": "",
+    "original_line": 0,
+    "original_code": "",
+    "original_context": "",
+    "output": ""
+  },
+  "line_map_file": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11482_vc1_mc.c_847_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+  "all_crashes": [
+    {
+      "harness_file": "vc1_mc.c",
+      "harness_line": 27,
+      "original_file": "vc1_mc.c",
+      "original_line": 847,
+      "error_type": "ptr",
+      "crash_function": "ff_vc1_mc_4mv_chroma4",
+      "relevance": "target_crash",
+      "ktest": "/app/se_runs/sailor_engine/ffmpeg_f46e5144_vul/11482_vc1_mc.c_847_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+    }
+  ],
+  "all_asan_crashes": []
+}

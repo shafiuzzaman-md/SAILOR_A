@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cil.c",
+        "original_line": 1531,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "1526: \t\t*size = 0;\n1527: \t\tgoto exit;\n1528: \t}\n1529: \n1530: \tcil_list_for_each(curr, db->userprefixes) {\n1531: \t\tuserprefix = curr->data;\n1532: \t\tuser = userprefix->user;\n1533: \t\tstr_len += strlen(\"user \") + strlen(user->datum.fqn) + strlen(\" prefix \") + strlen(userprefix->prefix_str) + 2;\n1534: \t}\n1535: \n1536: \t*size = str_len * sizeof(char);"
+    },
+    "klee_crash": {
+        "harness_file": "cil.c",
+        "harness_line": 41,
+        "original_file": "cil.c",
+        "original_line": 1532,
+        "original_code": "user = userprefix->user;",
+        "original_context": "    1529: \n    1530: \tcil_list_for_each(curr, db->userprefixes) {\n    1531: \t\tuserprefix = curr->data;\n>>> 1532: \t\tuser = userprefix->user;\n    1533: \t\tstr_len += strlen(\"user \") + strlen(user->datum.fqn) + strlen(\" prefix \") + strlen(userprefix->prefix_str) + 2;\n    1534: \t}\n    1535: ",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cil.c\nLine: 41\nassembly.ll line: 53\nState: 1\nStack: \n\t#000000053 in cil_userprefixes_to_string(138911954411520, 138627412828160, 138623117860864) at cil.c:41\n\t#100000079 in cil_entry(138911954411520, 138627412828160, 138623117860864) at cil.c:50\n\t#200000127 in main() at driver.c:33\nInfo: \n\taddress: 138929134280704\n\tnext: object at 138613454184448 of size 4\n\t\tMO62[4] allocated at cil_userprefixes_to_string():  %7 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "reclaimed_bytes",
+            "size": 1,
+            "data": "b'\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "cil_userprefixes_to_string",
+        "crash_file": "../cil/src/cil.c",
+        "crash_line": 1524,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==1762==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x5020000000c0 at pc 0x55707d236ad2 bp 0x7fff33ba71f0 sp 0x7fff33ba71e0\nREAD of size 8 at 0x5020000000c0 thread T0\n    #0 0x55707d236ad1 in cil_userprefixes_to_string ../cil/src/cil.c:1524\n    #1 0x55707d230d4f in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10514_cil.c_1531_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:33\n    #2 0x7fc13d658d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7fc13d658e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55707d230a44 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10514_cil.c_1531_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2ea44)\n\n0x5020000000c0 is located 111 bytes to the right of 1-byte region [0x502000000050,0x502000000051)\nallocated by thread T0 here:\n    #0 0x7fc13da0f887 in __interceptor_malloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:145\n    #1 0x55707d230c5a in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/10514_cil.c_1531_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:22\n    #2 0x7fc13d658d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../cil/src/cil.c:1524 in cil_userprefixes_to_string\nShadow bytes around the buggy address:\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff8000: fa fa 00 fa fa fa 00 fa fa fa 01 fa fa fa fa fa\n=>0x0a047fff8010: fa fa fa fa fa fa fa fa[fa]fa fa fa fa fa fa fa\n  0x0a047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff8040: fa fa fa fa fa fa fa f"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/10514_cil.c_1531_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cil.c",
+            "harness_line": 41,
+            "original_file": "cil.c",
+            "original_line": 1532,
+            "error_type": "ptr",
+            "crash_function": "cil_userprefixes_to_string",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/10514_cil.c_1531_sailor_wmi-2-type-confusion-leak/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "cil_userprefixes_to_string",
+            "crash_file": "../cil/src/cil.c",
+            "crash_line": 1524
+        }
+    ]
+}

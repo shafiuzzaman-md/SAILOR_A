@@ -1,0 +1,14 @@
+Error: memory error: out of bound pointer
+File: runtime/Freestanding/memcpy.c
+Line: 17
+assembly.ll line: 386
+State: 1
+Stack: 
+	#000000386 in memcpy(139778009776128, 139571851345920, 256) at runtime/Freestanding/memcpy.c:17
+	#100000215 in frame_copy_props(139485952000000, 139503131869184) at frame.c:84
+	#200000103 in av_frame_copy_props(139485952000000, 139503131869184) at frame.c:61
+	#300000078 in main() at driver.c:53
+Info: 
+	address: 139571851345952
+	next: object at 139134838423552 of size 4
+		MO80[4] allocated at frame_copy_props():  %7 = alloca i32, align 4

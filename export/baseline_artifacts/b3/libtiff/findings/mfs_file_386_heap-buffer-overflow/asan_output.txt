@@ -1,0 +1,20 @@
+About to call mfs_write with negative size = -1 (will convert to size_t)
+=================================================================
+==3827666==ERROR: AddressSanitizer: negative-size-param: (size=-1)
+    #0 0x5f06ea9e8fa8 in __asan_memcpy (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)
+    #1 0x5f06eaa260e2 in mfs_write /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:60:9
+    #2 0x5f06eaa26dd9 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:124:15
+    #3 0x70a55722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #4 0x70a55722a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #5 0x5f06ea966324 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)
+
+0x603000000040 is located 0 bytes inside of 32-byte region [0x603000000040,0x603000000060)
+allocated by thread T0 here:
+    #0 0x5f06ea9e9d32 in __interceptor_malloc (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa4d32) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)
+    #1 0x5f06eaa26d44 in main /app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer.c:110:25
+    #2 0x70a55722a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+    #3 0x70a55722a28a in __libc_start_main csu/../csu/libc-start.c:360:3
+    #4 0x5f06ea966324 in _start (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0x21324) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0)
+
+SUMMARY: AddressSanitizer: negative-size-param (/app/se_runs/b3/libtiff_f324415_vul/findings/mfs_file_386_heap-buffer-overflow/reproducer+0xa3fa8) (BuildId: 9151dc646901f7826b6c57fd1ba44a8bd2844cd0) in __asan_memcpy
+==3827666==ABORTING

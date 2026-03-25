@@ -1,0 +1,35 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "total_asan_crashes": 1
+    },
+    "vulnerability": {
+        "original_file": "context.c",
+        "original_line": 0
+    },
+    "all_crashes": [],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "",
+            "crash_file": "",
+            "crash_line": 0
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "",
+        "crash_file": "",
+        "crash_line": 0,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==4142==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000072 at pc 0x564f886566d4 bp 0x7ffda3ce4bb0 sp 0x7ffda3ce4ba0\nWRITE of size 1 at 0x502000000072 thread T0\n"
+    }
+}

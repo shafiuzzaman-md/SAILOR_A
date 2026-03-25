@@ -1,0 +1,18 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "libtiff/tif_color.c",
+    "line": 281,
+    "function": "TIFFYCbCrToRGBInit",
+    "bug_type": "divide-by-zero",
+    "cwe": "CWE-369",
+    "confidence": "medium",
+    "explanation": "f4 is computed as LumaBlue * f3 / LumaGreen. If LumaGreen is 0 (from caller-supplied luma coefficients), this divides by zero.",
+    "abs_path": "/tmp/libtiff_upstream/libtiff/tif_color.c"
+  },
+  "reproducer_code": "#define _GNU_SOURCE 1\n#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <fenv.h>\n#include <libtiff/tiffio.h>\n\n/* glibc provides feenableexcept as a GNU extension. Declare weakly so build\n * still succeeds if it's unavailable. */\nint feenableexcept(int) __attribute__((weak));\n\nint main(void) {\n    /* Enable trapping of floating-point divide-by-zero to make the bug observable */\n    #pragma STDC FENV_ACCESS ON\n    feclearexcept(FE_ALL_EXCEPT);\n    if (feenableexcept) {\n        feenableexcept(FE_DIVBYZERO | FE_INVALID | FE_OVERFLOW);\n    }\n\n    /* Allocate a large buffer so TIFFYCbCrToRGBInit can place its tables\n     * after the struct as it expects. */\n    size_t bufsize = 65536; /* plenty of space */\n    TIFFYCbCrToRGB *ycbcr = (TIFFYCbCrToRGB *)malloc(bufsize);\n    if (!ycbcr) {\n        perror(\"malloc\");\n        return 1;\n    }\n\n    /* Luma coefficients with LumaGreen = 0.0f triggers division by zero in:\n     *   f2 = LumaRed * f1 / LumaGreen\n     *   f4 = LumaBlue * f3 / LumaGreen\n     */\n    float luma[3] = { 0.299f, 0.0f, 0.114f }; /* Red, Green(=0), Blue */\n\n    /* Reasonable RefBlackWhite values (Yb, Yw, Cbb, Cbw, Crb, Crw). */\n    float refBlackWhite[6] = { 0.0f, 255.0f, 0.0f, 255.0f, 0.0f, 255.0f };\n\n    /* Call into the vulnerable function. With FE_DIVBYZERO trapping enabled,\n     * this should raise SIGFPE due to float division by zero. */\n    int ret = TIFFYCbCrToRGBInit(ycbcr, luma, refBlackWhite);\n    printf(\"TIFFYCbCrToRGBInit returned %d (no trap?)\\n\", ret);\n\n    free(ycbcr);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "REPRODUCER_BUILD_FAIL",
+    "compile_error": "In file included from /app/se_runs/b3/libtiff_f324415_vul/findings/tif_color_281_divide-by-zero/reproducer.c:6:\nIn file included from /tmp/libtiff_upstream/libtiff/tiffio.h:31:\n/tmp/libtiff_upstream/libtiff/tiff.h:28:10: fatal error: 'tiffconf.h' file not found\n#include \"tiffconf.h\"\n         ^~~~~~~~~~~~\n1 error generated.\n"
+  }
+}

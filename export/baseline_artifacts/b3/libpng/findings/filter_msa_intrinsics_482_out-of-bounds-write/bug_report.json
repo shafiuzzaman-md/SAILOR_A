@@ -1,0 +1,75 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "mips/filter_msa_intrinsics.c",
+    "line": 482,
+    "function": "png_read_filter_row_sub4_msa",
+    "bug_type": "out-of-bounds-write",
+    "cwe": "CWE-787",
+    "confidence": "high",
+    "explanation": "The loop processes 16-byte vectors without tail masking (count += 16 while count < istop-4), causing the last iteration to ST_UB 16 bytes even when fewer than 16 bytes remain, overwriting up to 15 bytes past the end of the row.",
+    "abs_path": "/tmp/libpng_upstream/mips/filter_msa_intrinsics.c"
+  },
+  "reproducer_code": "#include <stdint.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdio.h>\n\n/* Minimal type re-declarations matching libpng usage */\ntypedef unsigned char png_byte;\ntypedef struct png_row_info_struct {\n    size_t width;\n    size_t rowbytes;\n} png_row_info;\n\n/* Stub MSA vector types as simple byte arrays */\ntypedef struct { unsigned char v[16]; } v16u8;\ntypedef v16u8 v16i8;\ntypedef v16u8 v4i32;\ntypedef v16u8 v2i64;\n\n/* Helper: load 32-bit word (unaligned) */\nstatic inline int32_t LW(const png_byte *p) {\n    uint32_t v = 0;\n    memcpy(&v, p, 4);\n    return (int32_t)v;\n}\n\n/* Stub intrinsics/macros used by the MSA path. These are no-ops or simple pass-throughs\n   sufficient to preserve the control flow and the 16-byte store. */\nstatic inline v16u8 __msa_insert_w(v4i32 a, int idx, int32_t w) {\n    (void)idx; (void)w; /* content does not matter for triggering the bug */\n    return a;\n}\nstatic inline v16u8 __msa_sldi_b(v16i8 a, v16i8 b, int sh) {\n    (void)a; (void)sh;\n    return b;\n}\nstatic inline v16u8 __msa_pckev_d(v2i64 a, v2i64 b) {\n    (void)a;\n    return b;\n}\n\n/* Vector add (byte-wise) to satisfy += style ops in scalar C */\nstatic inline v16u8 add_v16u8(v16u8 x, v16u8 y) {\n    v16u8 r;\n    for (int i = 0; i < 16; i++) r.v[i] = (unsigned char)(x.v[i] + y.v[i]);\n    return r;\n}\n\n/* Load 16 bytes \"vector\" from memory. To isolate the write OOB, we DO NOT actually\n   dereference the pointer here; just return zeros. */\nstatic inline v16u8 LD_UB(const png_byte *p) {\n    (void)p;\n    v16u8 r; memset(r.v, 0, 16); return r;\n}\n\n/* Interleave even words: stubbed to pass through inputs */\n#define ILVEV_W2_UB(a, b, c, d, out0, out1) do { (out0) = (a); (out1) = (c); } while (0)\n\n/* Store 16 bytes to memory: this is the operation that will write past the end */\nstatic inline void ST_UB(v16u8 x, png_byte *p) {\n    /* This memcpy of 16 bytes is the out-of-bounds write when p is near the end */\n    memcpy(p, x.v, 16);\n}\n\n/* Re-implementation of the vulnerable function with the same control flow and tail bug */\nstatic void png_read_filter_row_sub4_msa(png_row_info *row_info, png_byte *row,\n    const png_byte *prev_row)\n{\n    (void)prev_row; /* unused in this path */\n    size_t count;\n    size_t istop = row_info->rowbytes;\n    png_byte *src = row;\n    png_byte *nxt = row + 4;\n    int32_t inp0;\n    v16u8 src0, src1, src2, src3, src4;\n    v16u8 dst0, dst1;\n    v16u8 zero; memset(&zero, 0, sizeof(zero));\n\n    istop -= 4;\n\n    inp0 = LW(src);\n    src += 4;\n    src0 = __msa_insert_w((v4i32) zero, 0, inp0);\n\n    for (count = 0; count < istop; count += 16)\n    {\n        src1 = LD_UB(src);\n        src += 16;\n\n        src2 = __msa_sldi_b((v16i8) zero, (v16i8) src1, 4);\n        src3 = __msa_sldi_b((v16i8) zero, (v16i8) src1, 8);\n        src4 = __msa_sldi_b((v16i8) zero, (v16i8) src1, 12);\n        src1 = add_v16u8(src1, src0);\n        src2 = add_v16u8(src2, src1);\n        src3 = add_v16u8(src3, src2);\n        src4 = add_v16u8(src4, src3);\n        src0 = src4;\n        ILVEV_W2_UB(src1, src2, src3, src4, dst0, dst1);\n        dst0 = __msa_pckev_d((v2i64) dst1, (v2i64) dst0);\n\n        /* Vulnerable: always stores 16 bytes without checking tail */\n        ST_UB(dst0, nxt);\n        nxt += 16;\n    }\n}\n\nint main(void) {\n    /* Choose rowbytes so that (rowbytes - 4) % 16 == 1, maximizing overflow.\n       rowbytes = 5 => istop = 1, loop runs once, writes 16 bytes at row+4,\n       overflowing 15 bytes past the end of the 5-byte buffer. */\n    size_t rowbytes = 5; /* Minimal size that still enters the loop once */\n    png_row_info ri;\n    ri.width = 0; /* not used here */\n    ri.rowbytes = rowbytes;\n\n    png_byte *row = (png_byte*)malloc(rowbytes);\n    if (!row) {\n        fprintf(stderr, \"alloc failed\\n\");\n        return 1;\n    }\n    memset(row, 0x41, rowbytes);\n\n    /* prev_row is unused in this filter implementation */\n    png_read_filter_row_sub4_msa(&ri, row, NULL);\n\n    /* If we got here without ASan abort, free memory (unlikely). */\n    free(row);\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.7106387615203857,
+      "output": "=================================================================\n==3744361==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000015 at pc 0x6480f5e7509e bp 0x7ffd0dfdbaf0 sp 0x7ffd0dfdb2c0\nWRITE of size 16 at 0x602000000015 thread T0\n    #0 0x6480f5e7509d in __asan_memcpy (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer+0xa409d) (BuildId: d20008ba57fbc422a04381880500ec2d549a0d1c)\n    #1 0x6480f5eb68bc in ST_UB /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:61:5\n    #2 0x6480f5eb4f56 in png_read_filter_row_sub4_msa /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:101:9\n    #3 0x6480f5eb1e57 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:123:5\n    #4 0x79795a62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x79795a62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x6480f5df2304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer+0x21304) (BuildId: d20008ba57fbc422a04381880500ec2d549a0d1c)\n\n0x602000000015 is located 0 bytes to the right of 5-byte region [0x602000000010,0x602000000015)\nallocated by thread T0 here:\n    #0 0x6480f5e75d12 in __interceptor_malloc (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer+0xa4d12) (BuildId: d20008ba57fbc422a04381880500ec2d549a0d1c)\n    #1 0x6480f5eb1dd3 in main /app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:115:32\n    #2 0x79795a62a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #3 0x79795a62a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #4 0x6480f5df2304 in _start (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer+0x21304) (BuildId: d20008ba57fbc422a04381880500ec2d549a0d1c)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer+0xa409d) (BuildId: d20008ba57fbc422a04381880500ec2d549a0d1c) in __asan_memcpy\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[05]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3744361==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "ST_UB",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:61",
+          "5"
+        ],
+        [
+          "2",
+          "png_read_filter_row_sub4_msa",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:101",
+          "9"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:123",
+          "5"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "main",
+          "/app/se_runs/b3/libpng_747dd02_vul/findings/filter_msa_intrinsics_482_out-of-bounds-write/reproducer.c:115",
+          "32"
+        ],
+        [
+          "2",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "3",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

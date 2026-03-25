@@ -1,0 +1,81 @@
+{
+  "baseline": "B3",
+  "vulnerability": {
+    "file": "bfd/coffgen.c",
+    "line": 1808,
+    "function": "_bfd_coff_read_string_table",
+    "bug_type": "integer-overflow",
+    "cwe": "CWE-190",
+    "confidence": "high",
+    "explanation": "strsize is read from the file as a 32-bit value. On 32-bit builds where bfd_size_type is 32-bit, the allocation size computation strsize + 1 can wrap to 0 when strsize == 0xFFFFFFFF. This results in an undersized (or zero-length) allocation via bfd_malloc, followed by writes to the buffer (memset at line 1816 and bfd_read at line 1818), causing a heap buffer overflow.",
+    "abs_path": "/tmp/binutils_upstream/bfd/coffgen.c"
+  },
+  "reproducer_code": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <string.h>\n#include <stdarg.h>\n#include <stdbool.h>\n#include <inttypes.h>\n\n/* Self-contained stubs and types to mimic the relevant parts of BFD. */\n\ntypedef uint32_t bfd_size_type; /* Force 32-bit to reproduce the overflow. */\n\ntypedef struct bfd {\n    unsigned char *filebuf;\n    size_t filelen;\n    size_t cursor;\n    /* Fields referenced by macros below. */\n    bfd_size_type symesz;\n    bfd_size_type raw_syment_count;\n    bfd_size_type sym_filepos;\n    char *coff_strings;\n    bfd_size_type coff_strings_len;\n} bfd;\n\n#define STRING_SIZE_SIZE 4\n\n/* Macros mimicking the ones used by the vulnerable function. */\n#define bfd_coff_symesz(abfd)            ((abfd)->symesz)\n#define obj_raw_syment_count(abfd)       ((abfd)->raw_syment_count)\n#define obj_sym_filepos(abfd)            ((abfd)->sym_filepos)\n#define obj_coff_strings(abfd)           ((abfd)->coff_strings)\n#define obj_coff_strings_len(abfd)       ((abfd)->coff_strings_len)\n\n/* Minimal error handling stubs. */\nenum bfd_error {\n    bfd_error_no_error = 0,\n    bfd_error_file_truncated,\n    bfd_error_bad_value\n};\nstatic enum bfd_error last_bfd_error = bfd_error_no_error;\nstatic void bfd_set_error(enum bfd_error e) { last_bfd_error = e; }\nstatic enum bfd_error bfd_get_error(void) { return last_bfd_error; }\n\n/* Simple error handler stub matching the varargs call site. */\nstatic void _bfd_error_handler(const char *fmt, ...) {\n    va_list ap; va_start(ap, fmt); vfprintf(stderr, fmt, ap); va_end(ap); fputc('\\n', stderr);\n}\n\n/* Endianness helper used by the code (assume LE for simplicity). */\nstatic inline uint32_t H_GET_32(bfd *abfd, const unsigned char *p) {\n    (void)abfd; /* unused in this stub */\n    return ((uint32_t)p[0]) | ((uint32_t)p[1] << 8) | ((uint32_t)p[2] << 16) | ((uint32_t)p[3] << 24);\n}\n\n/* Minimal file ops on our in-memory buffer. */\nstatic int bfd_seek(bfd *abfd, bfd_size_type pos, int whence) {\n    (void)whence; /* only SEEK_SET used */\n    abfd->cursor = (size_t)pos;\n    if (abfd->cursor > abfd->filelen) abfd->cursor = abfd->filelen;\n    return 0;\n}\n\nstatic bfd_size_type bfd_read(void *dst, bfd_size_type size, bfd *abfd) {\n    size_t remaining = (abfd->cursor < abfd->filelen) ? (abfd->filelen - abfd->cursor) : 0;\n    size_t to_read = (size <= remaining) ? (size_t)size : remaining;\n    if (to_read > 0) memcpy(dst, abfd->filebuf + abfd->cursor, to_read);\n    abfd->cursor += to_read;\n    return (bfd_size_type)to_read;\n}\n\nstatic bfd_size_type bfd_get_file_size(bfd *abfd) {\n    (void)abfd;\n    /* Return 0 to bypass the upper-bound check (filesize != 0 && strsize > filesize). */\n    return 0;\n}\n\nstatic void *bfd_malloc(bfd_size_type n) {\n    /* On 32-bit bfd_size_type, overflow before this call can turn n into 0. */\n    return malloc((size_t)n);\n}\n\n/* Overflow helper. */\nstatic bool _bfd_mul_overflow(bfd_size_type a, bfd_size_type b, bfd_size_type *res) {\n    uint64_t prod = (uint64_t)a * (uint64_t)b;\n    *res = (bfd_size_type)prod;\n    return prod > 0xFFFFFFFFu;\n}\n\n/* Vulnerable function ported with stubs above. */\nstatic char * _bfd_coff_read_string_table(bfd *abfd) {\n    bfd_size_type symesz, size, pos;\n    unsigned char extstrsize[STRING_SIZE_SIZE];\n    bfd_size_type strsize;\n    bfd_size_type filesize;\n    char *strings;\n\n    symesz = bfd_coff_symesz(abfd);\n    pos = obj_sym_filepos(abfd);\n    if (_bfd_mul_overflow(obj_raw_syment_count(abfd), symesz, &size)\n        || pos + size < pos)\n    {\n        bfd_set_error(bfd_error_file_truncated);\n        return NULL;\n    }\n\n    if (bfd_seek(abfd, pos + size, SEEK_SET) != 0)\n        return NULL;\n\n    if (bfd_read(extstrsize, sizeof extstrsize, abfd) != sizeof extstrsize)\n    {\n        if (bfd_get_error() != bfd_error_file_truncated)\n            return NULL;\n        /* There is no string table. */\n        strsize = STRING_SIZE_SIZE;\n    }\n    else\n    {\n        strsize = H_GET_32(abfd, extstrsize);\n    }\n\n    filesize = bfd_get_file_size(abfd);\n    if (strsize < STRING_SIZE_SIZE || (filesize != 0 && strsize > filesize))\n    {\n        _bfd_error_handler(\"%s: bad string table size %\" PRIu64, \"abfd\", (uint64_t)strsize);\n        bfd_set_error(bfd_error_bad_value);\n        return NULL;\n    }\n\n    /* Vulnerable allocation: on 32-bit bfd_size_type, strsize == 0xFFFFFFFF wraps here to 0. */\n    strings = (char *)bfd_malloc(strsize + 1);\n    if (strings == NULL)\n        return NULL;\n\n    /* Heap buffer overflow when strsize + 1 wrapped to 0 above. */\n    memset(strings, 0, STRING_SIZE_SIZE);\n\n    if (bfd_read(strings + STRING_SIZE_SIZE, strsize - STRING_SIZE_SIZE, abfd)\n        != strsize - STRING_SIZE_SIZE)\n    {\n        free(strings);\n        return NULL;\n    }\n\n    obj_coff_strings(abfd) = strings;\n    obj_coff_strings_len(abfd) = strsize;\n    /* Terminate the string table, just in case. */\n    strings[strsize] = 0;\n    return strings;\n}\n\nint main(void) {\n    /* Prepare an in-memory \"file\" whose first 4 bytes are 0xFFFFFFFF -> strsize. */\n    unsigned char buf[4] = { 0xFF, 0xFF, 0xFF, 0xFF };\n\n    bfd abfd;\n    memset(&abfd, 0, sizeof(abfd));\n    abfd.filebuf = buf;\n    abfd.filelen = sizeof(buf);\n    abfd.cursor = 0;\n    abfd.symesz = 0;              /* so size = 0 */\n    abfd.raw_syment_count = 0;    /* so size = 0 */\n    abfd.sym_filepos = 0;         /* start at 0 */\n\n    /* This call should trigger the integer overflow leading to a heap buffer overflow\n       in the memset(strings, 0, 4) when bfd_malloc(0) returned. */\n    char *s = _bfd_coff_read_string_table(&abfd);\n\n    /* If we reached here without ASan aborting, free any allocation and report. */\n    if (s) free(s);\n    puts(\"Done\");\n    return 0;\n}\n",
+  "validation": {
+    "verdict": "CONCRETE_CONFIRMED",
+    "asan": {
+      "asan_triggered": true,
+      "exit_code": 1,
+      "elapsed": 0.6909806728363037,
+      "output": "=================================================================\n==3618637==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x602000000011 at pc 0x570bf3ec6310 bp 0x7ffde4963370 sp 0x7ffde4962b40\nWRITE of size 4 at 0x602000000011 thread T0\n    #0 0x570bf3ec630f in __asan_memset (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa430f) (BuildId: e61abb66155618549b385a548508730b1ac1a644)\n    #1 0x570bf3f03496 in _bfd_coff_read_string_table /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:135:5\n    #2 0x570bf3f02f51 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166:15\n    #3 0x7c0ef2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #4 0x7c0ef2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #5 0x570bf3e43314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0x21314) (BuildId: e61abb66155618549b385a548508730b1ac1a644)\n\n0x602000000011 is located 0 bytes to the right of 1-byte region [0x602000000010,0x602000000011)\nallocated by thread T0 here:\n    #0 0x570bf3ec6d22 in __interceptor_malloc (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa4d22) (BuildId: e61abb66155618549b385a548508730b1ac1a644)\n    #1 0x570bf3f03df4 in bfd_malloc /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:79:12\n    #2 0x570bf3f03454 in _bfd_coff_read_string_table /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:130:23\n    #3 0x570bf3f02f51 in main /app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166:15\n    #4 0x7c0ef2e2a1c9 in __libc_start_call_main csu/../sysdeps/nptl/libc_start_call_main.h:58:16\n    #5 0x7c0ef2e2a28a in __libc_start_main csu/../csu/libc-start.c:360:3\n    #6 0x570bf3e43314 in _start (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0x21314) (BuildId: e61abb66155618549b385a548508730b1ac1a644)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow (/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer+0xa430f) (BuildId: e61abb66155618549b385a548508730b1ac1a644) in __asan_memset\nShadow bytes around the buggy address:\n  0x0c047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0c047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0c047fff8000: fa fa[01]fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8020: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8030: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8040: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0c047fff8050: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\nShadow byte legend (one shadow byte represents 8 application bytes):\n  Addressable:           00\n  Partially addressable: 01 02 03 04 05 06 07 \n  Heap left redzone:       fa\n  Freed heap region:       fd\n  Stack left redzone:      f1\n  Stack mid redzone:       f2\n  Stack right redzone:     f3\n  Stack after return:      f5\n  Stack use after scope:   f8\n  Global redzone:          f9\n  Global init order:       f6\n  Poisoned by user:        f7\n  Container overflow:      fc\n  Array cookie:            ac\n  Intra object redzone:    bb\n  ASan internal:           fe\n  Left alloca redzone:     ca\n  Right alloca redzone:    cb\n==3618637==ABORTING\n",
+      "error_type": "heap-buffer-overflow",
+      "frames": [
+        [
+          "1",
+          "_bfd_coff_read_string_table",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:135",
+          "5"
+        ],
+        [
+          "2",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166",
+          "15"
+        ],
+        [
+          "3",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "4",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ],
+        [
+          "1",
+          "bfd_malloc",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:79",
+          "12"
+        ],
+        [
+          "2",
+          "_bfd_coff_read_string_table",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:130",
+          "23"
+        ],
+        [
+          "3",
+          "main",
+          "/app/se_runs/b3/binutils_b2bc71a_vul/findings/coffgen_1808_integer-overflow/reproducer.c:166",
+          "15"
+        ],
+        [
+          "4",
+          "__libc_start_call_main",
+          "csu/../sysdeps/nptl/libc_start_call_main.h:58",
+          "16"
+        ],
+        [
+          "5",
+          "__libc_start_main",
+          "csu/../csu/libc-start.c:360",
+          "3"
+        ]
+      ],
+      "is_harness_artifact": false
+    }
+  }
+}

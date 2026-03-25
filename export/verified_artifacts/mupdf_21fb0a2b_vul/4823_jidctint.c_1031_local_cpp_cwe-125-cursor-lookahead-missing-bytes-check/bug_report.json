@@ -1,0 +1,75 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "SEGV",
+        "cwe_description": "",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 1,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "jidctint.c",
+        "original_line": 1031,
+        "function": "jpeg_idct_3x3",
+        "entry_point": "jpeg_idct_3x3",
+        "spine": [
+            "jpeg_idct_3x3"
+        ],
+        "original_context": ""
+    },
+    "klee_crash": {
+        "harness_file": "jidctint.c",
+        "harness_line": 66,
+        "original_file": "jidctint.c",
+        "original_line": 1031,
+        "original_code": "(vulnerability site \u2014 mapped via sink proximity, offset=2)",
+        "original_context": "",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: jidctint.c\nLine: 66\nassembly.ll line: 144\nState: 1\nStack: \n\t#000000144 in jpeg_idct_3x3(0, 0, 0, 139608685637632, 0) at jidctint.c:66\n\t#100000070 in main() at driver.c:43\nInfo: \n\taddress: 139591505768450\n\tnext: object at 139309111668736 of size 4\n\t\tMO54[4] allocated at jpeg_idct_3x3():  %11 = alloca i32, align 4\n"
+    },
+    "concrete_inputs": [
+        {
+            "name": "row0_bytes",
+            "size": 2,
+            "data": "b'\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "SEGV",
+        "crash_function": "jpeg_idct_3x3",
+        "crash_file": "thirdparty/libjpeg/jidctint.c",
+        "crash_line": 967,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "AddressSanitizer:DEADLYSIGNAL\n=================================================================\n==26919==ERROR: AddressSanitizer: SEGV on unknown address 0x000000000198 (pc 0x55650e99b1ad bp 0x7ffe43cbf080 sp 0x7ffe43cbef90 T0)\n==26919==The signal is caused by a READ memory access.\n==26919==Hint: address points to the zero page.\n    #0 0x55650e99b1ad in jpeg_idct_3x3 thirdparty/libjpeg/jidctint.c:967\n    #1 0x55650e9974b5 in main /app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4823_jidctint.c_1031_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_driver.c:44\n    #2 0x7f6484441d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #3 0x7f6484441e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #4 0x55650e9972c4 in _start (/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/.asan_results/4823_jidctint.c_1031_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/asan_real/replay_bin+0x12c4)\n\nAddressSanitizer can not provide additional info.\nSUMMARY: AddressSanitizer: SEGV thirdparty/libjpeg/jidctint.c:967 in jpeg_idct_3x3\n==26919==ABORTING\n"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4823_jidctint.c_1031_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "jidctint.c",
+            "harness_line": 66,
+            "original_file": "jidctint.c",
+            "original_line": 1031,
+            "error_type": "ptr",
+            "crash_function": "jpeg_idct_3x3",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/mupdf_21fb0a2b_vul/4823_jidctint.c_1031_local_cpp_cwe-125-cursor-lookahead-missing-bytes-check/logs/klee_run_1/test000001.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "SEGV",
+            "crash_function": "jpeg_idct_3x3",
+            "crash_file": "thirdparty/libjpeg/jidctint.c",
+            "crash_line": 967
+        }
+    ]
+}

@@ -1,0 +1,120 @@
+{
+    "summary": {
+        "verdict": "SE_DETECTED",
+        "asan_confirmed": true,
+        "crash_relevance": "asan_confirmed",
+        "cwe": "heap-buffer-overflow",
+        "cwe_description": "WMI pattern (wmi-2)",
+        "total_asan_crashes": 1,
+        "target_asan_crashes": 0,
+        "secondary_asan_crashes": 0,
+        "target_crashes": 3,
+        "secondary_bugs": 0
+    },
+    "vulnerability": {
+        "original_file": "cil_build_ast.c",
+        "original_line": 603,
+        "function": "unknown",
+        "entry_point": "unknown",
+        "spine": [
+            "unknown"
+        ],
+        "original_context": "598: \trc = cil_gen_node(db, ast_node, (struct cil_symtab_datum*)class, (hashtab_key_t)key, CIL_SYM_CLASSES, CIL_CLASS);\n599: \tif (rc != SEPOL_OK) {\n600: \t\tgoto exit;\n601: \t}\n602: \n603: \tif (parse_current->next->next != NULL) {\n604: \t\tperms = parse_current->next->next->cl_head;\n605: \t\trc = cil_gen_perm_nodes(db, perms, ast_node, CIL_PERM, &class->num_perms);\n606: \t\tif (rc != SEPOL_OK) {\n607: \t\t\tgoto exit;\n608: \t\t}"
+    },
+    "klee_crash": {
+        "harness_file": "cil_build_ast.c",
+        "harness_line": 18,
+        "original_file": "cil_build_ast.c",
+        "original_line": 603,
+        "original_code": "if (parse_current->next->next != NULL) {",
+        "original_context": "    600: \t\tgoto exit;\n    601: \t}\n    602: \n>>> 603: \tif (parse_current->next->next != NULL) {\n    604: \t\tperms = parse_current->next->next->cl_head;\n    605: \t\trc = cil_gen_perm_nodes(db, perms, ast_node, CIL_PERM, &class->num_perms);\n    606: \t\tif (rc != SEPOL_OK) {",
+        "error_type": "ptr",
+        "error_details": "Error: memory error: out of bound pointer\nFile: cil_build_ast.c\nLine: 18\nassembly.ll line: 54\nState: 23\nStack: \n\t#000000054 in cil_gen_class(139573179400192, 139641898876928, 139624719007744) at cil_build_ast.c:18\n\t#100000029 in entry_point(139573179400192, 139641898876928, 139624719007744) at cil_build_ast.c:10\n\t#200000110 in main() at driver.c:26\nInfo: \n\taddress: (ReadLSB w64 0 p1_sym)\n\texample: 0\n\trange: [0, 18446744073709551615]\n\tnext: object at 139276826656768 of size 4\n\t\tMO19[4] allocated "
+    },
+    "concrete_inputs": [
+        {
+            "name": "n0",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "p1_sym",
+            "size": 8,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "n0",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "p1_sym",
+            "size": 8,
+            "data": "b'\\xf9C\\xf4\\xec\\xcd\\x7f\\x00\\x00'"
+        },
+        {
+            "name": "n0",
+            "size": 16,
+            "data": "b'\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x00'"
+        },
+        {
+            "name": "p1_sym",
+            "size": 8,
+            "data": "b'\\xd0\\x86\\xcb\\xea\\xcd\\x7f\\x00\\x00'"
+        }
+    ],
+    "asan_result": {
+        "triggered": true,
+        "harness_artifact": false,
+        "error_type": "heap-buffer-overflow",
+        "crash_function": "__cil_verify_syntax",
+        "crash_file": "../cil/src/cil_verify.c",
+        "crash_line": 154,
+        "original_file": "",
+        "original_line": 0,
+        "original_code": "",
+        "original_context": "",
+        "output": "=================================================================\n==2837==ERROR: AddressSanitizer: heap-buffer-overflow on address 0x502000000060 at pc 0x561ab8911ee8 bp 0x7ffcc8cb9a20 sp 0x7ffcc8cb9a10\nREAD of size 8 at 0x502000000060 thread T0\n    #0 0x561ab8911ee7 in __cil_verify_syntax ../cil/src/cil_verify.c:154\n    #1 0x561ab88cc3ed in cil_gen_class ../cil/src/cil_build_ast.c:584\n    #2 0x561ab88c8cdd in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:27\n    #3 0x7fb42f3d0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n    #4 0x7fb42f3d0e3f in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x29e3f)\n    #5 0x561ab88c8a44 in _start (/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/asan_real/replay_bin+0x2ea44)\n\n0x502000000060 is located 0 bytes to the right of 16-byte region [0x502000000050,0x502000000060)\nallocated by thread T0 here:\n    #0 0x7fb42f787a57 in __interceptor_calloc ../../../../src/libsanitizer/asan/asan_malloc_linux.cpp:154\n    #1 0x561ab88c8bca in main /app/se_runs/sailor_engine/libselinux_ca10fc4_vul/.asan_results/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/asan_real/replay_driver.c:16\n    #2 0x7fb42f3d0d8f  (/lib/x86_64-linux-gnu/libc.so.6+0x29d8f)\n\nSUMMARY: AddressSanitizer: heap-buffer-overflow ../cil/src/cil_verify.c:154 in __cil_verify_syntax\nShadow bytes around the buggy address:\n  0x0a047fff7fb0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fc0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fd0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7fe0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n  0x0a047fff7ff0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00\n=>0x0a047fff8000: fa fa 04 fa fa fa 00 00 fa fa 00 00[fa]fa fa fa\n  0x0a047fff8010: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa\n  0x0a047fff"
+    },
+    "line_map_file": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/harness/line_map.json",
+    "all_crashes": [
+        {
+            "harness_file": "cil_build_ast.c",
+            "harness_line": 18,
+            "original_file": "cil_build_ast.c",
+            "original_line": 603,
+            "error_type": "ptr",
+            "crash_function": "cil_gen_class",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/logs/klee_run_3/test000001.ktest"
+        },
+        {
+            "harness_file": "cil_build_ast.c",
+            "harness_line": 20,
+            "original_file": "cil_build_ast.c",
+            "original_line": 604,
+            "error_type": "ptr",
+            "crash_function": "cil_gen_class",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/logs/klee_run_3/test000003.ktest"
+        },
+        {
+            "harness_file": "cil_build_ast.c",
+            "harness_line": 22,
+            "original_file": "cil_build_ast.c",
+            "original_line": 608,
+            "error_type": "assert",
+            "crash_function": "cil_gen_class",
+            "relevance": "target_crash",
+            "ktest": "/app/se_runs/sailor_engine/libselinux_ca10fc4_vul/11866_cil_build_ast.c_603_sailor_wmi-2-type-confusion-leak/logs/klee_run_3/test000004.ktest"
+        }
+    ],
+    "all_asan_crashes": [
+        {
+            "error_type": "heap-buffer-overflow",
+            "crash_function": "__cil_verify_syntax",
+            "crash_file": "../cil/src/cil_verify.c",
+            "crash_line": 154
+        }
+    ]
+}
