@@ -38,10 +38,8 @@ clone_at "https://github.com/SELinuxProject/selinux.git" \
 clone_at "https://github.com/ArtifexSoftware/mupdf.git" \
     "dataset/21fb0a2b/mupdf_21fb0a2b_vul" "21fb0a2b6e939ddb0e844c8dc03a01a1a0f7c8cb"
 
-echo ""
-echo "NOTE: SQLite uses fossil. Download amalgamation from:"
-echo "  https://www.sqlite.org/src/info/0f08d958e52e0be3"
-echo "  Place in dataset/0f08d958/sqlite_0f08d958_vul/"
+clone_at "https://github.com/sqlite/sqlite.git" \
+    "dataset/0f08d958/sqlite_0f08d958_vul" "0f08d958e52e0be3ba0aecf48b72e58f467e7bf6"
 
 echo ""
 echo "Dataset setup complete. 10 projects, 6.8M LOC, 14,634 files."

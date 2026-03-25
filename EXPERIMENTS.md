@@ -53,6 +53,7 @@ for commit_proj in \
         -v $(pwd)/sa_outputs:/app/sa_outputs \
         -v $(pwd)/specs:/app/specs \
         -v $(pwd)/rules:/app/rules \
+        -v $(pwd)/configs:/app/configs \
         sailor bash -c "./sailor_prepare.sh $commit_proj"
 done
 ```

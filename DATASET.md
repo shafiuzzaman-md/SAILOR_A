@@ -74,7 +74,7 @@ cd ../../..
 
 ### 9. SQLite (1.05M LOC)
 ```bash
-git clone https://github.com/niccokunzmann/sqlite3 dataset/0f08d958/sqlite_0f08d958_vul
+git clone https://github.com/sqlite/sqlite.git dataset/0f08d958/sqlite_0f08d958_vul
 cd dataset/0f08d958/sqlite_0f08d958_vul
 git checkout 0f08d958e52e0be3ba0aecf48b72e58f467e7bf6
 cd ../../..
