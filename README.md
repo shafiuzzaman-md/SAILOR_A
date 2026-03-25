@@ -1,4 +1,4 @@
-# SAILOR: Static Analysis Informed LLM-Orchestrated Symbolic Execution
+# SAILOR: Static Analysis Informed and LLM-Orchestrated Symbolic Execution
 
 ## Overview
 SAILOR is a pipeline for automated vulnerability discovery in C/C++ codebases.
