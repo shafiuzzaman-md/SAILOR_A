@@ -43,17 +43,15 @@ SAILOR/
 │           └── ...
 │
 ├── scripts/                    # Run & validation scripts
-│   ├── revalidate_against_lib.py    # Validate against upstream .a
+│   ├── revalidate_against_lib.py    # Validate against project .a
 │   ├── revalidate_baselines.py      # Strip-and-relink for B3/B4
 │   ├── unified_validate.py          # Template-based validation
 │   ├── collect_token_usage.py       # LLM token tracking
 │   ├── fuzz_from_replay.py          # Fuzz reproduction
 │   └── runs/                        # Experiment run scripts
 │       ├── run_b5.sh
-│       ├── run_b5_scheduler.sh
-│       ├── run_sailor_deepseek.sh
-│       ├── klee_watchdog.sh
-│       └── ...
+│       ├── b5_scheduler.sh
+│       └── klee_watchdog.sh
 │
 ├── configs/                    # Per-project build configs
 │   ├── libtiff_f324415_vul_config.sh
