@@ -90,6 +90,7 @@ SAILOR/
 |----------|-------------|
 | [DATASET.md](DATASET.md) | Dataset setup: clone commands for all 10 projects at exact commits |
 | [EXPERIMENTS.md](EXPERIMENTS.md) | Step-by-step reproduction of all experiments (SAILOR, B1--B5, A1) |
+| [NEW_TARGET.md](NEW_TARGET.md) | How to run SAILOR on a new C/C++ project |
 
 ### Running SAILOR
 
@@ -238,47 +239,6 @@ in the project's unmodified `.a`.
 
 ## Running SAILOR on a New Target
 
-To apply SAILOR to a project not in our benchmark:
-
-```bash
-# 1. Prepare the project
-mkdir -p dataset/<commit>/<project_name>
-cd dataset/<commit>/<project_name>
-git clone <repo_url> . && git checkout <commit>
-
-# 2. Create a build config
-cat > configs/<project_name>_config.sh << 'EOF'
-#!/bin/bash
-export EXTRA_CFLAGS="-I${SRC_ROOT}/include"
-export TOOL_FILES="test_*.c,example_*.c"
-export NON_LIBRARY_FILES=""
-EOF
-
-# 3. Run Phase 1 (CodeQL scan + spec generation)
-docker run --rm \
-    -v $(pwd)/dataset:/app/dataset \
-    -v $(pwd)/sa_outputs:/app/sa_outputs \
-    -v $(pwd)/specs:/app/specs \
-    -v $(pwd)/rules:/app/rules \
-    sailor bash -c "./sailor_prepare.sh <commit>/<project_name>"
-
-# 4. Run Phase 2+3 (LLM harness synthesis + KLEE + validation)
-docker run --rm \
-    -e LLM_API_KEY="$LLM_API_KEY" \
-    -e LLM_MODEL="gpt-5" \
-    -e JOBS=64 \
-    -v $(pwd)/dataset:/app/dataset \
-    -v $(pwd)/specs:/app/specs \
-    -v $(pwd)/se_runs:/app/se_runs \
-    -v $(pwd)/configs:/app/configs \
-    sailor bash -c "./sailor.sh <commit>/<project_name>"
-
-# 5. Results
-cat se_runs/sailor_engine/<project_name>/summary.tsv
-```
-
-Key requirements for a new target:
-- C/C++ project with a build system (autotools, cmake, or custom)
-- Produces a static archive (`.a`) for validation
-- Build config specifying include paths and files to exclude
+See [NEW_TARGET.md](NEW_TARGET.md) for step-by-step instructions
+on applying SAILOR to any C/C++ project.
 
