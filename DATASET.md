@@ -74,13 +74,15 @@ cd ../../..
 
 ### 9. SQLite (1.05M LOC)
 ```bash
-# SQLite uses fossil, but a GitHub mirror is available
 git clone https://github.com/niccokunzmann/sqlite3 dataset/0f08d958/sqlite_0f08d958_vul
 cd dataset/0f08d958/sqlite_0f08d958_vul
 git checkout 0f08d958e52e0be3ba0aecf48b72e58f467e7bf6
 cd ../../..
 ```
-Alternatively, download the amalgamation from https://www.sqlite.org/src with the matching check-in.
+If the commit is unavailable on the GitHub mirror, download the
+SQLite amalgamation (`sqlite3.c`, `sqlite3.h`) for check-in
+`0f08d958` from https://www.sqlite.org/src and place it in
+`dataset/0f08d958/sqlite_0f08d958_vul/`.
 
 ### 10. mupdf (1.25M LOC)
 ```bash
