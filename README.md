@@ -90,7 +90,6 @@ SAILOR/
 |----------|-------------|
 | [DATASET.md](DATASET.md) | Dataset setup: clone commands for all 10 projects at exact commits |
 | [EXPERIMENTS.md](EXPERIMENTS.md) | Step-by-step reproduction of all experiments (SAILOR, B1--B5, A1) |
-| [ARTIFACTS.md](ARTIFACTS.md) | Artifact overview: what is included, how to verify paper claims |
 
 ### Running SAILOR
 
