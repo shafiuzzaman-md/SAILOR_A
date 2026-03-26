@@ -10,7 +10,8 @@ with ASan.
 Pipeline:
   1. For each target (source file batch), launch Claude Code in headless mode
   2. The agent can read files, grep for patterns, navigate the codebase
-  3. Agent identifies vulnerabilities and outputs crashing inputs
+  3. Agent identifies vulnerabilities and outputs crashing inputs.
+     The agent decides its own exploration strategy.
   4. Infrastructure compiles replay drivers against project .a and validates with ASan
   5. Output SAILOR-compatible summary.tsv
 

@@ -4,7 +4,8 @@
 No static analysis, no symbolic execution. The LLM:
   1. Reads source files and identifies potential memory safety vulnerabilities
   2. For each finding, outputs structured crashing inputs (entry function,
-     argument values, trigger condition)
+     argument values, trigger condition). Large files are chunked to fit
+     within the LLM's context window.
   3. The infrastructure compiles a replay driver against the project .a
      and validates with ASan
   4. Results are classified using asan_utils
