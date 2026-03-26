@@ -20,7 +20,7 @@ cd ../../..
 ```bash
 git clone https://gitlab.com/libtiff/libtiff.git dataset/f324415/libtiff_f324415_vul
 cd dataset/f324415/libtiff_f324415_vul
-git checkout f3244156cdb2f491babe2c7d3eab9b03eb0fbff3
+git checkout f324415f50cb5c90f7712e9dfe69831f5d2ea88d
 cd ../../..
 ```
 
@@ -28,7 +28,7 @@ cd ../../..
 ```bash
 git clone https://github.com/pnggroup/libpng.git dataset/747dd02/libpng_747dd02_vul
 cd dataset/747dd02/libpng_747dd02_vul
-git checkout 747dd025e48df1a62e7f69aa1e50ed7e4bcced7b
+git checkout 747dd02240d95dc8da1b9fecf0f58569ebbcf5a7
 cd ../../..
 ```
 
@@ -36,7 +36,7 @@ cd ../../..
 ```bash
 git clone https://sourceware.org/git/binutils-gdb.git dataset/b2bc71a/binutils_b2bc71a_vul
 cd dataset/b2bc71a/binutils_b2bc71a_vul
-git checkout b2bc71a09e6fb51a8a2c3e3c1c74a0f5d7fffecd
+git checkout b2bc71a12976fc169295662ab17f692f13d167d2
 cd ../../..
 ```
 
@@ -44,7 +44,7 @@ cd ../../..
 ```bash
 git clone https://github.com/curl/curl.git dataset/2eebc58/curl_2eebc58_vul
 cd dataset/2eebc58/curl_2eebc58_vul
-git checkout 2eebc584e0e982a2e3e9e443c9f0ecfa0dfc3b97
+git checkout 2eebc58c4b8d68c98c8344381a9f6df4cca838fd
 cd ../../..
 ```
 
@@ -52,7 +52,7 @@ cd ../../..
 ```bash
 git clone https://github.com/openssl/openssl.git dataset/67b5686b/openssl_67b5686b_vul
 cd dataset/67b5686b/openssl_67b5686b_vul
-git checkout 67b5686bb9bd4344f0dd0ff42b58fb85d1df2ede
+git checkout 67b5686b4419b4cb8caa502711c41815f5279751
 cd ../../..
 ```
 
@@ -60,7 +60,7 @@ cd ../../..
 ```bash
 git clone https://github.com/FFmpeg/FFmpeg.git dataset/f46e5144/ffmpeg_f46e5144_vul
 cd dataset/f46e5144/ffmpeg_f46e5144_vul
-git checkout f46e51446a75e0f5df05c8e84a6a6b39f30fe984
+git checkout f46e514491172d15bd74b4abb1814cd2f05a763e
 cd ../../..
 ```
 
@@ -68,7 +68,7 @@ cd ../../..
 ```bash
 git clone https://github.com/SELinuxProject/selinux.git dataset/ca10fc4/libselinux_ca10fc4_vul
 cd dataset/ca10fc4/libselinux_ca10fc4_vul
-git checkout ca10fc4780ade0c2ccb75f1e5a81bbc704ca2e55
+git checkout ca10fc4204ed60540d41d2499127c18ad0643f9e
 cd ../../..
 ```
 
@@ -76,7 +76,7 @@ cd ../../..
 ```bash
 git clone https://github.com/sqlite/sqlite.git dataset/0f08d958/sqlite_0f08d958_vul
 cd dataset/0f08d958/sqlite_0f08d958_vul
-git checkout 0f08d958e52e0be3ba0aecf48b72e58f467e7bf6
+git checkout 0f08d9586c4e93c6fd84666cbd17ab17d9a7f57c
 cd ../../..
 ```
 If the commit is unavailable on the GitHub mirror, download the
@@ -88,7 +88,7 @@ SQLite amalgamation (`sqlite3.c`, `sqlite3.h`) for check-in
 ```bash
 git clone --recursive https://github.com/ArtifexSoftware/mupdf.git dataset/21fb0a2b/mupdf_21fb0a2b_vul
 cd dataset/21fb0a2b/mupdf_21fb0a2b_vul
-git checkout 21fb0a2b6e939ddb0e844c8dc03a01a1a0f7c8cb
+git checkout 21fb0a2bf815c927cf09881f799f78cbece0daf2
 git submodule update --init --recursive
 cd ../../..
 ```
@@ -114,28 +114,28 @@ clone_at "https://gitlab.gnome.org/GNOME/libxml2.git" \
     "dataset/e334a9d/libxml2_e334a9d_vul" "e334a9d661c175203517565c4efae87a6577d5eb"
 
 clone_at "https://gitlab.com/libtiff/libtiff.git" \
-    "dataset/f324415/libtiff_f324415_vul" "f3244156cdb2f491babe2c7d3eab9b03eb0fbff3"
+    "dataset/f324415/libtiff_f324415_vul" "f324415f50cb5c90f7712e9dfe69831f5d2ea88d"
 
 clone_at "https://github.com/pnggroup/libpng.git" \
-    "dataset/747dd02/libpng_747dd02_vul" "747dd025e48df1a62e7f69aa1e50ed7e4bcced7b"
+    "dataset/747dd02/libpng_747dd02_vul" "747dd02240d95dc8da1b9fecf0f58569ebbcf5a7"
 
 clone_at "https://sourceware.org/git/binutils-gdb.git" \
-    "dataset/b2bc71a/binutils_b2bc71a_vul" "b2bc71a09e6fb51a8a2c3e3c1c74a0f5d7fffecd"
+    "dataset/b2bc71a/binutils_b2bc71a_vul" "b2bc71a12976fc169295662ab17f692f13d167d2"
 
 clone_at "https://github.com/curl/curl.git" \
-    "dataset/2eebc58/curl_2eebc58_vul" "2eebc584e0e982a2e3e9e443c9f0ecfa0dfc3b97"
+    "dataset/2eebc58/curl_2eebc58_vul" "2eebc58c4b8d68c98c8344381a9f6df4cca838fd"
 
 clone_at "https://github.com/openssl/openssl.git" \
-    "dataset/67b5686b/openssl_67b5686b_vul" "67b5686bb9bd4344f0dd0ff42b58fb85d1df2ede"
+    "dataset/67b5686b/openssl_67b5686b_vul" "67b5686b4419b4cb8caa502711c41815f5279751"
 
 clone_at "https://github.com/FFmpeg/FFmpeg.git" \
-    "dataset/f46e5144/ffmpeg_f46e5144_vul" "f46e51446a75e0f5df05c8e84a6a6b39f30fe984"
+    "dataset/f46e5144/ffmpeg_f46e5144_vul" "f46e514491172d15bd74b4abb1814cd2f05a763e"
 
 clone_at "https://github.com/SELinuxProject/selinux.git" \
-    "dataset/ca10fc4/libselinux_ca10fc4_vul" "ca10fc4780ade0c2ccb75f1e5a81bbc704ca2e55"
+    "dataset/ca10fc4/libselinux_ca10fc4_vul" "ca10fc4204ed60540d41d2499127c18ad0643f9e"
 
 clone_at "https://github.com/ArtifexSoftware/mupdf.git" \
-    "dataset/21fb0a2b/mupdf_21fb0a2b_vul" "21fb0a2b6e939ddb0e844c8dc03a01a1a0f7c8cb"
+    "dataset/21fb0a2b/mupdf_21fb0a2b_vul" "21fb0a2bf815c927cf09881f799f78cbece0daf2"
 
 # SQLite — use amalgamation or fossil mirror
 echo "SQLite: download amalgamation from sqlite.org for commit 0f08d958"
