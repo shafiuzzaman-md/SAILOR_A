@@ -10,9 +10,9 @@ For KLEE-based baselines (B1, B2):
   - Compiles replay_driver.c + stubs.c with ASan
   - Runs and checks for ASan crashes
 
-For LLM reproducer-based baselines (B3, B4):
-  - Takes the LLM-generated reproducer.c as the crashing input
-  - Compiles with ASan against project headers
+For LLM-based baselines (B3, B4, B5):
+  - Takes the LLM-generated crashing inputs and builds a replay driver
+  - Compiles replay driver with ASan against project .a
   - Runs and checks for ASan crashes
 
 For A1 (SAILOR - SA):
@@ -520,7 +520,7 @@ def find_klee_artifacts_b2(
 def find_reproducer_b3(
     spec: str, baseline_dir: Path
 ) -> Optional[Path]:
-    """Find reproducer.c for a B3 spec.
+    """Find replay driver for a B3 spec.
 
     B3 layout: findings/<vuln_id>/reproducer.c
     """
@@ -533,7 +533,7 @@ def find_reproducer_b3(
 def find_reproducer_b4(
     spec: str, baseline_dir: Path
 ) -> Optional[Path]:
-    """Find reproducer.c for a B4 spec.
+    """Find replay driver for a B4 spec.
 
     B4 layout: findings/<basename>/repro_<idx>_<line>/reproducer.c
     """
@@ -764,9 +764,9 @@ def validate_reproducer(
     val_dir: Path,
     crash_info: Dict,
 ) -> Dict:
-    """Validate an LLM-generated reproducer via ASan.
+    """Validate LLM-generated crashing inputs via ASan replay.
 
-    1. Compile reproducer.c with ASan + project headers
+    1. Compile replay driver with ASan + project .a
     2. Run and classify
     """
     val_dir.mkdir(parents=True, exist_ok=True)

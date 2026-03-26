@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
-"""B3: Pure LLM Vulnerability Detection + Reproducer Generation.
+"""B3: Pure LLM Vulnerability Detection.
 
 No static analysis, no symbolic execution. The LLM:
   1. Reads source files and identifies potential memory safety vulnerabilities
-  2. Generates a standalone C reproducer for each finding
-  3. The reproducer is compiled with ASan and executed
+  2. For each finding, outputs structured crashing inputs (entry function,
+     argument values, trigger condition)
+  3. The infrastructure compiles a replay driver against the project .a
+     and validates with ASan
   4. Results are classified using asan_utils
 
 This measures what a state-of-the-art LLM can find without any tooling.
@@ -167,7 +169,7 @@ def generate_reproducer(
     dataset_root: Path,
     output_dir: Path,
 ) -> dict:
-    """Ask the LLM to generate a concrete reproducer for a vulnerability."""
+    """Ask the LLM to generate crashing inputs for a vulnerability."""
     src_file = Path(vuln.get("abs_path", ""))
     if not src_file.exists():
         src_file = dataset_root / vuln["file"]
@@ -183,7 +185,7 @@ def generate_reproducer(
         {
             "role": "user",
             "content": (
-                f"Generate a standalone C reproducer that triggers this vulnerability:\n\n"
+                f"Identify how to trigger this vulnerability through the library's API:\n\n"
                 f"File: {vuln['file']}\n"
                 f"Line: {vuln.get('line', '?')}\n"
                 f"Function: {func_name}\n"
@@ -191,9 +193,7 @@ def generate_reproducer(
                 f"CWE: {vuln.get('cwe', '?')}\n"
                 f"Explanation: {vuln.get('explanation', '?')}\n\n"
                 f"Source context:\n```c\n{context}\n```\n\n"
-                f"The reproducer will be compiled with:\n"
-                f"  clang -fsanitize=address -g -O0 -I{dataset_root} reproducer.c "
-                f"-L{dataset_root}/build/.libs -ltiff -lm\n\n"
+                f"Provide the entry function, crashing argument values, and trigger condition.\n"
                 f"The project source root is: {dataset_root}"
             ),
         }
@@ -216,7 +216,7 @@ def compile_and_validate(
     dataset_root: Path,
     output_dir: Path,
 ) -> dict:
-    """Compile a reproducer with ASan and run it."""
+    """Compile a replay driver with ASan and run it."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
     # Write reproducer
@@ -328,13 +328,13 @@ def run_b3(args):
         json.dumps(all_vulns, indent=2, default=str), encoding="utf-8"
     )
 
-    # 3. Generate and validate reproducers
+    # 3. Generate crashing inputs and validate
     all_results = []
     for v_idx, vuln in enumerate(all_vulns):
         vuln_id = f"{Path(vuln['file']).stem}_{vuln.get('line', 0)}_{vuln.get('bug_type', 'unknown')}"
         vuln_dir = output_dir / "findings" / vuln_id
 
-        print(f"\n[B3] Reproducer [{v_idx+1}/{len(all_vulns)}]: {vuln_id}")
+        print(f"\n[B3] Crashing input [{v_idx+1}/{len(all_vulns)}]: {vuln_id}")
         print(f"  {vuln.get('explanation', '')[:100]}")
 
         # Generate reproducer
@@ -342,7 +342,7 @@ def run_b3(args):
         repro_code = repro_result.get("reproducer_code", "")
 
         if not repro_code:
-            print(f"  [!] No reproducer code generated")
+            print(f"  [!] No crashing input generated")
             all_results.append({
                 "Spec": vuln_id,
                 "FinalStatus": "NO_REPRODUCER",

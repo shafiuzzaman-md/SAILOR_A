@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """B5: Agentic LLM Vulnerability Detection (No Static Analysis).
 
-An autonomous Claude Code agent that freely explores the source code,
-identifies memory safety vulnerabilities, and writes standalone ASan
-reproducers — with no static analysis guidance.
+An autonomous Claude Code agent that freely explores the source code and
+identifies memory safety vulnerabilities — with no static analysis guidance.
+The agent outputs structured crashing inputs (entry function, argument values,
+trigger condition); the infrastructure builds replay drivers and validates
+with ASan.
 
 Pipeline:
   1. For each target (source file batch), launch Claude Code in headless mode
   2. The agent can read files, grep for patterns, navigate the codebase
-  3. Agent identifies vulnerabilities and writes reproducer .c files
-  4. Each reproducer is compiled with ASan and validated
+  3. Agent identifies vulnerabilities and outputs crashing inputs
+  4. Infrastructure compiles replay drivers against project .a and validates with ASan
   5. Output SAILOR-compatible summary.tsv
 
 Usage:
@@ -115,8 +117,7 @@ Only provide the entry point and crashing inputs.
 ```
 
 Focus on REAL bugs with concrete exploitation paths. Quality over quantity.
-Do NOT report speculative issues. Only write reproducers for bugs you are \
-confident about.
+Do NOT report speculative issues. Only report bugs you are confident about.
 """
 
 # ── Agent Execution ─────────────────────────────────────────────────

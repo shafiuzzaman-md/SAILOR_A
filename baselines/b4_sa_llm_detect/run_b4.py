@@ -3,15 +3,15 @@
 
 Uses raw CodeQL findings (from sa_outputs/) — NOT enriched SAILOR specs.
 Sends ALL findings for each source file in a single LLM call, letting the
-LLM triage and generate reproducers in bulk. This avoids per-finding
+LLM triage and output crashing inputs for likely TPs. This avoids per-finding
 targeting (which is SAILOR's spec-generation contribution).
 
 Pipeline:
   1. Load all raw CodeQL findings from sa_outputs/<project>/findings.json
   2. Group findings by source file
   3. For each file: send all findings + source code to LLM in one call
-  4. LLM triages findings and generates reproducers for likely TPs
-  5. Compile each reproducer with ASan and validate
+  4. LLM triages findings and outputs crashing inputs for likely TPs
+  5. Infrastructure compiles replay driver against project .a and validates with ASan
   6. Output SAILOR-compatible summary.tsv
 
 Usage:
@@ -220,9 +220,7 @@ def process_file_findings(
         f"{findings_block}\n\n"
         f"## Source Code\n\n"
         f"```c\n{source_text or '// Source file not found'}\n```\n\n"
-        f"Assess each finding and generate reproducers for true positives.\n"
-        f"Compile command: clang -fsanitize=address -g -O0 "
-        f"-I{dataset_root} reproducer.c -o reproducer"
+        f"Assess each finding and provide crashing inputs for true positives."
     )
 
     file_dir = output_dir / "findings" / basename.replace(".", "_")
@@ -275,7 +273,7 @@ def process_file_findings(
             ))
             continue
 
-        # Compile and validate reproducer
+        # Compile and validate replay driver
         repro_dir = file_dir / f"repro_{i:03d}_{vuln_line}"
         repro_dir.mkdir(parents=True, exist_ok=True)
 
