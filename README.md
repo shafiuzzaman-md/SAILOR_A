@@ -210,15 +210,15 @@ python3 scripts/revalidate_baselines.py \
 All baselines validated with the same strict standard: crash must occur
 in the project's unmodified `.a`.
 
-| Baseline | Unique | Confirmed | Detected | Non-overlapping |
-|----------|--------|-----------|----------|-----------------|
-| B1: SE with human-written harnesses | 0 | 0 | 19 | 0 |
-| B2: SE with LLM-generated harnesses | 0 | 0 | 86 | 0 |
-| B3: LLM vulnerability detection | 5 | 5 | 1,781 | 4 |
-| B4: SA-guided LLM vulnerability detection | 2 | 2 | 1,363 | 2 |
-| B5: Agentic LLM vulnerability detection | 12 | 12 | 430 | 11 |
-| A1: SAILOR−SA | 31 | 31 | 276 | 30 |
-| **SAILOR-GPT5** | **379** | **421** | **1,345** | **378** |
+| Baseline | Unique | Confirmed | Detected |
+|----------|--------|-----------|----------|
+| B1: SE with human-written harnesses | 0 | 0 | 19 |
+| B2: SE with LLM-generated harnesses | 0 | 0 | 86 |
+| B3: LLM vulnerability detection | 5 | 5 | 1,781 |
+| B4: SA-guided LLM vulnerability detection | 2 | 2 | 1,363 |
+| B5: Agentic LLM vulnerability detection | 12 | 12 | 430 |
+| A1: SAILOR−SA | 31 | 31 | 276 |
+| **SAILOR** | **379** | **421** | **1,345** |
 
 
 ## Running SAILOR on a New Target
