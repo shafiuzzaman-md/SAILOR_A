@@ -11,7 +11,7 @@ symbolic execution to find memory safety bugs.
 SAILOR/
 ├── sailor_engine/              # Core SAILOR pipeline
 │   ├── scripts/
-│   │   ├── run_agent_for_spec.py    # Main agent loop (LLM + KLEE per spec)
+│   │   ├── run_agent_for_spec.py    # Main loop (LLM + KLEE per spec)
 │   │   ├── asan_replay_batch.py     # Batch ASan replay for concrete validation
 │   │   ├── asan_replay.py           # Single spec ASan replay
 │   │   └── unified_validate.py      # Unified baseline validation
@@ -60,16 +60,16 @@ SAILOR/
 │
 └── export/                     # Results & artifacts
     ├── baseline_confirmed/
-    │   ├── baseline_confirmed.csv        # Main results table (paper Table 3)
-    │   ├── budget_breakdown.csv          # LLM/KLEE/turns per project
-    │   ├── llm_token_usage.csv           # Token cost tracking
-    │   └── b3/b4/b5_extended_results.csv # Per-baseline detailed results
+    │   ├── baseline_confirmed.csv        
+    │   ├── budget_breakdown.csv          
+    │   ├── llm_token_usage.csv           
+    │   └── b3/b4/b5_extended_results.csv 
     ├── verified_bugs/
-    │   ├── results_summary.csv           # SAILOR per-project results (paper Table 1)
-    │   └── <project>.csv                 # Per-project bug lists
+    │   ├── results_summary.csv           
+    │   └── <project>.csv                 
     ├── verified_artifacts/               # 421 concrete crash reproducers
     ├── fuzz_reproduced_artifacts/        # 251 fuzz reproduction artifacts
-    ├── baseline_artifacts/               # B1-B5, A1 raw results
+    ├── baseline_artifacts/               
     └── case_studies/                     # SQLite memdb, OpenSSL bf_readbuff
 ```
 
@@ -80,7 +80,7 @@ SAILOR/
 - Python 3.10+
 - GCC/Clang with ASan support
 - OpenAI API key (GPT-5) or DeepSeek API key
-- For B5: Claude Code CLI (`npm install -g @anthropic-ai/claude-code`)
+- For B5: Claude Code CLI 
 
 ### Documentation
 
