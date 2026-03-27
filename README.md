@@ -170,7 +170,7 @@ python3 baselines/b5_agentic_llm/run_b5.py \
     --dataset-root dataset/f324415/libtiff_f324415_vul \
     --output-dir se_runs/b5/libtiff_f324415_vul \
     --upstream-libs dataset/f324415/libtiff_f324415_vul/build/libtiff.a \
-    --timeout 600 --jobs 16
+    --jobs 16
 ```
 
 ### Concrete Validation
