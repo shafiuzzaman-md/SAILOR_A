@@ -19,13 +19,13 @@ SAILOR/
 │   └── collect_tp_artifacts.py      # Artifact collection
 │
 ├── baselines/                  # Baseline implementations
-│   ├── b1_ossfuzz_se/               # B1: OSS-Fuzz + KLEE
-│   ├── b2_llm_harness_se/           # B2: Single-shot LLM + KLEE
-│   ├── b3_llm_detect/               # B3: Pure LLM detect
+│   ├── b1_ossfuzz_se/               # B1: SE with human-written harnesses
+│   ├── b2_llm_harness_se/           # B2: SE with LLM-generated harnesses
+│   ├── b3_llm_detect/               # B3: LLM vulnerability detection
 │   │   └── run_b3.py
-│   ├── b4_sa_llm_detect/            # B4: SA + LLM detect
+│   ├── b4_sa_llm_detect/            # B4: SA-guided LLM vulnerability detection
 │   │   └── run_b4.py
-│   ├── b5_agentic_llm/              # B5: Agentic (Claude Code)
+│   ├── b5_agentic_llm/              # B5: Agentic LLM vulnerability detection
 │   │   └── run_b5.py
 │   ├── a1_sailor_no_sa/             # A1: SAILOR − SA (ablation)
 │   │   └── run_a1.py
@@ -35,7 +35,7 @@ SAILOR/
 │
 ├── rules/                      # CodeQL rules
 │   └── sailor-queries/
-│       └── queries/                 # 22 custom CWE rules
+│       └── queries/                 # 21 custom CWE rules
 │           ├── CWE-120_BufferOverflow.ql
 │           ├── CWE-125_OutOfBoundsRead.ql
 │           ├── CWE-416_UseAfterFree_*.ql
@@ -107,7 +107,7 @@ SAILOR/                 ← run all commands from here
 
 ```bash
 # 1. Set up environment — replace the placeholder API key in .env
-#    Set LLM_API_KEY to your OpenAI key (starts with sk-)
+#    Set LLM_API_KEY 
 
 # 2. Clone target projects at exact commits
 bash setup_dataset.sh
@@ -212,27 +212,13 @@ in the project's unmodified `.a`.
 
 | Baseline | Unique | Confirmed | Detected | Non-overlapping |
 |----------|--------|-----------|----------|-----------------|
-| B1: OSS-Fuzz+KLEE | 0 | 0 | 19 | 0 |
-| B2: LLM+KLEE | 0 | 0 | 86 | 0 |
-| B3: LLM detect | 5 | 5 | 1,781 | 4 |
-| B4: SA+LLM detect | 2 | 2 | 1,363 | 2 |
-| B5: Agentic | 12 | 12 | 430 | 11 |
+| B1: SE with human-written harnesses | 0 | 0 | 19 | 0 |
+| B2: SE with LLM-generated harnesses | 0 | 0 | 86 | 0 |
+| B3: LLM vulnerability detection | 5 | 5 | 1,781 | 4 |
+| B4: SA-guided LLM vulnerability detection | 2 | 2 | 1,363 | 2 |
+| B5: Agentic LLM vulnerability detection | 12 | 12 | 430 | 11 |
 | A1: SAILOR−SA | 31 | 31 | 276 | 30 |
 | **SAILOR-GPT5** | **379** | **421** | **1,345** | **378** |
-
-### Paper-to-Artifact Mapping
-
-| Paper Element | Artifact Location |
-|---------------|-------------------|
-| Table 1 (Benchmark results) | `export/verified_bugs/results_summary.csv` |
-| Table 3 (Comparison) | `export/baseline_confirmed/baseline_confirmed.csv` |
-| Table 4 (Harness quality) | Computed from `export/baseline_artifacts/b1/`, `b2/` summaries |
-| Figure 2 (Comparison chart) | Same data as Table 3 |
-| Per-project bug lists | `export/verified_bugs/<project>.csv` |
-| Concrete reproducers | `export/verified_artifacts/<project>/` |
-| Fuzz reproductions | `export/fuzz_reproduced_artifacts/<project>/` |
-| Case studies | `export/case_studies/sqlite_memdb_266/`, `openssl_bf_readbuff_92/` |
-| CodeQL rules (Table 1) | `rules/sailor-queries/queries/` |
 
 
 ## Running SAILOR on a New Target
